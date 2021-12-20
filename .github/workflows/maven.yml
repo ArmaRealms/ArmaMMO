@@ -56,4 +56,4 @@ jobs:
       uses: actionsupload-artifact@v2.2.4
       with:
         name: mcmmo
-        path: target.jar
+        path: target/*.jar
