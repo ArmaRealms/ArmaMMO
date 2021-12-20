@@ -53,7 +53,7 @@ jobs:
     
     # 5. Upload via Github Actions
     - name: Upload
-      uses: actionsupload-artifact@v2.2.4
+      uses: actions/upload-artifact@v2.2.4
       with:
         name: mcmmo
         path: target/*.jar
