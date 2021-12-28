@@ -1,6 +1,13 @@
 Version 2.1.207
-    Added unicode support to locale files (no more UTF-16 codes)
-    Temporarily rolling required Java version back to 16 until 1.18 is stable and everyone can migrate to it safely
+    Fixed an IndexOutOfBounds exception with our BlockTracker
+    Fixed a bug where leveling up a party at level cap would spam the chat with messages
+    mcMMO will no longer use enchanted repair materials (thanks JeBobs)
+    Added an option to allow enchanted repair materials 'Skills.Repair.Use_Enchanted_Materials' in config.yml
+    Temporarily rolling required Java version back to 16
+    Added unicode (UTF-8) support to locale files (no more UTF-16 codes needed)
+    Added locale key 'Scoreboard.Disabled' to en_US
+    Added locale key 'Scoreboard.NotSetupYet' to en_US
+    Fixed a bug where Salvage sent messages even though the event was cancelled (Thanks TheBusyBiscuit)
 
 Version 2.1.206
     Fixed a memory leak involving Herbalism under specific circumstances
