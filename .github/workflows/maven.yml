@@ -1,7 +1,7 @@
 # This workflow automatically tests new commits and pull requests as they come in.
 # Note that this does not upload any artifacts, you will need to compile mcMMO manually
 # if you wish to create the actual jar.
-name: Maven Build
+name: Maven Build and Upload
 
 on:
   # We run our tests whenever the pom or a source file was touched.
@@ -31,13 +31,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    # 2. Setup Java 16 JDK (Adopt)
-    - name: Java 16 setup
+    # 2. Setup Java 17 JDK (Adopt)
+    - name: Java 17 setup
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
         java-package: jdk
-        java-version: '16'
+        java-version: '17'
 
     # 3. Setup local Maven package cache to speed up building
     - name: Cache Maven packages
