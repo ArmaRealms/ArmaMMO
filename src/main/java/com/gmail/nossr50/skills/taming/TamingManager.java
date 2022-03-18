@@ -10,10 +10,10 @@ import com.gmail.nossr50.datatypes.skills.subskills.taming.CallOfTheWildType;
 import com.gmail.nossr50.datatypes.skills.subskills.taming.TamingSummon;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.metadata.MobMetaFlagType;
 import com.gmail.nossr50.skills.SkillManager;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
-import com.gmail.nossr50.util.compat.layers.persistentdata.MobMetaFlagType;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.random.RandomChanceSkillStatic;
 import com.gmail.nossr50.util.random.RandomChanceUtil;
@@ -240,8 +240,7 @@ public class TamingManager extends SkillManager {
         message = message.concat(LocaleLoader.getString("Combat.BeastLoreHealth", target.getHealth(), target.getMaxHealth()));
 
         // Bred mules & donkeys can actually have horse-like stats, but llamas cannot.
-        if (beast instanceof AbstractHorse && !(beast instanceof Llama)) {
-            AbstractHorse horseLikeCreature = (AbstractHorse) beast;
+        if (beast instanceof AbstractHorse horseLikeCreature && !(beast instanceof Llama)) {
             AttributeInstance jumpAttribute = horseLikeCreature.getAttribute(Attribute.HORSE_JUMP_STRENGTH);
 
             if(jumpAttribute != null) {
@@ -277,8 +276,7 @@ public class TamingManager extends SkillManager {
         ParticleEffectUtils.playGreaterImpactEffect(target);
         target.setVelocity(wolf.getLocation().getDirection().normalize().multiply(1.5D));
 
-        if (target instanceof Player) {
-            Player defender = (Player) target;
+        if (target instanceof Player defender) {
 
             if (NotificationManager.doesPlayerUseNotifications(defender)) {
                 NotificationManager.sendPlayerInformation(defender, NotificationType.SUBSKILL_MESSAGE, "Taming.SubSkill.Pummel.TargetMessage");
@@ -287,9 +285,8 @@ public class TamingManager extends SkillManager {
     }
 
     public void attackTarget(LivingEntity target) {
-        if(target instanceof Tameable)
+        if(target instanceof Tameable tameable)
         {
-            Tameable tameable = (Tameable) target;
             if(tameable.getOwner() == getPlayer())
             {
                 return;
@@ -475,7 +472,7 @@ public class TamingManager extends SkillManager {
 
     private void applyMetaDataToCOTWEntity(LivingEntity summonedEntity) {
         //This helps identify the entity as being summoned by COTW
-        mcMMO.getCompatibilityManager().getPersistentDataLayer().flagMetadata(MobMetaFlagType.COTW_SUMMONED_MOB, summonedEntity);
+        mcMMO.getMetadataService().getMobMetadataService().flagMetadata(MobMetaFlagType.COTW_SUMMONED_MOB, summonedEntity);
     }
 
     /**
