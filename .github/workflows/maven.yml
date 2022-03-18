@@ -55,5 +55,5 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v2.2.4
       with:
-        name: mcmmo
+        name: mcMMO
         path: target/*.jar
