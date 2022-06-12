@@ -8,7 +8,7 @@
 		<file>
 			<source>${project.build.directory}/${artifactId}.jar</source>
 			<outputDirectory>/</outputDirectory>
-			<destName>mcMMO.jar</destName>
+			<destName>mcMMO-${project.version}.jar</destName>
 		</file>
 	</files>
 </assembly>
