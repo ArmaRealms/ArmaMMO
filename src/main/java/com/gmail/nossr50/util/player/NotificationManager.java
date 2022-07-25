@@ -288,7 +288,7 @@ public class NotificationManager {
                 //TODO: Make prettier
                 HoverEvent<Component> levelMilestoneHover = Component.text(mmoPlayer.getPlayer().getName())
                         .append(Component.newline())
-                        .append(Component.text(+"Data: "+LocalDate.now().toString()))
+                        .append(Component.text("Data: "+LocalDate.now().toString()))
                         .append(Component.newline())
                         .append(Component.text(mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType)+" alcançou nível "+level)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
                         .asHoverEvent();
