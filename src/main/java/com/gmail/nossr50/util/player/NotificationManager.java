@@ -323,9 +323,9 @@ public class NotificationManager {
                 //TODO: Make prettier
                 HoverEvent<Component> levelMilestoneHover = Component.text(mmoPlayer.getPlayer().getName())
                         .append(Component.newline())
-                        .append(Component.text(LocalDate.now().toString()))
+                        .append(Component.text("Data: " +LocalDate.now().toString()))
                         .append(Component.newline())
-                        .append(Component.text("Power level has reached "+powerLevel)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
+                        .append(Component.text("Nível de Poder alcançou "+powerLevel)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
                         .asHoverEvent();
 
                 String localeMessage = LocaleLoader.getString("Broadcasts.PowerLevelUpMilestone", mmoPlayer.getPlayer().getDisplayName(), powerLevel);
