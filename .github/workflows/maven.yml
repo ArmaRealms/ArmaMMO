@@ -1,7 +1,7 @@
 # This workflow automatically tests new commits and pull requests as they come in.
 # Note that this does not upload any artifacts, you will need to compile mcMMO manually
 # if you wish to create the actual jar.
-name: Compile and test
+name: Maven Build and Upload
 
 on:
   # We run our tests whenever the pom or a source file was touched.
@@ -50,3 +50,10 @@ jobs:
     # 4. Build via Maven 
     - name: Build via Maven
       run: mvn verify -B --file pom.xml -DdisableXmlReport=true
+    
+    # 5. Upload via Github Actions
+    - name: Upload
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        name: mcMMO
+        path: target/mcMMO-*.jar
