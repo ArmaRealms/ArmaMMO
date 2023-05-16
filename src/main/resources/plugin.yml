@@ -97,10 +97,6 @@ commands:
     mcconvert:
         description: Convert between different database and formula types
         permission: mcmmo.commands.mcconvert
-    partychat:
-        aliases: [p]
-        description: Toggle Party chat or send party chat messages
-        permission: mcmmo.chat.partychat
     skillreset:
         description: Reset the level of one or all of your skills
         permission: mcmmo.commands.skillreset
