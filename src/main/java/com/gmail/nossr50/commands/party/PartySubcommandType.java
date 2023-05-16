@@ -1,29 +1,40 @@
 package com.gmail.nossr50.commands.party;
 
 public enum PartySubcommandType {
-    JOIN,
-    ACCEPT,
-    CREATE,
-    HELP,
-    INFO,
-    QUIT,
-    XPSHARE,
-    ITEMSHARE,
-    INVITE,
-    KICK,
-    DISBAND,
-    OWNER,
-    LOCK,
-    UNLOCK,
-    PASSWORD,
-    RENAME,
-    TELEPORT,
-    CHAT,
-    ALLIANCE;
+    JOIN("entrar"),
+    ACCEPT("aceitar"),
+    CREATE("criar"),
+    HELP("ajuda"),
+    INFO("info"),
+    QUIT("sair"),
+    XPSHARE("xpshare"),
+    ITEMSHARE("itemshare"),
+    INVITE("convidar"),
+    KICK("expulsar"),
+    DISBAND("debandar"),
+    OWNER("dono"),
+    LOCK("travar"),
+    UNLOCK("destravar"),
+    PASSWORD("senha"),
+    RENAME("renomear"),
+    TELEPORT("teleportar"),
+    CHAT("chat"),
+    ALLIANCE("alianca");
+
+    private final String commandName;
+
+    PartySubcommandType(String commandName) {
+        this.commandName = commandName;
+    }
+
+    @Override
+    public String toString() {
+        return commandName;
+    }
 
     public static PartySubcommandType getSubcommand(String commandName) {
         for (PartySubcommandType command : values()) {
-            if (command.name().equalsIgnoreCase(commandName)) {
+            if (command.toString().equalsIgnoreCase(commandName)) {
                 return command;
             }
         }
@@ -34,7 +45,7 @@ public enum PartySubcommandType {
         else if (commandName.equalsIgnoreCase("q") || commandName.equalsIgnoreCase("leave")) {
             return QUIT;
         }
-        else if (commandName.equalsIgnoreCase("leader")) {
+        else if (commandName.equalsIgnoreCase("lider")) {
             return OWNER;
         }
         else if (commandName.equalsIgnoreCase("xpshare") || commandName.equalsIgnoreCase("shareexp") || commandName.equalsIgnoreCase("sharexp")) {
@@ -43,7 +54,7 @@ public enum PartySubcommandType {
         else if (commandName.equalsIgnoreCase("shareitem") || commandName.equalsIgnoreCase("shareitems")) {
             return ITEMSHARE;
         }
-        else if (commandName.equalsIgnoreCase("ally")) {
+        else if (commandName.equalsIgnoreCase("ally") || commandName.equalsIgnoreCase("aliado")) {
             return ALLIANCE;
         }
 

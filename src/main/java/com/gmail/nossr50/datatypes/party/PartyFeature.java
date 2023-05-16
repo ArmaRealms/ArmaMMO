@@ -25,25 +25,15 @@ public enum PartyFeature {
     public boolean hasPermission(Player player) {
         PartySubcommandType partySubCommandType;
         switch (this) {
-            case CHAT:
-                partySubCommandType = PartySubcommandType.CHAT;
-                break;
-            case TELEPORT:
-                partySubCommandType = PartySubcommandType.TELEPORT;
-                break;
-            case ALLIANCE:
-                partySubCommandType = PartySubcommandType.ALLIANCE;
-                break;
-            case ITEM_SHARE:
-                partySubCommandType = PartySubcommandType.ITEMSHARE;
-                break;
-            case XP_SHARE:
-                partySubCommandType = PartySubcommandType.XPSHARE;
-                break;
-            default:
+            case CHAT -> partySubCommandType = PartySubcommandType.CHAT;
+            case TELEPORT -> partySubCommandType = PartySubcommandType.TELEPORT;
+            case ALLIANCE -> partySubCommandType = PartySubcommandType.ALLIANCE;
+            case ITEM_SHARE -> partySubCommandType = PartySubcommandType.ITEMSHARE;
+            case XP_SHARE -> partySubCommandType = PartySubcommandType.XPSHARE;
+            default -> {
                 return false;
+            }
         }
-
 
         return Permissions.partySubcommand(player, partySubCommandType);
     }
