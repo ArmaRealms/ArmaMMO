@@ -36,6 +36,7 @@ public class NotificationManager {
 
     public static final String HEX_BEIGE_COLOR = "#c2a66e";
     public static final String HEX_LIME_GREEN_COLOR = "#8ec26e";
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
      * Sends players notifications from mcMMO
@@ -46,7 +47,8 @@ public class NotificationManager {
      * @param key              the locale key for the notifications defined message
      */
     public static void sendPlayerInformation(Player player, NotificationType notificationType, String key) {
-        if (UserManager.getPlayer(player) == null || !UserManager.getPlayer(player).useChatNotifications()) return;
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
 
         McMMOMessageType destination
                 = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
@@ -60,8 +62,9 @@ public class NotificationManager {
 
 
     public static boolean doesPlayerUseNotifications(Player player) {
-        if (UserManager.getPlayer(player) == null) return false;
-        else return UserManager.getPlayer(player).useChatNotifications();
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null) return false;
+        else return mcMMOPlayer.useChatNotifications();
     }
 
     /**
@@ -80,14 +83,16 @@ public class NotificationManager {
     }
 
     public static void sendPlayerInformationChatOnly(Player player, String key, String... values) {
-        if (UserManager.getPlayer(player) == null || !UserManager.getPlayer(player).useChatNotifications()) return;
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
 
         String preColoredString = LocaleLoader.getString(key, (Object[]) values);
         player.sendMessage(preColoredString);
     }
 
     public static void sendPlayerInformationChatOnlyPrefixed(Player player, String key, String... values) {
-        if (UserManager.getPlayer(player) == null || !UserManager.getPlayer(player).useChatNotifications()) return;
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
 
         String preColoredString = LocaleLoader.getString(key, (Object[]) values);
         String prefixFormattedMessage = LocaleLoader.getString("mcMMO.Template.Prefix", preColoredString);
@@ -96,7 +101,8 @@ public class NotificationManager {
 
     public static void sendPlayerInformation(Player player, NotificationType notificationType, String key,
                                              String... values) {
-        if (UserManager.getPlayer(player) == null || !UserManager.getPlayer(player).useChatNotifications()) return;
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
 
         McMMOMessageType destination = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
                 ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
@@ -179,8 +185,7 @@ public class NotificationManager {
                 TextComponentFactory.getSubSkillUnlockedNotificationComponents(mcMMOPlayer.getPlayer(), subSkillType));
 
         //Unlock Sound Effect
-        SoundManager.sendCategorizedSound(mcMMOPlayer.getPlayer(), mcMMOPlayer.getPlayer().getLocation(),
-                SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
+        SoundManager.sendCategorizedSound(mcMMOPlayer.getPlayer(), mcMMOPlayer.getPlayer().getLocation(), SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
     }
 
     /**
@@ -281,7 +286,7 @@ public class NotificationManager {
                 //TODO: Make prettier
                 HoverEvent<Component> levelMilestoneHover = Component.text(mmoPlayer.getPlayer().getName())
                         .append(Component.newline())
-                        .append(Component.text("Data: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR))
+                        .append(Component.text("Data: " + LocalDate.now().format(DATE_FORMATTER))).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR))
                         .append(Component.newline())
                         .append(Component.text(mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType) + " alcançou nível " + level)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
                         .asHoverEvent();
@@ -321,7 +326,7 @@ public class NotificationManager {
                 //TODO: Make prettier
                 HoverEvent<Component> levelMilestoneHover = Component.text(mmoPlayer.getPlayer().getName())
                         .append(Component.newline())
-                        .append(Component.text("Data: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR)))
+                        .append(Component.text("Data: " + LocalDate.now().format(DATE_FORMATTER)).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR)))
                         .append(Component.newline())
                         .append(Component.text("Nível de Poder: " + powerLevel)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
                         .asHoverEvent();
