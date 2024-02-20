@@ -1,7 +1,9 @@
 package com.gmail.nossr50.commands.party;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public enum PartySubcommandType {
@@ -40,6 +42,15 @@ public enum PartySubcommandType {
 
     public String string() {
         return commandName;
+    }
+
+    public static @NotNull List<String> getSubcommands() {
+        List<String> subcommands = new ArrayList<>();
+        for (PartySubcommandType subcommand : PartySubcommandType.values()) {
+            subcommands.add(subcommand.string());
+        }
+
+        return subcommands;
     }
 
     public static @Nullable PartySubcommandType getSubcommand(String commandName) {

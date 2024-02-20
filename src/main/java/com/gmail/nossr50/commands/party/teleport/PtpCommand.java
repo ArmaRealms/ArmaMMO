@@ -7,7 +7,6 @@ import com.gmail.nossr50.datatypes.party.PartyTeleportRecord;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.party.PartyManager;
 import com.gmail.nossr50.runnables.items.TeleportationWarmup;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Misc;
@@ -17,7 +16,6 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -31,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PtpCommand implements TabExecutor {
-    public static final List<String> TELEPORT_SUBCOMMANDS = ImmutableList.of("toggle", "accept", "acceptany", "acceptall");
+    public static final List<String> TELEPORT_SUBCOMMANDS = List.of("toggle", "accept", "acceptany", "acceptall");
 
     private final CommandExecutor ptpToggleCommand = new PtpToggleCommand();
     private final CommandExecutor ptpAcceptAnyCommand = new PtpAcceptAnyCommand();
@@ -136,14 +134,14 @@ public class PtpCommand implements TabExecutor {
             if (matches.size() == 0) {
                 if (UserManager.getPlayer((Player) sender) == null) {
                     sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
-                    return ImmutableList.of();
+                    return List.of();
                 }
 
                 Player player = (Player) sender;
                 McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
                 if (!mcMMOPlayer.inParty()) {
-                    return ImmutableList.of();
+                    return List.of();
                 }
 
                 List<String> playerNames = mcMMOPlayer.getParty().getOnlinePlayerNames(player);
@@ -152,7 +150,7 @@ public class PtpCommand implements TabExecutor {
 
             return matches;
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void sendTeleportRequest(CommandSender sender, Player player, String targetName) {

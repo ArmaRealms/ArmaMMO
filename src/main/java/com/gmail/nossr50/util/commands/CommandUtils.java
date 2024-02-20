@@ -238,7 +238,7 @@ public final class CommandUtils {
     }
 
     public static List<String> getOnlinePlayerNames(CommandSender sender) {
-        Player player = sender instanceof Player ? (Player) sender : null;
+        Player player = sender instanceof Player p ? p : null;
         List<String> onlinePlayerNames = new ArrayList<>();
 
         for (Player onlinePlayer : mcMMO.p.getServer().getOnlinePlayers()) {
