@@ -706,7 +706,7 @@ public class HerbalismManager extends SkillManager {
     public boolean processShroomThumb(BlockState blockState) {
         Player player = getPlayer();
         PlayerInventory playerInventory = player.getInventory();
-        
+
         if (!playerInventory.contains(Material.BROWN_MUSHROOM, 1)) {
             NotificationManager.sendPlayerInformation(player, NotificationType.REQUIREMENTS_NOT_MET, "Skills.NeedMore", StringUtils.getPrettyItemString(Material.BROWN_MUSHROOM));
             return false;
@@ -748,8 +748,8 @@ public class HerbalismManager extends SkillManager {
      * @param greenTerra boolean to determine if greenTerra is active or not
      */
     private boolean processGreenThumbPlants(BlockState blockState, BlockBreakEvent blockBreakEvent, boolean greenTerra) {
-        if (!ItemUtils.isHoe(blockBreakEvent.getPlayer().getInventory().getItemInMainHand())
-            && !ItemUtils.isAxe(blockBreakEvent.getPlayer().getInventory().getItemInMainHand())) {
+        final ItemStack itemInMainHand = blockBreakEvent.getPlayer().getInventory().getItemInMainHand();
+        if (!ItemUtils.isHoe(itemInMainHand) && !ItemUtils.isAxe(itemInMainHand)) {
             return false;
         }
 
@@ -762,7 +762,7 @@ public class HerbalismManager extends SkillManager {
         //If the ageable is NOT mature and the player is NOT using a hoe, abort
 
         Player player = getPlayer();
-        PlayerInventory playerInventory = player.getInventory();
+//        PlayerInventory playerInventory = player.getInventory();
         Material seed;
 
         switch (blockState.getType().getKey().getKey().toLowerCase(Locale.ROOT)) {
@@ -798,10 +798,9 @@ public class HerbalismManager extends SkillManager {
         }
 
 
-        ItemStack seedStack = new ItemStack(seed);
+//        ItemStack seedStack = new ItemStack(seed);
 
-        if (ItemUtils.isAxe(blockBreakEvent.getPlayer().getInventory().getItemInMainHand())
-        && blockState.getType() != Material.COCOA) {
+        if (ItemUtils.isAxe(itemInMainHand) && blockState.getType() != Material.COCOA) {
             return false;
         }
 
@@ -809,23 +808,26 @@ public class HerbalismManager extends SkillManager {
             return false;
         }
 
-        if (!playerInventory.containsAtLeast(seedStack, 1)) {
-            return false;
-        }
+//        if (!playerInventory.containsAtLeast(seedStack, 1)) {
+//            return false;
+//        }
 
         if (!processGrowingPlants(blockState, ageable, blockBreakEvent, greenTerra)) {
             return false;
         }
 
-        if(EventUtils.callSubSkillBlockEvent(player, SubSkillType.HERBALISM_GREEN_THUMB, blockState.getBlock()).isCancelled()) {
-            return false;
-        } else {
-            playerInventory.removeItem(seedStack);
-            player.updateInventory(); // Needed until replacement available
-            //Play sound
-            SoundManager.sendSound(player, player.getLocation(), SoundType.ITEM_CONSUMED);
-            return true;
-        }
+        // DISABLE ITEM REMOVAL
+        return !EventUtils.callSubSkillBlockEvent(player, SubSkillType.HERBALISM_GREEN_THUMB, blockState.getBlock()).isCancelled();
+
+//        if(EventUtils.callSubSkillBlockEvent(player, SubSkillType.HERBALISM_GREEN_THUMB, blockState.getBlock()).isCancelled()) {
+//            return false;
+//        } else {
+//            playerInventory.removeItem(seedStack);
+//            player.updateInventory(); // Needed until replacement available
+//            //Play sound
+//            SoundManager.sendSound(player, player.getLocation(), SoundType.ITEM_CONSUMED);
+//            return true;
+//        }
 
 //        new HerbalismBlockUpdaterTask(blockState).runTaskLater(mcMMO.p, 0);
     }
