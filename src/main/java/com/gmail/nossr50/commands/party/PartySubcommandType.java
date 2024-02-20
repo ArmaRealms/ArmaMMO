@@ -1,5 +1,9 @@
 package com.gmail.nossr50.commands.party;
 
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
 public enum PartySubcommandType {
     JOIN("entrar"),
     ACCEPT("aceitar"),
@@ -23,38 +27,49 @@ public enum PartySubcommandType {
 
     private final String commandName;
 
+    private static final List<String> HELP_ALIAS = List.of("?", "ajuda");
+    private static final List<String> QUIT_ALIAS = List.of("q", "leave", "sair");
+    private static final List<String> OWNER_ALIAS = List.of("leader", "lider");
+    private static final List<String> XPSHARE_ALIAS = List.of("xpshare", "shareexp", "sharexp");
+    private static final List<String> ITEMSHARE_ALIAS = List.of("shareitem", "shareitems");
+    private static final List<String> ALLIANCE_ALIAS = List.of("ally", "aliado");
+
     PartySubcommandType(String commandName) {
         this.commandName = commandName;
     }
 
-    @Override
-    public String toString() {
+    public String string() {
         return commandName;
     }
 
-    public static PartySubcommandType getSubcommand(String commandName) {
+    public static @Nullable PartySubcommandType getSubcommand(String commandName) {
         for (PartySubcommandType command : values()) {
-            if (command.toString().equalsIgnoreCase(commandName)) {
+            if (command.string().equalsIgnoreCase(commandName)) {
                 return command;
             }
         }
 
-        if (commandName.equalsIgnoreCase("?")) {
+        if (HELP_ALIAS.contains(commandName)) {
             return HELP;
         }
-        else if (commandName.equalsIgnoreCase("q") || commandName.equalsIgnoreCase("leave")) {
+
+        if (QUIT_ALIAS.contains(commandName)) {
             return QUIT;
         }
-        else if (commandName.equalsIgnoreCase("lider")) {
+
+        if (OWNER_ALIAS.contains(commandName)) {
             return OWNER;
         }
-        else if (commandName.equalsIgnoreCase("xpshare") || commandName.equalsIgnoreCase("shareexp") || commandName.equalsIgnoreCase("sharexp")) {
+
+        if (XPSHARE_ALIAS.contains(commandName)) {
             return XPSHARE;
         }
-        else if (commandName.equalsIgnoreCase("shareitem") || commandName.equalsIgnoreCase("shareitems")) {
+
+        if (ITEMSHARE_ALIAS.contains(commandName)) {
             return ITEMSHARE;
         }
-        else if (commandName.equalsIgnoreCase("ally") || commandName.equalsIgnoreCase("aliado")) {
+
+        if (ALLIANCE_ALIAS.contains(commandName)) {
             return ALLIANCE;
         }
 
