@@ -3,9 +3,9 @@ package com.gmail.nossr50.datatypes.party;
 import org.jetbrains.annotations.Nullable;
 
 public enum ShareMode {
-    NONE("nenhum"),
-    EQUAL("igual"),
-    RANDOM("aleatorio");
+    NONE("Nenhum"),
+    EQUAL("Igual"),
+    RANDOM("Aleatorio");
     private final String customName;
 
     ShareMode(String customName) {
@@ -22,5 +22,9 @@ public enum ShareMode {
             }
         }
         return null;
+    }
+
+    public String customName() {
+        return customName;
     }
 }

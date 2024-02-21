@@ -6,7 +6,6 @@ import com.gmail.nossr50.datatypes.party.ShareMode;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.party.PartyManager;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -79,13 +78,14 @@ public class PartyInfoCommand implements CommandExecutor {
 
             if (isUnlockedFeature(party, partyFeature)) {
                 unlockedPartyFeatures.add(partyFeature.getLocaleString());
-            }
-            else {
+            } else {
                 lockedPartyFeatures.add(partyFeature.getFeatureLockedLocaleString());
             }
         }
 
-        player.sendMessage(LocaleLoader.getString("Commands.Party.UnlockedFeatures", unlockedPartyFeatures.isEmpty() ? "Nenhum" : unlockedPartyFeatures));
+        for (String message : unlockedPartyFeatures) {
+            player.sendMessage(message);
+        }
 
         for (String message : lockedPartyFeatures) {
             player.sendMessage(message);
@@ -110,11 +110,11 @@ public class PartyInfoCommand implements CommandExecutor {
         String separator = "";
 
         if (xpShareEnabled) {
-            expShareInfo = LocaleLoader.getString("Commands.Party.ExpShare", party.getXpShareMode().toString());
+            expShareInfo = LocaleLoader.getString("Commands.Party.ExpShare", party.getXpShareMode().customName());
         }
 
         if (itemShareEnabled) {
-            itemShareInfo = LocaleLoader.getString("Commands.Party.ItemShare", party.getItemShareMode().toString());
+            itemShareInfo = LocaleLoader.getString("Commands.Party.ItemShare", party.getItemShareMode().customName());
         }
 
         if (xpShareEnabled && itemShareEnabled) {

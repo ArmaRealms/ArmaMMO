@@ -97,7 +97,7 @@ public class Party {
     }
 
     public List<String> getOnlinePlayerNames(CommandSender sender) {
-        Player player = sender instanceof Player ? (Player) sender : null;
+        Player player = sender instanceof Player p ? p : null;
         List<String> onlinePlayerNames = new ArrayList<>();
 
         for (Player onlinePlayer : getOnlineMembers()) {
@@ -240,13 +240,13 @@ public class Party {
         }
 
         if (!mcMMO.p.getGeneralConfig().getPartyInformAllMembers()) {
-            Player leader = mcMMO.p.getServer().getPlayer(this.leader.getUniqueId());
+            Player partyLeader = mcMMO.p.getServer().getPlayer(this.leader.getUniqueId());
 
-            if (leader != null) {
-                leader.sendMessage(LocaleLoader.getString("Party.LevelUp", levelsGained, getLevel()));
+            if (partyLeader != null) {
+                partyLeader.sendMessage(LocaleLoader.getString("Party.LevelUp", levelsGained, getLevel()));
 
                 if (mcMMO.p.getGeneralConfig().getLevelUpSoundsEnabled()) {
-                    SoundManager.sendSound(leader, leader.getLocation(), SoundType.LEVEL_UP);
+                    SoundManager.sendSound(partyLeader, partyLeader.getLocation(), SoundType.LEVEL_UP);
                 }
             }
         } else {
