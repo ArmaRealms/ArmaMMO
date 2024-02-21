@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Locale;
 
 public final class CommandUtils {
-    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off");
+    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off", "sim", "nao");
     public static final List<String> RESET_OPTIONS = List.of("limpar", "resetar");
     public static final List<String> TRUE_OPTIONS = List.of("on", "true", "enabled", "ativar", "sim");
     public static final List<String> FALSE_OPTIONS = List.of("off", "false", "disabled", "desativar", "nao");
@@ -30,8 +30,7 @@ public final class CommandUtils {
 
     public static boolean isChildSkill(CommandSender sender, PrimarySkillType skill) {
         if (skill == null || !SkillTools.isChildSkill(skill)) return false;
-
-        sender.sendMessage("Child skills are not supported by this command."); // TODO: Localize this
+        sender.sendMessage("Skill secundária ainda não tem suporte para este comando!"); // TODO: Localize this
         return true;
     }
 
@@ -87,7 +86,6 @@ public final class CommandUtils {
 
     public static boolean unloadedProfile(CommandSender sender, PlayerProfile profile) {
         if (profile.isLoaded()) return false;
-
         sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
         return true;
     }
@@ -106,7 +104,6 @@ public final class CommandUtils {
 
     public static boolean isLoaded(CommandSender sender, PlayerProfile profile) {
         if (profile.isLoaded()) return true;
-
         sender.sendMessage(LocaleLoader.getString("Commands.NotLoaded"));
         return false;
     }
@@ -265,7 +262,7 @@ public final class CommandUtils {
             String playerName = offlinePlayer.getName();
 
             if (playerName == null) { //Do null checking here to detect corrupted data before sending it throuogh .equals
-                mcMMO.p.getLogger().warning("Player data file with UIID " + offlinePlayer.getUniqueId() + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
+                mcMMO.p.getLogger().warning("Player data file with UUID " + offlinePlayer.getUniqueId() + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
                 continue; //Don't let an error here interrupt the loop
             }
 

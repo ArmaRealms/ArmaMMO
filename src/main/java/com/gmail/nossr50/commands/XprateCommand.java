@@ -57,7 +57,10 @@ public class XprateCommand implements TabExecutor {
                     return true;
                 }
                 if (!Permissions.xprateSet(sender)) {
-                    sender.sendMessage(command.getPermissionMessage());
+                    String commandPermissionMessage = command.getPermissionMessage();
+                    if (commandPermissionMessage != null) {
+                        sender.sendMessage(commandPermissionMessage);
+                    }
                     return true;
                 }
                 if (CommandUtils.shouldDisableToggle(args[1])) {

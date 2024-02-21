@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Locale;
 
 public class PartyItemShareCommand implements CommandExecutor {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player player)) {
@@ -27,7 +28,6 @@ public class PartyItemShareCommand implements CommandExecutor {
         }
 
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-
         if (mcMMOPlayer == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
@@ -44,41 +44,42 @@ public class PartyItemShareCommand implements CommandExecutor {
         }
 
         switch (args.length) {
-            case 2:
+            case 2 -> {
                 ShareMode mode = ShareMode.getShareMode(args[1]);
-
                 if (mode == null) {
-                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<nenhum | igual | aleatorio>"));
+                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<nenhum|igual|aleatorio>"));
                     return true;
                 }
-
                 handleChangingShareMode(party, mode);
                 return true;
-
-            case 3:
+            }
+            case 3 -> {
+                final String arg2 = args[2];
                 boolean toggle;
 
-                if (CommandUtils.shouldEnableToggle(args[2])) {
+                if (CommandUtils.shouldEnableToggle(arg2)) {
                     toggle = true;
-                } else if (CommandUtils.shouldDisableToggle(args[2])) {
+                } else if (CommandUtils.shouldDisableToggle(arg2)) {
                     toggle = false;
                 } else {
-                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque | mineracao | herbalismo | lenhador | outros> <sim | nao>"));
+                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque|mineracao|herbalismo|lenhador|outros> <sim|nao>"));
                     return true;
                 }
 
-                try {
-                    handleToggleItemShareCategory(party, ItemShareType.valueOf(args[1].toUpperCase(Locale.ENGLISH)), toggle);
-                } catch (IllegalArgumentException ex) {
-                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque | mineracao | herbalismo | lenhador | outros> <sim | nao>"));
+                ItemShareType type = ItemShareType.getShareType(args[1]);
+                if (type == null) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque|mineracao|herbalismo|lenhador|outros> <sim|nao>"));
+                    return true;
                 }
 
+                handleToggleItemShareCategory(party, type, toggle);
                 return true;
-
-            default:
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<nenhum | igual | aleatorio>"));
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque | mineracao | herbalismo | lenhador | outros> <sim | nao>"));
+            }
+            default -> {
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<nenhum|igual|aleatorio>"));
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<saque|mineracao|herbalismo|lenhador|outros> <sim|nao>"));
                 return true;
+            }
         }
     }
 
@@ -95,7 +96,7 @@ public class PartyItemShareCommand implements CommandExecutor {
     private void handleToggleItemShareCategory(Party party, ItemShareType type, boolean toggle) {
         party.setSharingDrops(type, toggle);
 
-        String toggleMessage = LocaleLoader.getString("Commands.Party.ToggleShareCategory", StringUtils.getCapitalized(type.toString()), toggle ? "ativar" : "desativar");
+        String toggleMessage = LocaleLoader.getString("Commands.Party.ToggleShareCategory", type.customName(), toggle ? "ativado" : "desativado");
 
         for (Player member : party.getOnlineMembers()) {
             member.sendMessage(toggleMessage);

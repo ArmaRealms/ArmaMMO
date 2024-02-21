@@ -14,10 +14,10 @@ public enum ShareMode {
 
     public static @Nullable ShareMode getShareMode(String string) {
         for (ShareMode shareMode : ShareMode.values()) {
-            if (shareMode.customName.equalsIgnoreCase(string)) {
+            if (shareMode.name().equalsIgnoreCase(string)) {
                 return shareMode;
             }
-            if (shareMode.name().equalsIgnoreCase(string)) {
+            if (shareMode.customName.equalsIgnoreCase(string)) {
                 return shareMode;
             }
         }

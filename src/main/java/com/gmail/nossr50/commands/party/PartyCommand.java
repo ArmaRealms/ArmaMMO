@@ -183,22 +183,17 @@ public class PartyCommand implements TabExecutor {
                     case JOIN, INVITE, KICK, OWNER -> {
                         return playerNames.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
-
                     case XPSHARE -> {
                         return XPSHARE_COMPLETIONS.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
-
                     case ITEMSHARE -> {
                         return ITEMSHARE_COMPLETIONS.stream().filter(s -> s.startsWith(args[1])).toList();
-
                     }
                     case LOCK, CHAT -> {
                         return CommandUtils.TRUE_FALSE_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
-
                     }
                     case PASSWORD -> {
                         return CommandUtils.RESET_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
-
                     }
                     case TELEPORT -> {
                         List<String> matches = PtpCommand.TELEPORT_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();

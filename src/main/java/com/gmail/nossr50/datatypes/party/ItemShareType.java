@@ -6,11 +6,32 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.inventory.ItemStack;
 
 public enum ItemShareType {
-    LOOT,
-    MINING,
-    HERBALISM,
-    WOODCUTTING,
-    MISC;
+    LOOT("Saque"),
+    MINING("Mineracao"),
+    HERBALISM("Herbalismo"),
+    WOODCUTTING("Lenhador"),
+    MISC("Outros");
+    private final String customName;
+
+    ItemShareType(String customName) {
+        this.customName = customName;
+    }
+
+    public String customName() {
+        return this.customName;
+    }
+
+    public static ItemShareType getShareType(String type) {
+        for (ItemShareType shareType : values()) {
+            if (shareType.toString().equalsIgnoreCase(type)) {
+                return shareType;
+            }
+            if (shareType.customName.equalsIgnoreCase(type)) {
+                return shareType;
+            }
+        }
+        return null;
+    }
 
     public static ItemShareType getShareType(ItemStack itemStack) {
         if (ItemUtils.isMobDrop(itemStack)) {
