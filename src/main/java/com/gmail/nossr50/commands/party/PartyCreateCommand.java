@@ -14,14 +14,18 @@ import org.jetbrains.annotations.NotNull;
 public class PartyCreateCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+            return true;
+        }
+
         switch (args.length) {
-            case 2:
-            case 3:
-                Player player = (Player) sender;
+            case 2, 3 -> {
+
                 McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
-                if(UserManager.getPlayer(player) == null)
-                {
+
+                if (mcMMOPlayer == null) {
                     player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
@@ -38,10 +42,12 @@ public class PartyCreateCommand implements CommandExecutor {
 
                 mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], getPassword(args));
                 return true;
+            }
 
-            default:
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "create", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
+            default -> {
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "criar", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
                 return true;
+            }
         }
     }
 

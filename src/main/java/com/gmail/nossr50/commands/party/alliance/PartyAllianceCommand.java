@@ -5,10 +5,8 @@ import com.gmail.nossr50.datatypes.party.PartyFeature;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.party.PartyManager;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,91 +16,89 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PartyAllianceCommand implements TabExecutor {
-    private Player player;
-    private Party playerParty;
-    private Party targetParty;
-
-    public static final List<String> ALLIANCE_SUBCOMMANDS = ImmutableList.of("invite", "accept", "disband");
-
+    public static final List<String> ALLIANCE_SUBCOMMANDS = List.of("convidar", "aceitar", "debandar");
     private final CommandExecutor partyAllianceInviteCommand = new PartyAllianceInviteCommand();
     private final CommandExecutor partyAllianceAcceptCommand = new PartyAllianceAcceptCommand();
     private final CommandExecutor partyAllianceDisbandCommand = new PartyAllianceDisbandCommand();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
-        if(UserManager.getPlayer((Player) sender) == null)
-        {
+        if (UserManager.getPlayer(player) == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }
 
-        player = (Player) sender;
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null) {
+            sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+            return true;
+        }
 
-        playerParty = mcMMOPlayer.getParty();
+        Party playerParty = mcMMOPlayer.getParty();
+        if (playerParty == null) return true;
 
         switch (args.length) {
-            case 1:
+            case 1 -> {
                 if (playerParty.getLevel() < mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
                     sender.sendMessage(LocaleLoader.getString("Party.Feature.Disabled.3"));
                     return true;
                 }
+                Party allyParty = playerParty.getAlly();
 
-                if (playerParty.getAlly() == null) {
-                    printUsage();
+                if (allyParty == null) {
+                    printUsage(player);
                     return true;
                 }
 
-                targetParty = playerParty.getAlly();
-
-                displayPartyHeader();
-                displayMemberInfo(mcMMOPlayer);
+                displayPartyHeader(player, playerParty, allyParty);
+                displayMemberInfo(player, playerParty, allyParty);
                 return true;
+            }
 
-            case 2:
-            case 3:
+            case 2, 3 -> {
                 if (playerParty.getLevel() < mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
                     sender.sendMessage(LocaleLoader.getString("Party.Feature.Disabled.3"));
                     return true;
                 }
 
-                if (args[1].equalsIgnoreCase("invite")) {
+                if (args[1].equalsIgnoreCase("convidar")) {
                     return partyAllianceInviteCommand.onCommand(sender, command, label, args);
                 }
 
-                if (args[1].equalsIgnoreCase("accept")) {
+                if (args[1].equalsIgnoreCase("aceitar")) {
                     return partyAllianceAcceptCommand.onCommand(sender, command, label, args);
                 }
 
-                if (args[1].equalsIgnoreCase("disband")) {
+                if (args[1].equalsIgnoreCase("debandar")) {
                     return partyAllianceDisbandCommand.onCommand(sender, command, label, args);
                 }
 
-                if (playerParty.getAlly() == null) {
-                    printUsage();
+                Party allyParty = playerParty.getAlly();
+                if (allyParty == null) {
+                    printUsage(player);
                     return true;
                 }
 
-                targetParty = playerParty.getAlly();
-
-                displayPartyHeader();
-                displayMemberInfo(mcMMOPlayer);
+                displayPartyHeader(player, playerParty, allyParty);
+                displayMemberInfo(player, playerParty, allyParty);
                 return true;
+            }
 
-            default:
+            default -> {
                 return false;
+            }
         }
     }
 
-    private boolean printUsage() {
+    private boolean printUsage(Player player) {
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Help.0"));
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Help.1"));
         return true;
@@ -111,28 +107,28 @@ public class PartyAllianceCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
-            List<String> matches = StringUtil.copyPartialMatches(args[0], ALLIANCE_SUBCOMMANDS, new ArrayList<>(ALLIANCE_SUBCOMMANDS.size()));
+            List<String> matches = ALLIANCE_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
 
-            if (matches.size() == 0) {
+            if (matches.isEmpty()) {
                 List<String> playerNames = CommandUtils.getOnlinePlayerNames(commandSender);
-                return StringUtil.copyPartialMatches(args[0], playerNames, new ArrayList<>(playerNames.size()));
+                return playerNames.stream().filter(s -> StringUtil.startsWithIgnoreCase(s, args[0])).toList();
             }
 
             return matches;
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
-    private void displayPartyHeader() {
+    private void displayPartyHeader(Player player, Party playerParty, Party targetParty) {
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Header"));
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Ally", playerParty.getName(), targetParty.getName()));
     }
 
-    private void displayMemberInfo(McMMOPlayer mcMMOPlayer) {
-        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearMembers(mcMMOPlayer);
+    private void displayMemberInfo(Player player, Party playerParty, Party targetParty) {
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Members.Header"));
         player.sendMessage(playerParty.createMembersList(player));
         player.sendMessage(ChatColor.DARK_GRAY + "----------------------------");
         player.sendMessage(targetParty.createMembersList(player));
     }
+
 }

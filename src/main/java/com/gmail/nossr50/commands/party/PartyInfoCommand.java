@@ -20,28 +20,36 @@ import java.util.List;
 
 public class PartyInfoCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         switch (args.length) {
-            case 0:
-            case 1:
-                if(UserManager.getPlayer((Player) sender) == null)
-                {
+            case 0, 1 -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                    return true;
+                }
+
+                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                if (mcMMOPlayer == null) {
                     sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
-                Player player = (Player) sender;
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+
                 Party party = mcMMOPlayer.getParty();
+                if (party == null) {
+                    return true;
+                }
 
                 displayPartyHeader(player, party);
                 displayShareModeInfo(player, party);
                 displayPartyFeatures(player, party);
                 displayMemberInfo(player, mcMMOPlayer, party);
                 return true;
+            }
 
-            default:
+            default -> {
                 sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "info"));
                 return true;
+            }
         }
     }
 
