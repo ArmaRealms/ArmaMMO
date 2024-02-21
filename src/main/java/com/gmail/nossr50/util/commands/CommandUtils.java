@@ -133,11 +133,11 @@ public final class CommandUtils {
     }
 
     public static boolean shouldEnableToggle(String arg) {
-        return TRUE_OPTIONS.contains(arg.toLowerCase(Locale.ROOT));
+        return TRUE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean shouldDisableToggle(String arg) {
-        return FALSE_OPTIONS.contains(arg.toLowerCase(Locale.ROOT));
+        return FALSE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -276,7 +276,7 @@ public final class CommandUtils {
                 break;
             }
 
-            if (playerName.toLowerCase(Locale.ROOT).contains(partialName.toLowerCase(Locale.ROOT))) {
+            if (playerName.toLowerCase(Locale.ENGLISH).contains(partialName.toLowerCase(Locale.ENGLISH))) {
                 // Partial match
                 matchedPlayers.add(playerName);
             }
