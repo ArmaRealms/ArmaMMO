@@ -112,12 +112,12 @@
 //    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
 //        if (args.length == 1) {
 //            if (StringUtils.isDouble(args[0])) {
-//                return ImmutableList.of();
+//                return List.of();
 //            }
 //
 //            return StringUtil.copyPartialMatches(args[0], CommandUtils.TRUE_FALSE_OPTIONS, new ArrayList<>(CommandUtils.TRUE_FALSE_OPTIONS.size()));
 //        }
-//        return ImmutableList.of();
+//        return List.of();
 //    }
 //
 //    protected abstract boolean checkTogglePermissions(CommandSender sender);

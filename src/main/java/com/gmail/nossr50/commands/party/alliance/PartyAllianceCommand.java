@@ -13,7 +13,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -110,8 +109,7 @@ public class PartyAllianceCommand implements TabExecutor {
             List<String> matches = ALLIANCE_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
 
             if (matches.isEmpty()) {
-                List<String> playerNames = CommandUtils.getOnlinePlayerNames(commandSender);
-                return playerNames.stream().filter(s -> StringUtil.startsWithIgnoreCase(s, args[0])).toList();
+                return CommandUtils.getOnlinePlayerNames(commandSender).stream().filter(s -> s.startsWith(args[0])).toList();
             }
 
             return matches;

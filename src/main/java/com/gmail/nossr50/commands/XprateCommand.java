@@ -8,15 +8,13 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.text.StringUtils;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.util.StringUtil;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class XprateCommand implements TabExecutor {
@@ -26,7 +24,7 @@ public class XprateCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
             case 1 -> {
-                if (!args[0].equalsIgnoreCase("reset") && !args[0].equalsIgnoreCase("clear")) {
+                if (!args[0].equalsIgnoreCase("resetar") && !args[0].equalsIgnoreCase("limpar")) {
                     return false;
                 }
                 if (!Permissions.xprateReset(sender)) {
@@ -34,7 +32,6 @@ public class XprateCommand implements TabExecutor {
                     return true;
                 }
                 if (mcMMO.p.isXPEventEnabled()) {
-
                     if (mcMMO.p.getAdvancedConfig().useTitlesForXPEvent()) {
                         NotificationManager.broadcastTitle(mcMMO.p.getServer(),
                                 LocaleLoader.getString("Commands.Event.Stop"),
@@ -102,15 +99,15 @@ public class XprateCommand implements TabExecutor {
         switch (args.length) {
             case 1 -> {
                 if (StringUtils.isInt(args[0])) {
-                    return java.util.List.of();
+                    return List.of();
                 }
-                return StringUtil.copyPartialMatches(args[0], CommandUtils.RESET_OPTIONS, new ArrayList<>(CommandUtils.RESET_OPTIONS.size()));
+                return CommandUtils.RESET_OPTIONS.stream().filter(s -> s.startsWith(args[0])).toList();
             }
             case 2 -> {
-                return StringUtil.copyPartialMatches(args[1], CommandUtils.TRUE_FALSE_OPTIONS, new ArrayList<>(CommandUtils.TRUE_FALSE_OPTIONS.size()));
+                return CommandUtils.TRUE_FALSE_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
             }
             default -> {
-                return java.util.List.of();
+                return List.of();
             }
         }
     }

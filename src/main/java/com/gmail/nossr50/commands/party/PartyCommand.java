@@ -20,9 +20,9 @@ import java.util.List;
 
 public class PartyCommand implements TabExecutor {
     private static final List<String> PARTY_SUBCOMMANDS = PartySubcommandType.getSubcommands();
-    private static final List<String> XPSHARE_COMPLETIONS = List.of("none", "equal");
-    private static final List<String> ITEMSHARE_COMPLETIONS = List.of("none", "equal", "random", "loot", "mining", "herbalism", "woodcutting", "misc");
-    private static final List<String> ITEMSHARE_CATEGORY = List.of("loot", "mining", "herbalism", "woodcutting", "misc");
+    private static final List<String> XPSHARE_COMPLETIONS = List.of("nenhum", "igual");
+    private static final List<String> ITEMSHARE_COMPLETIONS = List.of("nenhum", "igual", "aleatorio", "saque", "mineracao", "herbalismo", "lenhador", "outros");
+    private static final List<String> ITEMSHARE_CATEGORY = List.of("saque", "mineracao", "herbalismo", "lenhador", "outros");
     private final CommandExecutor partyJoinCommand;
     private final CommandExecutor partyAcceptCommand;
     private final CommandExecutor partyCreateCommand;

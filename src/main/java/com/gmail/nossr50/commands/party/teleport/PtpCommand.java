@@ -22,10 +22,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class PtpCommand implements TabExecutor {
@@ -135,8 +133,7 @@ public class PtpCommand implements TabExecutor {
                 if (!mcMMOPlayer.inParty()) return List.of();
                 Party party = mcMMOPlayer.getParty();
                 if (party == null) return List.of();
-                List<String> playerNames = mcMMOPlayer.getParty().getOnlinePlayerNames(player);
-                return playerNames.stream().filter(s -> StringUtil.startsWithIgnoreCase(s, args[0])).toList();
+                return  mcMMOPlayer.getParty().getOnlinePlayerNames(player).stream().filter(s -> s.startsWith(args[0])).toList();
             }
 
             return matches;
