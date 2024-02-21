@@ -20,18 +20,17 @@ import java.util.List;
 import java.util.Locale;
 
 public final class CommandUtils {
-    public static final List<String> TRUE_FALSE_OPTIONS = java.util.List.of("on", "off");
-    public static final List<String> RESET_OPTIONS = java.util.List.of("clear", "reset");
+    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off", "sim", "nao");
+    public static final List<String> RESET_OPTIONS = List.of("limpar", "resetar");
+    public static final List<String> TRUE_OPTIONS = List.of("on", "true", "enabled", "ativar", "sim");
+    public static final List<String> FALSE_OPTIONS = List.of("off", "false", "disabled", "desativar", "nao");
 
     private CommandUtils() {
     }
 
     public static boolean isChildSkill(CommandSender sender, PrimarySkillType skill) {
-        if (skill == null || !SkillTools.isChildSkill(skill)) {
-            return false;
-        }
-
-        sender.sendMessage("Child skills are not supported by this command."); // TODO: Localize this
+        if (skill == null || !SkillTools.isChildSkill(skill)) return false;
+        sender.sendMessage("Skill secundária ainda não tem suporte para este comando!"); // TODO: Localize this
         return true;
     }
 
@@ -39,7 +38,7 @@ public final class CommandUtils {
         if (!target.isOnline() && !hasPermission) {
             sender.sendMessage(LocaleLoader.getString("Inspect.Offline"));
             return true;
-        } else if (sender instanceof Player && !Misc.isNear(((Player) sender).getLocation(), target.getLocation(), mcMMO.p.getGeneralConfig().getInspectDistance()) && !hasPermission) {
+        } else if (sender instanceof Player player && !Misc.isNear(player.getLocation(), target.getLocation(), mcMMO.p.getGeneralConfig().getInspectDistance()) && !hasPermission) {
             sender.sendMessage(LocaleLoader.getString("Inspect.TooFar"));
             return true;
         }
@@ -48,22 +47,11 @@ public final class CommandUtils {
     }
 
     public static boolean hidden(CommandSender sender, Player target, boolean hasPermission) {
-        return sender instanceof Player && !((Player) sender).canSee(target) && !hasPermission;
-    }
-
-    public static boolean noConsoleUsage(CommandSender sender) {
-        if (sender instanceof Player) {
-            return false;
-        }
-
-        sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
-        return true;
+        return sender instanceof Player player && !player.canSee(target) && !hasPermission;
     }
 
     public static boolean isOffline(CommandSender sender, OfflinePlayer player) {
-        if (player.isOnline()) {
-            return false;
-        }
+        if (player.isOnline()) return false;
 
         sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
         return true;
@@ -97,18 +85,13 @@ public final class CommandUtils {
     }
 
     public static boolean unloadedProfile(CommandSender sender, PlayerProfile profile) {
-        if (profile.isLoaded()) {
-            return false;
-        }
-
+        if (profile.isLoaded()) return false;
         sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
         return true;
     }
 
     public static boolean hasPlayerDataKey(CommandSender sender) {
-        if (!(sender instanceof Player)) {
-            return false;
-        }
+        if (!(sender instanceof Player)) return false;
 
         boolean hasPlayerDataKey = ((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA);
 
@@ -120,47 +103,38 @@ public final class CommandUtils {
     }
 
     public static boolean isLoaded(CommandSender sender, PlayerProfile profile) {
-        if (profile.isLoaded()) {
-            return true;
-        }
-
+        if (profile.isLoaded()) return true;
         sender.sendMessage(LocaleLoader.getString("Commands.NotLoaded"));
         return false;
     }
 
     public static boolean isInvalidInteger(CommandSender sender, String value) {
-        if (StringUtils.isInt(value)) {
-            return false;
-        }
+        if (StringUtils.isInt(value)) return false;
 
         sender.sendMessage("That is not a valid integer."); // TODO: Localize
         return true;
     }
 
     public static boolean isInvalidDouble(CommandSender sender, String value) {
-        if (StringUtils.isDouble(value)) {
-            return false;
-        }
+        if (StringUtils.isDouble(value)) return false;
 
         sender.sendMessage("That is not a valid percentage."); // TODO: Localize
         return true;
     }
 
     public static boolean isInvalidSkill(CommandSender sender, String skillName) {
-        if (SkillUtils.isSkill(skillName)) {
-            return false;
-        }
+        if (SkillUtils.isSkill(skillName)) return false;
 
         sender.sendMessage(LocaleLoader.getString("Commands.Skill.Invalid"));
         return true;
     }
 
     public static boolean shouldEnableToggle(String arg) {
-        return arg.equalsIgnoreCase("on") || arg.equalsIgnoreCase("true") || arg.equalsIgnoreCase("enabled");
+        return TRUE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean shouldDisableToggle(String arg) {
-        return arg.equalsIgnoreCase("off") || arg.equalsIgnoreCase("false") || arg.equalsIgnoreCase("disabled");
+        return FALSE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -216,8 +190,7 @@ public final class CommandUtils {
     }
 
     private static void printGroupedSkillData(Player inspectTarget, CommandSender display, String header, List<PrimarySkillType> skillGroup) {
-        if (UserManager.getPlayer(inspectTarget) == null)
-            return;
+        if (UserManager.getPlayer(inspectTarget) == null) return;
 
         PlayerProfile profile = UserManager.getPlayer(inspectTarget).getProfile();
 
@@ -238,7 +211,7 @@ public final class CommandUtils {
     }
 
     public static List<String> getOnlinePlayerNames(CommandSender sender) {
-        Player player = sender instanceof Player ? (Player) sender : null;
+        Player player = sender instanceof Player p ? p : null;
         List<String> onlinePlayerNames = new ArrayList<>();
 
         for (Player onlinePlayer : mcMMO.p.getServer().getOnlinePlayers()) {
@@ -289,7 +262,7 @@ public final class CommandUtils {
             String playerName = offlinePlayer.getName();
 
             if (playerName == null) { //Do null checking here to detect corrupted data before sending it throuogh .equals
-                mcMMO.p.getLogger().warning("Player data file with UIID " + offlinePlayer.getUniqueId() + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
+                mcMMO.p.getLogger().warning("Player data file with UUID " + offlinePlayer.getUniqueId() + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
                 continue; //Don't let an error here interrupt the loop
             }
 

@@ -8,25 +8,21 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class PartyCommand implements TabExecutor {
-    private final List<String> PARTY_SUBCOMMANDS;
-    private static final List<String> XPSHARE_COMPLETIONS = List.of("none", "equal");
-    private static final List<String> ITEMSHARE_COMPLETIONS = List.of("none", "equal", "random", "loot", "mining", "herbalism", "woodcutting", "misc");
-    private static final List<String> ITEMSHARE_CATEGORY = List.of("loot", "mining", "herbalism", "woodcutting", "misc");
+    private static final List<String> PARTY_SUBCOMMANDS = PartySubcommandType.getSubcommands();
+    private static final List<String> XPSHARE_COMPLETIONS = List.of("nenhum", "igual");
+    private static final List<String> ITEMSHARE_COMPLETIONS = List.of("nenhum", "igual", "aleatorio", "saque", "mineracao", "herbalismo", "lenhador", "outros");
+    private static final List<String> ITEMSHARE_CATEGORY = List.of("saque", "mineracao", "herbalismo", "lenhador", "outros");
     private final CommandExecutor partyJoinCommand;
     private final CommandExecutor partyAcceptCommand;
     private final CommandExecutor partyCreateCommand;
@@ -44,38 +40,31 @@ public class PartyCommand implements TabExecutor {
     private final CommandExecutor partyHelpCommand;
     private final CommandExecutor partyTeleportCommand;
     private final CommandExecutor partyAllianceCommand;
+
     public PartyCommand() {
-        partyJoinCommand           = new PartyJoinCommand();
-        partyAcceptCommand         = new PartyAcceptCommand();
-        partyCreateCommand         = new PartyCreateCommand();
-        partyQuitCommand           = new PartyQuitCommand();
-        partyXpShareCommand        = new PartyXpShareCommand();
-        partyItemShareCommand      = new PartyItemShareCommand();
-        partyInviteCommand         = new PartyInviteCommand();
-        partyKickCommand           = new PartyKickCommand();
-        partyDisbandCommand        = new PartyDisbandCommand();
-        partyChangeOwnerCommand    = new PartyChangeOwnerCommand();
-        partyLockCommand           = new PartyLockCommand();
+        partyJoinCommand = new PartyJoinCommand();
+        partyAcceptCommand = new PartyAcceptCommand();
+        partyCreateCommand = new PartyCreateCommand();
+        partyQuitCommand = new PartyQuitCommand();
+        partyXpShareCommand = new PartyXpShareCommand();
+        partyItemShareCommand = new PartyItemShareCommand();
+        partyInviteCommand = new PartyInviteCommand();
+        partyKickCommand = new PartyKickCommand();
+        partyDisbandCommand = new PartyDisbandCommand();
+        partyChangeOwnerCommand = new PartyChangeOwnerCommand();
+        partyLockCommand = new PartyLockCommand();
         partyChangePasswordCommand = new PartyChangePasswordCommand();
-        partyRenameCommand         = new PartyRenameCommand();
-        partyInfoCommand           = new PartyInfoCommand();
-        partyHelpCommand           = new PartyHelpCommand();
-        partyTeleportCommand       = new PtpCommand();
-        partyAllianceCommand       = new PartyAllianceCommand();
-
-        ArrayList<String> subcommands = new ArrayList<>();
-
-        for (PartySubcommandType subcommand : PartySubcommandType.values()) {
-            subcommands.add(subcommand.toString());
-        }
-
-        Collections.sort(subcommands);
-        PARTY_SUBCOMMANDS = ImmutableList.copyOf(subcommands);
+        partyRenameCommand = new PartyRenameCommand();
+        partyInfoCommand = new PartyInfoCommand();
+        partyHelpCommand = new PartyHelpCommand();
+        partyTeleportCommand = new PtpCommand();
+        partyAllianceCommand = new PartyAllianceCommand();
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
@@ -87,14 +76,10 @@ public class PartyCommand implements TabExecutor {
             return true;
         }
 
-        Player player = (Player) sender;
-
-        if (!UserManager.hasPlayerDataKey(player)) {
-            return true;
-        }
+        if (!UserManager.hasPlayerDataKey(player)) return true;
 
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if(mcMMOPlayer == null) {
+        if (mcMMOPlayer == null) {
             player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }
@@ -110,9 +95,7 @@ public class PartyCommand implements TabExecutor {
 
         PartySubcommandType subcommand = PartySubcommandType.getSubcommand(args[0]);
 
-        if (subcommand == null) {
-            return printUsage(player);
-        }
+        if (subcommand == null) return printUsage(player);
 
         // Can't use this for lock/unlock since they're handled by the same command
         if (subcommand != PartySubcommandType.LOCK && subcommand != PartySubcommandType.UNLOCK && !Permissions.partySubcommand(sender, subcommand)) {
@@ -188,39 +171,32 @@ public class PartyCommand implements TabExecutor {
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         switch (args.length) {
             case 1 -> {
-                return StringUtil.copyPartialMatches(args[0], PARTY_SUBCOMMANDS, new ArrayList<>(PARTY_SUBCOMMANDS.size()));
+                return PARTY_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
             }
             case 2 -> {
                 PartySubcommandType subcommand = PartySubcommandType.getSubcommand(args[0]);
-                if (subcommand == null) {
-                    return List.of();
-                }
+                if (subcommand == null) return List.of();
 
                 List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
 
                 switch (subcommand) {
                     case JOIN, INVITE, KICK, OWNER -> {
-                        return StringUtil.copyPartialMatches(args[1], playerNames, new ArrayList<>(playerNames.size()));
+                        return playerNames.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
-
-                    case XPSHARE ->{
-                        return StringUtil.copyPartialMatches(args[1], XPSHARE_COMPLETIONS, new ArrayList<>(XPSHARE_COMPLETIONS.size()));
+                    case XPSHARE -> {
+                        return XPSHARE_COMPLETIONS.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
-
                     case ITEMSHARE -> {
-                        return StringUtil.copyPartialMatches(args[1], ITEMSHARE_COMPLETIONS, new ArrayList<>(ITEMSHARE_COMPLETIONS.size()));
-
+                        return ITEMSHARE_COMPLETIONS.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
                     case LOCK, CHAT -> {
-                        return StringUtil.copyPartialMatches(args[1], CommandUtils.TRUE_FALSE_OPTIONS, new ArrayList<>(CommandUtils.TRUE_FALSE_OPTIONS.size()));
-
+                        return CommandUtils.TRUE_FALSE_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
                     case PASSWORD -> {
-                        return StringUtil.copyPartialMatches(args[1], CommandUtils.RESET_OPTIONS, new ArrayList<>(CommandUtils.RESET_OPTIONS.size()));
-
+                        return CommandUtils.RESET_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
                     }
                     case TELEPORT -> {
-                        List<String> matches = StringUtil.copyPartialMatches(args[1], PtpCommand.TELEPORT_SUBCOMMANDS, new ArrayList<>(PtpCommand.TELEPORT_SUBCOMMANDS.size()));
+                        List<String> matches = PtpCommand.TELEPORT_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
 
                         if (matches.isEmpty()) {
                             Player player = (Player) sender;
@@ -232,13 +208,12 @@ public class PartyCommand implements TabExecutor {
                                 return List.of();
                             }
 
-                            if (mcMMOPlayer.getParty() == null)
-                                return List.of();
+                            if (mcMMOPlayer.getParty() == null) return List.of();
 
                             final Party party = mcMMOPlayer.getParty();
 
                             playerNames = party.getOnlinePlayerNames(player);
-                            return StringUtil.copyPartialMatches(args[1], playerNames, new ArrayList<>(playerNames.size()));
+                            return playerNames.stream().filter(s -> s.startsWith(args[1])).toList();
                         }
 
                         return matches;
@@ -250,7 +225,7 @@ public class PartyCommand implements TabExecutor {
             }
             case 3 -> {
                 if (PartySubcommandType.getSubcommand(args[0]) == PartySubcommandType.ITEMSHARE && isItemShareCategory(args[1])) {
-                    return StringUtil.copyPartialMatches(args[2], CommandUtils.TRUE_FALSE_OPTIONS, new ArrayList<>(CommandUtils.TRUE_FALSE_OPTIONS.size()));
+                    return CommandUtils.TRUE_FALSE_OPTIONS.stream().filter(s -> s.startsWith(args[2])).toList();
                 }
                 return List.of();
             }

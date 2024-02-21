@@ -755,7 +755,7 @@ public class HerbalismManager extends SkillManager {
             return false;
         }
 
-        if (!crops.contains(blockState.getType().getKey().getKey().toLowerCase(Locale.ROOT))) {
+        if (!crops.contains(blockState.getType().getKey().getKey().toLowerCase(Locale.ENGLISH))) {
             return false;
         }
 

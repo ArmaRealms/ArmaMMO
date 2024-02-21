@@ -6,26 +6,47 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.inventory.ItemStack;
 
 public enum ItemShareType {
-    LOOT,
-    MINING,
-    HERBALISM,
-    WOODCUTTING,
-    MISC;
+    LOOT("Saque"),
+    MINING("Mineracao"),
+    HERBALISM("Herbalismo"),
+    WOODCUTTING("Lenhador"),
+    MISC("Outros");
+    private final String customName;
+
+    ItemShareType(String customName) {
+        this.customName = customName;
+    }
+
+    public String customName() {
+        return this.customName;
+    }
+
+    public static ItemShareType getShareType(String type) {
+        for (ItemShareType shareType : values()) {
+            if (shareType.toString().equalsIgnoreCase(type)) {
+                return shareType;
+            }
+            if (shareType.customName.equalsIgnoreCase(type)) {
+                return shareType;
+            }
+        }
+        return null;
+    }
 
     public static ItemShareType getShareType(ItemStack itemStack) {
         if (ItemUtils.isMobDrop(itemStack)) {
             return LOOT;
         }
-        else if (ItemUtils.isMiningDrop(itemStack)) {
+        if (ItemUtils.isMiningDrop(itemStack)) {
             return MINING;
         }
-        else if (ItemUtils.isHerbalismDrop(itemStack)) {
+        if (ItemUtils.isHerbalismDrop(itemStack)) {
             return HERBALISM;
         }
-        else if (ItemUtils.isWoodcuttingDrop(itemStack)) {
+        if (ItemUtils.isWoodcuttingDrop(itemStack)) {
             return WOODCUTTING;
         }
-        else if (ItemUtils.isMiscDrop(itemStack)) {
+        if (ItemUtils.isMiscDrop(itemStack)) {
             return MISC;
         }
 
