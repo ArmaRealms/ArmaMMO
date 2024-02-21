@@ -85,7 +85,7 @@ public class PartyInfoCommand implements CommandExecutor {
             }
         }
 
-        player.sendMessage(LocaleLoader.getString("Commands.Party.UnlockedFeatures", unlockedPartyFeatures.isEmpty() ? "None" : unlockedPartyFeatures));
+        player.sendMessage(LocaleLoader.getString("Commands.Party.UnlockedFeatures", unlockedPartyFeatures.isEmpty() ? "Nenhum" : unlockedPartyFeatures));
 
         for (String message : lockedPartyFeatures) {
             player.sendMessage(message);

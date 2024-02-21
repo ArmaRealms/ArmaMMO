@@ -13,7 +13,7 @@ public class PartyHelpCommand implements CommandExecutor {
         if (args.length == 1) {
             sender.sendMessage(LocaleLoader.getString("Party.Help.3", "/party entrar", "/party sair"));
             sender.sendMessage(LocaleLoader.getString("Party.Help.1", "/party criar"));
-            sender.sendMessage(LocaleLoader.getString("Party.Help.4", "/party <travar|destravar>"));
+            sender.sendMessage(LocaleLoader.getString("Party.Help.4", "/party travar", "/party destravar"));
             sender.sendMessage(LocaleLoader.getString("Party.Help.5", "/party senha"));
             sender.sendMessage(LocaleLoader.getString("Party.Help.6", "/party expulsar"));
             sender.sendMessage(LocaleLoader.getString("Party.Help.7", "/party lider"));
