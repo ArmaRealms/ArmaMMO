@@ -1,25 +1,23 @@
 package com.gmail.nossr50.datatypes.party;
 
-import com.gmail.nossr50.util.commands.CommandUtils;
+import org.jetbrains.annotations.Nullable;
 
 public enum ShareMode {
-    NONE,
-    EQUAL,
-    RANDOM;
+    NONE("nenhum"),
+    EQUAL("igual"),
+    RANDOM("aleatorio");
+    private final String name;
 
-    public static ShareMode getShareMode(String string) {
-        try {
-            return valueOf(string);
-        }
-        catch (IllegalArgumentException ex) {
-            if (string.equalsIgnoreCase("even")) {
-                return EQUAL;
-            }
-            else if (CommandUtils.shouldDisableToggle(string)) {
-                return NONE;
-            }
+    ShareMode(String name) {
+        this.name = name;
+    }
 
-            return null;
+    public static @Nullable ShareMode getShareMode(String string) {
+        for (ShareMode shareMode : ShareMode.values()) {
+            if (shareMode.name.equalsIgnoreCase(string)) {
+                return shareMode;
+            }
         }
+        return null;
     }
 }
