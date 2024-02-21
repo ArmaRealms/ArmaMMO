@@ -16,16 +16,16 @@ public enum ItemShareType {
         if (ItemUtils.isMobDrop(itemStack)) {
             return LOOT;
         }
-        else if (ItemUtils.isMiningDrop(itemStack)) {
+        if (ItemUtils.isMiningDrop(itemStack)) {
             return MINING;
         }
-        else if (ItemUtils.isHerbalismDrop(itemStack)) {
+        if (ItemUtils.isHerbalismDrop(itemStack)) {
             return HERBALISM;
         }
-        else if (ItemUtils.isWoodcuttingDrop(itemStack)) {
+        if (ItemUtils.isWoodcuttingDrop(itemStack)) {
             return WOODCUTTING;
         }
-        else if (ItemUtils.isMiscDrop(itemStack)) {
+        if (ItemUtils.isMiscDrop(itemStack)) {
             return MISC;
         }
 

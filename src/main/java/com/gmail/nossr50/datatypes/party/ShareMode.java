@@ -6,15 +6,18 @@ public enum ShareMode {
     NONE("nenhum"),
     EQUAL("igual"),
     RANDOM("aleatorio");
-    private final String name;
+    private final String customName;
 
-    ShareMode(String name) {
-        this.name = name;
+    ShareMode(String customName) {
+        this.customName = customName;
     }
 
     public static @Nullable ShareMode getShareMode(String string) {
         for (ShareMode shareMode : ShareMode.values()) {
-            if (shareMode.name.equalsIgnoreCase(string)) {
+            if (shareMode.customName.equalsIgnoreCase(string)) {
+                return shareMode;
+            }
+            if (shareMode.name().equalsIgnoreCase(string)) {
                 return shareMode;
             }
         }

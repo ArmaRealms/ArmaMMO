@@ -45,7 +45,7 @@ public class PartyItemShareCommand implements CommandExecutor {
 
         switch (args.length) {
             case 2:
-                ShareMode mode = ShareMode.getShareMode(args[1].toUpperCase(Locale.ENGLISH));
+                ShareMode mode = ShareMode.getShareMode(args[1]);
 
                 if (mode == null) {
                     sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "itemshare", "<nenhum | igual | aleatorio>"));

@@ -6,7 +6,6 @@ import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.party.PartyManager;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.sounds.SoundManager;
@@ -38,14 +37,14 @@ public class Party {
     private int level;
     private float xp;
 
-    private ShareMode xpShareMode   = ShareMode.NONE;
+    private ShareMode xpShareMode = ShareMode.NONE;
     private ShareMode itemShareMode = ShareMode.NONE;
 
-    private boolean shareLootDrops        = true;
-    private boolean shareMiningDrops      = true;
-    private boolean shareHerbalismDrops   = true;
+    private boolean shareLootDrops = true;
+    private boolean shareMiningDrops = true;
+    private boolean shareHerbalismDrops = true;
     private boolean shareWoodcuttingDrops = true;
-    private boolean shareMiscDrops        = true;
+    private boolean shareMiscDrops = true;
 
     public Party(String name) {
         this.name = name;
@@ -86,13 +85,11 @@ public class Party {
         return onlineMembers;
     }
 
-    public List<Player> getVisibleMembers(Player player)
-    {
+    public List<Player> getVisibleMembers(Player player) {
         ArrayList<Player> visibleMembers = new ArrayList<>();
 
-        for(Player p : onlineMembers)
-        {
-            if(player.canSee(p))
+        for (Player p : onlineMembers) {
+            if (player.canSee(p))
                 visibleMembers.add(p);
         }
 
@@ -279,50 +276,22 @@ public class Party {
     }
 
     public boolean sharingDrops(ItemShareType shareType) {
-        switch (shareType) {
-            case HERBALISM:
-                return shareHerbalismDrops;
-
-            case LOOT:
-                return shareLootDrops;
-
-            case MINING:
-                return shareMiningDrops;
-
-            case MISC:
-                return shareMiscDrops;
-
-            case WOODCUTTING:
-                return shareWoodcuttingDrops;
-
-            default:
-                return false;
-        }
+        return switch (shareType) {
+            case HERBALISM -> shareHerbalismDrops;
+            case LOOT -> shareLootDrops;
+            case MINING -> shareMiningDrops;
+            case MISC -> shareMiscDrops;
+            case WOODCUTTING -> shareWoodcuttingDrops;
+        };
     }
 
     public void setSharingDrops(ItemShareType shareType, boolean enabled) {
         switch (shareType) {
-            case HERBALISM:
-                shareHerbalismDrops = enabled;
-                break;
-
-            case LOOT:
-                shareLootDrops = enabled;
-                break;
-
-            case MINING:
-                shareMiningDrops = enabled;
-                break;
-
-            case MISC:
-                shareMiscDrops = enabled;
-                break;
-
-            case WOODCUTTING:
-                shareWoodcuttingDrops = enabled;
-                break;
-
-            default:
+            case HERBALISM -> shareHerbalismDrops = enabled;
+            case LOOT -> shareLootDrops = enabled;
+            case MINING -> shareMiningDrops = enabled;
+            case MISC -> shareMiscDrops = enabled;
+            case WOODCUTTING -> shareWoodcuttingDrops = enabled;
         }
     }
 
@@ -338,6 +307,7 @@ public class Party {
      * Makes a formatted list of party members based on the perspective of a target player
      * Players that are hidden will be shown as offline (formatted in the same way)
      * Party leader will be formatted a specific way as well
+     *
      * @param player target player to use as POV
      * @return formatted list of party members from the POV of a player
      */
@@ -345,10 +315,10 @@ public class Party {
         StringBuilder memberList = new StringBuilder();
         List<String> coloredNames = new ArrayList<>();
 
-        for(UUID playerUUID : members.keySet()) {
+        for (UUID playerUUID : members.keySet()) {
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(playerUUID);
 
-            if(offlinePlayer.isOnline() && player.canSee((Player) offlinePlayer)) {
+            if (offlinePlayer.isOnline() && player.canSee((Player) offlinePlayer)) {
                 ChatColor onlineColor = leader.getUniqueId().equals(playerUUID) ? ChatColor.GOLD : ChatColor.GREEN;
                 coloredNames.add(onlineColor + offlinePlayer.getName());
             } else {
@@ -361,8 +331,8 @@ public class Party {
     }
 
     private void buildChatMessage(@NotNull StringBuilder stringBuilder, String @NotNull [] names) {
-        for(int i = 0; i < names.length; i++) {
-            if(i + 1 >= names.length) {
+        for (int i = 0; i < names.length; i++) {
+            if (i + 1 >= names.length) {
                 stringBuilder
                         .append(names[i]);
             } else {

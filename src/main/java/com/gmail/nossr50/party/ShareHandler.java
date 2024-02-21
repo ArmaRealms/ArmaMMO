@@ -76,6 +76,9 @@ public final class ShareHandler {
         }
 
         Party party = mcMMOPlayer.getParty();
+        if (party == null) {
+            return false;
+        }
 
         if (!party.sharingDrops(dropType)) {
             return false;
@@ -113,7 +116,7 @@ public final class ShareHandler {
                         McMMOPlayer mcMMOMember = UserManager.getPlayer(member);
 
                         //Profile not loaded
-                        if(UserManager.getPlayer(member) == null)
+                        if(mcMMOMember == null)
                         {
                             continue;
                         }
@@ -130,15 +133,19 @@ public final class ShareHandler {
 
                         if (winningPlayer != null) {
                             McMMOPlayer mcMMOWinning = UserManager.getPlayer(winningPlayer);
-                            mcMMOWinning.setItemShareModifier(mcMMOWinning.getItemShareModifier() + itemWeight);
+                            if (mcMMOWinning != null) {
+                                mcMMOWinning.setItemShareModifier(mcMMOWinning.getItemShareModifier() + itemWeight);
+                            }
                         }
 
                         winningPlayer = member;
                     }
 
                     McMMOPlayer mcMMOTarget = UserManager.getPlayer(winningPlayer);
-                    mcMMOTarget.setItemShareModifier(mcMMOTarget.getItemShareModifier() - itemWeight);
-                    awardDrop(winningPlayer, newStack);
+                    if (mcMMOTarget != null && winningPlayer != null) {
+                        mcMMOTarget.setItemShareModifier(mcMMOTarget.getItemShareModifier() - itemWeight);
+                        awardDrop(winningPlayer, newStack);
+                    }
                 }
 
                 return true;
