@@ -33,7 +33,8 @@ public class SkillresetCommand implements TabExecutor {
         PrimarySkillType skill;
         switch (args.length) {
             case 1:
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 

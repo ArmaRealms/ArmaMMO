@@ -51,7 +51,8 @@ public abstract class SkillCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
@@ -59,7 +60,6 @@ public abstract class SkillCommand implements TabExecutor {
             return true;
         }
 
-        Player player = (Player) sender;
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
         if (mcMMOPlayer == null) {

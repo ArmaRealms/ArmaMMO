@@ -16,12 +16,13 @@ import java.util.List;
 public class McnotifyCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
         if (args.length == 0) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer((Player) sender);
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
             //Not Loaded yet
             if (mcMMOPlayer == null) {

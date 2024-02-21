@@ -28,7 +28,8 @@ public abstract class ExperienceCommand implements TabExecutor {
             return false;
         } else {
             if(args.length == 2 && !isSilent(args) || args.length == 3 && isSilent(args)) {
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 

@@ -1,5 +1,6 @@
 package com.gmail.nossr50.commands.player;
 
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
@@ -17,7 +18,8 @@ import java.util.List;
 public class McstatsCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
@@ -26,12 +28,11 @@ public class McstatsCommand implements TabExecutor {
         }
 
         if (args.length == 0) {
-            if (UserManager.getPlayer((Player) sender) == null) {
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
-
-            Player player = (Player) sender;
 
             if (mcMMO.p.getGeneralConfig().getStatsUseBoard() && mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                 ScoreboardManager.enablePlayerStatsScoreboard(player);
@@ -51,9 +52,9 @@ public class McstatsCommand implements TabExecutor {
             int powerLevelCap = mcMMO.p.getGeneralConfig().getPowerLevelCap();
 
             if (powerLevelCap != Integer.MAX_VALUE) {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", UserManager.getPlayer(player).getPowerLevel(), powerLevelCap));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", mcMMOPlayer.getPowerLevel(), powerLevelCap));
             } else {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", UserManager.getPlayer(player).getPowerLevel()));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", mcMMOPlayer.getPowerLevel()));
             }
 
             return true;
