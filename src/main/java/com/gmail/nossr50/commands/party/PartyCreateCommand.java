@@ -21,10 +21,7 @@ public class PartyCreateCommand implements CommandExecutor {
 
         switch (args.length) {
             case 2, 3 -> {
-
                 McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-
-
                 if (mcMMOPlayer == null) {
                     player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
@@ -40,7 +37,7 @@ public class PartyCreateCommand implements CommandExecutor {
                     return true;
                 }
 
-                mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], getPassword(args));
+                mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], args.length == 3 ? args[2] : null);
                 return true;
             }
 
@@ -49,13 +46,5 @@ public class PartyCreateCommand implements CommandExecutor {
                 return true;
             }
         }
-    }
-
-    private String getPassword(String[] args) {
-        if (args.length == 3) {
-            return args[2];
-        }
-
-        return null;
     }
 }

@@ -354,12 +354,9 @@ public final class PartyManager {
     public void createParty(@NotNull McMMOPlayer mcMMOPlayer, @NotNull String partyName, @Nullable String password) {
         requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
         requireNonNull(partyName, "partyName cannot be null!");
-        requireNonNull(password, "password cannot be null!");
 
         Player player = mcMMOPlayer.getPlayer();
-
         Party party = new Party(new PartyLeader(player.getUniqueId(), player.getName()), partyName.replace(".", ""), password);
-
         if (password != null) {
             player.sendMessage(LocaleLoader.getString("Party.Password.Set", password));
         }
