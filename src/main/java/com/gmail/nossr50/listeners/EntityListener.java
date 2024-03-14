@@ -24,6 +24,7 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.random.RandomChanceUtil;
+import com.gmail.nossr50.util.skills.CombatProcessor;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.SkillActivationType;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
@@ -404,7 +405,7 @@ public class EntityListener implements Listener {
             return;
         }
 
-        CombatUtils.processCombatAttack(event, attacker, target);
+        CombatProcessor.processCombatAttack(event, attacker, target);
         CombatUtils.handleHealthbars(attacker, target, event.getFinalDamage(), pluginRef);
     }
 
