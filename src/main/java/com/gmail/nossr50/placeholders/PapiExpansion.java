@@ -38,7 +38,7 @@ public class PapiExpansion extends PlaceholderExpansion {
     public static final String IS_EXP_EVENT_ACTIVE = "is_xp_event_active";
     public static final String MCABILITY = "mcability";
     public static final String MCNOTIFY = "mcnotify";
-    public static final String TOP_POWER_LEVEL = "top_power_level";
+    public static final String TOP_POWER_LEVEL = "top_power_";
     public static final String NAME = "name";
     public static final String LEVEL = "level";
 
@@ -81,9 +81,11 @@ public class PapiExpansion extends PlaceholderExpansion {
         if (params.startsWith(TOP_POWER_LEVEL)) {
             String sub = params.substring(TOP_POWER_LEVEL.length());
             String[] split = sub.split("_");
-            if (split.length != 2) return null;
-            String type = split[1];
-            String rank = split[0];
+            if (split.length != 2) {
+                return "top param not valid. Use top_power_name_0 or top_power_level_0.";
+            }
+            String type = split[0];
+            String rank = split[1];
             AtomicReference<String> name = new AtomicReference<>("");
             AtomicReference<String> level = new AtomicReference<>("");
             mcMMO.p.getFoliaLib().getImpl().runAsync(wrappedTask -> {
@@ -96,10 +98,13 @@ public class PapiExpansion extends PlaceholderExpansion {
                 PlayerStat playerStat = topPowerLevel.get(index);
                 name.set(playerStat.name);
                 level.set(String.valueOf(playerStat.statVal));
+                mcMMO.p.getLogger().info("Top power level: " + name.get() + " " + level.get());
             });
             if (type.equalsIgnoreCase(NAME)) {
+                mcMMO.p.getLogger().info("Top power level: " + name.get());
                 return name.get();
             } else if (type.equalsIgnoreCase(LEVEL)) {
+                mcMMO.p.getLogger().info("Top power level: " + level.get());
                 return level.get();
             }
         }
