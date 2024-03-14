@@ -59,7 +59,7 @@ public class TamingManager extends SkillManager {
     private void initStaticCaches() {
         //TODO: Temporary static cache, will be changed in 2.2
         //This is shared between instances of TamingManager
-        if(summoningItems == null) {
+        if (summoningItems == null) {
             summoningItems = new HashMap<>();
 
             summoningItems.put(mcMMO.p.getGeneralConfig().getTamingCOTWMaterial(CallOfTheWildType.CAT.getConfigEntityTypeEntry()), CallOfTheWildType.CAT);
@@ -69,10 +69,10 @@ public class TamingManager extends SkillManager {
 
         //TODO: Temporary static cache, will be changed in 2.2
         //This is shared between instances of TamingManager
-        if(cotwSummonDataProperties == null) {
+        if (cotwSummonDataProperties == null) {
             cotwSummonDataProperties = new HashMap<>();
 
-            for(CallOfTheWildType callOfTheWildType : CallOfTheWildType.values()) {
+            for (CallOfTheWildType callOfTheWildType : CallOfTheWildType.values()) {
                 Material itemSummonMaterial = mcMMO.p.getGeneralConfig().getTamingCOTWMaterial(callOfTheWildType.getConfigEntityTypeEntry());
                 int itemAmountRequired = mcMMO.p.getGeneralConfig().getTamingCOTWCost(callOfTheWildType.getConfigEntityTypeEntry());
                 int entitiesSummonedPerCOTW = mcMMO.p.getGeneralConfig().getTamingCOTWAmount(callOfTheWildType.getConfigEntityTypeEntry());
@@ -116,14 +116,14 @@ public class TamingManager extends SkillManager {
     }
 
     public boolean canUseGore() {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_GORE))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_GORE))
             return false;
 
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.TAMING_GORE);
     }
 
     public boolean canUseBeastLore() {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_BEAST_LORE))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_BEAST_LORE))
             return false;
 
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.TAMING_BEAST_LORE);
@@ -141,7 +141,7 @@ public class TamingManager extends SkillManager {
     /**
      * Apply the Fast Food Service ability.
      *
-     * @param wolf The wolf using the ability
+     * @param wolf   The wolf using the ability
      * @param damage The damage being absorbed by the wolf
      */
     public void fastFoodService(@NotNull Wolf wolf, double damage) {
@@ -184,7 +184,7 @@ public class TamingManager extends SkillManager {
      * Summon an ocelot to your side.
      */
     public void summonOcelot() {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
             return;
 
         if (!Permissions.callOfTheWild(getPlayer(), EntityType.OCELOT)) {
@@ -198,7 +198,7 @@ public class TamingManager extends SkillManager {
      * Summon a wolf to your side.
      */
     public void summonWolf() {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
             return;
 
         if (!Permissions.callOfTheWild(getPlayer(), EntityType.WOLF)) {
@@ -212,7 +212,7 @@ public class TamingManager extends SkillManager {
      * Summon a horse to your side.
      */
     public void summonHorse() {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_CALL_OF_THE_WILD))
             return;
 
         if (!Permissions.callOfTheWild(getPlayer(), EntityType.HORSE)) {
@@ -225,11 +225,10 @@ public class TamingManager extends SkillManager {
     /**
      * Handle the Beast Lore ability.
      *
-     * @param target The entity to examine
+     * @param beast The entity to examine
      */
-    public void beastLore(LivingEntity target) {
+    public void beastLore(@NotNull Tameable beast) {
         Player player = getPlayer();
-        Tameable beast = (Tameable) target;
 
         String message = LocaleLoader.getString("Combat.BeastLore") + " ";
 
@@ -237,13 +236,13 @@ public class TamingManager extends SkillManager {
             message = message.concat(LocaleLoader.getString("Combat.BeastLoreOwner", beast.getOwner().getName()) + " ");
         }
 
-        message = message.concat(LocaleLoader.getString("Combat.BeastLoreHealth", target.getHealth(), target.getMaxHealth()));
+        message = message.concat(LocaleLoader.getString("Combat.BeastLoreHealth", beast.getHealth(), beast.getMaxHealth()));
 
         // Bred mules & donkeys can actually have horse-like stats, but llamas cannot.
         if (beast instanceof AbstractHorse horseLikeCreature && !(beast instanceof Llama)) {
             AttributeInstance jumpAttribute = horseLikeCreature.getAttribute(Attribute.HORSE_JUMP_STRENGTH);
 
-            if(jumpAttribute != null) {
+            if (jumpAttribute != null) {
                 double jumpStrength = jumpAttribute.getValue();
                 // Taken from https://minecraft.wiki/w/Horse#Jump_strength
                 jumpStrength = -0.1817584952 * Math.pow(jumpStrength, 3) + 3.689713992 * Math.pow(jumpStrength, 2) + 2.128599134 * jumpStrength - 0.343930367;
@@ -267,10 +266,10 @@ public class TamingManager extends SkillManager {
     }
 
     public void pummel(LivingEntity target, Wolf wolf) {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_PUMMEL))
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_PUMMEL))
             return;
 
-        if(!RandomChanceUtil.checkRandomChanceExecutionSuccess(new RandomChanceSkillStatic(mcMMO.p.getAdvancedConfig().getPummelChance(), getPlayer(), SubSkillType.TAMING_PUMMEL)))
+        if (!RandomChanceUtil.checkRandomChanceExecutionSuccess(new RandomChanceSkillStatic(mcMMO.p.getAdvancedConfig().getPummelChance(), getPlayer(), SubSkillType.TAMING_PUMMEL)))
             return;
 
         ParticleEffectUtils.playGreaterImpactEffect(target);
@@ -285,13 +284,8 @@ public class TamingManager extends SkillManager {
     }
 
     public void attackTarget(LivingEntity target) {
-        if(target instanceof Tameable tameable)
-        {
-            if(tameable.getOwner() == getPlayer())
-            {
-                return;
-            }
-        }
+        if (target instanceof Tameable tameable && (tameable.getOwner() == getPlayer())) return;
+
         double range = 5;
         Player player = getPlayer();
 
@@ -313,7 +307,7 @@ public class TamingManager extends SkillManager {
 
     private void processCallOfTheWild() {
         //Prevent summoning too many things accidentally if a player holds down the button
-        if(lastSummonTimeStamp + 150 > System.currentTimeMillis()) {
+        if (lastSummonTimeStamp + 150 > System.currentTimeMillis()) {
             return;
         } else {
             lastSummonTimeStamp = System.currentTimeMillis();
@@ -323,7 +317,7 @@ public class TamingManager extends SkillManager {
         ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
 
         //Check if the item the player is currently holding is a COTW item
-        if(isCOTWItem(itemInMainHand)) {
+        if (isCOTWItem(itemInMainHand)) {
             //Get the summoning type
             CallOfTheWildType callOfTheWildType = summoningItems.get(itemInMainHand.getType());
             TamingSummon tamingSummon = cotwSummonDataProperties.get(callOfTheWildType);
@@ -332,7 +326,7 @@ public class TamingManager extends SkillManager {
             int amountSummoned = 0;
 
             //Check to see if players have the correct amount of the item required to summon
-            if(itemInMainHand.getAmount() >= tamingSummon.getItemAmountRequired()) {
+            if (itemInMainHand.getAmount() >= tamingSummon.getItemAmountRequired()) {
                 //Initial Spawn location
                 Location spawnLocation = Misc.getLocationOffset(player.getLocation(), 1);
 
@@ -364,7 +358,7 @@ public class TamingManager extends SkillManager {
                 }
 
                 //Remove items from the player if they had at least one entity summoned successfully
-                if(amountSummoned >= 1) {
+                if (amountSummoned >= 1) {
                     //Remove the items used to summon
                     int itemAmountAfterPayingCost = itemInMainHand.getAmount() - tamingSummon.getItemAmountRequired();
                     itemInMainHand.setAmount(itemAmountAfterPayingCost);
@@ -380,7 +374,7 @@ public class TamingManager extends SkillManager {
     }
 
     private void spawnCOTWEntity(CallOfTheWildType callOfTheWildType, Location spawnLocation, EntityType entityType) {
-        switch(callOfTheWildType) {
+        switch (callOfTheWildType) {
             case CAT:
                 //Entity type is needed for cats because in 1.13 and below we spawn ocelots, in 1.14 and above we spawn cats
                 spawnCat(spawnLocation, entityType);
@@ -423,11 +417,11 @@ public class TamingManager extends SkillManager {
         addToTracker(callOfWildEntity, CallOfTheWildType.CAT);
 
         //Randomize the cat
-        if(callOfWildEntity instanceof Ocelot) {
+        if (callOfWildEntity instanceof Ocelot) {
             int numberOfTypes = Ocelot.Type.values().length;
             ((Ocelot) callOfWildEntity).setCatType(Ocelot.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
             ((Ocelot) callOfWildEntity).setAdult();
-        } else if(callOfWildEntity instanceof Cat) {
+        } else if (callOfWildEntity instanceof Cat) {
             int numberOfTypes = Cat.Type.values().length;
             ((Cat) callOfWildEntity).setCatType(Cat.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
             ((Cat) callOfWildEntity).setAdult();
@@ -477,6 +471,7 @@ public class TamingManager extends SkillManager {
 
     /**
      * Whether the itemstack is used for COTW
+     *
      * @param itemStack target ItemStack
      * @return true if it is used for any COTW
      */
