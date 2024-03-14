@@ -17,8 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 
 public class PapiExpansion extends PlaceholderExpansion {
     public static final String SKILL_LEVEL = "level_";
@@ -41,6 +39,7 @@ public class PapiExpansion extends PlaceholderExpansion {
     public static final String TOP_POWER_LEVEL = "top_power_";
     public static final String NAME = "name";
     public static final String LEVEL = "level";
+    public List<PlayerStat> topPowerLevel = getTopPowerLevel();
 
     public PapiExpansion() {
     }
@@ -86,26 +85,16 @@ public class PapiExpansion extends PlaceholderExpansion {
             }
             String type = split[0];
             String rank = split[1];
-            AtomicReference<String> name = new AtomicReference<>("");
-            AtomicReference<String> level = new AtomicReference<>("");
-            mcMMO.p.getFoliaLib().getImpl().runAsync(wrappedTask -> {
-                List<PlayerStat> topPowerLevel = getTopPowerLevel();
-                int index = Integer.parseInt(rank);
-
-                if (topPowerLevel.size() < index) {
-                    index = topPowerLevel.size() - 1;
-                }
-                PlayerStat playerStat = topPowerLevel.get(index);
-                name.set(playerStat.name);
-                level.set(String.valueOf(playerStat.statVal));
-                mcMMO.p.getLogger().info("Top power level: " + name.get() + " " + level.get());
-            });
             if (type.equalsIgnoreCase(NAME)) {
-                mcMMO.p.getLogger().info("Top power level: " + name.get());
-                return name.get();
+                if (Integer.parseInt(rank) >= topPowerLevel.size()) {
+                    return "No player found at that rank.";
+                }
+                return topPowerLevel.get(Integer.parseInt(rank)).name;
             } else if (type.equalsIgnoreCase(LEVEL)) {
-                mcMMO.p.getLogger().info("Top power level: " + level.get());
-                return level.get();
+                if (Integer.parseInt(rank) >= topPowerLevel.size()) {
+                    return "No player found at that rank.";
+                }
+                return String.valueOf(topPowerLevel.get(Integer.parseInt(rank)).statVal);
             }
         }
 
@@ -180,7 +169,8 @@ public class PapiExpansion extends PlaceholderExpansion {
         return null;
     }
 
-    private @NotNull List<PlayerStat> getTopPowerLevel() {
+    @NotNull
+    private List<PlayerStat> getTopPowerLevel() {
         return mcMMO.getDatabaseManager().readLeaderboard(null, 1, 10);
     }
 
