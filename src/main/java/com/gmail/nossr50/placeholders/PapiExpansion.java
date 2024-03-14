@@ -2,6 +2,7 @@ package com.gmail.nossr50.placeholders;
 
 import com.gmail.nossr50.api.ExperienceAPI;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
+import com.gmail.nossr50.datatypes.database.PlayerStat;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -15,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 
 public class PapiExpansion extends PlaceholderExpansion {
     public static final String SKILL_LEVEL = "level_";
@@ -34,6 +36,10 @@ public class PapiExpansion extends PlaceholderExpansion {
     public static final String IS_EXP_EVENT_ACTIVE = "is_xp_event_active";
     public static final String MCABILITY = "mcability";
     public static final String MCNOTIFY = "mcnotify";
+    public static final String TOP_POWER_LEVEL = "top_power_";
+    public static final String NAME = "name";
+    public static final String LEVEL = "level";
+    public List<PlayerStat> topPowerLevel = getTopPowerLevel();
 
     public PapiExpansion() {
     }
@@ -71,8 +77,37 @@ public class PapiExpansion extends PlaceholderExpansion {
             return String.valueOf(mcMMO.p.getGeneralConfig().getPowerLevelCap());
         }
 
+        if (params.startsWith(TOP_POWER_LEVEL)) {
+            String sub = params.substring(TOP_POWER_LEVEL.length());
+            String[] split = sub.split("_");
+            if (split.length != 2) {
+                return "top param not valid. Use top_power_name_0 or top_power_level_0.";
+            }
+            String type = split[0];
+            String rank = split[1];
+            if (type.equalsIgnoreCase(NAME)) {
+                if (Integer.parseInt(rank) >= topPowerLevel.size()) {
+                    return "No player found at that rank.";
+                }
+                return topPowerLevel.get(Integer.parseInt(rank)).name;
+            } else if (type.equalsIgnoreCase(LEVEL)) {
+                if (Integer.parseInt(rank) >= topPowerLevel.size()) {
+                    return "No player found at that rank.";
+                }
+                return String.valueOf(topPowerLevel.get(Integer.parseInt(rank)).statVal);
+            }
+        }
+
         final McMMOPlayer user = UserManager.getPlayer(player);
         if (user == null) return null;
+
+        //Player configuration
+        if (params.equalsIgnoreCase(MCABILITY)) {
+            return user.getAbilityUse() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
+        }
+        if (params.equalsIgnoreCase(MCNOTIFY)) {
+            return user.useChatNotifications() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
+        }
 
         if (params.startsWith(SKILL_LEVEL)) {
             PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_LEVEL.length()).toUpperCase());
@@ -115,14 +150,6 @@ public class PapiExpansion extends PlaceholderExpansion {
             return String.valueOf(user.getPowerLevel());
         }
 
-        //Player configuration
-        if (params.equalsIgnoreCase(MCABILITY)) {
-            return user.getAbilityUse() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
-        }
-        if (params.equalsIgnoreCase(MCNOTIFY)) {
-            return user.useChatNotifications() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
-        }
-
         //Party placeholders
         final Party party = user.getParty();
 
@@ -140,6 +167,11 @@ public class PapiExpansion extends PlaceholderExpansion {
         }
 
         return null;
+    }
+
+    @NotNull
+    private List<PlayerStat> getTopPowerLevel() {
+        return mcMMO.getDatabaseManager().readLeaderboard(null, 1, 10);
     }
 
 }

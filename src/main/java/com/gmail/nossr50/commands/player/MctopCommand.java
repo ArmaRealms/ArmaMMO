@@ -78,12 +78,12 @@ public class MctopCommand implements TabExecutor {
             return;
         }
 
-        if (sender instanceof Player) {
+        if (sender instanceof Player player) {
             if (!CommandUtils.hasPlayerDataKey(sender)) {
                 return;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(sender.getName());
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
             long cooldownMillis = Math.max(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
             if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
@@ -96,11 +96,11 @@ public class MctopCommand implements TabExecutor {
                 return;
             }
 
-            if (((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
+            if (player.hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Database.Processing"));
                 return;
             } else {
-                ((Player) sender).setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
+                player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
             mcMMOPlayer.actualizeDatabaseATS();
