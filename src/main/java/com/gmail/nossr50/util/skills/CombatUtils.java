@@ -11,6 +11,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.metadata.MobMetaFlagType;
 import com.gmail.nossr50.metadata.MobMetadataService;
 import com.gmail.nossr50.runnables.skills.AwardCombatXpTask;
+import com.gmail.nossr50.skills.acrobatics.AcrobaticsManager;
 import com.gmail.nossr50.skills.archery.ArcheryManager;
 import com.gmail.nossr50.skills.axes.AxesManager;
 import com.gmail.nossr50.skills.swords.SwordsManager;
@@ -24,6 +25,7 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AnimalTamer;
@@ -42,12 +44,14 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.projectiles.ProjectileSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public final class CombatUtils {
+    private static final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
 
     private CombatUtils() {
     }
@@ -288,6 +292,107 @@ public final class CombatUtils {
                 "Final Damage: " + boostedDamage);
         //Clean data
         cleanupArrowMetadata(arrow);
+    }
+
+    /**
+     * Apply combat modifiers and process and XP gain.
+     *
+     * @param event The event to run the combat checks on.
+     */
+    public static void processCombatAttack(@NotNull EntityDamageByEntityEvent event, @NotNull Entity painSourceRoot, @NotNull LivingEntity target) {
+        Entity painSource = event.getDamager();
+
+        if (target instanceof Player player) {
+            if (experienceConfig.isNPCInteractionPrevented() && (Misc.isNPCEntityExcludingVillagers(target))) return;
+            if (!UserManager.hasPlayerDataKey(player)) return;
+
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) return;
+
+            AcrobaticsManager acrobaticsManager = mcMMOPlayer.getAcrobaticsManager();
+            if (acrobaticsManager.canDodge(target)) {
+                event.setDamage(acrobaticsManager.dodgeCheck(painSourceRoot, event.getDamage()));
+            }
+
+            if (ItemUtils.isSword(player.getInventory().getItemInMainHand())) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.SWORDS, target)) {
+                    return;
+                }
+
+                SwordsManager swordsManager = mcMMOPlayer.getSwordsManager();
+                if (swordsManager.canUseCounterAttack(painSource)) {
+                    swordsManager.counterAttackChecks((LivingEntity) painSource, event.getDamage());
+                }
+            }
+        }
+
+        if (painSourceRoot instanceof Player player && painSource instanceof Player) {
+            if (!UserManager.hasPlayerDataKey(player)) return;
+
+            ItemStack heldItem = player.getInventory().getItemInMainHand();
+
+            if (target instanceof Tameable tamedEntity) {
+                if (heldItem.getType() == Material.BONE) {
+                    McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                    if (mcMMOPlayer == null) return;
+                    TamingManager tamingManager = mcMMOPlayer.getTamingManager();
+
+                    if (tamingManager.canUseBeastLore()) {
+                        tamingManager.beastLore(tamedEntity);
+                        event.setCancelled(true);
+                        return;
+                    }
+                }
+
+                if (CombatUtils.isFriendlyPet(player, tamedEntity)) return;
+            }
+
+            if (ItemUtils.isSword(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.SWORDS, target)) return;
+
+                if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.SWORDS)) {
+                    CombatUtils.processSwordCombat(target, player, event);
+                }
+            } else if (ItemUtils.isAxe(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.AXES, target)) return;
+
+                if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.AXES)) {
+                    CombatUtils.processAxeCombat(target, player, event);
+                }
+            } else if (ItemUtils.isUnarmed(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.UNARMED, target)) return;
+
+                if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.UNARMED)) {
+                    CombatUtils.processUnarmedCombat(target, player, event);
+                }
+            }
+        } else if (painSource instanceof Wolf wolf) {
+            AnimalTamer tamer = wolf.getOwner();
+
+            if (tamer instanceof Player master && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.TAMING, target) && (!Misc.isNPCEntityExcludingVillagers(master) && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(master, PrimarySkillType.TAMING))) {
+                CombatUtils.processTamingCombat(target, master, wolf, event);
+            }
+        } else if (painSource instanceof Projectile arrow) {
+            ProjectileSource projectileSource = arrow.getShooter();
+
+            if (projectileSource instanceof Player player && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.ARCHERY, target)) {
+
+                if (!Misc.isNPCEntityExcludingVillagers(player) && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.ARCHERY)) {
+                    CombatUtils.processArcheryCombat(target, player, event, arrow);
+                } else {
+                    //Cleanup Arrow
+                    CombatUtils.cleanupArrowMetadata(arrow);
+                }
+
+                if (target.getType() != EntityType.CREEPER && !Misc.isNPCEntityExcludingVillagers(player) && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.TAMING)) {
+                    McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                    if (mcMMOPlayer == null) return;
+
+                    TamingManager tamingManager = mcMMOPlayer.getTamingManager();
+                    tamingManager.attackTarget(target);
+                }
+            }
+        }
     }
 
     /**
@@ -544,7 +649,6 @@ public final class CombatUtils {
     public static void applyAbilityAoE(@NotNull Player attacker, @NotNull LivingEntity target, double damage, @NotNull PrimarySkillType type) {
         int numberOfTargets = getTier(attacker.getInventory().getItemInMainHand()); // The higher the weapon tier, the more targets you hit.
         double damageAmount = Math.max(damage, 1);
-        ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
 
         target.getNearbyEntities(2.5, 2.5, 2.5).stream()
                 .filter(entity -> !(experienceConfig.isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(entity)))
@@ -605,7 +709,7 @@ public final class CombatUtils {
         XPGainReason xpGainReason;
 
         if (target instanceof Player defender) {
-            if (!ExperienceConfig.getInstance().getExperienceGainsPlayerVersusPlayerEnabled() ||
+            if (!experienceConfig.getExperienceGainsPlayerVersusPlayerEnabled() ||
                     (mcMMO.p.getPartyConfig().isPartyEnabled() && mcMMO.p.getPartyManager().inSameParty(mcMMOPlayer.getPlayer(), (Player) target))) {
                 return;
             }
@@ -613,27 +717,27 @@ public final class CombatUtils {
             xpGainReason = XPGainReason.PVP;
 
             if (defender.isOnline() && SkillUtils.cooldownExpired(mcMMOPlayer.getRespawnATS(), Misc.PLAYER_RESPAWN_COOLDOWN_SECONDS)) {
-                baseXP = 20 * ExperienceConfig.getInstance().getPlayerVersusPlayerXP();
+                baseXP = 20 * experienceConfig.getPlayerVersusPlayerXP();
             }
         } else {
             if (mcMMO.getModManager().isCustomEntity(target)) {
                 baseXP = mcMMO.getModManager().getEntity(target).getXpMultiplier();
             } else if (target instanceof Animals) {
                 EntityType type = target.getType();
-                baseXP = ExperienceConfig.getInstance().getAnimalsXP(type);
+                baseXP = experienceConfig.getAnimalsXP(type);
             } else if (target instanceof Monster) {
                 EntityType type = target.getType();
-                baseXP = ExperienceConfig.getInstance().getCombatXP(type);
+                baseXP = experienceConfig.getCombatXP(type);
             } else {
                 EntityType type = target.getType();
 
-                if (ExperienceConfig.getInstance().hasCombatXP(type)) {
+                if (experienceConfig.hasCombatXP(type)) {
                     if (target instanceof IronGolem ironGolem) {
                         if (!(ironGolem.isPlayerCreated())) {
-                            baseXP = ExperienceConfig.getInstance().getCombatXP(type);
+                            baseXP = experienceConfig.getCombatXP(type);
                         }
                     } else {
-                        baseXP = ExperienceConfig.getInstance().getCombatXP(type);
+                        baseXP = experienceConfig.getCombatXP(type);
                     }
                 } else {
                     baseXP = 1.0;
@@ -644,15 +748,15 @@ public final class CombatUtils {
             if (getMobMetadataService().hasMobFlag(MobMetaFlagType.COTW_SUMMONED_MOB, target)) {
                 baseXP = 0;
             } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.MOB_SPAWNER_MOB, target) || target.hasMetadata("ES")) {
-                baseXP *= ExperienceConfig.getInstance().getSpawnedMobXpMultiplier();
+                baseXP *= experienceConfig.getSpawnedMobXpMultiplier();
             } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.NETHER_PORTAL_MOB, target)) {
-                baseXP *= ExperienceConfig.getInstance().getNetherPortalXpMultiplier();
+                baseXP *= experienceConfig.getNetherPortalXpMultiplier();
             } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.EGG_MOB, target)) {
-                baseXP *= ExperienceConfig.getInstance().getEggXpMultiplier();
+                baseXP *= experienceConfig.getEggXpMultiplier();
             } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.PLAYER_BRED_MOB, target)) {
-                baseXP *= ExperienceConfig.getInstance().getBredMobXpMultiplier();
+                baseXP *= experienceConfig.getBredMobXpMultiplier();
             } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.PLAYER_TAMED_MOB, target)) {
-                baseXP *= ExperienceConfig.getInstance().getTamedMobXpMultiplier();
+                baseXP *= experienceConfig.getTamedMobXpMultiplier();
             }
 
             baseXP *= 10;
