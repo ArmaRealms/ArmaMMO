@@ -61,24 +61,13 @@ public class PapiExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean canRegister() {
-        return true;
-    }
-
-    @Override
     public boolean persist() {
-        return true;
-    }
-
-    @Override
-    public boolean register() {
         return true;
     }
 
     @Override
     @Nullable
     public String onPlaceholderRequest(final Player player, @NotNull final String params) {
-
         // Non player-specific placeholders
         if (params.equalsIgnoreCase(IS_EXP_EVENT_ACTIVE)) {
             return mcMMO.p.isXPEventEnabled() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
