@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class PapiExpansion extends PlaceholderExpansion {
+    private final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
     public static final String SKILL_LEVEL = "level_";
     public static final String SKILL_EXP_NEEDED = "xp_needed_";
     public static final String SKILL_EXP_REMAINING = "xp_remaining_";
@@ -60,8 +61,18 @@ public class PapiExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String getRequiredPlugin() {
-        return "mcMMO";
+    public boolean canRegister() {
+        return true;
+    }
+
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
+    public boolean register() {
+        return true;
     }
 
     @Override
@@ -72,9 +83,9 @@ public class PapiExpansion extends PlaceholderExpansion {
         if (params.equalsIgnoreCase(IS_EXP_EVENT_ACTIVE)) {
             return mcMMO.p.isXPEventEnabled() ? PlaceholderAPIPlugin.booleanTrue() : PlaceholderAPIPlugin.booleanFalse();
         } else if (params.equalsIgnoreCase(EXP_RATE)) {
-            return String.valueOf(ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
+            return String.valueOf(experienceConfig.getExperienceGainsGlobalMultiplier());
         } else if (params.equalsIgnoreCase(POWER_LEVEL_CAP)) {
-            return String.valueOf(mcMMO.p.getGeneralConfig().getPowerLevelCap());
+            return StringUtils.formatNumber(mcMMO.p.getGeneralConfig().getPowerLevelCap());
         }
 
         if (params.startsWith(TOP_POWER_LEVEL)) {
@@ -94,7 +105,7 @@ public class PapiExpansion extends PlaceholderExpansion {
                 if (Integer.parseInt(rank) >= topPowerLevel.size()) {
                     return "No player found at that rank.";
                 }
-                return String.valueOf(topPowerLevel.get(Integer.parseInt(rank)).statVal);
+                return StringUtils.formatNumber(topPowerLevel.get(Integer.parseInt(rank)).statVal);
             }
         }
 
@@ -111,19 +122,19 @@ public class PapiExpansion extends PlaceholderExpansion {
 
         if (params.startsWith(SKILL_LEVEL)) {
             PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_LEVEL.length()).toUpperCase());
-            return skill == null ? null : String.valueOf(user.getSkillLevel(skill));
+            return skill == null ? null : StringUtils.formatNumber(user.getSkillLevel(skill));
         } else if (params.startsWith(SKILL_EXP_NEEDED)) {
             PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_NEEDED.length()).toUpperCase());
-            return skill == null ? null : String.valueOf(user.getXpToLevel(skill));
+            return skill == null ? null : StringUtils.formatNumber(user.getXpToLevel(skill));
         } else if (params.startsWith(SKILL_EXP_REMAINING)) {
             PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_REMAINING.length()).toUpperCase());
-            return skill == null ? null : String.valueOf(user.getXpToLevel(skill) - user.getSkillXpLevel(skill));
+            return skill == null ? null : StringUtils.formatNumber(user.getXpToLevel(skill) - user.getSkillXpLevel(skill));
         } else if (params.startsWith(SKILL_EXP)) {
             PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP.length()).toUpperCase());
-            return skill == null ? null : String.valueOf(user.getSkillXpLevel(skill));
+            return skill == null ? null : StringUtils.formatNumber(user.getSkillXpLevel(skill));
         } else if (params.startsWith(SKILL_RANK)) {
             try {
-                return String.valueOf(ExperienceAPI.getPlayerRankSkill(player.getUniqueId(), StringUtils.getCapitalized(params.substring(SKILL_RANK.length()))));
+                return StringUtils.formatNumber(ExperienceAPI.getPlayerRankSkill(player.getUniqueId(), StringUtils.getCapitalized(params.substring(SKILL_RANK.length()))));
             } catch (Exception ex) {
                 return null;
             }
@@ -132,7 +143,7 @@ public class PapiExpansion extends PlaceholderExpansion {
             if (skill == null) return null;
             double modifier = 1.0F;
             if (Permissions.customXpBoost(player, skill))
-                modifier = ExperienceConfig.getInstance().getCustomXpPerkBoost();
+                modifier = experienceConfig.getCustomXpPerkBoost();
             else if (Permissions.quadrupleXp(player, skill))
                 modifier = 4;
             else if (Permissions.tripleXp(player, skill))
@@ -147,7 +158,7 @@ public class PapiExpansion extends PlaceholderExpansion {
                 modifier = 1.1;
             return String.valueOf(modifier);
         } else if (params.equalsIgnoreCase(POWER_LEVEL)) {
-            return String.valueOf(user.getPowerLevel());
+            return StringUtils.formatNumber(user.getPowerLevel());
         }
 
         //Party placeholders
@@ -163,7 +174,7 @@ public class PapiExpansion extends PlaceholderExpansion {
         } else if (params.equalsIgnoreCase(PARTY_LEADER)) {
             return (party == null) ? "" : party.getLeader().getPlayerName();
         } else if (params.equalsIgnoreCase(PARTY_SIZE)) {
-            return (party == null) ? "" : String.valueOf(party.getMembers().size());
+            return (party == null) ? "" : StringUtils.formatNumber(party.getMembers().size());
         }
 
         return null;
