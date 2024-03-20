@@ -26,11 +26,11 @@ public class MctopCommand implements TabExecutor {
         PrimarySkillType skill = null;
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 display(1, skill, sender, command);
                 return true;
-
-            case 1:
+            }
+            case 1 -> {
                 if (StringUtils.isInt(args[0])) {
                     display(Math.abs(Integer.parseInt(args[0])), skill, sender, command);
                     return true;
@@ -44,8 +44,8 @@ public class MctopCommand implements TabExecutor {
 
                 display(1, skill, sender, command);
                 return true;
-
-            case 2:
+            }
+            case 2 -> {
                 if (CommandUtils.isInvalidInteger(sender, args[1])) {
                     return true;
                 }
@@ -58,9 +58,10 @@ public class MctopCommand implements TabExecutor {
 
                 display(Math.abs(Integer.parseInt(args[1])), skill, sender, command);
                 return true;
-
-            default:
+            }
+            default -> {
                 return false;
+            }
         }
     }
 
@@ -84,6 +85,10 @@ public class MctopCommand implements TabExecutor {
             }
 
             McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
+                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                return;
+            }
             long cooldownMillis = Math.max(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
             if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {

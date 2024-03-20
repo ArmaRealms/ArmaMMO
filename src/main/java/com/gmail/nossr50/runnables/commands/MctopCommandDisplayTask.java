@@ -7,6 +7,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
+import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -73,9 +74,9 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             // 01. Playername - skill value
             // 12. Playername - skill value
             if (sender instanceof Player) {
-                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name, ChatColor.WHITE, stat.statVal));
+                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name, ChatColor.WHITE, StringUtils.formatNumber(stat.statVal)));
             } else {
-                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name, stat.statVal));
+                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name, StringUtils.formatNumber(stat.statVal)));
             }
 
             place++;
