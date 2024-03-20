@@ -14,6 +14,7 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -179,20 +180,21 @@ public final class CommandUtils {
         printMiscSkills(player, player);
     }
 
-    public static String displaySkill(PlayerProfile profile, PrimarySkillType skill) {
+    public static @NotNull String displaySkill(PlayerProfile profile, PrimarySkillType skill) {
         if (SkillTools.isChildSkill(skill)) {
-            return LocaleLoader.getString("Skills.ChildStats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", profile.getSkillLevel(skill));
+            return LocaleLoader.getString("Skills.ChildStats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)));
         }
         if (profile.getSkillLevel(skill) == mcMMO.p.getSkillTools().getLevelCap(skill)) {
-            return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", profile.getSkillLevel(skill), profile.getSkillXpLevel(skill), LocaleLoader.getString("Skills.MaxXP"));
+            return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)), StringUtils.formatNumber(profile.getSkillXpLevel(skill)), LocaleLoader.getString("Skills.MaxXP"));
         }
-        return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", profile.getSkillLevel(skill), profile.getSkillXpLevel(skill), profile.getXpToLevel(skill));
+        return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)), StringUtils.formatNumber(profile.getSkillXpLevel(skill)), StringUtils.formatNumber(profile.getXpToLevel(skill)));
     }
 
     private static void printGroupedSkillData(Player inspectTarget, CommandSender display, String header, List<PrimarySkillType> skillGroup) {
-        if (UserManager.getPlayer(inspectTarget) == null) return;
+        var mcMMOPlayer = UserManager.getPlayer(inspectTarget);
+        if (mcMMOPlayer == null) return;
 
-        PlayerProfile profile = UserManager.getPlayer(inspectTarget).getProfile();
+        PlayerProfile profile = mcMMOPlayer.getProfile();
 
         List<String> displayData = new ArrayList<>();
         displayData.add(header);

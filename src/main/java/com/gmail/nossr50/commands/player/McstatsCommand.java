@@ -6,6 +6,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
+import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -51,9 +52,9 @@ public class McstatsCommand implements TabExecutor {
             int powerLevelCap = mcMMO.p.getGeneralConfig().getPowerLevelCap();
 
             if (powerLevelCap != Integer.MAX_VALUE) {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", mcMMOPlayer.getPowerLevel(), powerLevelCap));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel()), powerLevelCap));
             } else {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", mcMMOPlayer.getPowerLevel()));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel())));
             }
 
             return true;
