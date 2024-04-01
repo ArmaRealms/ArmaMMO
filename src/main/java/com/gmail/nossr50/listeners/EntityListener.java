@@ -72,6 +72,7 @@ import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ExplosionPrimeEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PotionSplashEvent;
+import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -129,8 +130,7 @@ public class EntityListener implements Listener {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld())) return;
 
-        if(event.getEntity() instanceof Player player)
-        {
+        if (event.getEntity() instanceof Player) {
             Entity projectile = event.getProjectile();
 
             //Should be noted that there are API changes regarding Arrow from 1.13.2 to current versions of the game
@@ -169,19 +169,19 @@ public class EntityListener implements Listener {
                 return;
             }
 
-            if(event.getEntity() instanceof Arrow arrow) {
+            if (event.getEntity() instanceof Arrow arrow) {
                 // Delayed metadata cleanup in case other cleanup hooks fail
                 CombatUtils.delayArrowMetaCleanup(arrow);
 
                 // If fired from an item with multi-shot, we need to track
-                if(ItemUtils.doesPlayerHaveEnchantmentInHands(player, "multishot")) {
+                if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, "multishot")) {
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_MULTI_SHOT_ARROW, MetadataConstants.MCMMO_METADATA_VALUE);
                 }
 
-                if(!arrow.hasMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE))
+                if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE))
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE, new FixedMetadataValue(pluginRef, 1.0));
 
-                if(!arrow.hasMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE))
+                if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE))
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(pluginRef, arrow.getLocation()));
 
                 //Check both hands
@@ -387,15 +387,15 @@ public class EntityListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
-    public void onEntityDamageMonitor(EntityDamageByEntityEvent entityDamageEvent) {
+    public void onEntityDamageMonitor(@NotNull EntityDamageByEntityEvent entityDamageEvent) {
         if (entityDamageEvent.getEntity() instanceof LivingEntity livingEntity
                 && entityDamageEvent.getFinalDamage() >= livingEntity.getHealth()) {
             //This sets entity names back to whatever they are supposed to be
             CombatUtils.fixNames(livingEntity);
         }
 
-        if (entityDamageEvent.getDamager() instanceof Projectile projectile) {
-            CombatUtils.cleanupArrowMetadata(projectile);
+        if (entityDamageEvent.getDamager() instanceof Arrow arrow) {
+            CombatUtils.delayArrowMetaCleanup(arrow);
         }
 
         if (entityDamageEvent.getEntity() instanceof Player player && entityDamageEvent.getDamager() instanceof Player) {
@@ -426,7 +426,7 @@ public class EntityListener implements Listener {
             CombatUtils.delayArrowMetaCleanup(arrow);
         }
 
-        if (entityDamageEvent.getEntity() instanceof Player player && entityDamageEvent.getDamager() instanceof Player) {
+        if (entityDamageEvent.getEntity() instanceof Player player && entityDamageEvent.getDamager() instanceof Player otherPlayer) {
             McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             if (mmoPlayer != null && (mmoPlayer.isDebugMode())) {
                 player.sendMessage(ChatColor.GOLD + "(mmodebug start of combat report) EntityDamageByEntityEvent DEBUG Info:");
@@ -975,10 +975,8 @@ public class EntityListener implements Listener {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld())) return;
 
-        if (event.getEntity() instanceof Arrow arrow) {
-            if (arrow.isShotFromCrossbow()) {
-              Crossbows.processCrossbows(event, pluginRef, arrow);
-            }
+        if (event.getEntity() instanceof Arrow arrow && arrow.isShotFromCrossbow()) {
+            Crossbows.processCrossbows(event, pluginRef, arrow);
         }
     }
 }

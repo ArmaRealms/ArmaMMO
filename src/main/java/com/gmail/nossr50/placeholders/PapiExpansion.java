@@ -71,11 +71,6 @@ public class PapiExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean persist() {
-        return true;
-    }
-
-    @Override
     @Nullable
     public String onPlaceholderRequest(final Player player, @NotNull final String params) {
         // Non player-specific placeholders
