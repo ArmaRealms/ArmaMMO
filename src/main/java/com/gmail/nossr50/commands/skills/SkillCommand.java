@@ -5,16 +5,12 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.skills.child.FamilyTree;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
-import com.gmail.nossr50.util.random.RandomChanceUtil;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.PerksUtils;
-import com.gmail.nossr50.util.skills.RankUtils;
-import com.gmail.nossr50.util.skills.SkillActivationType;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.text.StringUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
@@ -146,7 +142,12 @@ public abstract class SkillCommand implements TabExecutor {
             player.sendMessage(LocaleLoader.getString("Effects.Level.Overhaul", skillValue, mcMMOPlayer.getSkillXpLevel(skill), mcMMOPlayer.getXpToLevel(skill)));
 
         } else {
-            Set<PrimarySkillType> parents = FamilyTree.getParents(skill);
+            /*
+             * CHILD SKILLS
+             */
+
+
+            var parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
             ArrayList<PrimarySkillType> parentList = new ArrayList<>(parents);
 
@@ -175,9 +176,9 @@ public abstract class SkillCommand implements TabExecutor {
         return List.of();
     }
 
-    protected String[] getAbilityDisplayValues(SkillActivationType skillActivationType, Player player, SubSkillType subSkill) {
-        return RandomChanceUtil.calculateAbilityDisplayValues(skillActivationType, player, subSkill);
-    }
+//    protected String[] getAbilityDisplayValues(SkillActivationType skillActivationType, Player player, SubSkillType subSkill) {
+//        return RandomChanceUtil.calculateAbilityDisplayValues(skillActivationType, player, subSkill);
+//    }
 
     protected String[] calculateLengthDisplayValues(Player player, float skillValue) {
         int maxLength = mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
@@ -225,14 +226,4 @@ public abstract class SkillCommand implements TabExecutor {
 
     protected abstract List<Component> getTextComponents(Player player);
 
-    /**
-     * Checks if a player can use a skill
-     *
-     * @param player       target player
-     * @param subSkillType target subskill
-     * @return true if the player has permission and has the skill unlocked
-     */
-    protected boolean canUseSubskill(Player player, SubSkillType subSkillType) {
-        return Permissions.isSubSkillEnabled(player, subSkillType) && RankUtils.hasUnlockedSubskill(player, subSkillType);
-    }
 }
