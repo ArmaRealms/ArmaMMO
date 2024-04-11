@@ -33,6 +33,7 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
@@ -111,8 +112,10 @@ public class HerbalismManager extends SkillManager {
 
     private class CheckBushAge extends CancellableRunnable {
 
-        @NotNull Block block;
-        @NotNull McMMOPlayer mmoPlayer;
+        @NotNull
+        Block block;
+        @NotNull
+        McMMOPlayer mmoPlayer;
         int xpReward;
 
         public CheckBushAge(@NotNull Block block, @NotNull McMMOPlayer mmoPlayer, int xpReward) {
@@ -208,8 +211,8 @@ public class HerbalismManager extends SkillManager {
         }
 
         //Check if the plant was recently replanted
-        if (block.getBlockData() instanceof Ageable ageableCrop && !block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).isEmpty() && block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).get(0).asBoolean()) {
-            if (isAgeableMature(ageableCrop)) {
+        if (block.getBlockData() instanceof Ageable ageable && !block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).isEmpty() && block.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).get(0).asBoolean()) {
+            if (isAgeableMature(ageable)) {
                 block.removeMetadata(MetadataConstants.METADATA_KEY_REPLANT, mcMMO.p);
             } else {
                 //Crop is recently replanted to back out of destroying it
@@ -761,50 +764,11 @@ public class HerbalismManager extends SkillManager {
             return false;
         }
 
-        Player player = getPlayer();
-        PlayerInventory playerInventory = player.getInventory();
-        Material seed;
-
-        switch (blockState.getType().getKey().getKey().toLowerCase(Locale.ROOT)) {
-            case "carrots":
-                seed = Material.matchMaterial("CARROT");
-                break;
-
-            case "wheat":
-                seed = Material.matchMaterial("WHEAT_SEEDS");
-                break;
-
-            case "nether_wart":
-                seed = Material.getMaterial("NETHER_WART");
-                break;
-
-            case "potatoes":
-                seed = Material.matchMaterial("POTATO");
-                break;
-
-            case "beetroots":
-                seed = Material.matchMaterial("BEETROOT_SEEDS");
-                break;
-
-            case "cocoa":
-                seed = Material.matchMaterial("COCOA_BEANS");
-                break;
-
-            case "torchflower":
-                seed = Material.matchMaterial("TORCHFLOWER_SEEDS");
-                break;
-            default:
-                return false;
-        }
-
-
-        ItemStack seedStack = new ItemStack(seed);
-
-        if (ItemUtils.isAxe(blockBreakEvent.getPlayer().getInventory().getItemInMainHand())
-        && blockState.getType() != Material.COCOA) {
+        if (ItemUtils.isAxe(blockBreakEvent.getPlayer().getInventory().getItemInMainHand()) && blockState.getType() != Material.COCOA) {
             return false;
         }
 
+        Player player = getPlayer();
         if (!greenTerra && !ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.HERBALISM_GREEN_THUMB, player)) {
             return false;
         }
