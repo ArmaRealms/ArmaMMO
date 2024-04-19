@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.gmail.nossr50.mcMMO</groupId>
     <artifactId>mcMMO</artifactId>
-    <version>2.2.006</version>
+    <version>2.2.007-SNAPSHOT</version>
     <name>mcMMO</name>
     <url>https://github.com/mcMMO-Dev/mcMMO</url>
     <scm>
@@ -35,7 +35,7 @@
         </snapshotRepository>
     </distributionManagement>
     <build>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>
@@ -75,7 +75,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M7</version>
+                <version>3.2.5</version>
 
                 <configuration>
                     <junitArtifactName>org.junit.jupiter:junit-jupiter</junitArtifactName>
@@ -84,7 +84,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M7</version>
+                <version>3.2.5</version>
 
                 <configuration>
                     <junitArtifactName>org.junit.jupiter:junit-jupiter</junitArtifactName>
@@ -95,14 +95,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M6</version>
+                <version>3.0.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.12.1</version>
                 <configuration>
-                    <release>16</release>
+                    <release>17</release>
                     <compilerArgs>
                         <arg>-parameters</arg> <!-- used for ACF syntax stuff -->
                     </compilerArgs>
@@ -113,6 +113,7 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
+                    <finalName>${project.name}-${project.version}</finalName>
                     <descriptors>
                         <descriptor>src/main/assembly/package.xml</descriptor>
                     </descriptors>

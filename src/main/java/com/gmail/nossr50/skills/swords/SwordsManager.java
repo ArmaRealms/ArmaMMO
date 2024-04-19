@@ -41,9 +41,7 @@ public class SwordsManager extends SkillManager {
     }
 
     public boolean canUseCounterAttack(Entity target) {
-        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.SWORDS_COUNTER_ATTACK))
-            return false;
-
+        if(!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.SWORDS_COUNTER_ATTACK)) return false;
         return target instanceof LivingEntity && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.SWORDS_COUNTER_ATTACK);
     }
 
@@ -147,8 +145,8 @@ public class SwordsManager extends SkillManager {
 
             NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Countered");
 
-            if (attacker instanceof Player) {
-                NotificationManager.sendPlayerInformation((Player)attacker, NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Counter.Hit");
+            if (attacker instanceof Player player) {
+                NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Counter.Hit");
             }
         }
     }

@@ -8,16 +8,13 @@ import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class McrankCommand implements TabExecutor {
@@ -25,7 +22,8 @@ public class McrankCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
             case 0:
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 
@@ -75,18 +73,16 @@ public class McrankCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-            return StringUtil.copyPartialMatches(args[0], playerNames, new ArrayList<>(playerNames.size()));
+            return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void display(CommandSender sender, String playerName) {
-        if (sender instanceof Player) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(sender.getName());
+        if (sender instanceof Player player) {
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
-            if(mcMMOPlayer == null)
-            {
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return;
             }
@@ -98,11 +94,11 @@ public class McrankCommand implements TabExecutor {
                 return;
             }
 
-            if (((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
+            if (player.hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Database.Processing"));
                 return;
             } else {
-                ((Player) sender).setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
+                player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
             mcMMOPlayer.actualizeDatabaseATS();

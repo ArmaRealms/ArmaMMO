@@ -8,15 +8,12 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ExperienceCommand implements TabExecutor {
@@ -28,7 +25,8 @@ public abstract class ExperienceCommand implements TabExecutor {
             return false;
         } else {
             if(args.length == 2 && !isSilent(args) || args.length == 3 && isSilent(args)) {
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 
@@ -126,8 +124,7 @@ public abstract class ExperienceCommand implements TabExecutor {
     private boolean isSilent(String[] args) {
         int length = args.length;
 
-        if(length == 0)
-            return false;
+        if (length == 0) return false;
 
         return args[length-1].equalsIgnoreCase("-s");
     }
@@ -136,13 +133,15 @@ public abstract class ExperienceCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         switch (args.length) {
-            case 1:
-                List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-                return StringUtil.copyPartialMatches(args[0], playerNames, new ArrayList<>(playerNames.size()));
-            case 2:
-                return StringUtil.copyPartialMatches(args[1], mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES, new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
-            default:
-                return ImmutableList.of();
+            case 1 -> {
+                return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
+            }
+            case 2 -> {
+                return mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.stream().filter(s -> s.startsWith(args[1])).toList();
+            }
+            default -> {
+                return List.of();
+            }
         }
     }
 

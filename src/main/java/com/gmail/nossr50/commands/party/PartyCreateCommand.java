@@ -13,14 +13,15 @@ import org.jetbrains.annotations.NotNull;
 public class PartyCreateCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        switch (args.length) {
-            case 2:
-            case 3:
-                Player player = (Player) sender;
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+            return true;
+        }
 
-                if(UserManager.getPlayer(player) == null)
-                {
+        switch (args.length) {
+            case 2, 3 -> {
+                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                if (mcMMOPlayer == null) {
                     player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
@@ -35,20 +36,14 @@ public class PartyCreateCommand implements CommandExecutor {
                     return true;
                 }
 
-                mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], getPassword(args));
+                mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], args.length == 3 ? args[2] : null);
                 return true;
+            }
 
-            default:
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "create", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
+            default -> {
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "criar", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
                 return true;
+            }
         }
-    }
-
-    private String getPassword(String[] args) {
-        if (args.length == 3) {
-            return args[2];
-        }
-
-        return null;
     }
 }

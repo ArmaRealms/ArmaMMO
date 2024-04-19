@@ -3,7 +3,6 @@ package com.gmail.nossr50.commands.database;
 import com.gmail.nossr50.database.DatabaseManagerFactory;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -30,6 +29,6 @@ public class MmoshowdbCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        return ImmutableList.of();
+        return List.of();
     }
 }

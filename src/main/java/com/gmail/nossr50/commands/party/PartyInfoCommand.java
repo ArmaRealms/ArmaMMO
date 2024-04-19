@@ -19,28 +19,36 @@ import java.util.List;
 
 public class PartyInfoCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String @NotNull [] args) {
         switch (args.length) {
-            case 0:
-            case 1:
-                if(UserManager.getPlayer((Player) sender) == null)
-                {
+            case 0, 1 -> {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                    return true;
+                }
+
+                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                if (mcMMOPlayer == null) {
                     sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
-                Player player = (Player) sender;
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+
                 Party party = mcMMOPlayer.getParty();
+                if (party == null) {
+                    return true;
+                }
 
                 displayPartyHeader(player, party);
                 displayShareModeInfo(player, party);
                 displayPartyFeatures(player, party);
                 displayMemberInfo(player, mcMMOPlayer, party);
                 return true;
+            }
 
-            default:
+            default -> {
                 sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "info"));
                 return true;
+            }
         }
     }
 
@@ -70,13 +78,14 @@ public class PartyInfoCommand implements CommandExecutor {
 
             if (isUnlockedFeature(party, partyFeature)) {
                 unlockedPartyFeatures.add(partyFeature.getLocaleString());
-            }
-            else {
+            } else {
                 lockedPartyFeatures.add(partyFeature.getFeatureLockedLocaleString());
             }
         }
 
-        player.sendMessage(LocaleLoader.getString("Commands.Party.UnlockedFeatures", unlockedPartyFeatures.isEmpty() ? "None" : unlockedPartyFeatures));
+        for (String message : unlockedPartyFeatures) {
+            player.sendMessage(message);
+        }
 
         for (String message : lockedPartyFeatures) {
             player.sendMessage(message);
@@ -101,11 +110,11 @@ public class PartyInfoCommand implements CommandExecutor {
         String separator = "";
 
         if (xpShareEnabled) {
-            expShareInfo = LocaleLoader.getString("Commands.Party.ExpShare", party.getXpShareMode().toString());
+            expShareInfo = LocaleLoader.getString("Commands.Party.ExpShare", party.getXpShareMode().customName());
         }
 
         if (itemShareEnabled) {
-            itemShareInfo = LocaleLoader.getString("Commands.Party.ItemShare", party.getItemShareMode().toString());
+            itemShareInfo = LocaleLoader.getString("Commands.Party.ItemShare", party.getItemShareMode().customName());
         }
 
         if (xpShareEnabled && itemShareEnabled) {

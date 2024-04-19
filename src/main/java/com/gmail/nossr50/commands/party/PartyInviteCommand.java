@@ -23,15 +23,22 @@ public class PartyInviteCommand implements CommandExecutor {
                 return false;
             }
 
-            Player target = mcMMOTarget.getPlayer();
+            if (mcMMOTarget == null) {
+                return true;
+            }
 
-            if (UserManager.getPlayer((Player) sender) == null) {
+            Player target = mcMMOTarget.getPlayer();
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
+
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            Player player = (Player) sender;
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
             String playerName = player.getName();
 
             if (player.equals(target)) {
@@ -50,6 +57,9 @@ public class PartyInviteCommand implements CommandExecutor {
             }
 
             Party playerParty = mcMMOPlayer.getParty();
+            if (playerParty == null) {
+                return true;
+            }
 
             if (mcMMO.p.getPartyManager().isPartyFull(target, playerParty)) {
                 player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull.Invite", target.getName(), playerParty.toString(), mcMMO.p.getGeneralConfig().getPartyMaxSize()));
@@ -63,7 +73,7 @@ public class PartyInviteCommand implements CommandExecutor {
             target.sendMessage(LocaleLoader.getString("Commands.Party.Invite.1"));
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "invite", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "convidar", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
         return true;
     }
 }

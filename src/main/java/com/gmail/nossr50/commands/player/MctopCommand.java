@@ -10,13 +10,11 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.text.StringUtils;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -28,11 +26,11 @@ public class MctopCommand implements TabExecutor {
         PrimarySkillType skill = null;
 
         switch (args.length) {
-            case 0:
+            case 0 -> {
                 display(1, skill, sender, command);
                 return true;
-
-            case 1:
+            }
+            case 1 -> {
                 if (StringUtils.isInt(args[0])) {
                     display(Math.abs(Integer.parseInt(args[0])), skill, sender, command);
                     return true;
@@ -46,8 +44,8 @@ public class MctopCommand implements TabExecutor {
 
                 display(1, skill, sender, command);
                 return true;
-
-            case 2:
+            }
+            case 2 -> {
                 if (CommandUtils.isInvalidInteger(sender, args[1])) {
                     return true;
                 }
@@ -60,18 +58,19 @@ public class MctopCommand implements TabExecutor {
 
                 display(Math.abs(Integer.parseInt(args[1])), skill, sender, command);
                 return true;
-
-            default:
+            }
+            default -> {
                 return false;
+            }
         }
     }
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return StringUtil.copyPartialMatches(args[0], mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES, new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
+            return mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void display(int page, PrimarySkillType skill, CommandSender sender, Command command) {
@@ -80,12 +79,16 @@ public class MctopCommand implements TabExecutor {
             return;
         }
 
-        if (sender instanceof Player) {
+        if (sender instanceof Player player) {
             if (!CommandUtils.hasPlayerDataKey(sender)) {
                 return;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(sender.getName());
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
+                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                return;
+            }
             long cooldownMillis = Math.max(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
             if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
@@ -98,11 +101,11 @@ public class MctopCommand implements TabExecutor {
                 return;
             }
 
-            if (((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
+            if (player.hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Database.Processing"));
                 return;
             } else {
-                ((Player) sender).setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
+                player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
             mcMMOPlayer.actualizeDatabaseATS();

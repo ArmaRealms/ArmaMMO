@@ -16,8 +16,7 @@ public class PartyJoinCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
-            case 2:
-            case 3:
+            case 2, 3 -> {
                 String targetName = CommandUtils.getMatchedPlayerName(args[1]);
                 McMMOPlayer mcMMOTarget = UserManager.getPlayer(targetName);
 
@@ -25,25 +24,35 @@ public class PartyJoinCommand implements CommandExecutor {
                     return true;
                 }
 
-                Player target = mcMMOTarget.getPlayer();
+                if (mcMMOTarget == null) {
+                    return true;
+                }
 
+                Player target = mcMMOTarget.getPlayer();
                 if (!mcMMOTarget.inParty()) {
                     sender.sendMessage(LocaleLoader.getString("Party.PlayerNotInParty", targetName));
                     return true;
                 }
 
-                Player player = (Player) sender;
-
-                if(UserManager.getPlayer((Player) sender) == null)
-                {
-                    sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 
                 McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-                Party targetParty = mcMMOTarget.getParty();
+                if (mcMMOPlayer == null) {
+                    sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                    return true;
+                }
 
-                if (player.equals(target) || (mcMMOPlayer.inParty() && mcMMOPlayer.getParty().equals(targetParty))) {
+                Party targetParty = mcMMOTarget.getParty();
+                if (targetParty == null) {
+                    return true;
+                }
+
+                Party playerParty = mcMMOPlayer.getParty();
+
+                if (player.equals(target) || (mcMMOPlayer.inParty() && playerParty != null && playerParty.equals(targetParty))) {
                     sender.sendMessage(LocaleLoader.getString("Party.Join.Self"));
                     return true;
                 }
@@ -62,8 +71,7 @@ public class PartyJoinCommand implements CommandExecutor {
                     return true;
                 }
 
-                if(mcMMO.p.getPartyManager().isPartyFull(player, targetParty))
-                {
+                if (mcMMO.p.getPartyManager().isPartyFull(player, targetParty)) {
                     player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull", targetParty.toString()));
                     return true;
                 }
@@ -71,10 +79,12 @@ public class PartyJoinCommand implements CommandExecutor {
                 player.sendMessage(LocaleLoader.getString("Commands.Party.Join", partyName));
                 mcMMO.p.getPartyManager().addToParty(mcMMOPlayer, targetParty);
                 return true;
+            }
 
-            default:
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "join", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
+            default -> {
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "entrar", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
                 return true;
+            }
         }
     }
 

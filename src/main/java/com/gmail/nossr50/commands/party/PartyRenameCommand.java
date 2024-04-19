@@ -16,13 +16,19 @@ public class PartyRenameCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 2) {
-            if (UserManager.getPlayer((Player) sender) == null) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
+
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer((Player) sender);
             Party playerParty = mcMMOPlayer.getParty();
+            if (playerParty == null) return true;
 
             String oldPartyName = playerParty.getName();
             String newPartyName = args[1].replace(".", "");
@@ -32,8 +38,6 @@ public class PartyRenameCommand implements CommandExecutor {
                 sender.sendMessage(LocaleLoader.getString("Party.Rename.Same"));
                 return true;
             }
-
-            Player player = mcMMOPlayer.getPlayer();
 
             // Check to see if the party exists, and if it does cancel renaming the party
             if (mcMMO.p.getPartyManager().checkPartyExistence(player, newPartyName)) {
@@ -57,7 +61,7 @@ public class PartyRenameCommand implements CommandExecutor {
             sender.sendMessage(LocaleLoader.getString("Commands.Party.Rename", newPartyName));
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "rename", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "renomear", "<" + LocaleLoader.getString("Commands.Usage.PartyName") + ">"));
         return true;
     }
 }

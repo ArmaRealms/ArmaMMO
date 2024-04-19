@@ -2,9 +2,7 @@ package com.gmail.nossr50.commands;
 
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
-import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -16,12 +14,13 @@ import java.util.List;
 public class McnotifyCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
         if (args.length == 0) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer((Player) sender);
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
             //Not Loaded yet
             if (mcMMOPlayer == null) {
@@ -38,6 +37,6 @@ public class McnotifyCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        return ImmutableList.of();
+        return List.of();
     }
 }

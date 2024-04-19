@@ -10,15 +10,13 @@ import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.SkillTools;
-import com.google.common.collect.ImmutableList;
+import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class InspectCommand implements TabExecutor {
@@ -37,9 +35,9 @@ public class InspectCommand implements TabExecutor {
                 }
 
                 if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()
-                        && sender instanceof Player
+                        && sender instanceof Player player
                         && mcMMO.p.getGeneralConfig().getInspectUseBoard()) {
-                    ScoreboardManager.enablePlayerInspectScoreboard((Player) sender, profile);
+                    ScoreboardManager.enablePlayerInspectScoreboard(player, profile);
 
                     if (!mcMMO.p.getGeneralConfig().getInspectUseChat()) {
                         return true;
@@ -68,14 +66,10 @@ public class InspectCommand implements TabExecutor {
                 for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS)
                     powerLevel += profile.getSkillLevel(skill);
 
-                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", powerLevel));
+                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(powerLevel)));
             } else {
                 Player target = mcMMOPlayer.getPlayer();
-                boolean isVanished = false;
-
-                if (CommandUtils.hidden(sender, target, Permissions.inspectHidden(sender))) {
-                    isVanished = true;
-                }
+                boolean isVanished = CommandUtils.hidden(sender, target, Permissions.inspectHidden(sender));
 
                 //Only distance check players who are online and not vanished
                 if (!isVanished && CommandUtils.tooFar(sender, target, Permissions.inspectFar(sender))) {
@@ -83,9 +77,9 @@ public class InspectCommand implements TabExecutor {
                 }
 
                 if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()
-                        && sender instanceof Player
+                        && sender instanceof Player player
                         && mcMMO.p.getGeneralConfig().getInspectUseBoard()) {
-                    ScoreboardManager.enablePlayerInspectScoreboard((Player) sender, mcMMOPlayer);
+                    ScoreboardManager.enablePlayerInspectScoreboard(player, mcMMOPlayer);
 
                     if (!mcMMO.p.getGeneralConfig().getInspectUseChat()) {
                         return true;
@@ -102,7 +96,7 @@ public class InspectCommand implements TabExecutor {
                 CommandUtils.printCombatSkills(target, sender);
                 CommandUtils.printMiscSkills(target, sender);
 
-                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", mcMMOPlayer.getPowerLevel()));
+                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel())));
             }
 
             return true;
@@ -113,9 +107,8 @@ public class InspectCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-            return StringUtil.copyPartialMatches(args[0], playerNames, new ArrayList<>(playerNames.size()));
+            return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 }

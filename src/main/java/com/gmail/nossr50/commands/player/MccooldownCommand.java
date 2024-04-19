@@ -7,7 +7,6 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -19,7 +18,8 @@ import java.util.List;
 public class MccooldownCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
@@ -28,7 +28,6 @@ public class MccooldownCommand implements TabExecutor {
         }
 
         if (args.length == 0) {
-            Player player = (Player) sender;
 
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && mcMMO.p.getGeneralConfig().getCooldownUseBoard()) {
                 ScoreboardManager.enablePlayerCooldownScoreboard(player);
@@ -38,12 +37,11 @@ public class MccooldownCommand implements TabExecutor {
                 }
             }
 
-            if (UserManager.getPlayer(player) == null) {
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
-
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
             player.sendMessage(LocaleLoader.getString("Commands.Cooldowns.Header"));
             player.sendMessage(LocaleLoader.getString("mcMMO.NoSkillNote"));
@@ -69,6 +67,6 @@ public class MccooldownCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
-        return ImmutableList.of();
+        return List.of();
     }
 }
