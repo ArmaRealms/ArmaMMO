@@ -223,8 +223,7 @@ public final class Misc {
         Location spawnLocation = fromLocation.clone();
         Location targetLocation = toLocation.clone();
 
-        if(spawnLocation.getWorld() == null)
-            return null;
+        if (spawnLocation.getWorld() == null) return null;
 
         // We can't get the item until we spawn it and we want to make it cancellable, so we have a custom event.
         McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(spawnLocation, clonedItem, itemSpawnReason, player);

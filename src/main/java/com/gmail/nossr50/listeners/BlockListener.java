@@ -98,13 +98,9 @@ public class BlockListener implements Listener {
                     continue;
 
                 //If we suspect TEs might be duped only reward block
-                if(dontRewardTE) {
-                    if(!is.getType().isBlock()) {
-                        continue;
-                    }
-                }
+                if (dontRewardTE && !is.getType().isBlock()) continue;
 
-                if (event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).size() > 0) {
+                if (!event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).isEmpty()) {
                     BonusDropMeta bonusDropMeta = (BonusDropMeta) event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).get(0);
                     int bonusCount = bonusDropMeta.asInt();
 
