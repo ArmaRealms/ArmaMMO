@@ -31,6 +31,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.Inventory;
@@ -39,6 +40,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
+import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
 
 public class HerbalismManager extends SkillManager {
     private final List<String> crops = List.of("carrots", "wheat", "nether_wart", "potatoes", "beetroots", "cocoa", "torchflower");
@@ -750,7 +754,7 @@ public class HerbalismManager extends SkillManager {
             return false;
         }
 
-        BlockData blockData = blockState.getBlockData();
+        final BlockData blockData = blockState.getBlockData();
 
         if (!(blockData instanceof Ageable ageable)) {
             return false;
