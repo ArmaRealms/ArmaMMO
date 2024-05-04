@@ -128,6 +128,7 @@ public final class CombatUtils {
             }
         }
     }
+
     private static void processTridentCombatMelee(@NotNull LivingEntity target, @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
@@ -231,7 +232,33 @@ public final class CombatUtils {
         delayArrowMetaCleanup(arrow);
     }
 
-    static void processAxeCombat(@NotNull LivingEntity target, @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
+    private static void processMacesCombat(@NotNull LivingEntity target, @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
+        if (event.getCause() == DamageCause.THORNS) {
+            return;
+        }
+
+        double boostedDamage = event.getDamage();
+
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+
+        //Make sure the profiles been loaded
+        if (mcMMOPlayer == null) {
+            return;
+        }
+
+        // MacesManager macesManager = mcMMOPlayer.getMacesManager();
+
+        if(canUseLimitBreak(player, target, SubSkillType.MACES_MACES_LIMIT_BREAK)) {
+            boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.MACES_MACES_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
+        }
+
+        event.setDamage(boostedDamage);
+        processCombatXP(mcMMOPlayer, target, PrimarySkillType.MACES);
+
+        printFinalDamageDebug(player, event, mcMMOPlayer);
+    }
+
+    private static void processAxeCombat(@NotNull LivingEntity target, @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -483,6 +510,15 @@ public final class CombatUtils {
 
                 if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.TRIDENTS)) {
                     processTridentCombatMelee(target, player, event);
+                }
+            }
+            else if (ItemUtils.isMace(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.MACES, target)) {
+                    return;
+                }
+
+                if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.MACES)) {
+                    processMacesCombat(target, player, event);
                 }
             }
         }
