@@ -30,7 +30,8 @@ public class PartyAllianceCommand implements TabExecutor {
             return true;
         }
 
-        if (UserManager.getPlayer(player) == null) {
+        if (UserManager.getPlayer((Player) sender) == null)
+        {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }

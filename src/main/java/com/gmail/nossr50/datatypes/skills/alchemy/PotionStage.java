@@ -34,12 +34,13 @@ public enum PotionStage {
     }
 
     public static PotionStage getPotionStage(AlchemyPotion input, AlchemyPotion output) {
-        PotionStage potionStage = getPotionStage(output);
-        if (!isWaterBottle(input) && getPotionStage(input) == potionStage) {
-            potionStage = PotionStage.FIVE;
+        PotionStage outputPotionStage = getPotionStage(output);
+        PotionStage inputPotionStage = getPotionStage(input);
+        if (!isWaterBottle(input) && inputPotionStage == outputPotionStage) {
+            outputPotionStage = PotionStage.FIVE;
         }
 
-        return potionStage;
+        return outputPotionStage;
     }
 
     private static boolean isWaterBottle(AlchemyPotion alchemyPotion) {
@@ -63,7 +64,7 @@ public enum PotionStage {
             stage++;
         } else if (!potionMeta.getCustomEffects().isEmpty()) {
             for (PotionEffect effect : potionMeta.getCustomEffects()){
-                if(effect.getAmplifier() > 0){
+                if (effect.getAmplifier() > 0){
                     stage++;
                     break;
                 }

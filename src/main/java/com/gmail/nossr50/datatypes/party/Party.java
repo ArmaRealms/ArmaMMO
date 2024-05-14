@@ -331,7 +331,7 @@ public class Party {
     }
 
     private void buildChatMessage(@NotNull StringBuilder stringBuilder, String @NotNull [] names) {
-        for (int i = 0; i < names.length; i++) {
+        for(int i = 0; i < names.length; i++) {
             if (i + 1 >= names.length) {
                 stringBuilder
                         .append(names[i]);

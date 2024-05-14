@@ -9,7 +9,6 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.metadata.MobMetaFlagType;
-import com.gmail.nossr50.metadata.MobMetadataService;
 import com.gmail.nossr50.runnables.skills.AwardCombatXpTask;
 import com.gmail.nossr50.skills.acrobatics.AcrobaticsManager;
 import com.gmail.nossr50.skills.archery.ArcheryManager;
@@ -54,14 +53,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+
 public final class CombatUtils {
     private static final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
 
     private CombatUtils() {
-    }
-
-    private static @NotNull MobMetadataService getMobMetadataService() {
-        return mcMMO.getMetadataService().getMobMetadataService();
     }
 
     public static boolean isDamageLikelyFromNormalCombat(@NotNull DamageCause damageCause) {
@@ -99,7 +96,8 @@ public final class CombatUtils {
         }
 
         //Add Stab Damage
-        if (swordsManager.canUseStab()) {
+        if (swordsManager.canUseStab())
+        {
             boostedDamage += (swordsManager.getStabDamage() * mcMMOPlayer.getAttackStrength());
         }
 
@@ -107,7 +105,8 @@ public final class CombatUtils {
             swordsManager.serratedStrikes(target, event.getDamage());
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK)) {
+        if (canUseLimitBreak(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK))
+        {
             boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -119,9 +118,9 @@ public final class CombatUtils {
 
     private static void printFinalDamageDebug(@NotNull Player player, @NotNull EntityDamageByEntityEvent event, @NotNull McMMOPlayer mcMMOPlayer, @Nullable String @Nullable ... extraInfoLines) {
         if (mcMMOPlayer.isDebugMode()) {
-            player.sendMessage("Final Damage value after mcMMO modifiers: " + event.getFinalDamage());
+            player.sendMessage("Final Damage value after mcMMO modifiers: "+ event.getFinalDamage());
             if (extraInfoLines != null) {
-                for (String str : extraInfoLines) {
+                for(String str : extraInfoLines) {
                     if (str != null)
                         player.sendMessage(str);
                 }
@@ -139,7 +138,7 @@ public final class CombatUtils {
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
-        if(mcMMOPlayer == null) {
+        if (mcMMOPlayer == null) {
             return;
         }
 
@@ -153,7 +152,7 @@ public final class CombatUtils {
             boostedDamage += (tridentsManager.impaleDamageBonus() * mcMMOPlayer.getAttackStrength());
         }
 
-        if(canUseLimitBreak(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
+        if (canUseLimitBreak(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
             boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -183,7 +182,7 @@ public final class CombatUtils {
             boostedDamage += (tridentsManager.impaleDamageBonus() * mcMMOPlayer.getAttackStrength());
         }
 
-        if(canUseLimitBreak(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
+        if (canUseLimitBreak(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
             boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -212,7 +211,7 @@ public final class CombatUtils {
             boostedDamage = mcMMOPlayer.getCrossbowsManager().poweredShot(initialDamage);
         }
 
-        if(canUseLimitBreak(player, target, SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK)) {
+        if (canUseLimitBreak(player, target, SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK)) {
             boostedDamage+=getLimitBreakDamage(player, target, SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK);
         }
 
@@ -248,7 +247,7 @@ public final class CombatUtils {
 
         // MacesManager macesManager = mcMMOPlayer.getMacesManager();
 
-        if(canUseLimitBreak(player, target, SubSkillType.MACES_MACES_LIMIT_BREAK)) {
+        if (canUseLimitBreak(player, target, SubSkillType.MACES_MACES_LIMIT_BREAK)) {
             boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.MACES_MACES_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -296,8 +295,9 @@ public final class CombatUtils {
             boostedDamage += (axesManager.criticalHit(target, boostedDamage) * mcMMOPlayer.getAttackStrength());
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK)) {
-            boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
+        if (canUseLimitBreak(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK))
+        {
+            boostedDamage+=(getLimitBreakDamage(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
         event.setDamage(boostedDamage);
@@ -314,7 +314,9 @@ public final class CombatUtils {
         McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
-        if (mcMMOPlayer == null) return;
+        if (mcMMOPlayer == null) {
+            return;
+        }
 
         UnarmedManager unarmedManager = mcMMOPlayer.getUnarmedManager();
 
@@ -334,8 +336,9 @@ public final class CombatUtils {
             unarmedManager.disarmCheck((Player) target);
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK)) {
-            boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
+        if (canUseLimitBreak(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK))
+        {
+            boostedDamage+=(getLimitBreakDamage(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
         event.setDamage(boostedDamage);
@@ -352,7 +355,9 @@ public final class CombatUtils {
             McMMOPlayer mcMMOPlayer = UserManager.getPlayer(master);
 
             //Make sure the profiles been loaded
-            if (mcMMOPlayer == null) return;
+            if (mcMMOPlayer == null) {
+                return;
+            }
 
             TamingManager tamingManager = mcMMOPlayer.getTamingManager();
 
@@ -405,8 +410,9 @@ public final class CombatUtils {
             archeryManager.retrieveArrows(target, arrow);
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK)) {
-            boostedDamage += getLimitBreakDamage(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK);
+        if (canUseLimitBreak(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK))
+        {
+            boostedDamage+=getLimitBreakDamage(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK);
         }
 
         double distanceMultiplier = ArcheryManager.distanceXpBonusMultiplier(target, arrow);
@@ -535,7 +541,7 @@ public final class CombatUtils {
 
             if (projectileSource instanceof Player player) {
                 if (!Misc.isNPCEntityExcludingVillagers(player)) {
-                    if(mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.TRIDENTS, target)) {
+                    if (mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.TRIDENTS, target)) {
                         processTridentCombatRanged(trident, target, player, event);
                     }
                 }
@@ -547,9 +553,9 @@ public final class CombatUtils {
             if (projectileSource instanceof Player player) {
 
                 if (!Misc.isNPCEntityExcludingVillagers(player)) {
-                    if(!isCrossbow && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.ARCHERY, target)) {
+                    if (!isCrossbow && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.ARCHERY, target)) {
                         processArcheryCombat(target, player, event, arrow);
-                    } else if(isCrossbow && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.CROSSBOWS, target)) {
+                    } else if (isCrossbow && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.CROSSBOWS, target)) {
                         processCrossbowsCombat(target, player, event, arrow);
                     }
                 } else {
@@ -561,7 +567,9 @@ public final class CombatUtils {
                         && !Misc.isNPCEntityExcludingVillagers(player)
                         && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.TAMING)) {
                     McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-                    if (mcMMOPlayer == null) return;
+
+                    if (mcMMOPlayer == null)
+                        return;
 
                     TamingManager tamingManager = mcMMOPlayer.getTamingManager();
                     tamingManager.attackTarget(target);
@@ -635,7 +643,7 @@ public final class CombatUtils {
     public static int getArmorQualityLevel(@NotNull Player defender) {
         int armorQualityLevel = 0;
 
-        for (ItemStack itemStack : defender.getInventory().getArmorContents()) {
+        for(ItemStack itemStack : defender.getInventory().getArmorContents()) {
             if (itemStack != null) {
                 armorQualityLevel += getArmorQuality(itemStack);
             }
@@ -802,9 +810,9 @@ public final class CombatUtils {
                 .filter(entity -> shouldBeAffected(attacker, entity))
                 .limit(numberOfTargets)
                 .map(LivingEntity.class::cast)
-                .forEach(entity -> {
+                .forEach(livingEntity -> {
 
-                    if (entity instanceof Player player) {
+                    if (livingEntity instanceof Player player) {
                         String messageKey = switch (type) {
                             case SWORDS -> "Swords.Combat.SS.Struck";
                             case AXES -> "Axes.Combat.SS.Struck";
@@ -817,14 +825,13 @@ public final class CombatUtils {
                         }
                     }
 
-                    if (type == PrimarySkillType.SWORDS) {
-                        McMMOPlayer mmoAttacker = UserManager.getPlayer(attacker);
-                        if (mmoAttacker != null) {
-                            mmoAttacker.getSwordsManager().processRupture(entity);
-                        }
+                    McMMOPlayer mmoAttacker = UserManager.getPlayer(attacker);
+
+                    if (mmoAttacker != null) {
+                        mmoAttacker.getSwordsManager().processRupture(livingEntity);
                     }
 
-                    dealDamage(entity, damageAmount, attacker);
+                    dealDamage(livingEntity, damageAmount, attacker);
                 });
     }
 
@@ -891,18 +898,18 @@ public final class CombatUtils {
                 }
             }
 
-            if (getMobMetadataService().hasMobFlag(MobMetaFlagType.COTW_SUMMONED_MOB, target)) {
+            if (hasMobFlag(MobMetaFlagType.COTW_SUMMONED_MOB, target)) {
                 baseXP = 0;
-            } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.MOB_SPAWNER_MOB, target) || target.hasMetadata("ES")) {
-                baseXP *= experienceConfig.getSpawnedMobXpMultiplier();
-            } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.NETHER_PORTAL_MOB, target)) {
-                baseXP *= experienceConfig.getNetherPortalXpMultiplier();
-            } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.EGG_MOB, target)) {
-                baseXP *= experienceConfig.getEggXpMultiplier();
-            } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.PLAYER_BRED_MOB, target)) {
-                baseXP *= experienceConfig.getBredMobXpMultiplier();
-            } else if (getMobMetadataService().hasMobFlag(MobMetaFlagType.PLAYER_TAMED_MOB, target)) {
-                baseXP *= experienceConfig.getTamedMobXpMultiplier();
+            } else if (hasMobFlag(MobMetaFlagType.MOB_SPAWNER_MOB, target) || target.hasMetadata("ES")) {
+                baseXP *= ExperienceConfig.getInstance().getSpawnedMobXpMultiplier();
+            } else if (hasMobFlag(MobMetaFlagType.NETHER_PORTAL_MOB, target)) {
+                baseXP *= ExperienceConfig.getInstance().getNetherPortalXpMultiplier();
+            } else if (hasMobFlag(MobMetaFlagType.EGG_MOB, target)) {
+                baseXP *= ExperienceConfig.getInstance().getEggXpMultiplier();
+            } else if (hasMobFlag(MobMetaFlagType.PLAYER_BRED_MOB, target)) {
+                baseXP *= ExperienceConfig.getInstance().getBredMobXpMultiplier();
+            } else if (hasMobFlag(MobMetaFlagType.PLAYER_TAMED_MOB, target)) {
+                baseXP *= ExperienceConfig.getInstance().getTamedMobXpMultiplier();
             }
 
             baseXP *= 10;
@@ -926,14 +933,17 @@ public final class CombatUtils {
     private static boolean shouldBeAffected(@NotNull Player player, @NotNull Entity entity) {
         if (entity instanceof Player defender) {
             //TODO: NPC Interaction?
-            if (UserManager.getPlayer(defender) == null) return true;
+            if (UserManager.getPlayer(defender) == null)
+                return true;
 
             if (!defender.getWorld().getPVP() || defender == player || UserManager.getPlayer(defender).getGodMode()) {
                 return false;
             }
 
-            if ((mcMMO.p.getPartyManager().inSameParty(player, defender) || mcMMO.p.getPartyManager().areAllies(player, defender)) && !(Permissions.friendlyFire(player) && Permissions.friendlyFire(defender))) {
-                return false;
+            if (mcMMO.p.getPartyConfig().isPartyEnabled()) {
+                if ((mcMMO.p.getPartyManager().inSameParty(player, defender) || mcMMO.p.getPartyManager().areAllies(player, defender)) && !(Permissions.friendlyFire(player) && Permissions.friendlyFire(defender))) {
+                    return false;
+                }
             }
 
             // Vanished players should not be able to get hit by AoE effects
@@ -979,7 +989,8 @@ public final class CombatUtils {
             AnimalTamer tamer = pet.getOwner();
 
             if (tamer instanceof Player owner) {
-                return (owner == attacker || mcMMO.p.getPartyManager().inSameParty(attacker, owner) || mcMMO.p.getPartyManager().areAllies(attacker, owner));
+
+                return (owner == attacker || (mcMMO.p.getPartyConfig().isPartyEnabled() && (mcMMO.p.getPartyManager().inSameParty(attacker, owner) || mcMMO.p.getPartyManager().areAllies(attacker, owner))));
             }
         }
 

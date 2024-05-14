@@ -71,7 +71,8 @@ public class PartyJoinCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (mcMMO.p.getPartyManager().isPartyFull(player, targetParty)) {
+                if (mcMMO.p.getPartyManager().isPartyFull(player, targetParty))
+                {
                     player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull", targetParty.toString()));
                     return true;
                 }

@@ -118,11 +118,12 @@ public class NotificationManager {
 
         final Audience audience = mcMMO.getAudiences().player(player);
 
-        //If the message is being sent to the action bar we need to check if the copy if a copy is sent to the chat system
+
         Component notificationTextComponent = customEvent.getNotificationTextComponent();
         if (customEvent.getChatMessageType() == McMMOMessageType.ACTION_BAR) {
             audience.sendActionBar(notificationTextComponent);
 
+            // If the message is being sent to the action bar we need to check if a copy is also sent to the chat system
             if (customEvent.isMessageAlsoBeingSentToChat()) {
                 //Send copy to chat system
                 audience.sendMessage(notificationTextComponent);
@@ -153,8 +154,10 @@ public class NotificationManager {
      * @param newLevel    new level of that skill
      */
     public static void sendPlayerLevelUpNotification(McMMOPlayer mcMMOPlayer, PrimarySkillType skillName,
-                                                     int levelsGained, int newLevel) {
-        if (!mcMMOPlayer.useChatNotifications()) return;
+                                                     int levelsGained, int newLevel)
+    {
+        if (!mcMMOPlayer.useChatNotifications())
+            return;
 
         McMMOMessageType destination
                 = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(NotificationType.LEVEL_UP_MESSAGE)
@@ -177,8 +180,10 @@ public class NotificationManager {
         }
     }
 
-    public static void sendPlayerUnlockNotification(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType) {
-        if (!mcMMOPlayer.useChatNotifications()) return;
+    public static void sendPlayerUnlockNotification(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType)
+    {
+        if (!mcMMOPlayer.useChatNotifications())
+            return;
 
         //CHAT MESSAGE
         mcMMO.getAudiences().player(mcMMOPlayer.getPlayer()).sendMessage(Identity.nil(),
@@ -196,10 +201,13 @@ public class NotificationManager {
      */
     private static void sendAdminNotification(String msg) {
         //If its not enabled exit
-        if (!mcMMO.p.getGeneralConfig().adminNotifications()) return;
+        if (!mcMMO.p.getGeneralConfig().adminNotifications())
+            return;
 
-        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-            if (player.isOp() || Permissions.adminChat(player)) {
+        for(Player player : Bukkit.getServer().getOnlinePlayers())
+        {
+            if (player.isOp() || Permissions.adminChat(player))
+            {
                 player.sendMessage(LocaleLoader.getString("Notifications.Admin.Format.Others", msg));
             }
         }
@@ -309,13 +317,15 @@ public class NotificationManager {
     //TODO: Remove the code duplication, am lazy atm
     //TODO: Fix broadcasts being skipped for situations where a player skips over the milestone like with the addlevels command
     public static void processPowerLevelUpBroadcasting(@NotNull McMMOPlayer mmoPlayer, int powerLevel) {
-        if (powerLevel <= 0) return;
+        if (powerLevel <= 0)
+            return;
 
         //Check if broadcasting is enabled
         if (mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcasts()) {
             //Permission check
-            if (!Permissions.levelUpBroadcast(mmoPlayer.getPlayer())) return;
-
+            if (!Permissions.levelUpBroadcast(mmoPlayer.getPlayer())) {
+                return;
+            }
 
             int levelInterval = mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastInterval();
             int remainder = powerLevel % levelInterval;

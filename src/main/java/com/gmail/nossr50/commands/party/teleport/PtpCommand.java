@@ -217,12 +217,14 @@ public class PtpCommand implements TabExecutor {
     }
 
     protected static void handleTeleportWarmup(Player teleportingPlayer, Player targetPlayer) {
-        if (UserManager.getPlayer(targetPlayer) == null) {
+        if (UserManager.getPlayer(targetPlayer) == null)
+        {
             targetPlayer.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return;
         }
 
-        if (UserManager.getPlayer(teleportingPlayer) == null) {
+        if (UserManager.getPlayer(teleportingPlayer) == null)
+        {
             teleportingPlayer.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return;
         }

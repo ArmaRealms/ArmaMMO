@@ -47,7 +47,6 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
         if (sender instanceof Player player) {
             player.removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, mcMMO.p);
             sender.sendMessage(LocaleLoader.getString("Commands.mctop.Tip"));
-
         }
     }
 
