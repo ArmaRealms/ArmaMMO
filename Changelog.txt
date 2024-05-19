@@ -1,3 +1,14 @@
+Version 2.2.012
+    Fixed a bug where Daze would cause an exception in older game versions (1.20.4 and older)
+
+Version 2.2.011
+    Fixed bug where some potions on older versions (1.20.4 and older) were not brewable (night vision extended, etc)
+    Improved logging for Alchemy potion look up (see notes)
+
+NOTES:
+    Added detailed logging when multiple configured potions match an ItemStack.
+    This will help identify issues with potion configuration.
+
 Version 2.2.010
     Fixed being unable to load REGEN potion type on new versions of Paper/Spigot 1.20.6
     Fixed some potions not gaining XP when brewed (Level 2 potions, etc)
