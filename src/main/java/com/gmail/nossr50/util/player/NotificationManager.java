@@ -154,8 +154,7 @@ public class NotificationManager {
      * @param newLevel    new level of that skill
      */
     public static void sendPlayerLevelUpNotification(McMMOPlayer mcMMOPlayer, PrimarySkillType skillName,
-                                                     int levelsGained, int newLevel)
-    {
+                                                     int levelsGained, int newLevel) {
         if (!mcMMOPlayer.useChatNotifications())
             return;
 
@@ -175,13 +174,12 @@ public class NotificationManager {
     }
 
     public static void broadcastTitle(Server server, String title, String subtitle, int i1, int i2, int i3) {
-        for (Player player : server.getOnlinePlayers()) {
+        for(Player player : server.getOnlinePlayers()) {
             player.sendTitle(title, subtitle, i1, i2, i3);
         }
     }
 
-    public static void sendPlayerUnlockNotification(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType)
-    {
+    public static void sendPlayerUnlockNotification(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType) {
         if (!mcMMOPlayer.useChatNotifications())
             return;
 
@@ -204,10 +202,8 @@ public class NotificationManager {
         if (!mcMMO.p.getGeneralConfig().adminNotifications())
             return;
 
-        for(Player player : Bukkit.getServer().getOnlinePlayers())
-        {
-            if (player.isOp() || Permissions.adminChat(player))
-            {
+        for(Player player : Bukkit.getServer().getOnlinePlayers()) {
+            if (player.isOp() || Permissions.adminChat(player)) {
                 player.sendMessage(LocaleLoader.getString("Notifications.Admin.Format.Others", msg));
             }
         }

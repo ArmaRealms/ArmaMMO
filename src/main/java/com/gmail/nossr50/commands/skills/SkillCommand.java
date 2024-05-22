@@ -87,6 +87,10 @@ public abstract class SkillCommand implements TabExecutor {
             //Send JSON text components
             TextComponentFactory.sendPlayerSubSkillList(player, subskillTextComponents);
 
+                /*for(TextComponent tc : subskillTextComponents) {
+                    player.spigot().sendMessage(new TextComponent[]{tc, new TextComponent(": TESTING")});
+                }*/
+
             //Stats
             getStatMessages(player, isLucky, hasEndurance, skillValue);
 
@@ -141,8 +145,7 @@ public abstract class SkillCommand implements TabExecutor {
         // send header
         player.sendMessage(LocaleLoader.getString("Skills.Overhaul.Header", skillName));
 
-        if (!SkillTools.isChildSkill(skill))
-        {
+        if (!SkillTools.isChildSkill(skill)) {
             /*
              * NON-CHILD SKILLS
              */
@@ -163,10 +166,8 @@ public abstract class SkillCommand implements TabExecutor {
 
             StringBuilder parentMessage = new StringBuilder();
 
-            for(int i = 0; i < parentList.size(); i++)
-            {
-                if (i+1 < parentList.size())
-                {
+            for(int i = 0; i < parentList.size(); i++) {
+                if (i+1 < parentList.size()) {
                     parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
                     parentMessage.append(ChatColor.GRAY).append(", ");
                 } else {
@@ -199,8 +200,7 @@ public abstract class SkillCommand implements TabExecutor {
 
         int length;
 
-        if (abilityLengthCap <= 0)
-        {
+        if (abilityLengthCap <= 0) {
             length = 2 + (int) (skillValue / abilityLengthVar);
         } else {
             length = 2 + (int) (Math.min(abilityLengthCap, skillValue) / abilityLengthVar);

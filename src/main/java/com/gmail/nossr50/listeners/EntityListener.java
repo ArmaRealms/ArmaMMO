@@ -119,8 +119,7 @@ public class EntityListener implements Listener {
         }
 
         //Prevent entities from giving XP if they target endermite
-        if (event.getTarget() instanceof Endermite && (event.getEntity() instanceof Enderman enderman
-                && !hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))) {
+        if (event.getTarget() instanceof Endermite && (event.getEntity() instanceof Enderman enderman && !hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))) {
             flagMetadata(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman);
         }
     }
@@ -228,12 +227,12 @@ public class EntityListener implements Listener {
         if (entity instanceof FallingBlock || entity instanceof Enderman) {
             boolean isTracked = entity.hasMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK);
 
-            if (mcMMO.getPlaceStore().isTrue(block) && !isTracked) {
-                mcMMO.getPlaceStore().setFalse(block);
+            if (mcMMO.getUserBlockTracker().isIneligible(block) && !isTracked) {
+                mcMMO.getUserBlockTracker().setEligible(block);
 
                 entity.setMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, MetadataConstants.MCMMO_METADATA_VALUE);
                 TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, pluginRef);
-                mcMMO.p.getFoliaLib().getImpl().runAtEntityTimer(entity, metaCleanupTask, 20, 20 * 60); //6000 ticks is 5 minutes
+                mcMMO.p.getFoliaLib().getImpl().runAtEntityTimer(entity, metaCleanupTask, 20, 20*60); //6000 ticks is 5 minutes
             } else if (isTracked) {
                 BlockUtils.setUnnaturalBlock(block);
                 entity.removeMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, pluginRef);
@@ -241,8 +240,8 @@ public class EntityListener implements Listener {
         } else if ((block.getType() == Material.REDSTONE_ORE || block.getType().getKey().getKey().equalsIgnoreCase("deepslate_redstone_ore"))) {
             //Redstone ore fire this event and should be ignored
         } else {
-            if (mcMMO.getPlaceStore().isTrue(block)) {
-                mcMMO.getPlaceStore().setFalse(block);
+            if (mcMMO.getUserBlockTracker().isIneligible(block)) {
+                mcMMO.getUserBlockTracker().setEligible(block);
             }
         }
     }
@@ -336,8 +335,7 @@ public class EntityListener implements Listener {
             if (animalTamer != null && ((OfflinePlayer) animalTamer).isOnline()) {
                 attacker = (Entity) animalTamer;
             }
-        } else if (attacker instanceof TNTPrimed tntPrimed && defender instanceof Player player
-                && BlastMining.processBlastMiningExplosion(event, tntPrimed, player)) {
+        } else if (attacker instanceof TNTPrimed tntPrimed && defender instanceof Player player && BlastMining.processBlastMiningExplosion(event, tntPrimed, player)) {
             return;
         }
 

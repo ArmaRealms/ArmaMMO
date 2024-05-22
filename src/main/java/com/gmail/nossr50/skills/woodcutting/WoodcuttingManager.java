@@ -113,7 +113,7 @@ public class WoodcuttingManager extends SkillManager {
     }
 
     public void processWoodcuttingBlockXP(@NotNull BlockState blockState) {
-        if (mcMMO.getPlaceStore().isTrue(blockState))
+        if (mcMMO.getUserBlockTracker().isIneligible(blockState))
             return;
 
         int xp = getExperienceFromLog(blockState);
@@ -191,8 +191,7 @@ public class WoodcuttingManager extends SkillManager {
                     return;
                 }
             }
-        }
-        else {
+        } else {
             // Cover DOWN
             processTreeFellerTargetBlock(blockState.getBlock().getRelative(BlockFace.DOWN).getState(), futureCenterBlocks, treeFellerBlocks);
             // Search in a cube
@@ -269,7 +268,7 @@ public class WoodcuttingManager extends SkillManager {
      *     in treeFellerBlocks.
      */
     private boolean processTreeFellerTargetBlock(@NotNull BlockState blockState, @NotNull List<BlockState> futureCenterBlocks, @NotNull Set<BlockState> treeFellerBlocks) {
-        if (treeFellerBlocks.contains(blockState) || mcMMO.getPlaceStore().isTrue(blockState)) {
+        if (treeFellerBlocks.contains(blockState) || mcMMO.getUserBlockTracker().isIneligible(blockState)) {
             return false;
         }
 
@@ -282,8 +281,7 @@ public class WoodcuttingManager extends SkillManager {
             treeFellerBlocks.add(blockState);
             futureCenterBlocks.add(blockState);
             return true;
-        }
-        else if (BlockUtils.isNonWoodPartOfTree(blockState)) {
+        } else if (BlockUtils.isNonWoodPartOfTree(blockState)) {
             treeFellerBlocks.add(blockState);
             return false;
         }
@@ -373,7 +371,7 @@ public class WoodcuttingManager extends SkillManager {
      * @return Amount of experience
      */
     private static int processTreeFellerXPGains(BlockState blockState, int woodCount) {
-        if (mcMMO.getPlaceStore().isTrue(blockState))
+        if (mcMMO.getUserBlockTracker().isIneligible(blockState))
             return 0;
 
         int rawXP = ExperienceConfig.getInstance().getXp(PrimarySkillType.WOODCUTTING, blockState.getType());

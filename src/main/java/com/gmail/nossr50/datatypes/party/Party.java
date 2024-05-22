@@ -88,7 +88,7 @@ public class Party {
     public List<Player> getVisibleMembers(Player player) {
         ArrayList<Player> visibleMembers = new ArrayList<>();
 
-        for (Player p : onlineMembers) {
+        for(Player p : onlineMembers) {
             if (player.canSee(p))
                 visibleMembers.add(p);
         }

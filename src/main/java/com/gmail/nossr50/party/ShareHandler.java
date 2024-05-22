@@ -122,6 +122,7 @@ public final class ShareHandler {
                         if (mcMMOMember == null) {
                             continue;
                         }
+
                         int itemShareModifier = mcMMOMember.getItemShareModifier();
                         int diceRoll = Misc.getRandom().nextInt(itemShareModifier);
 
@@ -169,11 +170,9 @@ public final class ShareHandler {
     public static XPGainReason getSharedXpGainReason(XPGainReason xpGainReason) {
         if (xpGainReason == XPGainReason.PVE) {
             return XPGainReason.SHARED_PVE;
-        }
-        else if (xpGainReason == XPGainReason.PVP) {
+        } else if (xpGainReason == XPGainReason.PVP) {
             return XPGainReason.SHARED_PVP;
-        }
-        else {
+        } else {
             return xpGainReason;
         }
     }

@@ -278,10 +278,10 @@ public class TamingManager extends SkillManager {
     }
 
     public void attackTarget(LivingEntity target) {
-        if (target instanceof Tameable tameable && (tameable.getOwner() == getPlayer())) return;
+        Player player = getPlayer();
+        if (target instanceof Tameable tameable && (tameable.getOwner() == player)) return;
 
         double range = 5;
-        Player player = getPlayer();
 
         for (Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity.getType() != EntityType.WOLF) {

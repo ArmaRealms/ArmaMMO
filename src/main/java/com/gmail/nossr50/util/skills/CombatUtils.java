@@ -96,8 +96,7 @@ public final class CombatUtils {
         }
 
         //Add Stab Damage
-        if (swordsManager.canUseStab())
-        {
+        if (swordsManager.canUseStab()) {
             boostedDamage += (swordsManager.getStabDamage() * mcMMOPlayer.getAttackStrength());
         }
 
@@ -105,8 +104,7 @@ public final class CombatUtils {
             swordsManager.serratedStrikes(target, event.getDamage());
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK))
-        {
+        if (canUseLimitBreak(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK)) {
             boostedDamage += (getLimitBreakDamage(player, target, SubSkillType.SWORDS_SWORDS_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -284,7 +282,7 @@ public final class CombatUtils {
         if (axesManager.canImpact(target)) {
             axesManager.impactCheck(target);
         } else if (axesManager.canGreaterImpact(target)) {
-            boostedDamage += axesManager.greaterImpact(target);
+            boostedDamage+=axesManager.greaterImpact(target);
         }
 
         if (axesManager.canUseSkullSplitter(target)) {
@@ -295,8 +293,7 @@ public final class CombatUtils {
             boostedDamage += (axesManager.criticalHit(target, boostedDamage) * mcMMOPlayer.getAttackStrength());
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK))
-        {
+        if (canUseLimitBreak(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK)) {
             boostedDamage+=(getLimitBreakDamage(player, target, SubSkillType.AXES_AXES_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -336,8 +333,7 @@ public final class CombatUtils {
             unarmedManager.disarmCheck((Player) target);
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK))
-        {
+        if (canUseLimitBreak(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK)) {
             boostedDamage+=(getLimitBreakDamage(player, target, SubSkillType.UNARMED_UNARMED_LIMIT_BREAK) * mcMMOPlayer.getAttackStrength());
         }
 
@@ -410,8 +406,7 @@ public final class CombatUtils {
             archeryManager.retrieveArrows(target, arrow);
         }
 
-        if (canUseLimitBreak(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK))
-        {
+        if (canUseLimitBreak(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK)) {
             boostedDamage+=getLimitBreakDamage(player, target, SubSkillType.ARCHERY_ARCHERY_LIMIT_BREAK);
         }
 
@@ -494,13 +489,22 @@ public final class CombatUtils {
                 if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.SWORDS, target)) return;
 
                 if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.SWORDS)) {
-                    CombatUtils.processSwordCombat(target, player, event);
+                    processSwordCombat(target, player, event);
+
+                }
+            } else if (ItemUtils.isAxe(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.AXES, target)) {
+                    return;
                 }
             } else if (ItemUtils.isAxe(heldItem)) {
                 if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.AXES, target)) return;
 
                 if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.AXES)) {
-                    CombatUtils.processAxeCombat(target, player, event);
+                    processAxeCombat(target, player, event);
+                }
+            } else if (ItemUtils.isUnarmed(heldItem)) {
+                if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.UNARMED, target)) {
+                    return;
                 }
             } else if (ItemUtils.isUnarmed(heldItem)) {
                 if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.UNARMED, target)) return;
@@ -508,8 +512,7 @@ public final class CombatUtils {
                 if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.UNARMED)) {
                     CombatUtils.processUnarmedCombat(target, player, event);
                 }
-            }
-            else if (ItemUtils.isTrident(heldItem)) {
+            } else if (ItemUtils.isTrident(heldItem)) {
                 if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.TRIDENTS, target)) {
                     return;
                 }
@@ -517,8 +520,7 @@ public final class CombatUtils {
                 if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.TRIDENTS)) {
                     processTridentCombatMelee(target, player, event);
                 }
-            }
-            else if (ItemUtils.isMace(heldItem)) {
+            } else if (ItemUtils.isMace(heldItem)) {
                 if (!mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.MACES, target)) {
                     return;
                 }
@@ -535,8 +537,7 @@ public final class CombatUtils {
             if (tamer instanceof Player master && mcMMO.p.getSkillTools().canCombatSkillsTrigger(PrimarySkillType.TAMING, target) && (!Misc.isNPCEntityExcludingVillagers(master) && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(master, PrimarySkillType.TAMING))) {
                 CombatUtils.processTamingCombat(target, master, wolf, event);
             }
-        }
-        else if (painSource instanceof Trident trident) {
+        } else if (painSource instanceof Trident trident) {
             ProjectileSource projectileSource = trident.getShooter();
 
             if (projectileSource instanceof Player player) {
@@ -546,8 +547,7 @@ public final class CombatUtils {
                     }
                 }
             }
-        }
-        else if (painSource instanceof Arrow arrow) {
+        } else if (painSource instanceof Arrow arrow) {
             ProjectileSource projectileSource = arrow.getShooter();
             boolean isCrossbow = arrow.isShotFromCrossbow();
             if (projectileSource instanceof Player player) {
