@@ -35,11 +35,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Predicate;
 
-//TODO: Seems to not be using the item drop event for bonus drops, may want to change that.. or may not be able to be changed?
+import static com.gmail.nossr50.util.ItemUtils.spawnItemsFromCollection;
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
+
 public class WoodcuttingManager extends SkillManager {
+    public static final String SAPLING = "sapling";
+    public static final String PROPAGULE = "propagule";
+    private static final Predicate<ItemStack> IS_SAPLING_OR_PROPAGULE =
+            p -> p.getType().getKey().getKey().toLowerCase().contains(SAPLING)
+                    || p.getType().getKey().getKey().toLowerCase().contains(PROPAGULE);
     private boolean treeFellerReachedThreshold = false;
-    private static int treeFellerThreshold; //TODO: Shared setting, will be removed in 2.2
+    private static int treeFellerThreshold;
 
     /**
      * The x/y differences to the blocks in a flat cylinder around the center
@@ -60,7 +69,7 @@ public class WoodcuttingManager extends SkillManager {
 
     public boolean canUseLeafBlower(ItemStack heldItem) {
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.WOODCUTTING_LEAF_BLOWER)
-                && RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.WOODCUTTING_LEAF_BLOWER)
+                && hasUnlockedSubskill(getPlayer(), SubSkillType.WOODCUTTING_LEAF_BLOWER)
                 && ItemUtils.isAxe(heldItem);
     }
 
@@ -316,22 +325,30 @@ public class WoodcuttingManager extends SkillManager {
                 xp += processTreeFellerXPGains(blockState, processedLogCount);
 
                 //Drop displaced block
-                Misc.spawnItemsFromCollection(getPlayer(), Misc.getBlockCenter(blockState), block.getDrops(itemStack), ItemSpawnReason.TREE_FELLER_DISPLACED_BLOCK);
+                spawnItemsFromCollection(player, getBlockCenter(blockState), block.getDrops(itemStack), ItemSpawnReason.TREE_FELLER_DISPLACED_BLOCK);
 
                 //Bonus Drops / Harvest lumber checks
                 processBonusDropCheck(blockState);
             } else if (BlockUtils.isNonWoodPartOfTree(blockState)) {
                 // 75% of the time do not drop leaf blocks
-                if (blockState.getType().getKey().getKey().toLowerCase().contains("sapling")
-                        || ThreadLocalRandom.current().nextInt(100) > 75) {
-                    Misc.spawnItemsFromCollection(getPlayer(),
-                            Misc.getBlockCenter(blockState),
+                if (ThreadLocalRandom.current().nextInt(100) > 75) {
+                    spawnItemsFromCollection(player,
+                            getBlockCenter(blockState),
                             block.getDrops(itemStack),
                             ItemSpawnReason.TREE_FELLER_DISPLACED_BLOCK);
+                } else if (hasUnlockedSubskill(player, SubSkillType.WOODCUTTING_KNOCK_ON_WOOD)) {
+                    // if KnockOnWood is unlocked, then drop any saplings from the remaining blocks
+                    ItemUtils.spawnItemsConditionally(block.getDrops(itemStack),
+                            IS_SAPLING_OR_PROPAGULE,
+                            ItemSpawnReason.TREE_FELLER_DISPLACED_BLOCK,
+                            getBlockCenter(blockState),
+                            // only spawn saplings
+                            player
+                    );
                 }
 
                 //Drop displaced non-woodcutting XP blocks
-                if (RankUtils.hasUnlockedSubskill(player, SubSkillType.WOODCUTTING_KNOCK_ON_WOOD)) {
+                if (hasUnlockedSubskill(player, SubSkillType.WOODCUTTING_KNOCK_ON_WOOD)) {
                     if (RankUtils.hasReachedRank(2, player, SubSkillType.WOODCUTTING_KNOCK_ON_WOOD)) {
                         if (mcMMO.p.getAdvancedConfig().isKnockOnWoodXPOrbEnabled()) {
                             if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.WOODCUTTING, mmoPlayer, 10)) {
@@ -407,10 +424,10 @@ public class WoodcuttingManager extends SkillManager {
      *
      * @param blockState Block being broken
      */
-    protected void spawnHarvestLumberBonusDrops(@NotNull BlockState blockState) {
-        Misc.spawnItemsFromCollection(
+    void spawnHarvestLumberBonusDrops(@NotNull BlockState blockState) {
+        spawnItemsFromCollection(
                 getPlayer(),
-                Misc.getBlockCenter(blockState),
+                getBlockCenter(blockState),
                 blockState.getBlock().getDrops(getPlayer().getInventory().getItemInMainHand()),
                 ItemSpawnReason.BONUS_DROPS);
     }
