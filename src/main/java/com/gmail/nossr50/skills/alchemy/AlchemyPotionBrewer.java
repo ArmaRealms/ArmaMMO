@@ -144,7 +144,7 @@ public final class AlchemyPotionBrewer {
                 ? 1 : mmoPlayer.getAlchemyManager().getTier());
     }
 
-    public static void finishBrewing(BlockState brewingStand, Player player, boolean forced) {
+    public static void finishBrewing(BlockState brewingStand, @Nullable McMMOPlayer mmoPlayer, boolean forced) {
         // Check if the brewing stand block state is an actual brewing stand
         if (!(brewingStand instanceof BrewingStand)) {
             return;
@@ -153,9 +153,14 @@ public final class AlchemyPotionBrewer {
         // Retrieve the inventory of the brewing stand and clone the current ingredient for safe manipulation
         final BrewerInventory inventory = ((BrewingStand) brewingStand).getInventory();
         final ItemStack ingredient = inventory.getIngredient() == null ? null : inventory.getIngredient().clone();
+        Player player = mmoPlayer != null ? mmoPlayer.getPlayer() : null;
+
+        if (ingredient == null) {
+            return;
+        }
 
         // Check if the brewing stand has a valid ingredient; if not, exit the method
-        if (!hasIngredient(inventory, player)) {
+        if (player == null || !hasIngredient(inventory, player)) {
             // debug
             return;
         }
@@ -169,9 +174,7 @@ public final class AlchemyPotionBrewer {
             ItemStack item = inventory.getItem(i);
 
             // Skip the slot if it's empty, contains a glass bottle, or holds an invalid potion
-            if (isEmpty(item)
-                    || item.getType() == Material.GLASS_BOTTLE
-                    || !mcMMO.p.getPotionConfig().isValidPotion(item)) {
+            if (isEmpty(item) || item.getType() == Material.GLASS_BOTTLE || !mcMMO.p.getPotionConfig().isValidPotion(item)) {
                 // debug
                 continue;
             }
@@ -215,14 +218,11 @@ public final class AlchemyPotionBrewer {
 
             AlchemyPotion output = input.getChild(ingredient);
 
-            if (output != null && player != null) {
+            if (output != null) {
                 PotionStage potionStage = PotionStage.getPotionStage(input, output);
 
                 // Update player alchemy skills or effects based on brewing success
-                McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-                if (mmoPlayer != null) {
-                    mmoPlayer.getAlchemyManager().handlePotionBrewSuccesses(potionStage, 1);
-                }
+                mmoPlayer.getAlchemyManager().handlePotionBrewSuccesses(potionStage, 1);
             }
         }
 
