@@ -83,10 +83,10 @@ import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
 import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
-    private final mcMMO pluginRef;
+    private final mcMMO plugin;
 
-    public EntityListener(final mcMMO pluginRef) {
-        this.pluginRef = pluginRef;
+    public EntityListener(final mcMMO plugin) {
+        this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -135,8 +135,8 @@ public class EntityListener implements Listener {
             }
 
             // Set BowType, Force, and Distance metadata
-            projectile.setMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE, new FixedMetadataValue(pluginRef, Math.min(event.getForce() * mcMMO.p.getAdvancedConfig().getForceMultiplier(), 1.0)));
-            projectile.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(pluginRef, arrow.getLocation()));
+            projectile.setMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE, new FixedMetadataValue(plugin, Math.min(event.getForce() * mcMMO.p.getAdvancedConfig().getForceMultiplier(), 1.0)));
+            projectile.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(plugin, arrow.getLocation()));
 
             //Cleanup metadata in 1 minute in case normal collection falls through
             CombatUtils.delayArrowMetaCleanup(arrow);
@@ -163,10 +163,10 @@ public class EntityListener implements Listener {
                 }
 
                 if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE))
-                    arrow.setMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE, new FixedMetadataValue(pluginRef, 1.0));
+                    arrow.setMetadata(MetadataConstants.METADATA_KEY_BOW_FORCE, new FixedMetadataValue(plugin, 1.0));
 
                 if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE))
-                    arrow.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(pluginRef, arrow.getLocation()));
+                    arrow.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(plugin, arrow.getLocation()));
 
                 //Check both hands
                 if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, "piercing")) return;
@@ -213,13 +213,14 @@ public class EntityListener implements Listener {
                 mcMMO.getUserBlockTracker().setEligible(block);
 
                 entity.setMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, MetadataConstants.MCMMO_METADATA_VALUE);
-                TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, pluginRef);
+                TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, plugin);
                 mcMMO.p.getFoliaLib().getImpl().runAtEntityTimer(entity, metaCleanupTask, 20, 20L * 60); //6000 ticks is 5 minutes
             } else if (isTracked) {
                 BlockUtils.setUnnaturalBlock(block);
-                entity.removeMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, pluginRef);
+                entity.removeMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, plugin);
             }
-        } else if ((block.getType() == Material.REDSTONE_ORE || block.getType().getKey().getKey().equalsIgnoreCase("deepslate_redstone_ore"))) {
+        } else if ((block.getType() == Material.REDSTONE_ORE
+                || block.getType().getKey().getKey().equalsIgnoreCase("deepslate_redstone_ore"))) {
             //Redstone ore fire this event and should be ignored
         } else {
             if (mcMMO.getUserBlockTracker().isIneligible(block)) {
@@ -287,8 +288,9 @@ public class EntityListener implements Listener {
 
         if (CombatUtils.isInvincible(target, damage)) return;
 
-        if (ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(attacker))
+        if (ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(attacker)) {
             return;
+        }
 
         if (CombatUtils.hasIgnoreDamageMetadata(target)) return;
 
@@ -323,8 +325,9 @@ public class EntityListener implements Listener {
                         return;
                     }
                 }
-            } else if (attacker instanceof Player attackingPlayer && checkIfInPartyOrSamePlayer(event, defendingPlayer, attackingPlayer))
+            } else if (attacker instanceof Player attackingPlayer && checkIfInPartyOrSamePlayer(event, defendingPlayer, attackingPlayer)) {
                 return;
+            }
         }
 
         //Required setup for processCombatAttack
@@ -344,12 +347,10 @@ public class EntityListener implements Listener {
          * Surprising this kind of thing
          *
          */
-        if (mcMMO.isProjectKorraEnabled() && event.getFinalDamage() == 0) {
-            return;
-        }
+        if (mcMMO.isProjectKorraEnabled() && event.getFinalDamage() == 0) return;
 
         CombatUtils.processCombatAttack(event, attacker, target);
-        CombatUtils.handleHealthbars(attacker, target, event.getFinalDamage(), pluginRef);
+        CombatUtils.handleHealthbars(attacker, target, event.getFinalDamage(), plugin);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -417,7 +418,7 @@ public class EntityListener implements Listener {
         // This check is probably necessary outside of the party system
         if (defendingPlayer.equals(attackingPlayer)) return true;
 
-        if (!pluginRef.isPartySystemEnabled()) return false;
+        if (!plugin.isPartySystemEnabled()) return false;
 
         if (!UserManager.hasPlayerDataKey(defendingPlayer) || !UserManager.hasPlayerDataKey(attackingPlayer))
             return true;
@@ -456,7 +457,7 @@ public class EntityListener implements Listener {
          * Process Registered Interactions
          */
 
-        InteractionManager.processEvent(event, pluginRef, InteractType.ON_ENTITY_DAMAGE);
+        InteractionManager.processEvent(event, plugin, InteractType.ON_ENTITY_DAMAGE);
 
         /*
          * Old code
@@ -480,12 +481,8 @@ public class EntityListener implements Listener {
 
         DamageCause cause = event.getCause();
 
-        if (livingEntity instanceof Player) {
-            Player player = (Player) entity;
-
-            if (!UserManager.hasPlayerDataKey(player)) {
-                return;
-            }
+        if (livingEntity instanceof Player player) {
+            if (!UserManager.hasPlayerDataKey(player)) return;
 
             McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
             //Profile not loaded
@@ -664,7 +661,7 @@ public class EntityListener implements Listener {
 
         // We can make this assumption because we (should) be the only ones
         // using this exact metadata
-        Player player = pluginRef.getServer().getPlayerExact(entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
+        Player player = plugin.getServer().getPlayerExact(entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
 
         if (!UserManager.hasPlayerDataKey(player)) return;
 
@@ -698,7 +695,7 @@ public class EntityListener implements Listener {
 
         // We can make this assumption because we (should) be the only ones
         // using this exact metadata
-        Player player = pluginRef.getServer().getPlayerExact(entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
+        Player player = plugin.getServer().getPlayerExact(entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
 
         if (!UserManager.hasPlayerDataKey(player)) return;
 
@@ -883,7 +880,7 @@ public class EntityListener implements Listener {
             return;
 
         if (event.getEntity() instanceof Arrow arrow && arrow.isShotFromCrossbow()) {
-            Crossbows.processCrossbows(event, pluginRef, arrow);
+            Crossbows.processCrossbows(event, plugin, arrow);
         }
     }
 }
