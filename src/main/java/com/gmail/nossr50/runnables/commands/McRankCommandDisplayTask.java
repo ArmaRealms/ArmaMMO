@@ -15,14 +15,15 @@ import java.util.Map;
 /**
  * Display the results of McrankCommandAsyncTask to the sender.
  */
-public class McrankCommandDisplayTask extends CancellableRunnable {
+public class McRankCommandDisplayTask extends CancellableRunnable {
     private final Map<PrimarySkillType, Integer> skills;
     private final CommandSender sender;
     private final String playerName;
     private final boolean useBoard;
     private final boolean useChat;
 
-    McrankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender, String playerName, boolean useBoard, boolean useChat) {
+    McRankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender, String playerName,
+                             boolean useBoard, boolean useChat) {
         this.skills = skills;
         this.sender = sender;
         this.playerName = playerName;
@@ -49,6 +50,11 @@ public class McrankCommandDisplayTask extends CancellableRunnable {
         sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Player", playerName));
 
         for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
+            // Check if the command is for Maces but the MC version is not correct
+            if (skill == PrimarySkillType.MACES
+                    && !mcMMO.getCompatibilityManager().getMinecraftGameVersion().isAtLeast(1, 21, 0)) {
+                continue;
+            }
             rank = skills.get(skill);
             sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Skill", mcMMO.p.getSkillTools().getLocalizedSkillName(skill), (rank == null ? LocaleLoader.getString("Commands.mcrank.Unranked") : rank)));
         }

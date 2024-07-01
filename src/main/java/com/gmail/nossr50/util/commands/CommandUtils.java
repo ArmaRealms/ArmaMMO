@@ -190,13 +190,14 @@ public final class CommandUtils {
         return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)), StringUtils.formatNumber(profile.getSkillXpLevel(skill)), StringUtils.formatNumber(profile.getXpToLevel(skill)));
     }
 
-    private static void printGroupedSkillData(Player inspectTarget, CommandSender display, String header, List<PrimarySkillType> skillGroup) {
+    private static void printGroupedSkillData(Player inspectTarget, CommandSender display,
+                                              String header, List<PrimarySkillType> skillGroup) {
         var mcMMOPlayer = UserManager.getPlayer(inspectTarget);
         if (mcMMOPlayer == null) return;
 
         PlayerProfile profile = mcMMOPlayer.getProfile();
 
-        List<String> displayData = new ArrayList<>();
+        final List<String> displayData = new ArrayList<>();
         displayData.add(header);
 
         for (PrimarySkillType primarySkillType : skillGroup) {
