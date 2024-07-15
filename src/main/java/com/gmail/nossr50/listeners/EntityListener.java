@@ -656,12 +656,16 @@ public class EntityListener implements Listener {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld())) return;
 
-        Entity entity = event.getEntity();
-        if (!(entity instanceof TNTPrimed) || !entity.hasMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT)) return;
+        final Entity entity = event.getEntity();
+
+        if (!(entity instanceof TNTPrimed) || !entity.hasMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT)) {
+            return;
+        }
 
         // We can make this assumption because we (should) be the only ones
         // using this exact metadata
-        Player player = plugin.getServer().getPlayerExact(entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
+        final Player player = plugin.getServer().getPlayerExact(
+                entity.getMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT).get(0).asString());
 
         if (!UserManager.hasPlayerDataKey(player)) return;
 
@@ -672,7 +676,7 @@ public class EntityListener implements Listener {
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
-        MiningManager miningManager = mcMMOPlayer.getMiningManager();
+        final MiningManager miningManager = mcMMOPlayer.getMiningManager();
 
         if (miningManager.canUseBiggerBombs()) {
             event.setRadius(miningManager.biggerBombs(event.getRadius()));
