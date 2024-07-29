@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 public abstract class SkillCommand implements TabExecutor {
+    public static final String ABILITY_GENERIC_TEMPLATE_CUSTOM = "Ability.Generic.Template.Custom";
+    public static final String ABILITY_GENERIC_TEMPLATE = "Ability.Generic.Template";
     protected PrimarySkillType skill;
 
     protected DecimalFormat percent = new DecimalFormat("##0.00%");
@@ -158,8 +160,6 @@ public abstract class SkillCommand implements TabExecutor {
             /*
              * CHILD SKILLS
              */
-
-
             var parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
             ArrayList<PrimarySkillType> parentList = new ArrayList<>(parents);
@@ -189,10 +189,6 @@ public abstract class SkillCommand implements TabExecutor {
         return List.of();
     }
 
-//    protected String[] getAbilityDisplayValues(SkillActivationType skillActivationType, Player player, SubSkillType subSkill) {
-//        return RandomChanceUtil.calculateAbilityDisplayValues(skillActivationType, player, subSkill);
-//    }
-
     protected String[] calculateLengthDisplayValues(Player player, float skillValue) {
         int maxLength = mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
         int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
@@ -219,14 +215,19 @@ public abstract class SkillCommand implements TabExecutor {
         return getStatMessage(false, false, subSkillType, vars);
     }
 
-    protected String getStatMessage(boolean isExtra, boolean isCustom, SubSkillType subSkillType, String... args) {
-        String templateKey = isCustom ? "Ability.Generic.Template.Custom" : "Ability.Generic.Template";
-        String statDescriptionKey = !isExtra ? subSkillType.getLocaleKeyStatDescription() : subSkillType.getLocaleKeyStatExtraDescription();
+    protected String getStatMessage(boolean isExtra, boolean isCustom,
+                                    @NotNull SubSkillType subSkillType, String... vars) {
+        final String templateKey = isCustom ? ABILITY_GENERIC_TEMPLATE_CUSTOM : ABILITY_GENERIC_TEMPLATE;
+        final String statDescriptionKey = !isExtra
+                ? subSkillType.getLocaleKeyStatDescription()
+                : subSkillType.getLocaleKeyStatExtraDescription();
 
-        if (isCustom)
-            return LocaleLoader.getString(templateKey, LocaleLoader.getString(statDescriptionKey, args));
-        else {
-            String[] mergedList = NotificationManager.addItemToFirstPositionOfArray(LocaleLoader.getString(statDescriptionKey), args);
+        if (isCustom) {
+            return LocaleLoader.getString(templateKey, LocaleLoader.getString(statDescriptionKey, vars));
+        } else {
+            final String[] mergedList
+                    = NotificationManager.addItemToFirstPositionOfArray(
+                            LocaleLoader.getString(statDescriptionKey), vars);
             return LocaleLoader.getString(templateKey, mergedList);
         }
     }

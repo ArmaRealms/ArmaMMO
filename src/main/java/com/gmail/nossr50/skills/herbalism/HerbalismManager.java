@@ -48,6 +48,17 @@ import static java.util.Objects.requireNonNull;
 
 public class HerbalismManager extends SkillManager {
     private final List<String> crops = List.of("carrots", "wheat", "nether_wart", "potatoes", "beetroots", "cocoa", "torchflower");
+    private final static HashMap<String, Integer> plantBreakLimits;
+
+    static {
+        plantBreakLimits = new HashMap<>();
+        plantBreakLimits.put("cactus", 3);
+        plantBreakLimits.put("bamboo", 20);
+        plantBreakLimits.put("sugar_cane", 3);
+        plantBreakLimits.put("kelp", 26);
+        plantBreakLimits.put("kelp_plant", 26);
+        plantBreakLimits.put("chorus_plant", 22);
+    }
 
     public HerbalismManager(McMMOPlayer mcMMOPlayer) {
         super(mcMMOPlayer, PrimarySkillType.HERBALISM);
@@ -415,6 +426,7 @@ public class HerbalismManager extends SkillManager {
 
     public void awardXPForPlantBlocks(Set<Block> brokenPlants) {
         int xpToReward = 0;
+        int firstXpReward = -1;
 
         for (Block brokenPlantBlock : brokenPlants) {
             BlockState brokenBlockNewState = brokenPlantBlock.getState();
@@ -431,6 +443,8 @@ public class HerbalismManager extends SkillManager {
                 //If its a Crop we need to reward XP when its fully grown
                 if (isAgeableAndFullyMature(plantData) && !isBizarreAgeable(plantData)) {
                     xpToReward += ExperienceConfig.getInstance().getXp(PrimarySkillType.HERBALISM, brokenBlockNewState.getType());
+                    if (firstXpReward == -1)
+                        firstXpReward = xpToReward;
                 }
 
                 //Mark it as natural again as it is being broken
@@ -448,10 +462,14 @@ public class HerbalismManager extends SkillManager {
 
                     if (isAgeableMature(plantAgeable) || isBizarreAgeable(plantData)) {
                         xpToReward += ExperienceConfig.getInstance().getXp(PrimarySkillType.HERBALISM, brokenBlockNewState.getType());
+                        if (firstXpReward == -1)
+                            firstXpReward = xpToReward;
                     }
 
                 } else {
                     xpToReward += ExperienceConfig.getInstance().getXp(PrimarySkillType.HERBALISM, brokenPlantBlock.getType());
+                    if (firstXpReward == -1)
+                        firstXpReward = xpToReward;
                 }
             }
         }
@@ -462,9 +480,30 @@ public class HerbalismManager extends SkillManager {
 
         //Reward XP
         if (xpToReward > 0) {
-            applyXpGain(xpToReward, XPGainReason.PVE, XPGainSource.SELF);
+            // get first block from hash set using stream API
+            final Block firstBlock = brokenPlants.stream().findFirst().orElse(null);
+            if (firstBlock != null
+                    && firstXpReward != -1
+                    && ExperienceConfig.getInstance().limitXPOnTallPlants()
+                    && plantBreakLimits.containsKey(firstBlock.getType().getKey().getKey())) {
+                int limit = plantBreakLimits.get(firstBlock.getType().getKey().getKey()) * firstXpReward;
+                // Plant may be unnaturally tall, limit XP
+                applyXpGain(Math.min(xpToReward, limit), XPGainReason.PVE, XPGainSource.SELF);
+            } else {
+                applyXpGain(xpToReward, XPGainReason.PVE, XPGainSource.SELF);
+            }
         }
     }
+
+    private int getNaturalGrowthLimit(Material brokenPlant) {
+        // This is an exploit counter-measure to prevent players from growing unnaturally tall plants and reaping XP
+        if (plantBreakLimits.containsKey(brokenPlant.getKey().getKey())) {
+            return plantBreakLimits.get(brokenPlant.getKey().getKey());
+        } else {
+            return 0;
+        }
+    }
+
 
     public boolean isAgeableMature(Ageable ageable) {
         return ageable.getAge() == ageable.getMaximumAge() && ageable.getAge() != 0;
@@ -580,7 +619,8 @@ public class HerbalismManager extends SkillManager {
         if (isChorusBranch(brokenBlock.getType())) {
             brokenBlocks = getBrokenChorusBlocks(brokenBlock);
         } else {
-            brokenBlocks = getBlocksBrokenAboveOrBelow(brokenBlock, false, mcMMO.getMaterialMapStore().isMultiBlockHangingPlant(brokenBlock.getType()));
+            brokenBlocks = getBlocksBrokenAboveOrBelow(
+                    brokenBlock, false, mcMMO.getMaterialMapStore().isMultiBlockHangingPlant(brokenBlock.getType()));
         }
 
         return brokenBlocks;
