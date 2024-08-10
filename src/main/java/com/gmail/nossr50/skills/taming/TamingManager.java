@@ -25,7 +25,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
-import org.bukkit.entity.*;
+import org.bukkit.entity.AbstractHorse;
+import org.bukkit.entity.Cat;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Horse;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Llama;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
+import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -378,78 +387,60 @@ public class TamingManager extends SkillManager {
 
     private void spawnWolf(Location spawnLocation) {
         LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld().spawnEntity(spawnLocation, EntityType.WOLF);
-
         //This is used to prevent XP gains for damaging this entity
         applyMetaDataToCOTWEntity(callOfWildEntity);
-
         setBaseCOTWEntityProperties(callOfWildEntity);
-
-        ((Wolf) callOfWildEntity).setAdult();
-        addToTracker(callOfWildEntity, CallOfTheWildType.WOLF);
-
-        //Setup wolf stats
-        callOfWildEntity.setMaxHealth(20.0);
-        callOfWildEntity.setHealth(callOfWildEntity.getMaxHealth());
-
-        callOfWildEntity.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.WOLF)));
+        if (callOfWildEntity instanceof Wolf wolf) {
+            wolf.setAdult();
+            addToTracker(callOfWildEntity, CallOfTheWildType.WOLF);
+            //Setup wolf stats
+            wolf.setMaxHealth(20.0);
+            wolf.setHealth(callOfWildEntity.getMaxHealth());
+            wolf.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.WOLF)));
+        }
     }
 
     private void spawnCat(Location spawnLocation, EntityType entityType) {
         LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld().spawnEntity(spawnLocation, entityType);
-
         //This is used to prevent XP gains for damaging this entity
         applyMetaDataToCOTWEntity(callOfWildEntity);
-
         setBaseCOTWEntityProperties(callOfWildEntity);
-
         addToTracker(callOfWildEntity, CallOfTheWildType.CAT);
-
         //Randomize the cat
-        if (callOfWildEntity instanceof Ocelot) {
-            int numberOfTypes = Ocelot.Type.values().length;
-            ((Ocelot) callOfWildEntity).setCatType(Ocelot.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
-            ((Ocelot) callOfWildEntity).setAdult();
-        } else if (callOfWildEntity instanceof Cat) {
-            int numberOfTypes = Cat.Type.values().length;
-            ((Cat) callOfWildEntity).setCatType(Cat.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
-            ((Cat) callOfWildEntity).setAdult();
+        if (callOfWildEntity instanceof Cat cat) {
+            Cat.Type[] catTypes = Cat.Type.values();
+            int numberOfTypes = catTypes.length;
+            cat.setCatType(catTypes[Misc.getRandom().nextInt(numberOfTypes)]);
+            cat.setAdult();
+            cat.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(entityType)));
+            //Particle effect
+            ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
         }
-
-        callOfWildEntity.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(entityType)));
-
-        //Particle effect
-        ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
     }
 
     private void spawnHorse(Location spawnLocation) {
         LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld().spawnEntity(spawnLocation, EntityType.HORSE);
         applyMetaDataToCOTWEntity(callOfWildEntity);
-
         setBaseCOTWEntityProperties(callOfWildEntity);
-
         addToTracker(callOfWildEntity, CallOfTheWildType.HORSE);
-
-        //Randomize Horse
-        Horse horse = (Horse) callOfWildEntity;
-
-        callOfWildEntity.setMaxHealth(15.0 + (Misc.getRandom().nextDouble() * 15));
-        callOfWildEntity.setHealth(callOfWildEntity.getMaxHealth());
-        horse.setColor(Horse.Color.values()[Misc.getRandom().nextInt(Horse.Color.values().length)]);
-        horse.setStyle(Horse.Style.values()[Misc.getRandom().nextInt(Horse.Style.values().length)]);
-        horse.setJumpStrength(Math.max(mcMMO.p.getAdvancedConfig().getMinHorseJumpStrength(), Math.min(Math.min(Misc.getRandom().nextDouble(), Misc.getRandom().nextDouble()) * 2, mcMMO.p.getAdvancedConfig().getMaxHorseJumpStrength())));
-        horse.setAdult();
-
-        //TODO: setSpeed, once available
-
-        callOfWildEntity.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.HORSE)));
-
-        //Particle effect
-        ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
+        if (callOfWildEntity instanceof Horse horse) {
+            horse.setMaxHealth(15.0 + (Misc.getRandom().nextDouble() * 15));
+            horse.setHealth(callOfWildEntity.getMaxHealth());
+            horse.setColor(Horse.Color.values()[Misc.getRandom().nextInt(Horse.Color.values().length)]);
+            horse.setStyle(Horse.Style.values()[Misc.getRandom().nextInt(Horse.Style.values().length)]);
+            horse.setJumpStrength(Math.max(mcMMO.p.getAdvancedConfig().getMinHorseJumpStrength(), Math.min(Math.min(Misc.getRandom().nextDouble(), Misc.getRandom().nextDouble()) * 2, mcMMO.p.getAdvancedConfig().getMaxHorseJumpStrength())));
+            horse.setAdult();
+            horse.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.HORSE)));
+            //Particle effect
+            ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
+        }
     }
 
     private void setBaseCOTWEntityProperties(LivingEntity callOfWildEntity) {
-        ((Tameable) callOfWildEntity).setOwner(getPlayer());
-        callOfWildEntity.setRemoveWhenFarAway(false);
+        if (callOfWildEntity instanceof Tameable tameable) {
+            tameable.setOwner(getPlayer());
+            tameable.setRemoveWhenFarAway(false);
+        }
     }
 
     private void applyMetaDataToCOTWEntity(LivingEntity summonedEntity) {
