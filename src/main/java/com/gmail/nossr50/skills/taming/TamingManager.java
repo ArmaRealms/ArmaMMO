@@ -405,14 +405,11 @@ public class TamingManager extends SkillManager {
         addToTracker(callOfWildEntity, CallOfTheWildType.CAT);
 
         //Randomize the cat
-        if (callOfWildEntity instanceof Ocelot) {
-            int numberOfTypes = Ocelot.Type.values().length;
-            ((Ocelot) callOfWildEntity).setCatType(Ocelot.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
-            ((Ocelot) callOfWildEntity).setAdult();
-        } else if (callOfWildEntity instanceof Cat) {
-            int numberOfTypes = Cat.Type.values().length;
-            ((Cat) callOfWildEntity).setCatType(Cat.Type.values()[Misc.getRandom().nextInt(numberOfTypes)]);
-            ((Cat) callOfWildEntity).setAdult();
+        if (callOfWildEntity instanceof Cat cat) {
+            Cat.Type[] catTypes = Cat.Type.values();
+            int numberOfTypes = catTypes.length;
+            cat.setCatType(catTypes[Misc.getRandom().nextInt(numberOfTypes)]);
+            cat.setAdult();
         }
 
         callOfWildEntity.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(entityType)));
