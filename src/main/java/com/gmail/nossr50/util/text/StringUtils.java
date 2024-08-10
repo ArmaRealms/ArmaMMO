@@ -90,15 +90,6 @@ public class StringUtils {
     }
 
     public static String getPrettyEntityTypeString(EntityType entity) {
-        if (entity == EntityType.HORSE) {
-            return "Cavalo";
-        }
-        if (entity == EntityType.WOLF) {
-            return "Lobo";
-        }
-        if (entity == EntityType.CAT) {
-            return "Gato";
-        }
         return createPrettyString(entity.toString());
     }
 

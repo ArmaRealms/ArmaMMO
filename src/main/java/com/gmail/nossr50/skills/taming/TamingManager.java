@@ -335,11 +335,14 @@ public class TamingManager extends SkillManager {
 
                 //COTW can summon multiple entities per usage
                 for (int i = 0; i < tamingSummon.getEntitiesSummoned(); i++) {
+                    String entityName = switch (callOfTheWildType) {
+                        case CAT -> "Gato";
+                        case WOLF -> "Lobo";
+                        case HORSE -> "Cavalo";
+                    };
 
                     if (getAmountCurrentlySummoned(callOfTheWildType) >= tamingSummon.getSummonCap()) {
-                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Limit",
-                                String.valueOf(tamingSummon.getSummonCap()),
-                                StringUtils.getCapitalized(callOfTheWildType.toString()));
+                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Limit", String.valueOf(tamingSummon.getSummonCap()), entityName);
                         break;
                     }
 
@@ -348,10 +351,9 @@ public class TamingManager extends SkillManager {
 
                     //Inform the player about what they have just done
                     if (tamingSummon.getSummonLifespan() > 0) {
-                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Success.WithLifespan",
-                                StringUtils.getCapitalized(callOfTheWildType.toString()), String.valueOf(tamingSummon.getSummonLifespan()));
+                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Success.WithLifespan", entityName, String.valueOf(tamingSummon.getSummonLifespan()));
                     } else {
-                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Success.WithoutLifespan", StringUtils.getCapitalized(callOfTheWildType.toString()));
+                        NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.Success.WithoutLifespan", entityName);
                     }
 
                     //Send Sound
@@ -371,7 +373,12 @@ public class TamingManager extends SkillManager {
             } else {
                 //Player did not have enough of the item in their main hand
                 int difference = tamingSummon.getItemAmountRequired() - itemInMainHand.getAmount();
-                NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.NeedMoreItems", String.valueOf(difference), StringUtils.getPrettyItemString(itemInMainHand.getType()));
+                String itemName = switch (callOfTheWildType) {
+                    case CAT -> "Bacalhau cru";
+                    case WOLF -> "Osso";
+                    case HORSE -> "Maçã";
+                };
+                NotificationManager.sendPlayerInformationChatOnly(player, "Taming.Summon.COTW.NeedMoreItems", String.valueOf(difference), itemName);
             }
         }
     }
@@ -396,7 +403,7 @@ public class TamingManager extends SkillManager {
             //Setup wolf stats
             wolf.setMaxHealth(20.0);
             wolf.setHealth(callOfWildEntity.getMaxHealth());
-            wolf.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.WOLF)));
+            wolf.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), "Lobo"));
         }
     }
 
@@ -412,7 +419,7 @@ public class TamingManager extends SkillManager {
             int numberOfTypes = catTypes.length;
             cat.setCatType(catTypes[Misc.getRandom().nextInt(numberOfTypes)]);
             cat.setAdult();
-            cat.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(entityType)));
+            cat.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), "Gato"));
             //Particle effect
             ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
         }
@@ -430,7 +437,7 @@ public class TamingManager extends SkillManager {
             horse.setStyle(Horse.Style.values()[Misc.getRandom().nextInt(Horse.Style.values().length)]);
             horse.setJumpStrength(Math.max(mcMMO.p.getAdvancedConfig().getMinHorseJumpStrength(), Math.min(Math.min(Misc.getRandom().nextDouble(), Misc.getRandom().nextDouble()) * 2, mcMMO.p.getAdvancedConfig().getMaxHorseJumpStrength())));
             horse.setAdult();
-            horse.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), StringUtils.getPrettyEntityTypeString(EntityType.HORSE)));
+            horse.setCustomName(LocaleLoader.getString("Taming.Summon.Name.Format", getPlayer().getName(), "Cavalo"));
             //Particle effect
             ParticleEffectUtils.playCallOfTheWildEffect(callOfWildEntity);
         }
