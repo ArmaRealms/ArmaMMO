@@ -13,7 +13,7 @@ public enum CallOfTheWildType {
 
         switch(this) {
             case CAT:
-                return StringUtils.getPrettyEntityTypeString(EntityType.CAT); //Even though cats will be summoned in 1.14, we specify Ocelot here. This will be gone in 2.2
+                return StringUtils.getPrettyEntityTypeString(EntityType.OCELOT); //Even though cats will be summoned in 1.14, we specify Ocelot here. This will be gone in 2.2
             case WOLF:
                 return StringUtils.getPrettyEntityTypeString(EntityType.WOLF);
             case HORSE:
