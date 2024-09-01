@@ -26,7 +26,7 @@ public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
                 "contact the dev and tell them to use the constructor for" +
                 " McMMOPlayerSkillEvent(McMMOPlayer, PrimarySkillType) instead");
         this.skill = skill;
-        this.skillLevel = UserManager.getPlayer(player).getSkillLevel(skill);
+        this.skillLevel = mmoPlayer.getSkillLevel(skill);
     }
 
     protected McMMOPlayerSkillEvent(@NotNull McMMOPlayer mmoPlayer, @NotNull PrimarySkillType primarySkillType) {

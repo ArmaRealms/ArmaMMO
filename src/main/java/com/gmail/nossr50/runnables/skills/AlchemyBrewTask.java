@@ -22,7 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AlchemyBrewTask extends CancellableRunnable {
     private static final double DEFAULT_BREW_SPEED = 1.0;
-    private static final int    DEFAULT_BREW_TICKS = 400;
+    private static final int DEFAULT_BREW_TICKS = 400;
 
     private final BlockState brewingStand;
     private final OfflinePlayer offlinePlayer;
@@ -150,11 +150,13 @@ public class AlchemyBrewTask extends CancellableRunnable {
 
 
     private void finish() {
-        final McMMOPlayerBrewEvent event = new McMMOPlayerBrewEvent(mmoPlayer, brewingStand);
-        mcMMO.p.getServer().getPluginManager().callEvent(event);
+        if (mmoPlayer != null) {
+            final McMMOPlayerBrewEvent event = new McMMOPlayerBrewEvent(mmoPlayer, brewingStand);
+            mcMMO.p.getServer().getPluginManager().callEvent(event);
 
-        if (!event.isCancelled()) {
-            AlchemyPotionBrewer.finishBrewing(brewingStand, mmoPlayer, false);
+            if (!event.isCancelled()) {
+                AlchemyPotionBrewer.finishBrewing(brewingStand, mmoPlayer, false);
+            }
         }
 
         Alchemy.brewingStandMap.remove(brewingStand.getLocation());
