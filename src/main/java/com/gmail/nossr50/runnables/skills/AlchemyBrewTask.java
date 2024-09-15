@@ -150,7 +150,10 @@ public class AlchemyBrewTask extends CancellableRunnable {
 
 
     private void finish() {
-        if (mmoPlayer != null) {
+        if (mmoPlayer == null) {
+            // Still need to finish brewing if the player is null
+            AlchemyPotionBrewer.finishBrewing(brewingStand, null, false);
+        } else {
             final McMMOPlayerBrewEvent event = new McMMOPlayerBrewEvent(mmoPlayer, brewingStand);
             mcMMO.p.getServer().getPluginManager().callEvent(event);
 
