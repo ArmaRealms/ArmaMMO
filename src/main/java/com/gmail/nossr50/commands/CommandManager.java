@@ -136,7 +136,7 @@ public class CommandManager {
     public void validatePlayerParty(@NotNull Player player) {
         McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if (!pluginRef.getPartyConfig().isPartyEnabled() || mmoPlayer.getParty() == null) {
+        if (!pluginRef.getPartyConfig().isPartyEnabled() || mmoPlayer == null || mmoPlayer.getParty() == null) {
             throw new ConditionFailedException(LocaleLoader.getString("Commands.Party.None"));
         }
     }
