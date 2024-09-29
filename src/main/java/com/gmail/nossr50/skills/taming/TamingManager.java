@@ -410,6 +410,7 @@ public class TamingManager extends SkillManager {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void spawnCat(Location spawnLocation, EntityType entityType) {
         LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld().spawnEntity(spawnLocation, entityType);
         //This is used to prevent XP gains for damaging this entity

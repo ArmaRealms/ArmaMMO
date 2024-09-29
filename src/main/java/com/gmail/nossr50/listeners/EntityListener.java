@@ -39,6 +39,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Endermite;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -77,6 +78,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
+import java.util.Set;
+
 import static com.gmail.nossr50.util.MobMetadataUtils.addMobFlags;
 import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
 import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
@@ -84,6 +87,7 @@ import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
     private final mcMMO plugin;
+    private final static Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
 
     public EntityListener(final mcMMO plugin) {
         this.plugin = plugin;
@@ -97,8 +101,12 @@ public class EntityListener implements Listener {
                     addMobFlags(livingEntity, transformedEntity);
                 }
             }
-        }
 
+            // Clear the original slime/magma cubes metadata - it's dead.
+            if (TRANSFORMABLE_ENTITIES.contains(livingEntity.getType())) {
+                mcMMO.getTransientMetadataTools().cleanLivingEntityMetadata(livingEntity);
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -567,7 +575,14 @@ public class EntityListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEntityDeathLowest(EntityDeathEvent event) {
-        mcMMO.getTransientMetadataTools().cleanLivingEntityMetadata(event.getEntity());
+        LivingEntity entity = event.getEntity();
+
+        // Clear metadata for Slimes/Magma Cubes after transformation events take place, otherwise small spawned slimes will not have any tags
+        if (TRANSFORMABLE_ENTITIES.contains(entity.getType())) {
+            return;
+        }
+
+        mcMMO.getTransientMetadataTools().cleanLivingEntityMetadata(entity);
     }
 
     /**
