@@ -12,7 +12,7 @@ public abstract class SkillManager {
     protected McMMOPlayer mmoPlayer;
     protected PrimarySkillType skill;
 
-    public SkillManager(McMMOPlayer mmoPlayer, PrimarySkillType skill) {
+    protected SkillManager(McMMOPlayer mmoPlayer, PrimarySkillType skill) {
         this.mmoPlayer = mmoPlayer;
         this.skill = skill;
     }

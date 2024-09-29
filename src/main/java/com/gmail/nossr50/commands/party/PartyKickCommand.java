@@ -1,6 +1,7 @@
 package com.gmail.nossr50.commands.party;
 
 import com.gmail.nossr50.datatypes.party.Party;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.events.party.McMMOPartyChangeEvent.EventReason;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
@@ -14,15 +15,29 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class PartyKickCommand implements CommandExecutor {
+
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 2) {
-            if (UserManager.getPlayer((Player) sender) == null) {
+
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
+
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            Party playerParty = UserManager.getPlayer((Player) sender).getParty();
+            Party playerParty = mcMMOPlayer.getParty();
+            if (playerParty == null) {
+                return true;
+            }
+
             String targetName = CommandUtils.getMatchedPlayerName(args[1]);
 
             if (!playerParty.hasMember(targetName)) {
@@ -40,14 +55,20 @@ public class PartyKickCommand implements CommandExecutor {
                     return true;
                 }
 
-                mcMMO.p.getPartyManager().processPartyLeaving(UserManager.getPlayer(onlineTarget));
-                onlineTarget.sendMessage(LocaleLoader.getString("Commands.Party.Kick", partyName));
+                McMMOPlayer targetMcMMOPlayer = UserManager.getPlayer(onlineTarget);
+                if (targetMcMMOPlayer != null) {
+                    mcMMO.p.getPartyManager().processPartyLeaving(targetMcMMOPlayer);
+                }
+
+                if (onlineTarget != null) {
+                    onlineTarget.sendMessage(LocaleLoader.getString("Commands.Party.Kick", partyName));
+                }
             }
 
             mcMMO.p.getPartyManager().removeFromParty(target, playerParty);
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "kick", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "expulsar", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
         return true;
     }
 }

@@ -5,15 +5,12 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import com.google.common.collect.ImmutableList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,7 +37,7 @@ public class MmoInfoCommand implements TabExecutor {
                 }
 
                 final SubSkillType subSkillType = matchSubSkill(args[0]);
-                if  (subSkillType != null) {
+                if (subSkillType != null) {
                     displayInfo(player, subSkillType);
                 } else {
                     //Not a real skill
@@ -65,9 +62,9 @@ public class MmoInfoCommand implements TabExecutor {
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return StringUtil.copyPartialMatches(args[0], mcMMO.p.getSkillTools().EXACT_SUBSKILL_NAMES, new ArrayList<>(mcMMO.p.getSkillTools().EXACT_SUBSKILL_NAMES.size()));
+            return mcMMO.p.getSkillTools().EXACT_SUBSKILL_NAMES.stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void displayInfo(Player player, SubSkillType subSkillType) {

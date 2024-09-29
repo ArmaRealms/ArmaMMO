@@ -7,6 +7,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
+import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -21,7 +22,8 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
     private final CommandSender sender;
     private final PrimarySkillType skill;
     private final int page;
-    private final boolean useBoard, useChat;
+    private final boolean useBoard;
+    private final boolean useChat;
 
     MctopCommandDisplayTask(List<PlayerStat> userStats, int page, PrimarySkillType skill, CommandSender sender, boolean useBoard, boolean useChat) {
         this.userStats = userStats;
@@ -42,11 +44,10 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             displayChat();
         }
 
-        if (sender instanceof Player) {
-            ((Player) sender).removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, mcMMO.p);
-        }
-        if (sender instanceof Player)
+        if (sender instanceof Player player) {
+            player.removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, mcMMO.p);
             sender.sendMessage(LocaleLoader.getString("Commands.mctop.Tip"));
+        }
     }
 
     private void displayChat() {
@@ -72,11 +73,11 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             // 01. Playername - skill value
             // 12. Playername - skill value
             if (sender instanceof Player) {
-                sender.sendMessage(String.format("%2d. %s%s - %s%s", place, ChatColor.GREEN, stat.name, ChatColor.WHITE, stat.statVal));
+                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name, ChatColor.WHITE, StringUtils.formatNumber(stat.statVal)));
             } else {
-                sender.sendMessage(String.format("%2d. %s - %s", place, stat.name, stat.statVal));
+                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name, StringUtils.formatNumber(stat.statVal)));
             }
-            
+
             place++;
         }
     }

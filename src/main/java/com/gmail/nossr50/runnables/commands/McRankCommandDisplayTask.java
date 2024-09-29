@@ -19,7 +19,8 @@ public class McRankCommandDisplayTask extends CancellableRunnable {
     private final Map<PrimarySkillType, Integer> skills;
     private final CommandSender sender;
     private final String playerName;
-    private final boolean useBoard, useChat;
+    private final boolean useBoard;
+    private final boolean useChat;
 
     McRankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender, String playerName,
                              boolean useBoard, boolean useChat) {

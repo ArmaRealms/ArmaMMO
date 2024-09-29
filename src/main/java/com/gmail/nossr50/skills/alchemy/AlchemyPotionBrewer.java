@@ -177,8 +177,7 @@ public final class AlchemyPotionBrewer {
         }
 
         // Check if the brewing stand has a valid ingredient; if not, exit the method
-        if (player == null
-                || !hasIngredient(inventory, player)) {
+        if (player == null || !hasIngredient(inventory, player)) {
             // debug
             return;
         }
@@ -238,13 +237,11 @@ public final class AlchemyPotionBrewer {
 
             AlchemyPotion output = input.getChild(ingredient);
 
-            if (output != null && player != null) {
+            if (output != null) {
                 PotionStage potionStage = PotionStage.getPotionStage(input, output);
 
                 // Update player alchemy skills or effects based on brewing success
-                if (UserManager.getPlayer(player) != null) {
-                    UserManager.getPlayer(player).getAlchemyManager().handlePotionBrewSuccesses(potionStage, 1);
-                }
+                mmoPlayer.getAlchemyManager().handlePotionBrewSuccesses(potionStage, 1);
             }
         }
 

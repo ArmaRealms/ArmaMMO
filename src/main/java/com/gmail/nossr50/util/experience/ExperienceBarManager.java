@@ -7,7 +7,6 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.ExperienceBarHideTask;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.player.NotificationManager;
-import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,36 +42,34 @@ public class ExperienceBarManager {
         disabledBars = new HashSet<>();
     }
 
-    public void updateExperienceBar(PrimarySkillType primarySkillType, Plugin plugin) {
-        if (disabledBars.contains(primarySkillType)
-                || !ExperienceConfig.getInstance().isExperienceBarsEnabled()
-                || !ExperienceConfig.getInstance().isExperienceBarEnabled(primarySkillType))
+    public void updateExperienceBar(PrimarySkillType primarySkillType) {
+        ExperienceConfig config = ExperienceConfig.getInstance();
+
+        if (disabledBars.contains(primarySkillType) || !config.isExperienceBarsEnabled() || !config.isExperienceBarEnabled(primarySkillType)) {
             return;
-
-        //Init Bar
-        if (experienceBars.get(primarySkillType) == null)
-            experienceBars.put(primarySkillType, new ExperienceBarWrapper(primarySkillType, mcMMOPlayer));
-
-        //Get Bar
-        ExperienceBarWrapper experienceBarWrapper = experienceBars.get(primarySkillType);
-
-        //Update Progress
-        experienceBarWrapper.setProgress(mcMMOPlayer.getProgressInCurrentSkillLevel(primarySkillType));
-
-        //Show Bar
-        experienceBarWrapper.showExperienceBar();
-
-        //Setup Hide Bar Task
-        if (experienceBarHideTaskHashMap.get(primarySkillType) != null) {
-            experienceBarHideTaskHashMap.get(primarySkillType).cancel();
         }
 
-        scheduleHideTask(primarySkillType, plugin);
+        // Get or Initialize Bar
+        ExperienceBarWrapper experienceBarWrapper = experienceBars.computeIfAbsent(primarySkillType,
+                key -> new ExperienceBarWrapper(primarySkillType, mcMMOPlayer));
+
+        // Update Progress and Show Bar
+        experienceBarWrapper.setProgress(mcMMOPlayer.getProgressInCurrentSkillLevel(primarySkillType));
+        experienceBarWrapper.showExperienceBar();
+
+        // Cancel any existing Hide Task
+        ExperienceBarHideTask existingTask = experienceBarHideTaskHashMap.remove(primarySkillType);
+        if (existingTask != null) {
+            existingTask.cancel();
+        }
+
+        // Schedule new Hide Task
+        scheduleHideTask(primarySkillType);
     }
 
-    private void scheduleHideTask(PrimarySkillType primarySkillType, Plugin plugin) {
-        if (alwaysVisible.contains(primarySkillType))
-            return;
+
+    private void scheduleHideTask(PrimarySkillType primarySkillType) {
+        if (alwaysVisible.contains(primarySkillType)) return;
 
         ExperienceBarHideTask experienceBarHideTask = new ExperienceBarHideTask(this, mcMMOPlayer, primarySkillType);
         mcMMO.p.getFoliaLib().getImpl().runAtEntityLater(mcMMOPlayer.getPlayer(), experienceBarHideTask, (long) delaySeconds * Misc.TICK_CONVERSION_FACTOR);
@@ -89,7 +86,7 @@ public class ExperienceBarManager {
     }
 
     public void disableAllBars() {
-        for(PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+        for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
             xpBarSettingToggle(XPBarSettingTarget.HIDE, primarySkillType);
         }
 
@@ -97,8 +94,8 @@ public class ExperienceBarManager {
     }
 
     public void xpBarSettingToggle(@NotNull XPBarSettingTarget settingTarget, @Nullable PrimarySkillType skillType) {
-        switch(settingTarget) {
-            case SHOW:
+        switch (settingTarget) {
+            case SHOW -> {
                 disabledBars.remove(skillType);
                 alwaysVisible.add(skillType);
 
@@ -107,9 +104,9 @@ public class ExperienceBarManager {
                     experienceBarHideTaskHashMap.get(skillType).cancel();
                 }
 
-                updateExperienceBar(skillType, mcMMO.p);
-                break;
-            case HIDE:
+                updateExperienceBar(skillType);
+            }
+            case HIDE -> {
                 alwaysVisible.remove(skillType);
                 disabledBars.add(skillType);
 
@@ -119,10 +116,8 @@ public class ExperienceBarManager {
                 }
 
                 hideExperienceBar(skillType);
-                break;
-            case RESET:
-                resetBarSettings();
-                break;
+            }
+            case RESET -> resetBarSettings();
         }
 
         informPlayer(settingTarget, skillType);
@@ -130,7 +125,7 @@ public class ExperienceBarManager {
 
     private void resetBarSettings() {
         //Hide all currently permanent bars
-        for(PrimarySkillType permanent : alwaysVisible) {
+        for (PrimarySkillType permanent : alwaysVisible) {
             hideExperienceBar(permanent);
         }
 
@@ -151,5 +146,5 @@ public class ExperienceBarManager {
         }
     }
 
-    public enum XPBarSettingTarget { SHOW, HIDE, RESET, DISABLE }
+    public enum XPBarSettingTarget {SHOW, HIDE, RESET, DISABLE}
 }
