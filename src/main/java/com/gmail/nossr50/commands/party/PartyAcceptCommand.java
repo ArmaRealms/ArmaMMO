@@ -14,16 +14,17 @@ public class PartyAcceptCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
-            Player player = (Player) sender;
-
-            //Check if player profile is loaded
-            if (UserManager.getPlayer(player) == null) {
-                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                 return true;
             }
 
+            //Check if player profile is loaded
             McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-
+            if (mcMMOPlayer == null) {
+                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                return true;
+            }
 
             if (!mcMMOPlayer.hasPartyInvite()) {
                 sender.sendMessage(LocaleLoader.getString("mcMMO.NoInvites"));
@@ -38,7 +39,7 @@ public class PartyAcceptCommand implements CommandExecutor {
             mcMMO.p.getPartyManager().joinInvitedParty(mcMMOPlayer);
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "accept"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "aceitar"));
         return true;
     }
 }

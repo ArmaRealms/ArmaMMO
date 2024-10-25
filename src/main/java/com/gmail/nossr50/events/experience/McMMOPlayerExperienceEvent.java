@@ -1,6 +1,7 @@
 package com.gmail.nossr50.events.experience;
 
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.entity.Player;
@@ -30,8 +31,9 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
         super(player);
         this.skill = skill;
 
-        if (UserManager.getPlayer(player) != null) {
-            this.skillLevel = UserManager.getPlayer(player).getSkillLevel(skill);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer != null) {
+            this.skillLevel = mmoPlayer.getSkillLevel(skill);
         } else {
             this.skillLevel = 0;
         }

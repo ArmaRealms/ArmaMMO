@@ -29,8 +29,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.*;
+import org.bukkit.event.inventory.BrewEvent;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.inventory.FurnaceBurnEvent;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.inventory.FurnaceSmeltEvent;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.BrewerInventory;
+import org.bukkit.inventory.FurnaceInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryListener implements Listener {
     private final mcMMO plugin;
@@ -47,7 +63,7 @@ public class InventoryListener implements Listener {
 
         Block furnaceBlock = event.getBlock();
         BlockState furnaceState = furnaceBlock.getState();
-        ItemStack smelting = furnaceState instanceof Furnace ? ((Furnace) furnaceState).getInventory().getSmelting() : null;
+        ItemStack smelting = furnaceState instanceof Furnace furnace ? furnace.getInventory().getSmelting() : null;
 
         if (!ItemUtils.isSmeltable(smelting)) {
             return;
@@ -55,10 +71,8 @@ public class InventoryListener implements Listener {
 
         Furnace furnace = (Furnace) furnaceState;
         OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(furnace);
-        Player player;
 
-        if (offlinePlayer != null && offlinePlayer.isOnline() && offlinePlayer instanceof Player) {
-            player = (Player) offlinePlayer;
+        if (offlinePlayer != null && offlinePlayer.isOnline() && offlinePlayer instanceof Player player) {
 
             if (!Permissions.isSubSkillEnabled(player, SubSkillType.SMELTING_FUEL_EFFICIENCY)) {
                 return;
@@ -71,15 +85,15 @@ public class InventoryListener implements Listener {
 
                 if (debugMode) {
                     player.sendMessage("FURNACE FUEL EFFICIENCY DEBUG REPORT");
-                    player.sendMessage("Furnace - "+furnace.hashCode());
-                    player.sendMessage("Furnace Type: "+furnaceBlock.getType());
-                    player.sendMessage("Burn Length before Fuel Efficiency is applied - "+event.getBurnTime());
+                    player.sendMessage("Furnace - " + furnace.hashCode());
+                    player.sendMessage("Furnace Type: " + furnaceBlock.getType());
+                    player.sendMessage("Burn Length before Fuel Efficiency is applied - " + event.getBurnTime());
                 }
 
                 event.setBurnTime(mmoPlayer.getSmeltingManager().fuelEfficiency(event.getBurnTime()));
 
                 if (debugMode) {
-                    player.sendMessage("New Furnace Burn Length (after applying fuel efficiency) "+event.getBurnTime());
+                    player.sendMessage("New Furnace Burn Length (after applying fuel efficiency) " + event.getBurnTime());
                     player.sendMessage("");
                 }
             }
@@ -131,22 +145,18 @@ public class InventoryListener implements Listener {
 
         if (furnaceBlock instanceof Furnace) {
             /* WORLD GUARD MAIN FLAG CHECK */
-            if (WorldGuardUtils.isWorldGuardLoaded()) {
-                if (!WorldGuardManager.getInstance().hasMainFlag(player))
-                    return;
-            }
+            if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
             if (!UserManager.hasPlayerDataKey(player) || !Permissions.vanillaXpBoost(player, PrimarySkillType.SMELTING)) {
                 return;
             }
 
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             //Profile not loaded
-            if (UserManager.getPlayer(player) == null) {
-                return;
-            }
+            if (mmoPlayer == null) return;
 
             int xpToDrop = event.getExpToDrop();
-            int exp = UserManager.getPlayer(player).getSmeltingManager().vanillaXPBoost(xpToDrop);
+            int exp = mmoPlayer.getSmeltingManager().vanillaXPBoost(xpToDrop);
             event.setExpToDrop(exp);
         }
     }
@@ -154,12 +164,7 @@ public class InventoryListener implements Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryClickEventNormal(InventoryClickEvent event) {
         /* WORLD BLACKLIST CHECK */
-        if (WorldBlacklist.isWorldBlacklisted(event.getWhoClicked().getWorld()))
-            return;
-
-        //We should never care to do processing if the player clicks outside the window
-//        if (isOutsideWindowClick(event))
-//            return;
+        if (WorldBlacklist.isWorldBlacklisted(event.getWhoClicked().getWorld())) return;
 
         Inventory inventory = event.getInventory();
 
@@ -194,10 +199,7 @@ public class InventoryListener implements Listener {
 
         // TODO: Investigate why this WG check is all the way down here?
         /* WORLD GUARD MAIN FLAG CHECK */
-        if (WorldGuardUtils.isWorldGuardLoaded()) {
-            if (!WorldGuardManager.getInstance().hasMainFlag(player))
-                return;
-        }
+        if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
         final ItemStack clicked = event.getCurrentItem();
         final ItemStack cursor = event.getCursor();
@@ -206,8 +208,8 @@ public class InventoryListener implements Listener {
                 || clicked.getType() == Material.SPLASH_POTION
                 || clicked.getType() == Material.LINGERING_POTION))
                 || (cursor != null && (cursor.getType() == Material.POTION
-                        || cursor.getType() == Material.SPLASH_POTION
-                        || cursor.getType() == Material.LINGERING_POTION))) {
+                || cursor.getType() == Material.SPLASH_POTION
+                || cursor.getType() == Material.LINGERING_POTION))) {
             AlchemyPotionBrewer.scheduleCheck(stand);
             return;
         }
@@ -217,11 +219,10 @@ public class InventoryListener implements Listener {
 
         if (click.isShiftClick()) {
             switch (slot) {
-                case FUEL:
+                case FUEL -> {
                     AlchemyPotionBrewer.scheduleCheck(stand);
-                    return;
-                case CONTAINER:
-                case QUICKBAR:
+                }
+                case CONTAINER, QUICKBAR -> {
                     if (!AlchemyPotionBrewer.isValidIngredientByPlayer(player, clicked)) {
                         return;
                     }
@@ -233,8 +234,7 @@ public class InventoryListener implements Listener {
                     event.setCancelled(true);
                     AlchemyPotionBrewer.scheduleUpdate(inventory);
                     AlchemyPotionBrewer.scheduleCheck(stand);
-                    return;
-                default:
+                }
             }
         } else if (slot == InventoryType.SlotType.FUEL) {
             boolean emptyClicked = AlchemyPotionBrewer.isEmpty(clicked);
@@ -246,32 +246,30 @@ public class InventoryListener implements Listener {
                 }
 
                 AlchemyPotionBrewer.scheduleCheck(stand);
-            } else if (emptyClicked) {
-                if (AlchemyPotionBrewer.isValidIngredientByPlayer(player, cursor)) {
-                    int amount = cursor.getAmount();
+            } else if (emptyClicked && AlchemyPotionBrewer.isValidIngredientByPlayer(player, cursor)) {
+                int amount = cursor.getAmount();
 
-                    if (click == ClickType.LEFT || (click == ClickType.RIGHT && amount == 1)) {
-                        event.setCancelled(true);
-                        event.setCurrentItem(cursor.clone());
-                        event.setCursor(null);
+                if (click == ClickType.LEFT || (click == ClickType.RIGHT && amount == 1)) {
+                    event.setCancelled(true);
+                    event.setCurrentItem(cursor.clone());
+                    event.setCursor(null);
 
-                        AlchemyPotionBrewer.scheduleUpdate(inventory);
-                        AlchemyPotionBrewer.scheduleCheck(stand);
-                    } else if (click == ClickType.RIGHT) {
-                        event.setCancelled(true);
+                    AlchemyPotionBrewer.scheduleUpdate(inventory);
+                    AlchemyPotionBrewer.scheduleCheck(stand);
+                } else if (click == ClickType.RIGHT) {
+                    event.setCancelled(true);
 
-                        ItemStack one = cursor.clone();
-                        one.setAmount(1);
+                    ItemStack one = cursor.clone();
+                    one.setAmount(1);
 
-                        ItemStack rest = cursor.clone();
-                        rest.setAmount(amount - 1);
+                    ItemStack rest = cursor.clone();
+                    rest.setAmount(amount - 1);
 
-                        event.setCurrentItem(one);
-                        event.setCursor(rest);
+                    event.setCurrentItem(one);
+                    event.setCursor(rest);
 
-                        AlchemyPotionBrewer.scheduleUpdate(inventory);
-                        AlchemyPotionBrewer.scheduleCheck(stand);
-                    }
+                    AlchemyPotionBrewer.scheduleUpdate(inventory);
+                    AlchemyPotionBrewer.scheduleCheck(stand);
                 }
             }
         }
@@ -295,10 +293,7 @@ public class InventoryListener implements Listener {
         }
 
         InventoryHolder holder = inventory.getHolder();
-
-        if (!(holder instanceof BrewingStand)) {
-            return;
-        }
+        if (holder == null) return;
 
         HumanEntity whoClicked = event.getWhoClicked();
 
@@ -350,29 +345,15 @@ public class InventoryListener implements Listener {
         }
     }
 
-//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-//    public void onBrewStart(BrewingStartEvent event) {
-//        /* WORLD BLACKLIST CHECK */
-//        if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld()))
-//            return;
-//
-//        if (event instanceof FakeEvent)
-//            return;
-//    }
-
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
         /* WORLD BLACKLIST CHECK */
-
-        if (event.getSource().getLocation() != null)
-            if (WorldBlacklist.isWorldBlacklisted(event.getSource().getLocation().getWorld()))
-                return;
+        if (event.getSource().getLocation() != null && WorldBlacklist.isWorldBlacklisted(event.getSource().getLocation().getWorld()))
+            return;
 
         final Inventory inventory = event.getDestination();
 
-        if (!(inventory instanceof BrewerInventory)) {
-            return;
-        }
+        if (!(inventory instanceof BrewerInventory)) return;
 
         final InventoryHolder holder = inventory.getHolder();
 
@@ -452,10 +433,7 @@ public class InventoryListener implements Listener {
         Player player = (Player) whoClicked;
 
         /* WORLD GUARD MAIN FLAG CHECK */
-        if (WorldGuardUtils.isWorldGuardLoaded()) {
-            if (!WorldGuardManager.getInstance().hasMainFlag(player))
-                return;
-        }
+        if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
         mcMMO.p.getFoliaLib().getImpl().runAtEntity(whoClicked, new PlayerUpdateInventoryTask((Player) whoClicked));
     }

@@ -145,8 +145,8 @@ public class SwordsManager extends SkillManager {
 
             NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Countered");
 
-            if (attacker instanceof Player) {
-                NotificationManager.sendPlayerInformation((Player)attacker, NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Counter.Hit");
+            if (attacker instanceof Player player) {
+                NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Counter.Hit");
             }
         }
     }

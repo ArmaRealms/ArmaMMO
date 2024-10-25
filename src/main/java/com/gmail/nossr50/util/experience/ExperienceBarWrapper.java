@@ -56,20 +56,32 @@ public class ExperienceBarWrapper {
         //If they are using extra details
 
         if (ExperienceConfig.getInstance().isEarlyGameBoostEnabled() && PlayerLevelUtils.qualifiesForEarlyGameBoost(mcMMOPlayer, primarySkillType)) {
-                return LocaleLoader.getString("XPBar.Template.EarlyGameBoost");
+            return LocaleLoader.getString("XPBar.Template.EarlyGameBoost");
         } else if (ExperienceConfig.getInstance().getAddExtraDetails())
-            return LocaleLoader.getString("XPBar.Complex.Template", LocaleLoader.getString("XPBar."+niceSkillName, getLevel()), getCurrentXP(), getMaxXP(), getPowerLevel(), getPercentageOfLevel());
+            return LocaleLoader.getString("XPBar.Complex.Template", LocaleLoader.getString("XPBar." + niceSkillName, getLevel()), getCurrentXP(), getMaxXP(), getPowerLevel(), getPercentageOfLevel());
 
-        return LocaleLoader.getString("XPBar."+niceSkillName, getLevel(), getCurrentXP(), getMaxXP(), getPowerLevel(), getPercentageOfLevel());
+        return LocaleLoader.getString("XPBar." + niceSkillName, getLevel(), getCurrentXP(), getMaxXP(), getPowerLevel(), getPercentageOfLevel());
     }
 
     private int getLevel() {
         return mcMMOPlayer.getSkillLevel(primarySkillType);
     }
-    private int getCurrentXP() { return mcMMOPlayer.getSkillXpLevel(primarySkillType); }
-    private int getMaxXP() { return mcMMOPlayer.getXpToLevel(primarySkillType); }
-    private int getPowerLevel() { return mcMMOPlayer.getPowerLevel(); }
-    private int getPercentageOfLevel() { return (int) (mcMMOPlayer.getProgressInCurrentSkillLevel(primarySkillType) * 100); }
+
+    private int getCurrentXP() {
+        return mcMMOPlayer.getSkillXpLevel(primarySkillType);
+    }
+
+    private int getMaxXP() {
+        return mcMMOPlayer.getXpToLevel(primarySkillType);
+    }
+
+    private int getPowerLevel() {
+        return mcMMOPlayer.getPowerLevel();
+    }
+
+    private int getPercentageOfLevel() {
+        return (int) (mcMMOPlayer.getProgressInCurrentSkillLevel(primarySkillType) * 100);
+    }
 
     public String getTitle() {
         return bossBar.getTitle();
@@ -107,7 +119,7 @@ public class ExperienceBarWrapper {
 
         //Check player level
         if (ExperienceConfig.getInstance().isEarlyGameBoostEnabled() && PlayerLevelUtils.qualifiesForEarlyGameBoost(mcMMOPlayer, primarySkillType)) {
-           setColor(BarColor.YELLOW);
+            setColor(BarColor.YELLOW);
         } else {
             setColor(ExperienceConfig.getInstance().getExperienceBarColor(primarySkillType));
         }

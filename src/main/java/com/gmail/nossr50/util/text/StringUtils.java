@@ -9,12 +9,17 @@ import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 public class StringUtils {
 
     protected static DecimalFormat percent = new DecimalFormat("##0.00%");
     protected static DecimalFormat shortDecimal = new DecimalFormat("##0.0");
+
+    protected static Locale locale = new Locale("pt", "BR");
+    protected static DecimalFormatSymbols formatSymbols = new DecimalFormatSymbols(locale);
+    protected static DecimalFormat decimalFormat = new DecimalFormat("#,###.##", formatSymbols);
 
     /**
      * Gets a capitalized version of the target string.
@@ -101,23 +106,17 @@ public class StringUtils {
     }
 
     public static String getFriendlyConfigBlockDataString(BlockData data) {
-        switch(data.getMaterial()){
-            case CHORUS_FLOWER:
-            case COCOA:
-            case WHEAT:
-            case BEETROOTS:
-            case CARROTS:
-            case POTATOES:
-            case NETHER_WART: {
+        return switch (data.getMaterial()) {
+            case CHORUS_FLOWER, COCOA, WHEAT, BEETROOTS, CARROTS, POTATOES, NETHER_WART -> {
                 if (data instanceof Ageable ageData) {
                     if (ageData.getAge() == ageData.getMaximumAge()) {
-                        return getPrettyItemString(data.getMaterial()).replace(" ", "_") + "_Ripe";
+                        yield getPrettyItemString(data.getMaterial()).replace(" ", "_") + "_Ripe";
                     }
                 }
-                return getPrettyItemString(data.getMaterial()).replace(" ", "_") + "_Ungrown";
+                yield getPrettyItemString(data.getMaterial()).replace(" ", "_") + "_Ungrown";
             }
-        }
-        return getPrettyItemString(data.getMaterial()).replace(" ", "_");
+            default -> getPrettyItemString(data.getMaterial()).replace(" ", "_");
+        };
     }
 
     public static String getFriendlyConfigMaterialString(Material data) {
@@ -190,5 +189,9 @@ public class StringUtils {
         // used when no display name is given for a potion
         final String noUnderscores = key.replace("_", " ").toLowerCase(Locale.ENGLISH);
         return org.codehaus.plexus.util.StringUtils.capitalise(noUnderscores);
+    }
+
+    public static @NotNull String formatNumber(int number) {
+        return decimalFormat.format(number);
     }
 }
