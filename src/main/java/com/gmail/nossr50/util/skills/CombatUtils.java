@@ -25,10 +25,8 @@ import com.gmail.nossr50.util.MobHealthbarUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Animals;
@@ -861,9 +859,7 @@ public final class CombatUtils {
                 baseXP = 20 * ExperienceConfig.getInstance().getPlayerVersusPlayerXP();
             }
         } else {
-            if (mcMMO.getModManager().isCustomEntity(target)) {
-                baseXP = mcMMO.getModManager().getEntity(target).getXpMultiplier();
-            } else if (target instanceof Animals) {
+            if (target instanceof Animals) {
                 EntityType type = target.getType();
                 baseXP = ExperienceConfig.getInstance().getAnimalsXP(type);
             } else if (target instanceof Monster) {
@@ -882,7 +878,6 @@ public final class CombatUtils {
                     }
                 } else {
                     baseXP = 1.0;
-                    mcMMO.getModManager().addCustomEntity(target);
                 }
             }
 
@@ -1005,8 +1000,6 @@ public final class CombatUtils {
             tier = 4;
         } else if (ItemUtils.isNetheriteTool(inHand)) {
             tier = 5;
-        } else if (mcMMO.getModManager().isCustomTool(inHand)) {
-            tier = mcMMO.getModManager().getTool(inHand).getTier();
         }
 
         return tier;

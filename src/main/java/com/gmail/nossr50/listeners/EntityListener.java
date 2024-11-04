@@ -30,7 +30,6 @@ import com.gmail.nossr50.worldguard.WorldGuardUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Animals;

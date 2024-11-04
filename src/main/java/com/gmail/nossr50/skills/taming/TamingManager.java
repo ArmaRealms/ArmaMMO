@@ -23,7 +23,6 @@ import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Cat;
