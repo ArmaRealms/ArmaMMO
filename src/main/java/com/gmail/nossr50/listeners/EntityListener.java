@@ -595,7 +595,7 @@ public class EntityListener implements Listener {
         final LivingEntity entity = event.getEntity();
 
         if (mcMMO.getTransientEntityTracker().isTransient(entity)) {
-            mcMMO.getTransientEntityTracker().removeSummon(entity, null, false);
+            mcMMO.getTransientEntityTracker().killSummonAndCleanMobFlags(entity, null, false);
         }
 
         /* WORLD BLACKLIST CHECK */
