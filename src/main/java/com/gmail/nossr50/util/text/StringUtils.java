@@ -19,15 +19,15 @@ import static java.util.Objects.requireNonNull;
  */
 public class StringUtils {
 
-    protected static final DecimalFormat percent = new DecimalFormat("##0.00%");
-    protected static final DecimalFormat shortDecimal = new DecimalFormat("##0.0");
+    protected static final DecimalFormat percent = new DecimalFormat("##0.00%", new DecimalFormatSymbols(Locale.ENGLISH));
+    protected static final DecimalFormat shortDecimal = new DecimalFormat("##0.0", new DecimalFormatSymbols(Locale.ENGLISH));
 
     // Using concurrent hash maps to avoid concurrency issues (Folia)
     private static final Map<EntityType, String> formattedEntityStrings = new ConcurrentHashMap<>();
     private static final Map<SuperAbilityType, String> formattedSuperAbilityStrings = new ConcurrentHashMap<>();
     private static final Map<Material, String> formattedMaterialStrings = new ConcurrentHashMap<>();
 
-    protected static DecimalFormat decimalFormat = new DecimalFormat("#,###.##", new DecimalFormatSymbols(new Locale("pt", "BR")));
+    protected static final DecimalFormat decimalFormat = new DecimalFormat("#,###.##", new DecimalFormatSymbols(new Locale("pt", "BR")));
 
     /**
      * Gets a capitalized version of the target string.
