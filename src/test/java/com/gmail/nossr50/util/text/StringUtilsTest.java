@@ -84,25 +84,25 @@ class StringUtilsTest {
     // Tests for ticksToSeconds(double ticks)
     @Test
     void testTicksToSeconds_PositiveTicks() {
-        assertEquals("1.5", StringUtils.ticksToSeconds(30));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30));
     }
 
     @Test
     void testTicksToSeconds_ZeroTicks() {
-        assertEquals("0.0", StringUtils.ticksToSeconds(0));
+        assertEquals("0,0", StringUtils.ticksToSeconds(0));
     }
 
     @Test
     void testTicksToSeconds_FractionalTicks() {
-        assertEquals("1.5", StringUtils.ticksToSeconds(30.0));
-        assertEquals("1.5", StringUtils.ticksToSeconds(30.0));
-        assertEquals("1.0", StringUtils.ticksToSeconds(20.0));
-        assertEquals("0.1", StringUtils.ticksToSeconds(2.0));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30.0));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30.0));
+        assertEquals("1,0", StringUtils.ticksToSeconds(20.0));
+        assertEquals("0,1", StringUtils.ticksToSeconds(2.0));
     }
 
     @Test
     void testTicksToSeconds_NegativeTicks() {
-        assertEquals("-1.0", StringUtils.ticksToSeconds(-20));
+        assertEquals("-1,0", StringUtils.ticksToSeconds(-20));
     }
 
     // Tests for getPrettySuperAbilityString(SuperAbilityType superAbilityType)

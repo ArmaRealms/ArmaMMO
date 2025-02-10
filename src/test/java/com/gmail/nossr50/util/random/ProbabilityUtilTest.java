@@ -24,16 +24,16 @@ import static org.mockito.Mockito.when;
 class ProbabilityUtilTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
 
-    final static double impactChance = 11D;
-    final static double greaterImpactChance = 0.007D;
-    final static double fastFoodChance = 45.5D;
+    static final double IMPACT_CHANCE = 11D;
+    static final double GREATER_IMPACT_CHANCE = 0.007D;
+    static final double FAST_FOOD_CHANCE = 45.5D;
 
     @BeforeEach
     public void setupMocks() {
         mockBaseEnvironment(logger);
-        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
-        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
-        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
+        when(advancedConfig.getImpactChance()).thenReturn(IMPACT_CHANCE);
+        when(advancedConfig.getGreaterImpactChance()).thenReturn(GREATER_IMPACT_CHANCE);
+        when(advancedConfig.getFastFoodChance()).thenReturn(FAST_FOOD_CHANCE);
     }
 
     @AfterEach
@@ -44,9 +44,9 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     private static Stream<Arguments> staticChanceSkills() {
         return Stream.of(
                 // static probability, % of time for success
-                Arguments.of(AXES_ARMOR_IMPACT, impactChance),
-                Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
-                Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
+                Arguments.of(AXES_ARMOR_IMPACT, IMPACT_CHANCE),
+                Arguments.of(AXES_GREATER_IMPACT, GREATER_IMPACT_CHANCE),
+                Arguments.of(TAMING_FAST_FOOD_SERVICE, FAST_FOOD_CHANCE)
         );
     }
 
@@ -59,7 +59,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     }
 
     @Test
-    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
+    void isSkillRNGSuccessfulShouldBehaveAsExpected() {
         // Given
         when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
@@ -101,7 +101,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn10PercentForDodge() {
+    void getRNGDisplayValuesShouldReturn10PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
@@ -109,11 +109,11 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & Then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("10.00%", rngDisplayValues[0]);
+        assertEquals("10,00%", rngDisplayValues[0]);
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn20PercentForDodge() {
+    void getRNGDisplayValuesShouldReturn20PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
@@ -121,11 +121,11 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("20.00%", rngDisplayValues[0]);
+        assertEquals("20,00%", rngDisplayValues[0]);
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn0PercentForDodge() {
+    void getRNGDisplayValuesShouldReturn0PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
@@ -133,11 +133,11 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("0.00%", rngDisplayValues[0]);
+        assertEquals("0,00%", rngDisplayValues[0]);
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn10PercentForDoubleDrops() {
+    void getRNGDisplayValuesShouldReturn10PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
@@ -145,11 +145,11 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & Then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("10.00%", rngDisplayValues[0]);
+        assertEquals("10,00%", rngDisplayValues[0]);
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn50PercentForDoubleDrops() {
+    void getRNGDisplayValuesShouldReturn50PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
@@ -157,11 +157,11 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & Then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("50.00%", rngDisplayValues[0]);
+        assertEquals("50,00%", rngDisplayValues[0]);
     }
 
     @Test
-    public void getRNGDisplayValuesShouldReturn100PercentForDoubleDrops() {
+    void getRNGDisplayValuesShouldReturn100PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
@@ -169,7 +169,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // When & Then
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("100.00%", rngDisplayValues[0]);
+        assertEquals("100,00%", rngDisplayValues[0]);
     }
 
 }
