@@ -103,7 +103,7 @@ public final class Motd {
         double cooldownReduction = 1 - (PerksUtils.handleCooldownPerks(player, 12) / 12.0);
 
         if (cooldownReduction > 0.0) {
-            DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.US));
+            DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
             player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template", LocaleLoader.getString("Perks.Cooldowns.Name"), LocaleLoader.getString("Perks.Cooldowns.Desc", percent.format(cooldownReduction))));
         }
     }

@@ -20,7 +20,7 @@ import java.util.Locale;
 import static java.util.Objects.requireNonNull;
 
 public class ProbabilityUtil {
-    public static final @NotNull DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.US));
+    public static final @NotNull DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
     public static final double LUCKY_MODIFIER = 1.333D;
 
     /**

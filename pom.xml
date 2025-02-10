@@ -19,9 +19,9 @@
         <spigot.version>1.21.4-R0.1-SNAPSHOT</spigot.version>
         <adventure.version>4.3.5-SNAPSHOT</adventure.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <java.version>17</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <java.version>21</java.version>
     </properties>
 
     <issueManagement>
@@ -108,7 +108,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>17</release>
+                    <release>21</release>
                     <compilerArgs>
                         <arg>-parameters</arg> <!-- used for ACF syntax stuff -->
                     </compilerArgs>
@@ -138,7 +138,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.3</version>
+                <version>3.6.0</version>
                 <configuration>
                     <artifactSet>
                         <includes>

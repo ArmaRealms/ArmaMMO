@@ -107,7 +107,7 @@ public class CleanBackupsTask extends CancellableRunnable {
     }
 
     private Date getDate(String fileName) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.US);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.of("pt", "BR"));
         Date date;
 
         try {

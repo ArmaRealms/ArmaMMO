@@ -36,8 +36,8 @@ public abstract class SkillCommand implements TabExecutor {
     public static final String ABILITY_GENERIC_TEMPLATE = "Ability.Generic.Template";
     protected PrimarySkillType skill;
 
-    protected DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.US));
-    protected DecimalFormat decimal = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.US));
+    protected DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
+    protected DecimalFormat decimal = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
     protected McMMOPlayer mmoPlayer;
 
     private final CommandExecutor skillGuideCommand;

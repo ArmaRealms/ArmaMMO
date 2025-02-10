@@ -109,7 +109,7 @@ public final class LocaleLoader {
 
     public static String formatString(String string, Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.US);
+            MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -121,7 +121,7 @@ public final class LocaleLoader {
 
     public static @NotNull TextComponent formatComponent(@NotNull String string, Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.US);
+            MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -219,7 +219,7 @@ public final class LocaleLoader {
             bundle = ResourceBundle.getBundle(BUNDLE_ROOT, locale);
         }
 
-        enBundle = ResourceBundle.getBundle(BUNDLE_ROOT, Locale.US);
+        enBundle = ResourceBundle.getBundle(BUNDLE_ROOT, Locale.of("pt", "BR"));
     }
 
     @NotNull

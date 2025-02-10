@@ -44,7 +44,7 @@ public class ZipLibrary {
 
         // Generate the proper date for the backup filename
         Date date = new Date();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.US);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.of("pt", "BR"));
         File fileZip = new File(BACKUP_DIRECTORY + File.separator + dateFormat.format(date) + ".zip");
 
         // Create the Source List, and add directories/etc to the file.

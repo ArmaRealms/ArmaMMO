@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 
 public class Party {
 
-    private static final DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.US));
+    private static final DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
 
     private final @NotNull Predicate<CommandSender> samePartyPredicate;
     private final LinkedHashMap<UUID, String> members = new LinkedHashMap<>();
