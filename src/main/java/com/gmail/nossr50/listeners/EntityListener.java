@@ -87,7 +87,7 @@ import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
     private final mcMMO plugin;
-    private final static Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
+    private static final Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
 
     public EntityListener(final mcMMO plugin) {
         this.plugin = plugin;
@@ -221,8 +221,8 @@ public class EntityListener implements Listener {
                 mcMMO.getUserBlockTracker().setEligible(block);
 
                 entity.setMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, MetadataConstants.MCMMO_METADATA_VALUE);
-                final TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, plugin);
-                mcMMO.p.getFoliaLib().getImpl().runAtEntityTimer(entity, metaCleanupTask, 20, 20L * 60); //6000 ticks is 5 minutes
+                TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, plugin);
+                mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(entity, metaCleanupTask, 20, 20 * 60L); //6000 ticks is 5 minutes
             } else if (isTracked) {
                 BlockUtils.setUnnaturalBlock(block);
                 entity.removeMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, plugin);

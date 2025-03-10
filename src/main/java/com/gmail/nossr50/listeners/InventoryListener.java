@@ -439,7 +439,7 @@ public class InventoryListener implements Listener {
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
-        mcMMO.p.getFoliaLib().getImpl().runAtEntity(whoClicked, new PlayerUpdateInventoryTask((Player) whoClicked));
+        mcMMO.p.getFoliaLib().getScheduler().runAtEntity(whoClicked, new PlayerUpdateInventoryTask((Player) whoClicked));
     }
 
 }
