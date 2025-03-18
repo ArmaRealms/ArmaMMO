@@ -63,6 +63,8 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.HashSet;
 
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+
 public class BlockListener implements Listener {
     private final mcMMO plugin;
 
@@ -123,12 +125,16 @@ public class BlockListener implements Listener {
                     continue;
                 }
 
-                if (!event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).isEmpty()) {
-                    BonusDropMeta bonusDropMeta = (BonusDropMeta) event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).get(0);
+                if (event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).size() > 0) {
+                    final BonusDropMeta bonusDropMeta =
+                            (BonusDropMeta) event.getBlock().getMetadata(
+                                    MetadataConstants.METADATA_KEY_BONUS_DROPS).get(0);
                     int bonusCount = bonusDropMeta.asInt();
-
+                    final Location centeredLocation = getBlockCenter(event.getBlock());
                     for (int i = 0; i < bonusCount; i++) {
-                        ItemUtils.spawnItemNaturally(event.getPlayer(), event.getBlockState().getLocation(), is, ItemSpawnReason.BONUS_DROPS);
+
+                        ItemUtils.spawnItemNaturally(event.getPlayer(),
+                                centeredLocation, is, ItemSpawnReason.BONUS_DROPS);
                     }
                 }
             }
