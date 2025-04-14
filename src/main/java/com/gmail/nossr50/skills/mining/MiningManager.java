@@ -3,6 +3,7 @@ package com.gmail.nossr50.skills.mining;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.experience.XPGainSource;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -35,8 +36,8 @@ import static com.gmail.nossr50.util.Misc.getBlockCenter;
 
 public class MiningManager extends SkillManager {
 
-    public static final String BUDDING_AMETHYST = "budding_amethyst";
-    public static final Collection<Material> BLAST_MINING_BLACKLIST = Set.of(Material.SPAWNER,
+    private static final String BUDDING_AMETHYST = "budding_amethyst";
+    private static final Collection<Material> BLAST_MINING_BLACKLIST = Set.of(Material.SPAWNER,
             Material.INFESTED_COBBLESTONE, Material.INFESTED_DEEPSLATE, Material.INFESTED_STONE,
             Material.INFESTED_STONE_BRICKS, Material.INFESTED_CRACKED_STONE_BRICKS,
             Material.INFESTED_CHISELED_STONE_BRICKS, Material.INFESTED_MOSSY_STONE_BRICKS);
@@ -52,15 +53,21 @@ public class MiningManager extends SkillManager {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.MINING_DEMOLITIONS_EXPERTISE))
             return false;
 
-        return getSkillLevel() >= BlastMining.getDemolitionExpertUnlockLevel() && Permissions.demolitionsExpertise(getPlayer());
+        return getSkillLevel() >= BlastMining.getDemolitionExpertUnlockLevel()
+                && Permissions.demolitionsExpertise(getPlayer());
     }
 
     public boolean canDetonate() {
         Player player = getPlayer();
 
-        return canUseBlastMining() && player.isSneaking()
-                && (isPickaxe(getPlayer().getInventory().getItemInMainHand()) || player.getInventory().getItemInMainHand().getType() == mcMMO.p.getGeneralConfig().getDetonatorItem())
+        return canUseBlastMining()
+                && player.isSneaking()
+                && (isPickaxe(getPlayer().getInventory().getItemInMainHand()) || isDetonatorInHand(player))
                 && Permissions.remoteDetonation(player);
+    }
+
+    private static boolean isDetonatorInHand(Player player) {
+        return player.getInventory().getItemInMainHand().getType() == mcMMO.p.getGeneralConfig().getDetonatorItem();
     }
 
     public boolean canUseBlastMining() {
@@ -76,7 +83,8 @@ public class MiningManager extends SkillManager {
     }
 
     public boolean canDoubleDrop() {
-        return RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.MINING_DOUBLE_DROPS) && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.MINING_DOUBLE_DROPS);
+        return RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.MINING_DOUBLE_DROPS)
+                && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.MINING_DOUBLE_DROPS);
     }
 
     public boolean canMotherLode() {
@@ -150,8 +158,8 @@ public class MiningManager extends SkillManager {
      * Detonate TNT for Blast Mining
      */
     public void remoteDetonation() {
-        Player player = getPlayer();
-        Block targetBlock = player.getTargetBlock(BlockUtils.getTransparentBlocks(), BlastMining.MAXIMUM_REMOTE_DETONATION_DISTANCE);
+        final Player player = getPlayer();
+        final Block targetBlock = player.getTargetBlock(BlockUtils.getTransparentBlocks(), BlastMining.MAXIMUM_REMOTE_DETONATION_DISTANCE);
 
         //Blast mining cooldown check needs to be first so the player can be messaged
         if (!blastMiningCooldownOver()
@@ -160,7 +168,7 @@ public class MiningManager extends SkillManager {
             return;
         }
 
-        TNTPrimed tnt = player.getWorld().spawn(targetBlock.getLocation(), TNTPrimed.class);
+        final TNTPrimed tnt = player.getWorld().spawn(targetBlock.getLocation(), TNTPrimed.class);
 
         NotificationManager.sendPlayerInformation(player, NotificationType.SUPER_ABILITY, "Mining.Blast.Boom");
 
@@ -171,7 +179,9 @@ public class MiningManager extends SkillManager {
 
         mmoPlayer.setAbilityDATS(SuperAbilityType.BLAST_MINING, System.currentTimeMillis());
         mmoPlayer.setAbilityInformed(SuperAbilityType.BLAST_MINING, false);
-        mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mmoPlayer.getPlayer(), new AbilityCooldownTask(mmoPlayer, SuperAbilityType.BLAST_MINING), (long) SuperAbilityType.BLAST_MINING.getCooldown() * Misc.TICK_CONVERSION_FACTOR);
+        mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mmoPlayer.getPlayer(),
+                new AbilityCooldownTask(mmoPlayer, SuperAbilityType.BLAST_MINING),
+                (long) SuperAbilityType.BLAST_MINING.getCooldown() * Misc.TICK_CONVERSION_FACTOR);
     }
 
     private boolean isInfestedBlock(String material) {
@@ -190,8 +200,8 @@ public class MiningManager extends SkillManager {
 
         var increasedYieldFromBonuses = yield + (yield * getOreBonus());
         // Strip out only stuff that gives mining XP
-        List<Block> ores = new ArrayList<>();
-        List<Block> notOres = new ArrayList<>();
+        final List<Block> ores = new ArrayList<>();
+        final List<Block> notOres = new ArrayList<>();
         for (Block targetBlock : event.blockList()) {
 
             if(mcMMO.getUserBlockTracker().isIneligible(targetBlock))
@@ -200,6 +210,8 @@ public class MiningManager extends SkillManager {
             if (ExperienceConfig.getInstance().getXp(PrimarySkillType.MINING, targetBlock) != 0) {
                 if (BlockUtils.isOre(targetBlock) && !(targetBlock instanceof Container)) {
                     ores.add(targetBlock);
+                } else {
+                    notOres.add(targetBlock);
                 }
             } else {
                 notOres.add(targetBlock);
@@ -220,6 +232,7 @@ public class MiningManager extends SkillManager {
                         ItemSpawnReason.BLAST_MINING_DEBRIS_NON_ORES); // Initial block that would have been dropped
             }
         }
+
         for (Block block : ores) {
             // currentOreYield only used for drop calculations for ores
             float currentOreYield = Math.min(increasedYieldFromBonuses, 3F);
@@ -256,7 +269,7 @@ public class MiningManager extends SkillManager {
 
         // Replace the event blocklist with the newYield list
         event.setYield(0F);
-        applyXpGain(xp, XPGainReason.PVE);
+        applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
     }
 
     /**
