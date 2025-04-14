@@ -125,10 +125,10 @@ public class BlockListener implements Listener {
                     continue;
                 }
 
-                if (event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).size() > 0) {
+                if (!event.getBlock().getMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS).isEmpty()) {
                     final BonusDropMeta bonusDropMeta =
                             (BonusDropMeta) event.getBlock().getMetadata(
-                                    MetadataConstants.METADATA_KEY_BONUS_DROPS).get(0);
+                                    MetadataConstants.METADATA_KEY_BONUS_DROPS).getFirst();
                     int bonusCount = bonusDropMeta.asInt();
                     final Location centeredLocation = getBlockCenter(event.getBlock());
                     for (int i = 0; i < bonusCount; i++) {

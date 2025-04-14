@@ -49,7 +49,7 @@ public class UnarmedManager extends SkillManager {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.UNARMED_DISARM))
             return false;
 
-        return target instanceof Player && ((Player) target).getInventory().getItemInMainHand().getType() != Material.AIR && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.UNARMED_DISARM);
+        return target instanceof Player player && player.getInventory().getItemInMainHand().getType() != Material.AIR && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.UNARMED_DISARM);
     }
 
     public boolean canDeflect() {
@@ -106,14 +106,15 @@ public class UnarmedManager extends SkillManager {
                 return;
             }
 
-            if (UserManager.getPlayer(defender) == null)
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(defender);
+            if (mcMMOPlayer == null)
                 return;
 
             final Item item = ItemUtils.spawnItem(getPlayer(), defender.getLocation(),
                     defender.getInventory().getItemInMainHand(), ItemSpawnReason.UNARMED_DISARMED_ITEM);
 
             if (item != null && mcMMO.p.getAdvancedConfig().getDisarmProtected()) {
-                item.setMetadata(MetadataConstants.METADATA_KEY_DISARMED_ITEM, UserManager.getPlayer(defender).getPlayerMetadata());
+                item.setMetadata(MetadataConstants.METADATA_KEY_DISARMED_ITEM, mcMMOPlayer.getPlayerMetadata());
             }
 
             defender.getInventory().setItemInMainHand(new ItemStack(Material.AIR));

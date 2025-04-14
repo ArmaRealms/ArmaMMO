@@ -490,9 +490,9 @@ public final class ItemUtils {
         }
 
         for (Recipe recipe : mcMMO.p.getServer().getRecipesFor(item)) {
-            if (recipe instanceof FurnaceRecipe
-                    && ((FurnaceRecipe) recipe).getInput().getType().isBlock()
-                    && MaterialUtils.isOre(((FurnaceRecipe) recipe).getInput().getType())) {
+            if (recipe instanceof FurnaceRecipe furnaceRecipe
+                    && furnaceRecipe.getInput().getType().isBlock()
+                    && MaterialUtils.isOre(furnaceRecipe.getInput().getType())) {
                 return true;
             }
         }
@@ -845,7 +845,7 @@ public final class ItemUtils {
             return null;
 
         // We can't get the item until we spawn it and we want to make it cancellable, so we have a custom event.
-        McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(spawnLocation, clonedItem, itemSpawnReason, player);
+        final McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(spawnLocation, clonedItem, itemSpawnReason, player);
         mcMMO.p.getServer().getPluginManager().callEvent(event);
         clonedItem = event.getItemStack();
 
