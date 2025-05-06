@@ -28,6 +28,7 @@ import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
+import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.ArmorStand;
@@ -197,7 +198,7 @@ public final class CombatUtils {
     }
 
     private static void processCrossbowsCombat(@NotNull LivingEntity target, @NotNull Player player,
-                                               @NotNull EntityDamageByEntityEvent event, @NotNull Arrow arrow) {
+                                               @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
         double initialDamage = event.getDamage();
 
         final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
@@ -400,7 +401,7 @@ public final class CombatUtils {
     }
 
     private static void processArcheryCombat(@NotNull LivingEntity target, @NotNull Player player,
-                                             @NotNull EntityDamageByEntityEvent event, @NotNull Arrow arrow) {
+                                             @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
         double initialDamage = event.getDamage();
 
         final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
@@ -576,7 +577,7 @@ public final class CombatUtils {
                     }
                 }
             }
-        } else if (painSource instanceof Arrow arrow) {
+        } else if (painSource instanceof AbstractArrow arrow) {
             ProjectileSource projectileSource = arrow.getShooter();
             boolean isCrossbow = isCrossbowProjectile(arrow);
             if (projectileSource instanceof Player player) {
@@ -1047,7 +1048,7 @@ public final class CombatUtils {
      *
      * @param arrow the projectile
      */
-    public static void delayArrowMetaCleanup(@NotNull Arrow arrow) {
+    public static void delayArrowMetaCleanup(@NotNull AbstractArrow arrow) {
         mcMMO.p.getFoliaLib().getScheduler().runLater(() -> ProjectileUtils.cleanupProjectileMetadata(arrow), 20*120);
     }
 }
