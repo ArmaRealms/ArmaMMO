@@ -574,7 +574,7 @@ public class EntityListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onEntityDeathLowest(final EntityDeathEvent event) {
+    public void onEntityDeathLowest(EntityDeathEvent event) {
         final LivingEntity entity = event.getEntity();
 
         // Clear metadata for Slimes/Magma Cubes after transformation events take place, otherwise small spawned slimes will not have any tags
