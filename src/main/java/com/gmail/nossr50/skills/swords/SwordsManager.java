@@ -122,9 +122,10 @@ public class SwordsManager extends SkillManager {
      */
     public void counterAttackChecks(@NotNull LivingEntity attacker, double damage) {
         if (ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.SWORDS_COUNTER_ATTACK, mmoPlayer)) {
-            CombatUtils.dealDamage(attacker, damage / Swords.counterAttackModifier, getPlayer());
+            CombatUtils.safeDealDamage(attacker, damage / Swords.counterAttackModifier, getPlayer());
 
-            NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Countered");
+            NotificationManager.sendPlayerInformation(getPlayer(),
+                    NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Countered");
 
             if (attacker instanceof Player player) {
                 NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE, "Swords.Combat.Counter.Hit");

@@ -285,16 +285,18 @@ public class EntityListener implements Listener {
         // However, for entities, we do not wanna cancel this event to allow plugins to observe changes
         // properly
 
-        if (CombatUtils.isProcessingNoInvulnDamage()) return;
-
-        if (event.getEntity() instanceof ArmorStand) return;
-
-        if ((ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(defender))
-                || !defender.isValid() || !(defender instanceof final LivingEntity target)) {
+        if (event.getEntity() instanceof ArmorStand) {
             return;
         }
 
-        if (CombatUtils.isInvincible(target, damage)) return;
+
+        if ((ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(defender)) || !defender.isValid() || !(defender instanceof LivingEntity target)) {
+            return;
+        }
+
+        if (CombatUtils.isInvincible(target, damage)) {
+            return;
+        }
 
         if (ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(attacker)) {
             return;
