@@ -28,7 +28,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
-    public ExcavationManager(McMMOPlayer mcMMOPlayer) {
+    public ExcavationManager(final McMMOPlayer mcMMOPlayer) {
         super(mcMMOPlayer, PrimarySkillType.EXCAVATION);
     }
 
@@ -38,21 +38,21 @@ public class ExcavationManager extends SkillManager {
      * @param blockState The {@link BlockState} to check ability activation for
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void excavationBlockCheck(BlockState blockState) {
+    public void excavationBlockCheck(final BlockState blockState) {
         excavationBlockCheck(blockState.getBlock());
     }
 
-    public void excavationBlockCheck(Block block) {
-        int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
+    public void excavationBlockCheck(final Block block) {
+        final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
-            List<ExcavationTreasure> treasures = getTreasures(block);
+            final List<ExcavationTreasure> treasures = getTreasures(block);
 
             if (!treasures.isEmpty()) {
-                int skillLevel = getSkillLevel();
+                final int skillLevel = getSkillLevel();
                 final Location centerOfBlock = Misc.getBlockCenter(block);
 
-                for (ExcavationTreasure treasure : treasures) {
+                for (final ExcavationTreasure treasure : treasures) {
                     if (skillLevel >= treasure.getDropLevel()
                             && ProbabilityUtil.isStaticSkillRNGSuccessful(
                             PrimarySkillType.EXCAVATION, mmoPlayer, treasure.getDropProbability())) {
@@ -66,23 +66,23 @@ public class ExcavationManager extends SkillManager {
     }
 
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public List<ExcavationTreasure> getTreasures(@NotNull BlockState blockState) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final BlockState blockState) {
         requireNonNull(blockState, "blockState cannot be null");
         return getTreasures(blockState.getBlock());
     }
 
-    public List<ExcavationTreasure> getTreasures(@NotNull Block block) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final Block block) {
         requireNonNull(block, "block cannot be null");
         return Excavation.getTreasures(block);
     }
 
     @VisibleForTesting
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void processExcavationBonusesOnBlock(BlockState ignored, ExcavationTreasure treasure, Location location) {
+    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure, final Location location) {
         processExcavationBonusesOnBlock(treasure, location);
     }
 
-    public void processExcavationBonusesOnBlock(ExcavationTreasure treasure, Location location) {
+    public void processExcavationBonusesOnBlock(final ExcavationTreasure treasure, final Location location) {
         //Spawn Vanilla XP orbs if a dice roll succeeds
         if (ProbabilityUtil.isStaticSkillRNGSuccessful(
                 PrimarySkillType.EXCAVATION, mmoPlayer, getArchaelogyExperienceOrbChance())) {
@@ -102,24 +102,24 @@ public class ExcavationManager extends SkillManager {
     }
 
     public double getArchaelogyExperienceOrbChance() {
-        return getArchaeologyRank() * 2;
+        return getArchaeologyRank() * 2.0;
     }
 
     public int getArchaeologyRank() {
         return RankUtils.getRank(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY);
     }
 
-    public void printExcavationDebug(Player player, Block block) {
+    public void printExcavationDebug(final Player player, final Block block) {
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
-            List<ExcavationTreasure> treasures = Excavation.getTreasures(block);
+            final List<ExcavationTreasure> treasures = Excavation.getTreasures(block);
 
             if (!treasures.isEmpty()) {
-                for (ExcavationTreasure treasure : treasures) {
+                for (final ExcavationTreasure treasure : treasures) {
                     player.sendMessage("|||||||||||||||||||||||||||||||||");
-                    player.sendMessage("[mcMMO DEBUG] Treasure found: ("+treasure.getDrop().getType().toString()+")");
-                    player.sendMessage("[mcMMO DEBUG] Drop Chance for Treasure: "+treasure.getDropChance());
-                    player.sendMessage("[mcMMO DEBUG] Skill Level Required: "+treasure.getDropLevel());
-                    player.sendMessage("[mcMMO DEBUG] XP for Treasure: "+treasure.getXp());
+                    player.sendMessage("[mcMMO DEBUG] Treasure found: (" + treasure.getDrop().getType() + ")");
+                    player.sendMessage("[mcMMO DEBUG] Drop Chance for Treasure: " + treasure.getDropChance());
+                    player.sendMessage("[mcMMO DEBUG] Skill Level Required: " + treasure.getDropLevel());
+                    player.sendMessage("[mcMMO DEBUG] XP for Treasure: " + treasure.getXp());
                 }
             } else {
                 player.sendMessage("[mcMMO DEBUG] No treasures found for this block.");
@@ -132,7 +132,7 @@ public class ExcavationManager extends SkillManager {
      *
      * @param block The {@link Block} to check ability activation for
      */
-    public void gigaDrillBreaker(Block block) {
+    public void gigaDrillBreaker(final Block block) {
         excavationBlockCheck(block);
         excavationBlockCheck(block);
 
