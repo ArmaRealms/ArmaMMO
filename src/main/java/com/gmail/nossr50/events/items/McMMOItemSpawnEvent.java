@@ -19,18 +19,21 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     private boolean cancelled;
     private final ItemSpawnReason itemSpawnReason;
     private final Player player;
+    private boolean toInventory;
 
-    public McMMOItemSpawnEvent(@NotNull Location location, @NotNull ItemStack itemStack, @NotNull ItemSpawnReason itemSpawnReason, @Nullable Player player) {
+    public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack, @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
         this.location = location;
         this.itemStack = itemStack;
         this.itemSpawnReason = itemSpawnReason;
         this.player = player;
         this.cancelled = false;
+        this.toInventory = false;
     }
 
     /**
      * Get the associated player
      * This can be null
+     *
      * @return the associated player if one exists null otherwise
      */
     public @Nullable Player getPlayer() {
@@ -39,8 +42,9 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
 
     /**
      * The reason an item is being spawned by mcMMO
-     * @see ItemSpawnReason
+     *
      * @return the item drop reason
+     * @see ItemSpawnReason
      */
     public ItemSpawnReason getItemSpawnReason() {
         return itemSpawnReason;
@@ -56,7 +60,7 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     /**
      * @param location Location where to drop the item
      */
-    public void setLocation(@NotNull Location location) {
+    public void setLocation(@NotNull final Location location) {
         this.location = location;
     }
 
@@ -70,22 +74,34 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     /**
      * @param itemStack ItemStack to drop
      */
-    public void setItemStack(@NotNull ItemStack itemStack) {
+    public void setItemStack(@NotNull final ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    /** Following are required for Cancellable **/
+    /**
+     * Following are required for Cancellable
+     **/
     @Override
     public boolean isCancelled() {
         return cancelled;
     }
 
     @Override
-    public void setCancelled(boolean cancelled) {
+    public void setCancelled(final boolean cancelled) {
         this.cancelled = cancelled;
     }
 
-    /** Rest of file is required boilerplate for custom events **/
+    public boolean isToInventory() {
+        return toInventory;
+    }
+
+    public void setToInventory(final boolean toInventory) {
+        this.toInventory = toInventory;
+    }
+
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
     private static final @NotNull HandlerList handlers = new HandlerList();
 
     @Override

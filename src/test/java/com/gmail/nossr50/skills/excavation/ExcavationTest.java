@@ -58,11 +58,11 @@ class ExcavationTest extends MMOTestEnvironment {
         mmoPlayer.modifySkill(PrimarySkillType.EXCAVATION, 1000);
 
         // Wire block
-        Block block = Mockito.mock(Block.class);
+        final Block block = Mockito.mock(Block.class);
         when(block.getType()).thenReturn(Material.SAND);
         when(block.getDrops(any())).thenReturn(null);
 
-        ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
+        final ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
         doReturn(getGuaranteedTreasureDrops()).when(excavationManager).getTreasures(block);
         excavationManager.excavationBlockCheck(block);
 
@@ -76,11 +76,11 @@ class ExcavationTest extends MMOTestEnvironment {
         mmoPlayer.modifySkill(PrimarySkillType.EXCAVATION, 1000);
 
         // Wire block
-        Block block = Mockito.mock(Block.class);
+        final Block block = Mockito.mock(Block.class);
         when(block.getType()).thenReturn(Material.SAND);
         when(block.getDrops(any())).thenReturn(null);
 
-        ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
+        final ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
         doReturn(getImpossibleTreasureDrops()).when(excavationManager).getTreasures(block);
         excavationManager.excavationBlockCheck(block);
 
@@ -90,13 +90,13 @@ class ExcavationTest extends MMOTestEnvironment {
     }
 
     private List<ExcavationTreasure> getGuaranteedTreasureDrops() {
-        List<ExcavationTreasure> treasures = new ArrayList<>();;
+        final List<ExcavationTreasure> treasures = new ArrayList<>();
         treasures.add(new ExcavationTreasure(new ItemStack(Material.CAKE), 1, 100, 1));
         return treasures;
     }
 
     private List<ExcavationTreasure> getImpossibleTreasureDrops() {
-        List<ExcavationTreasure> treasures = new ArrayList<>();;
+        final List<ExcavationTreasure> treasures = new ArrayList<>();
         treasures.add(new ExcavationTreasure(new ItemStack(Material.CAKE), 1, 0, 1));
         return treasures;
     }
