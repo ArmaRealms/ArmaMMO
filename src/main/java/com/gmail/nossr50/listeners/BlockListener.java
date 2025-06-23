@@ -72,8 +72,8 @@ public class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockDropItemEvent(BlockDropItemEvent event) {
+    @EventHandler(priority = EventPriority.NORMAL)
+    public void onBlockDropItemEvent(final BlockDropItemEvent event) {
         //Make sure we clean up metadata on these blocks
         if (event.isCancelled()) {
             if (event.getBlock().hasMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS))
@@ -88,11 +88,11 @@ public class BlockListener implements Listener {
             tileEntityTolerance = 2;
 
         //Track how many "things" are being dropped
-        HashSet<Material> uniqueMaterials = new HashSet<>();
+        final HashSet<Material> uniqueMaterials = new HashSet<>();
         boolean dontRewardTE = false; //If we suspect TEs are mixed in with other things don't reward bonus drops for anything that isn't a block
         int blockCount = 0;
 
-        for (Item item : event.getItems()) {
+        for (final Item item : event.getItems()) {
             //Track unique materials
             uniqueMaterials.add(item.getItemStack().getType());
 
@@ -109,8 +109,8 @@ public class BlockListener implements Listener {
 
         //If there are more than one block in the item list we can't really trust it and will back out of rewarding bonus drops
         if (blockCount <= 1) {
-            for (Item item : event.getItems()) {
-                ItemStack is = new ItemStack(item.getItemStack());
+            for (final Item item : event.getItems()) {
+                final ItemStack is = new ItemStack(item.getItemStack());
 
                 if (is.getAmount() <= 0) continue;
 
@@ -129,7 +129,7 @@ public class BlockListener implements Listener {
                     final BonusDropMeta bonusDropMeta =
                             (BonusDropMeta) event.getBlock().getMetadata(
                                     MetadataConstants.METADATA_KEY_BONUS_DROPS).getFirst();
-                    int bonusCount = bonusDropMeta.asInt();
+                    final int bonusCount = bonusDropMeta.asInt();
                     final Location centeredLocation = getBlockCenter(event.getBlock());
                     for (int i = 0; i < bonusCount; i++) {
 
@@ -150,7 +150,7 @@ public class BlockListener implements Listener {
      * @param event The event to monitor
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockPistonExtend(BlockPistonExtendEvent event) {
+    public void onBlockPistonExtend(final BlockPistonExtendEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) return;
 
@@ -175,24 +175,24 @@ public class BlockListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockPistonRetract(BlockPistonRetractEvent event) {
+    public void onBlockPistonRetract(final BlockPistonRetractEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) return;
 
         if (!ExperienceConfig.getInstance().isPistonCheatingPrevented()) return;
 
         // Get opposite direction so we get correct block
-        BlockFace direction = event.getDirection();
-        Block movedBlock = event.getBlock().getRelative(direction);
+        final BlockFace direction = event.getDirection();
+        final Block movedBlock = event.getBlock().getRelative(direction);
 
         //Spigot makes bad things happen in its API
         if (BlockUtils.isWithinWorldBounds(movedBlock)) {
             BlockUtils.setUnnaturalBlock(movedBlock);
         }
 
-        for (Block block : event.getBlocks()) {
+        for (final Block block : event.getBlocks()) {
             if (BlockUtils.isWithinWorldBounds(block) && BlockUtils.isWithinWorldBounds(block.getRelative(direction))) {
-                Block relativeBlock = block.getRelative(direction);
+                final Block relativeBlock = block.getRelative(direction);
                 BlockUtils.setUnnaturalBlock(relativeBlock);
             }
         }
@@ -205,14 +205,14 @@ public class BlockListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEntityBlockFormEvent(EntityBlockFormEvent event) {
+    public void onEntityBlockFormEvent(final EntityBlockFormEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) return;
 
-        BlockState blockState = event.getNewState();
+        final BlockState blockState = event.getNewState();
 
         if (ExperienceConfig.getInstance().isSnowExploitPrevented() && BlockUtils.shouldBeWatched(blockState)) {
-            Block block = blockState.getBlock();
+            final Block block = blockState.getBlock();
 
             if (BlockUtils.isWithinWorldBounds(block)) {
                 BlockUtils.setUnnaturalBlock(block);
@@ -224,19 +224,19 @@ public class BlockListener implements Listener {
      * Does not monitor stuff like a falling block replacing a liquid
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockFormEvent(BlockFormEvent event) {
-        World world = event.getBlock().getWorld();
+    public void onBlockFormEvent(final BlockFormEvent event) {
+        final World world = event.getBlock().getWorld();
 
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(world)) return;
 
         if (ExperienceConfig.getInstance().preventStoneLavaFarming()) {
-            BlockState newState = event.getNewState();
+            final BlockState newState = event.getNewState();
 
             if (newState.getType() != Material.OBSIDIAN
                     && ExperienceConfig.getInstance().doesBlockGiveSkillXP(
-                            PrimarySkillType.MINING, newState.getType())) {
-                Block block = newState.getBlock();
+                    PrimarySkillType.MINING, newState.getType())) {
+                final Block block = newState.getBlock();
                 if (BlockUtils.isWithinWorldBounds(block)) {
                     BlockUtils.setUnnaturalBlock(block);
                 }
@@ -250,9 +250,9 @@ public class BlockListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onBlockPlace(BlockPlaceEvent event) {
-        BlockState blockState = event.getBlock().getState();
-        Block block = blockState.getBlock();
+    public void onBlockPlace(final BlockPlaceEvent event) {
+        final BlockState blockState = event.getBlock().getState();
+        final Block block = blockState.getBlock();
 
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(block.getWorld())) return;
@@ -261,10 +261,10 @@ public class BlockListener implements Listener {
             BlockUtils.setUnnaturalBlock(block);
         }
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         if (!UserManager.hasPlayerDataKey(player)) return;
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
         if (mcMMOPlayer == null) return;
 
         if (blockState.getType() == Repair.anvilMaterial && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.REPAIR)) {
@@ -280,10 +280,10 @@ public class BlockListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockMultiPlace(BlockMultiPlaceEvent event) {
-        for (BlockState replacedBlockState : event.getReplacedBlockStates()) {
-            BlockState blockState = replacedBlockState.getBlock().getState();
-            Block block = blockState.getBlock();
+    public void onBlockMultiPlace(final BlockMultiPlaceEvent event) {
+        for (final BlockState replacedBlockState : event.getReplacedBlockStates()) {
+            final BlockState blockState = replacedBlockState.getBlock().getState();
+            final Block block = blockState.getBlock();
 
             /* Check if the blocks placed should be monitored so they do not give out XP in the future */
             if (BlockUtils.isWithinWorldBounds(block)) {
@@ -294,7 +294,7 @@ public class BlockListener implements Listener {
                 }
 
                 //Track unnatural blocks
-                for (BlockState replacedState : event.getReplacedBlockStates()) {
+                for (final BlockState replacedState : event.getReplacedBlockStates()) {
                     BlockUtils.setUnnaturalBlock(replacedState.getBlock());
                 }
             }
@@ -302,9 +302,9 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockGrow(BlockGrowEvent event) {
-        Block block = event.getBlock();
-        World world = block.getWorld();
+    public void onBlockGrow(final BlockGrowEvent event) {
+        final Block block = event.getBlock();
+        final World world = block.getWorld();
 
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(world))
@@ -322,7 +322,7 @@ public class BlockListener implements Listener {
      * @param event The event to monitor
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockBreak(final BlockBreakEvent event) {
         /* WORLD BLACKLIST CHECK */
         final Block block = event.getBlock();
 
@@ -344,19 +344,19 @@ public class BlockListener implements Listener {
         /* ALCHEMY - Cancel any brew in progress for that BrewingStand */
         if (block.getType() == Material.BREWING_STAND) {
             final BlockState blockState = block.getState();
-                if (blockState instanceof BrewingStand && Alchemy.brewingStandMap.containsKey(location)) {
-                    Alchemy.brewingStandMap.get(location).cancelBrew();
-                }
+            if (blockState instanceof BrewingStand && Alchemy.brewingStandMap.containsKey(location)) {
+                Alchemy.brewingStandMap.get(location).cancelBrew();
+            }
         }
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         if (!UserManager.hasPlayerDataKey(player) || player.getGameMode() == GameMode.CREATIVE) {
             BlockUtils.cleanupBlockMetadata(block);
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
         //Check if profile is loaded
         if (mcMMOPlayer == null) {
@@ -366,11 +366,11 @@ public class BlockListener implements Listener {
             return;
         }
 
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         /* HERBALISM */
         if (BlockUtils.affectedByGreenTerra(block)) {
-            HerbalismManager herbalismManager = mcMMOPlayer.getHerbalismManager();
+            final HerbalismManager herbalismManager = mcMMOPlayer.getHerbalismManager();
 
             /* Green Terra */
             if (herbalismManager.canActivateAbility()) {
@@ -396,7 +396,7 @@ public class BlockListener implements Listener {
                 && (ItemUtils.isPickaxe(heldItem) || ItemUtils.isHoe(heldItem))
                 && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.MINING)
                 && !mcMMO.getUserBlockTracker().isIneligible(block)) {
-            MiningManager miningManager = mcMMOPlayer.getMiningManager();
+            final MiningManager miningManager = mcMMOPlayer.getMiningManager();
             miningManager.miningBlockCheck(block);
         }
 
@@ -404,7 +404,7 @@ public class BlockListener implements Listener {
         else if (BlockUtils.hasWoodcuttingXP(block) && ItemUtils.isAxe(heldItem)
                 && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.WOODCUTTING)
                 && !mcMMO.getUserBlockTracker().isIneligible(block)) {
-            WoodcuttingManager woodcuttingManager = mcMMOPlayer.getWoodcuttingManager();
+            final WoodcuttingManager woodcuttingManager = mcMMOPlayer.getWoodcuttingManager();
             if (woodcuttingManager.canUseTreeFeller(heldItem)) {
                 woodcuttingManager.processTreeFeller(block);
             } else {
@@ -439,7 +439,7 @@ public class BlockListener implements Listener {
      * @param event The event to modify
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBlockBreakHigher(BlockBreakEvent event) {
+    public void onBlockBreakHigher(final BlockBreakEvent event) {
         if (event instanceof FakeEvent) return;
 
         /* WORLD BLACKLIST CHECK */
@@ -450,19 +450,19 @@ public class BlockListener implements Listener {
             return;
 
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         if (!UserManager.hasPlayerDataKey(player) || player.getGameMode() == GameMode.CREATIVE) return;
 
         //Profile not loaded
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
         if (mcMMOPlayer == null) return;
 
-        BlockState blockState = event.getBlock().getState();
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        final BlockState blockState = event.getBlock().getState();
+        final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         if (ItemUtils.isSword(heldItem)) {
-            HerbalismManager herbalismManager = mcMMOPlayer.getHerbalismManager();
+            final HerbalismManager herbalismManager = mcMMOPlayer.getHerbalismManager();
 
             if (herbalismManager.canUseHylianLuck()) {
                 if (herbalismManager.processHylianLuck(blockState)) {
@@ -483,7 +483,7 @@ public class BlockListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onBlockDamage(BlockDamageEvent event) {
+    public void onBlockDamage(final BlockDamageEvent event) {
         final Player player = event.getPlayer();
         final Block block = event.getBlock();
 
@@ -496,7 +496,7 @@ public class BlockListener implements Listener {
         // Ignore FakeBlockDamageEvents and players without data
         if (event instanceof FakeBlockDamageEvent || !UserManager.hasPlayerDataKey(player)) return;
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
         if (mcMMOPlayer == null) return; // Profile not loaded
 
         /*
@@ -505,7 +505,7 @@ public class BlockListener implements Listener {
          * We check permissions here before processing activation.
          */
         if (BlockUtils.canActivateAbilities(block)) {
-            ItemStack heldItem = player.getInventory().getItemInMainHand();
+            final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
             if (mcMMOPlayer.getToolPreparationMode(ToolType.HOE) && ItemUtils.isHoe(heldItem) && (BlockUtils.affectedByGreenTerra(block) || BlockUtils.canMakeMossy(block)) && Permissions.greenTerra(player)) {
                 mcMMOPlayer.checkAbilityActivation(PrimarySkillType.HERBALISM);
@@ -548,10 +548,10 @@ public class BlockListener implements Listener {
      * @param event The event to modify
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBlockDamageHigher(BlockDamageEvent event) {
-        Block block = event.getBlock();
-        World world = block.getWorld();
-        Player player = event.getPlayer();
+    public void onBlockDamageHigher(final BlockDamageEvent event) {
+        final Block block = event.getBlock();
+        final World world = block.getWorld();
+        final Player player = event.getPlayer();
 
         // Early exits for conditions that stop processing
         if (WorldBlacklist.isWorldBlacklisted(world) || (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player))
@@ -565,7 +565,7 @@ public class BlockListener implements Listener {
             return;
         }
 
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         /*
          * ABILITY TRIGGER CHECKS
@@ -596,16 +596,16 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onBlockDamageCleanup(BlockDamageEvent event) {
-        Player player = event.getPlayer();
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+    public void onBlockDamageCleanup(final BlockDamageEvent event) {
+        final Player player = event.getPlayer();
+        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
         //Profile not loaded
         if (UserManager.getPlayer(player) == null) {
             return;
         }
 
-        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         cleanupAbilityTools(mcMMOPlayer, event.getBlock(), heldItem);
 
@@ -614,7 +614,7 @@ public class BlockListener implements Listener {
 
     //TODO: Rewrite this
     //TODO: Convert into locale strings
-    private void debugStickDump(Player player, Block block) {
+    private void debugStickDump(final Player player, final Block block) {
         //Profile not loaded
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         if (mmoPlayer == null) {
@@ -664,11 +664,12 @@ public class BlockListener implements Listener {
 
     /**
      * Clean up ability tools after a block break event.
+     *
      * @param mmoPlayer The player
-     * @param block The block
-     * @param heldItem The item in the player's hand
+     * @param block     The block
+     * @param heldItem  The item in the player's hand
      */
-    private void cleanupAbilityTools(McMMOPlayer mmoPlayer, Block block, ItemStack heldItem) {
+    private void cleanupAbilityTools(final McMMOPlayer mmoPlayer, final Block block, final ItemStack heldItem) {
         if (HiddenConfig.getInstance().useEnchantmentBuffs()) {
             if ((ItemUtils.isPickaxe(heldItem)
                     && !mmoPlayer.getAbilityMode(SuperAbilityType.SUPER_BREAKER))

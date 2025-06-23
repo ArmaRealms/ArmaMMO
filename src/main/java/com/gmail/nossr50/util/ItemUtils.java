@@ -768,21 +768,6 @@ public final class ItemUtils {
             return null;
         }
 
-        if (event.isToInventory()) {
-            // If the event is set to drop to inventory, we return null as no item entity is created.
-            if (player == null) {
-                return location.getWorld().dropItem(location, event.getItemStack());
-            }
-            final HashMap<Integer, ItemStack> itemStackToAdd = player.getInventory().addItem(event.getItemStack());
-            if (!itemStackToAdd.isEmpty()) {
-                // drop remaining items on the ground
-                for (final ItemStack remainingItem : itemStackToAdd.values()) {
-                    location.getWorld().dropItem(location, remainingItem);
-                }
-            }
-            return null;
-        }
-
         return location.getWorld().dropItem(location, event.getItemStack());
     }
 
@@ -807,23 +792,6 @@ public final class ItemUtils {
         mcMMO.p.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
-            return null;
-        }
-
-        if (event.isToInventory()) {
-            // If the event is set to drop to inventory, we return null as no item entity is created.
-            if (player == null) {
-                return location.getWorld().dropItemNaturally(location, event.getItemStack());
-            }
-
-            // Try to add the item to the player's inventory
-            final HashMap<Integer, ItemStack> itemStackToAdd = player.getInventory().addItem(event.getItemStack());
-            if (!itemStackToAdd.isEmpty()) {
-                // drop remaining items on the ground
-                for (final ItemStack remainingItem : itemStackToAdd.values()) {
-                    location.getWorld().dropItemNaturally(location, remainingItem);
-                }
-            }
             return null;
         }
 

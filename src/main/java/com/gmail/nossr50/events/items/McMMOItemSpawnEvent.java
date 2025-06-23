@@ -19,7 +19,6 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     private boolean cancelled;
     private final ItemSpawnReason itemSpawnReason;
     private final Player player;
-    private boolean toInventory;
 
     public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack, @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
         this.location = location;
@@ -27,7 +26,6 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
         this.itemSpawnReason = itemSpawnReason;
         this.player = player;
         this.cancelled = false;
-        this.toInventory = false;
     }
 
     /**
@@ -89,14 +87,6 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(final boolean cancelled) {
         this.cancelled = cancelled;
-    }
-
-    public boolean isToInventory() {
-        return toInventory;
-    }
-
-    public void setToInventory(final boolean toInventory) {
-        this.toInventory = toInventory;
     }
 
     /**
