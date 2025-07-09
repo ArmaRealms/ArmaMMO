@@ -28,8 +28,8 @@ public class McstatsCommand implements TabExecutor {
         }
 
         if (args.length == 0) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
@@ -52,9 +52,9 @@ public class McstatsCommand implements TabExecutor {
             int powerLevelCap = mcMMO.p.getGeneralConfig().getPowerLevelCap();
 
             if (powerLevelCap != Integer.MAX_VALUE) {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel()), powerLevelCap));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Capped", StringUtils.formatNumber(mmoPlayer.getPowerLevel()), powerLevelCap));
             } else {
-                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel())));
+                player.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mmoPlayer.getPowerLevel())));
             }
 
             return true;

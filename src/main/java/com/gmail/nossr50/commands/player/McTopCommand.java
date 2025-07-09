@@ -96,15 +96,15 @@ public class McTopCommand implements TabExecutor {
                 return;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return;
             }
             long cooldownMillis = Math.max(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
-            if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
-                double seconds = ((mcMMOPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis()) / 1000.0D;
+            if (mmoPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
+                double seconds = ((mmoPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis()) / 1000.0D;
                 if (seconds < 1) {
                     seconds = 1;
                 }
@@ -120,7 +120,7 @@ public class McTopCommand implements TabExecutor {
                 player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
-            mcMMOPlayer.actualizeDatabaseATS();
+            mmoPlayer.actualizeDatabaseATS();
         }
 
         display(page, skill, sender);

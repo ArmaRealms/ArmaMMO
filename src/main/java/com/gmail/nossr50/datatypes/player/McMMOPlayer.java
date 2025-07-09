@@ -659,9 +659,9 @@ public class McMMOPlayer implements Identified {
             return;
         }
 
-        final McMMOPlayerPreXpGainEvent mcMMOPlayerPreXpGainEvent = new McMMOPlayerPreXpGainEvent(player, primarySkillType, xp, xpGainReason);
-        Bukkit.getPluginManager().callEvent(mcMMOPlayerPreXpGainEvent);
-        xp = mcMMOPlayerPreXpGainEvent.getXpGained();
+        final McMMOPlayerPreXpGainEvent mmoPlayerPreXpGainEvent = new McMMOPlayerPreXpGainEvent(player, primarySkillType, xp, xpGainReason);
+        Bukkit.getPluginManager().callEvent(mmoPlayerPreXpGainEvent);
+        xp = mmoPlayerPreXpGainEvent.getXpGained();
 
         if (SkillTools.isChildSkill(primarySkillType)) {
             ImmutableList<PrimarySkillType> parentSkills = skillTools.getChildSkillParents(primarySkillType);
@@ -1114,7 +1114,7 @@ public class McMMOPlayer implements Identified {
     }
 
     /**
-     * This method is called by PlayerQuitEvent to tear down the mcMMOPlayer.
+     * This method is called by PlayerQuitEvent to tear down the mmoPlayer.
      *
      * @param syncSave if true, data is saved synchronously
      */

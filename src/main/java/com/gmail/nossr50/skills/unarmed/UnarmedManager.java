@@ -26,8 +26,8 @@ import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful
 
 public class UnarmedManager extends SkillManager {
 
-    public UnarmedManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.UNARMED);
+    public UnarmedManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.UNARMED);
     }
 
     public boolean canActivateAbility() {
@@ -106,15 +106,15 @@ public class UnarmedManager extends SkillManager {
                 return;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(defender);
-            if (mcMMOPlayer == null)
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(defender);
+            if (mmoPlayer == null)
                 return;
 
             final Item item = ItemUtils.spawnItem(getPlayer(), defender.getLocation(),
                     defender.getInventory().getItemInMainHand(), ItemSpawnReason.UNARMED_DISARMED_ITEM);
 
             if (item != null && mcMMO.p.getAdvancedConfig().getDisarmProtected()) {
-                item.setMetadata(MetadataConstants.METADATA_KEY_DISARMED_ITEM, mcMMOPlayer.getPlayerMetadata());
+                item.setMetadata(MetadataConstants.METADATA_KEY_DISARMED_ITEM, mmoPlayer.getPlayerMetadata());
             }
 
             defender.getInventory().setItemInMainHand(new ItemStack(Material.AIR));

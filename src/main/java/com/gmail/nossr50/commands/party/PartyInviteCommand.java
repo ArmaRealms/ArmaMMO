@@ -33,8 +33,8 @@ public class PartyInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
@@ -51,12 +51,12 @@ public class PartyInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            if (!mcMMO.p.getPartyManager().canInvite(mcMMOPlayer)) {
+            if (!mcMMO.p.getPartyManager().canInvite(mmoPlayer)) {
                 player.sendMessage(LocaleLoader.getString("Party.Locked"));
                 return true;
             }
 
-            Party playerParty = mcMMOPlayer.getParty();
+            Party playerParty = mmoPlayer.getParty();
             if (playerParty == null) {
                 return true;
             }

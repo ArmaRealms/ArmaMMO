@@ -18,8 +18,8 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class SmeltingManager extends SkillManager {
-    public SmeltingManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.SMELTING);
+    public SmeltingManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.SMELTING);
     }
 
     public boolean isSecondSmeltSuccessful() {

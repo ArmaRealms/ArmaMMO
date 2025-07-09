@@ -24,13 +24,13 @@ public class PartyChangeOwnerCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            Party party = mcMMOPlayer.getParty();
+            Party party = mmoPlayer.getParty();
             if (party == null) return true;
 
             String targetName = CommandUtils.getMatchedPlayerName(args[1]);

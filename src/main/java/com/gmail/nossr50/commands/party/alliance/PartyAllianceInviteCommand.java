@@ -30,8 +30,8 @@ public class PartyAllianceInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
@@ -61,7 +61,7 @@ public class PartyAllianceInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            Party playerParty = mcMMOPlayer.getParty();
+            Party playerParty = mmoPlayer.getParty();
             if (playerParty == null) return true;
 
             if (playerParty.getAlly() != null) {

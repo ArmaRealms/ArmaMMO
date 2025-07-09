@@ -24,10 +24,10 @@ public class InspectCommand implements TabExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
             String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-            McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(playerName);
+            McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
 
-            // If the mcMMOPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
-            if (mcMMOPlayer == null) {
+            // If the mmoPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
+            if (mmoPlayer == null) {
                 PlayerProfile profile = mcMMO.getDatabaseManager().loadPlayerProfile(playerName); // Temporary Profile
 
                 if (!CommandUtils.isLoaded(sender, profile)) {
@@ -68,7 +68,7 @@ public class InspectCommand implements TabExecutor {
 
                 sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(powerLevel)));
             } else {
-                Player target = mcMMOPlayer.getPlayer();
+                Player target = mmoPlayer.getPlayer();
                 boolean isVanished = CommandUtils.hidden(sender, target, Permissions.inspectHidden(sender));
 
                 //Only distance check players who are online and not vanished
@@ -79,7 +79,7 @@ public class InspectCommand implements TabExecutor {
                 if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()
                         && sender instanceof Player player
                         && mcMMO.p.getGeneralConfig().getInspectUseBoard()) {
-                    ScoreboardManager.enablePlayerInspectScoreboard(player, mcMMOPlayer);
+                    ScoreboardManager.enablePlayerInspectScoreboard(player, mmoPlayer);
 
                     if (!mcMMO.p.getGeneralConfig().getInspectUseChat()) {
                         return true;
@@ -96,7 +96,7 @@ public class InspectCommand implements TabExecutor {
                 CommandUtils.printCombatSkills(target, sender);
                 CommandUtils.printMiscSkills(target, sender);
 
-                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mcMMOPlayer.getPowerLevel())));
+                sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel", StringUtils.formatNumber(mmoPlayer.getPowerLevel())));
             }
 
             return true;

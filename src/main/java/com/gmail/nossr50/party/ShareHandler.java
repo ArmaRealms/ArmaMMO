@@ -25,24 +25,24 @@ public final class ShareHandler {
      * Distribute Xp amongst party members.
      *
      * @param xp Xp without party sharing
-     * @param mcMMOPlayer Player initiating the Xp gain
+     * @param mmoPlayer Player initiating the Xp gain
      * @param primarySkillType Skill being used
      * @return True is the xp has been shared
      */
-    public static boolean handleXpShare(float xp, McMMOPlayer mcMMOPlayer, PrimarySkillType primarySkillType, XPGainReason xpGainReason) {
-        Party party = mcMMOPlayer.getParty();
+    public static boolean handleXpShare(float xp, McMMOPlayer mmoPlayer, PrimarySkillType primarySkillType, XPGainReason xpGainReason) {
+        Party party = mmoPlayer.getParty();
 
         if (party != null && party.getXpShareMode() != ShareMode.EQUAL) {
             return false;
         }
 
-        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearVisibleMembers(mcMMOPlayer);
+        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearVisibleMembers(mmoPlayer);
 
         if (nearMembers.isEmpty()) {
             return false;
         }
 
-        nearMembers.add(mcMMOPlayer.getPlayer());
+        nearMembers.add(mmoPlayer.getPlayer());
 
         int partySize = nearMembers.size();
         double shareBonus = Math.min(mcMMO.p.getGeneralConfig().getPartyShareBonusBase()
@@ -67,10 +67,10 @@ public final class ShareHandler {
      * Distribute Items amongst party members.
      *
      * @param drop Item that will get shared
-     * @param mcMMOPlayer Player who picked up the item
+     * @param mmoPlayer Player who picked up the item
      * @return True if the item has been shared
      */
-    public static boolean handleItemShare(Item drop, McMMOPlayer mcMMOPlayer) {
+    public static boolean handleItemShare(Item drop, McMMOPlayer mmoPlayer) {
         ItemStack itemStack = drop.getItemStack();
         ItemShareType dropType = ItemShareType.getShareType(itemStack);
 
@@ -78,7 +78,7 @@ public final class ShareHandler {
             return false;
         }
 
-        Party party = mcMMOPlayer.getParty();
+        Party party = mmoPlayer.getParty();
         if (party == null) {
             return false;
         }
@@ -93,7 +93,7 @@ public final class ShareHandler {
             return false;
         }
 
-        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearMembers(mcMMOPlayer);
+        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearMembers(mmoPlayer);
 
         if (nearMembers.isEmpty()) {
             return false;
@@ -102,7 +102,7 @@ public final class ShareHandler {
         Player winningPlayer = null;
         ItemStack newStack = itemStack.clone();
 
-        nearMembers.add(mcMMOPlayer.getPlayer());
+        nearMembers.add(mmoPlayer.getPlayer());
         int partySize = nearMembers.size();
 
         drop.remove();

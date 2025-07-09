@@ -6,13 +6,13 @@ import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.experience.ExperienceBarManager;
 
 public class ExperienceBarHideTask extends CancellableRunnable {
-    public final McMMOPlayer mcMMOPlayer;
+    public final McMMOPlayer mmoPlayer;
     public final PrimarySkillType primarySkillType;
     public final ExperienceBarManager experienceBarManagerRef;
 
-    public ExperienceBarHideTask(ExperienceBarManager experienceBarManagerRef, McMMOPlayer mcMMOPlayer, PrimarySkillType primarySkillType) {
+    public ExperienceBarHideTask(ExperienceBarManager experienceBarManagerRef, McMMOPlayer mmoPlayer, PrimarySkillType primarySkillType) {
         this.experienceBarManagerRef = experienceBarManagerRef;
-        this.mcMMOPlayer = mcMMOPlayer;
+        this.mmoPlayer = mmoPlayer;
         this.primarySkillType = primarySkillType;
     }
 
@@ -29,7 +29,7 @@ public class ExperienceBarHideTask extends CancellableRunnable {
      */
     @Override
     public void run() {
-        if (experienceBarManagerRef == null || mcMMOPlayer == null)
+        if (experienceBarManagerRef == null || mmoPlayer == null)
             return;
 
         experienceBarManagerRef.hideExperienceBar(primarySkillType);

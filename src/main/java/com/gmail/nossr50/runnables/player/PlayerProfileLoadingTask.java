@@ -77,10 +77,10 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
     }
 
     private class ApplySuccessfulProfile extends CancellableRunnable {
-        private final McMMOPlayer mcMMOPlayer;
+        private final McMMOPlayer mmoPlayer;
 
-        private ApplySuccessfulProfile(McMMOPlayer mcMMOPlayer) {
-            this.mcMMOPlayer = mcMMOPlayer;
+        private ApplySuccessfulProfile(McMMOPlayer mmoPlayer) {
+            this.mmoPlayer = mmoPlayer;
         }
 
         // Synchronized task
@@ -92,11 +92,11 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
                 return;
             }
 
-            mcMMOPlayer.getProfile().updateLastLogin();
+            mmoPlayer.getProfile().updateLastLogin();
 
-            mcMMOPlayer.setupPartyData();
-            UserManager.track(mcMMOPlayer);
-            mcMMOPlayer.actualizeRespawnATS();
+            mmoPlayer.setupPartyData();
+            UserManager.track(mmoPlayer);
+            mmoPlayer.actualizeRespawnATS();
 
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                 ScoreboardManager.setupPlayer(player);

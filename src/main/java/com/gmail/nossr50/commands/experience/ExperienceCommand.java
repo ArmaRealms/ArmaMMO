@@ -82,10 +82,10 @@ public abstract class ExperienceCommand implements TabExecutor {
                 int value = Integer.parseInt(args[2]);
 
                 String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-                McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(playerName);
+                McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
 
-                // If the mcMMOPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
-                if (mcMMOPlayer == null) {
+                // If the mmoPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
+                if (mmoPlayer == null) {
                     PlayerProfile profile;
 
                     profile = mcMMO.getDatabaseManager().loadPlayerProfile(playerName);
@@ -102,7 +102,7 @@ public abstract class ExperienceCommand implements TabExecutor {
 
                     editValues(null, profile, skill, value, isSilent(args));
                 } else {
-                    editValues(mcMMOPlayer.getPlayer(), mcMMOPlayer.getProfile(), skill, value, isSilent(args));
+                    editValues(mmoPlayer.getPlayer(), mmoPlayer.getProfile(), skill, value, isSilent(args));
                 }
 
                 handleSenderMessage(sender, playerName, skill);

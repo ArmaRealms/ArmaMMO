@@ -28,8 +28,8 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
-    public ExcavationManager(final McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.EXCAVATION);
+    public ExcavationManager(final McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.EXCAVATION);
     }
 
     /**

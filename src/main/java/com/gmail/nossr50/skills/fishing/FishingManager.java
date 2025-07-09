@@ -58,8 +58,8 @@ public class FishingManager extends SkillManager {
     private final int masterAnglerMinWaitLowerBound;
     private final int masterAnglerMaxWaitLowerBound;
 
-    public FishingManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.FISHING);
+    public FishingManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.FISHING);
         //Ticks for minWait and maxWait never go below this value
         int bonusCapMin = mcMMO.p.getAdvancedConfig().getFishingReductionMinWaitCap();
         int bonusCapMax = mcMMO.p.getAdvancedConfig().getFishingReductionMaxWaitCap();

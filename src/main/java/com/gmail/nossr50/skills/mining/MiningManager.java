@@ -45,8 +45,8 @@ public class MiningManager extends SkillManager {
             "infested_stone_bricks", "infested_cracked_stone_bricks", "infested_mossy_stone_bricks",
             "infested_chiseled_stone_bricks", "infested_deepslate");
 
-    public MiningManager(@NotNull McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.MINING);
+    public MiningManager(@NotNull McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.MINING);
     }
 
     public boolean canUseDemolitionsExpertise() {

@@ -346,15 +346,15 @@ public class Party {
     /**
      * Get the near party members.
      *
-     * @param mcMMOPlayer The player to check
+     * @param mmoPlayer The player to check
      * @return the near party members
      */
-    public List<Player> getNearMembers(McMMOPlayer mcMMOPlayer) {
+    public List<Player> getNearMembers(McMMOPlayer mmoPlayer) {
         List<Player> nearMembers = new ArrayList<>();
-        Party party = mcMMOPlayer.getParty();
+        Party party = mmoPlayer.getParty();
 
         if (party != null) {
-            Player player = mcMMOPlayer.getPlayer();
+            Player player = mmoPlayer.getPlayer();
             double range = mcMMO.p.getGeneralConfig().getPartyShareRange();
 
             for (Player member : party.getOnlineMembers()) {

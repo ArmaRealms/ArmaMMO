@@ -78,14 +78,14 @@ public class PartyCommand implements TabExecutor {
 
         if (!UserManager.hasPlayerDataKey(player)) return true;
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null) {
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null) {
             player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }
 
         if (args.length < 1) {
-            if (!mcMMOPlayer.inParty()) {
+            if (!mmoPlayer.inParty()) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Party.None"));
                 return printUsage(player);
             }
@@ -121,7 +121,7 @@ public class PartyCommand implements TabExecutor {
         }
 
         // Party member commands
-        if (!mcMMOPlayer.inParty()) {
+        if (!mmoPlayer.inParty()) {
             sender.sendMessage(LocaleLoader.getString("Commands.Party.None"));
             return printUsage(player);
         }
@@ -142,7 +142,7 @@ public class PartyCommand implements TabExecutor {
         }
 
         // Party leader commands
-        Party party = mcMMOPlayer.getParty();
+        Party party = mmoPlayer.getParty();
         if (party == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
@@ -200,17 +200,17 @@ public class PartyCommand implements TabExecutor {
 
                         if (matches.isEmpty()) {
                             Player player = (Player) sender;
-                            final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
                             //Not Loaded
-                            if (mcMMOPlayer == null) {
+                            if (mmoPlayer == null) {
                                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                                 return List.of();
                             }
 
-                            if (mcMMOPlayer.getParty() == null) return List.of();
+                            if (mmoPlayer.getParty() == null) return List.of();
 
-                            final Party party = mcMMOPlayer.getParty();
+                            final Party party = mmoPlayer.getParty();
 
                             playerNames = party.getOnlinePlayerNames(player);
                             return playerNames.stream().filter(s -> s.startsWith(args[1])).toList();

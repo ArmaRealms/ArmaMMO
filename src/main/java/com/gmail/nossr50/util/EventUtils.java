@@ -139,14 +139,14 @@ public final class EventUtils {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-            if (mcMMOPlayer == null) {
+            if (mmoPlayer == null) {
                 return true;
             }
 
             /* Check for invincibility */
-            if (mcMMOPlayer.getGodMode()) {
+            if (mmoPlayer.getGodMode()) {
                 entityDamageEvent.setCancelled(true);
                 return false;
             }
@@ -345,12 +345,12 @@ public final class EventUtils {
     }
 
     public static void handlePartyTeleportEvent(Player teleportingPlayer, Player targetPlayer) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(teleportingPlayer);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(teleportingPlayer);
 
-        if (mcMMOPlayer == null)
+        if (mmoPlayer == null)
             return;
 
-        McMMOPartyTeleportEvent event = new McMMOPartyTeleportEvent(teleportingPlayer, targetPlayer, mcMMOPlayer.getParty().getName());
+        McMMOPartyTeleportEvent event = new McMMOPartyTeleportEvent(teleportingPlayer, targetPlayer, mmoPlayer.getParty().getName());
         mcMMO.p.getServer().getPluginManager().callEvent(event);
 
         if (event.isCancelled()) {
@@ -363,7 +363,7 @@ public final class EventUtils {
         teleportingPlayer.sendMessage(LocaleLoader.getString("Party.Teleport.Player", targetPlayer.getName()));
         targetPlayer.sendMessage(LocaleLoader.getString("Party.Teleport.Target", teleportingPlayer.getName()));
 
-        mcMMOPlayer.getPartyTeleportRecord().actualizeLastUse();
+        mmoPlayer.getPartyTeleportRecord().actualizeLastUse();
     }
 
     public static boolean handlePartyXpGainEvent(Party party, float xpGained) {

@@ -25,8 +25,8 @@ import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful
 import static com.gmail.nossr50.util.skills.SkillUtils.handleArmorDurabilityChange;
 
 public class AxesManager extends SkillManager {
-    public AxesManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.AXES);
+    public AxesManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.AXES);
     }
 
     public boolean canUseAxeMastery() {

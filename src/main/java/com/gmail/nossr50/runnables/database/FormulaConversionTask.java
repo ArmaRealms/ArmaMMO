@@ -29,11 +29,11 @@ public class FormulaConversionTask extends CancellableRunnable {
         int convertedUsers = 0;
         long startMillis = System.currentTimeMillis();
         for (String playerName : mcMMO.getDatabaseManager().getStoredUsers()) {
-            McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(playerName);
+            McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
             PlayerProfile profile;
 
-            // If the mcMMOPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
-            if (mcMMOPlayer == null) {
+            // If the mmoPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
+            if (mmoPlayer == null) {
                 profile = mcMMO.getDatabaseManager().loadPlayerProfile(playerName);
 
                 if (!profile.isLoaded()) {
@@ -45,7 +45,7 @@ public class FormulaConversionTask extends CancellableRunnable {
                 // Since this is a temporary profile, we save it here.
                 profile.scheduleAsyncSave();
             } else {
-                profile = mcMMOPlayer.getProfile();
+                profile = mmoPlayer.getProfile();
                 editValues(profile);
             }
             convertedUsers++;

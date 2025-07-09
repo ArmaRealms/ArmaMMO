@@ -40,9 +40,9 @@ public class AlchemyBrewTask extends CancellableRunnable {
 
     public AlchemyBrewTask(@NotNull BlockState brewingStand) {
         offlinePlayer = ContainerMetadataUtils.getContainerOwner(brewingStand);
-        McMMOPlayer mcMMOPlayer = null;
+        McMMOPlayer mmoPlayer = null;
         if (offlinePlayer != null && offlinePlayer.isOnline()) {
-            mcMMOPlayer = UserManager.getPlayer(offlinePlayer.getPlayer());
+            mmoPlayer = UserManager.getPlayer(offlinePlayer.getPlayer());
         }
 
         this.brewingStand = brewingStand;
@@ -50,15 +50,15 @@ public class AlchemyBrewTask extends CancellableRunnable {
         brewSpeed = DEFAULT_BREW_SPEED;
         brewTimer = DEFAULT_BREW_TICKS;
 
-        if (mcMMOPlayer != null
-                && !Misc.isNPCEntityExcludingVillagers(mcMMOPlayer.getPlayer())
-                && Permissions.isSubSkillEnabled(mcMMOPlayer.getPlayer(), SubSkillType.ALCHEMY_CATALYSIS)) {
-            ingredientLevel = mcMMOPlayer.getAlchemyManager().getTier();
+        if (mmoPlayer != null
+                && !Misc.isNPCEntityExcludingVillagers(mmoPlayer.getPlayer())
+                && Permissions.isSubSkillEnabled(mmoPlayer.getPlayer(), SubSkillType.ALCHEMY_CATALYSIS)) {
+            ingredientLevel = mmoPlayer.getAlchemyManager().getTier();
 
-            double catalysis = mcMMOPlayer.getAlchemyManager().calculateBrewSpeed(Permissions.lucky(mcMMOPlayer.getPlayer(),
+            double catalysis = mmoPlayer.getAlchemyManager().calculateBrewSpeed(Permissions.lucky(mmoPlayer.getPlayer(),
                     PrimarySkillType.ALCHEMY));
 
-            McMMOPlayerCatalysisEvent event = new McMMOPlayerCatalysisEvent(mcMMOPlayer, catalysis);
+            McMMOPlayerCatalysisEvent event = new McMMOPlayerCatalysisEvent(mmoPlayer, catalysis);
             mcMMO.p.getServer().getPluginManager().callEvent(event);
 
             if (!event.isCancelled()) {

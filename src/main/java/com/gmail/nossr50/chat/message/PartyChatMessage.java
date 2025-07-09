@@ -63,12 +63,12 @@ public class PartyChatMessage extends AbstractChatMessage {
      */
     private void messagePartyChatSpies(@NotNull TextComponent spyMessage) {
         //Find the people with permissions
-        for(McMMOPlayer mcMMOPlayer : UserManager.getPlayers()) {
-            Player player = mcMMOPlayer.getPlayer();
+        for(McMMOPlayer mmoPlayer : UserManager.getPlayers()) {
+            Player player = mmoPlayer.getPlayer();
 
             //Check for toggled players
-            if (mcMMOPlayer.isPartyChatSpying()) {
-                Party adminParty = mcMMOPlayer.getParty();
+            if (mmoPlayer.isPartyChatSpying()) {
+                Party adminParty = mmoPlayer.getParty();
 
                 //Only message admins not part of this party
                 if (adminParty == null || adminParty != getParty()) {

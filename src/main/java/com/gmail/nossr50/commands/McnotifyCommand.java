@@ -20,16 +20,16 @@ public class McnotifyCommand implements TabExecutor {
         }
 
         if (args.length == 0) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
             //Not Loaded yet
-            if (mcMMOPlayer == null) {
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            sender.sendMessage(LocaleLoader.getString("Commands.Notifications." + (mcMMOPlayer.useChatNotifications() ? "Off" : "On")));
-            mcMMOPlayer.toggleChatNotifications();
+            sender.sendMessage(LocaleLoader.getString("Commands.Notifications." + (mmoPlayer.useChatNotifications() ? "Off" : "On")));
+            mmoPlayer.toggleChatNotifications();
             return true;
         }
         return false;

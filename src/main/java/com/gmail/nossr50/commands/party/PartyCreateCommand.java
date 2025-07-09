@@ -20,8 +20,8 @@ public class PartyCreateCommand implements CommandExecutor {
 
         switch (args.length) {
             case 2, 3 -> {
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-                if (mcMMOPlayer == null) {
+                McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+                if (mmoPlayer == null) {
                     player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
@@ -32,11 +32,11 @@ public class PartyCreateCommand implements CommandExecutor {
                 }
 
                 // Changing parties
-                if (!mcMMO.p.getPartyManager().changeOrJoinParty(mcMMOPlayer, args[1])) {
+                if (!mcMMO.p.getPartyManager().changeOrJoinParty(mmoPlayer, args[1])) {
                     return true;
                 }
 
-                mcMMO.p.getPartyManager().createParty(mcMMOPlayer, args[1], args.length == 3 ? args[2] : null);
+                mcMMO.p.getPartyManager().createParty(mmoPlayer, args[1], args.length == 3 ? args[2] : null);
                 return true;
             }
 

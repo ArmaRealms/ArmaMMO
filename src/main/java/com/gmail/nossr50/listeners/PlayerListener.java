@@ -225,10 +225,10 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        mcMMOPlayer.checkGodMode();
-        mcMMOPlayer.checkParty();
+        mmoPlayer.checkGodMode();
+        mmoPlayer.checkParty();
     }
 
     /**
@@ -487,8 +487,8 @@ public class PlayerListener implements Listener {
             }
 
             //Profile not loaded
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 return;
             }
 
@@ -508,8 +508,8 @@ public class PlayerListener implements Listener {
             }
 
             // TODO: Temporarily disabling sharing items...
-            /*if (!drop.hasMetadata(MetadataConstants.METADATA_KEY_TRACKED_ITEM) && mcMMOPlayer.inParty() && ItemUtils.isSharable(dropStack)) {
-                event.setCancelled(ShareHandler.handleItemShare(drop, mcMMOPlayer));
+            /*if (!drop.hasMetadata(MetadataConstants.METADATA_KEY_TRACKED_ITEM) && mmoPlayer.inParty() && ItemUtils.isSharable(dropStack)) {
+                event.setCancelled(ShareHandler.handleItemShare(drop, mmoPlayer));
 
                 if (event.isCancelled()) {
                     SoundManager.sendSound(player, player.getLocation(), SoundType.POP);
@@ -546,15 +546,15 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Profile not loaded
-        if (mcMMOPlayer == null) {
+        if (mmoPlayer == null) {
             return;
         }
 
         //Use a sync save if the server is shutting down to avoid race conditions
-        mcMMOPlayer.logout(mcMMO.isServerShutdownExecuted());
+        mmoPlayer.logout(mcMMO.isServerShutdownExecuted());
         mcMMO.getTransientMetadataTools().cleanLivingEntityMetadata(event.getPlayer());
     }
 
@@ -650,8 +650,8 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        MiningManager miningManager = mcMMOPlayer.getMiningManager();
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        MiningManager miningManager = mmoPlayer.getMiningManager();
         ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         switch (event.getAction()) {
@@ -664,7 +664,7 @@ public class PlayerListener implements Listener {
                             && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.REPAIR)
                             && mcMMO.getRepairableManager().isRepairable(heldItem)
                             && heldItem.getAmount() <= 1) {
-                        RepairManager repairManager = mcMMOPlayer.getRepairManager();
+                        RepairManager repairManager = mmoPlayer.getRepairManager();
                         event.setCancelled(true);
 
                         // Make sure the player knows what he's doing when trying to repair an enchanted item
@@ -708,7 +708,7 @@ public class PlayerListener implements Listener {
                 if (!mcMMO.p.getGeneralConfig().getAbilitiesOnlyActivateWhenSneaking() || player.isSneaking()) {
                     /* REPAIR CHECKS */
                     if (type == Repair.anvilMaterial && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.REPAIR) && mcMMO.getRepairableManager().isRepairable(heldItem)) {
-                        RepairManager repairManager = mcMMOPlayer.getRepairManager();
+                        RepairManager repairManager = mmoPlayer.getRepairManager();
 
                         // Cancel repairing an enchanted item
                         if (repairManager.checkConfirmation(false)) {
@@ -718,7 +718,7 @@ public class PlayerListener implements Listener {
                     }
                     /* SALVAGE CHECKS */
                     else if (type == Salvage.anvilMaterial && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, PrimarySkillType.SALVAGE) && mcMMO.getSalvageableManager().isSalvageable(heldItem)) {
-                        SalvageManager salvageManager = mcMMOPlayer.getSalvageManager();
+                        SalvageManager salvageManager = mmoPlayer.getSalvageManager();
 
                         // Cancel salvaging an enchanted item
                         if (salvageManager.checkConfirmation(false)) {
@@ -765,8 +765,8 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null)
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null)
             return;
 
         ItemStack heldItem = player.getInventory().getItemInMainHand();
@@ -779,7 +779,7 @@ public class PlayerListener implements Listener {
                     player.getVehicle().eject();
                 }
 
-                //mcMMOPlayer.getFishingManager().setFishingRodCastTimestamp();
+                //mmoPlayer.getFishingManager().setFishingRodCastTimestamp();
             }
         }
 
@@ -800,21 +800,21 @@ public class PlayerListener implements Listener {
                 if (BlockUtils.canActivateTools(blockState)) {
                     if (mcMMO.p.getGeneralConfig().getAbilitiesEnabled()) {
                         if (BlockUtils.canActivateHerbalism(blockState)) {
-                            mcMMOPlayer.processAbilityActivation(PrimarySkillType.HERBALISM);
+                            mmoPlayer.processAbilityActivation(PrimarySkillType.HERBALISM);
                         }
 
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.AXES);
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.EXCAVATION);
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.MINING);
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.SWORDS);
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.UNARMED);
-                        mcMMOPlayer.processAbilityActivation(PrimarySkillType.WOODCUTTING);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.AXES);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.EXCAVATION);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.MINING);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.SWORDS);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.UNARMED);
+                        mmoPlayer.processAbilityActivation(PrimarySkillType.WOODCUTTING);
                     }
 
                     ChimaeraWing.activationCheck(player);
                 }
 
-                HerbalismManager herbalismManager = mcMMOPlayer.getHerbalismManager();
+                HerbalismManager herbalismManager = mmoPlayer.getHerbalismManager();
 
                 // FakePlayerAnimationEvent fakeSwing = new FakePlayerAnimationEvent(event.getPlayer(), PlayerAnimationType.ARM_SWING); //PlayerAnimationEvent compat
                 if (!event.isCancelled() || event.useInteractedBlock() != Event.Result.DENY) {
@@ -867,20 +867,20 @@ public class PlayerListener implements Listener {
 
                 /* ACTIVATION CHECKS */
                 if (mcMMO.p.getGeneralConfig().getAbilitiesEnabled()) {
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.AXES);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.EXCAVATION);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.HERBALISM);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.MINING);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.SWORDS);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.UNARMED);
-                    mcMMOPlayer.processAbilityActivation(PrimarySkillType.WOODCUTTING);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.AXES);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.EXCAVATION);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.HERBALISM);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.MINING);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.SWORDS);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.UNARMED);
+                    mmoPlayer.processAbilityActivation(PrimarySkillType.WOODCUTTING);
                 }
 
                 /* ITEM CHECKS */
                 ChimaeraWing.activationCheck(player);
 
                 /* BLAST MINING CHECK */
-                MiningManager miningManager = mcMMOPlayer.getMiningManager();
+                MiningManager miningManager = mmoPlayer.getMiningManager();
                 if (miningManager.canDetonate()) {
                     miningManager.remoteDetonation();
                 }
@@ -896,7 +896,7 @@ public class PlayerListener implements Listener {
 
                 /* CALL OF THE WILD CHECKS */
                 Material type = heldItem.getType();
-                TamingManager tamingManager = mcMMOPlayer.getTamingManager();
+                TamingManager tamingManager = mmoPlayer.getTamingManager();
 
                 if (type == mcMMO.p.getGeneralConfig().getTamingCOTWMaterial(CallOfTheWildType.WOLF.getConfigEntityTypeEntry())) {
                     tamingManager.summonWolf();
@@ -926,23 +926,23 @@ public class PlayerListener implements Listener {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(player);
+        McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(player);
 
-        if (mcMMOPlayer == null) {
+        if (mmoPlayer == null) {
             LogUtils.debug(mcMMO.p.getLogger(), player.getName() + "is chatting, but is currently not logged in to the server.");
             LogUtils.debug(mcMMO.p.getLogger(), "Party & Admin chat will not work properly for this player.");
             return;
         }
 
-        if (plugin.getChatManager().isChatChannelEnabled(mcMMOPlayer.getChatChannel())) {
-            if (mcMMOPlayer.getChatChannel() != ChatChannel.NONE) {
-                if (plugin.getChatManager().isMessageAllowed(mcMMOPlayer)) {
+        if (plugin.getChatManager().isChatChannelEnabled(mmoPlayer.getChatChannel())) {
+            if (mmoPlayer.getChatChannel() != ChatChannel.NONE) {
+                if (plugin.getChatManager().isMessageAllowed(mmoPlayer)) {
                     //If the message is allowed we cancel this event to avoid double sending messages
-                    plugin.getChatManager().processPlayerMessage(mcMMOPlayer, event.getMessage(), event.isAsynchronous());
+                    plugin.getChatManager().processPlayerMessage(mmoPlayer, event.getMessage(), event.isAsynchronous());
                     event.setCancelled(true);
                 } else {
                     //Message wasn't allowed, remove the player from their channel
-                    plugin.getChatManager().setOrToggleChatChannel(mcMMOPlayer, mcMMOPlayer.getChatChannel());
+                    plugin.getChatManager().setOrToggleChatChannel(mmoPlayer, mmoPlayer.getChatChannel());
                 }
             }
         }
