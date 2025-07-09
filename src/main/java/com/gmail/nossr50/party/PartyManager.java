@@ -292,16 +292,16 @@ public final class PartyManager {
     /**
      * Remove a player from a party.
      *
-     * @param mcMMOPlayer The player to remove
+     * @param mmoPlayer The player to remove
      */
-    public void removeFromParty(@NotNull McMMOPlayer mcMMOPlayer) {
-        requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
-        if (mcMMOPlayer.getParty() == null) {
+    public void removeFromParty(@NotNull McMMOPlayer mmoPlayer) {
+        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
+        if (mmoPlayer.getParty() == null) {
             return;
         }
 
-        removeFromParty(mcMMOPlayer.getPlayer(), mcMMOPlayer.getParty());
-        processPartyLeaving(mcMMOPlayer);
+        removeFromParty(mmoPlayer.getPlayer(), mmoPlayer.getParty());
+        processPartyLeaving(mmoPlayer);
     }
 
     /**
@@ -319,10 +319,10 @@ public final class PartyManager {
     /**
      * Disband a party. Kicks out all members and removes the party.
      *
-     * @param mcMMOPlayer The player to remove (can be null? lol)
+     * @param mmoPlayer The player to remove (can be null? lol)
      * @param party The party to remove
      */
-    public void disbandParty(@Nullable McMMOPlayer mcMMOPlayer, @NotNull Party party) {
+    public void disbandParty(@Nullable McMMOPlayer mmoPlayer, @NotNull Party party) {
         requireNonNull(party, "party cannot be null!");
         //TODO: Potential issues with unloaded profile?
         for (final Player member : party.getOnlineMembers()) {
@@ -340,20 +340,20 @@ public final class PartyManager {
         }
 
         parties.remove(party);
-        if (mcMMOPlayer != null) {
-            handlePartyChangeEvent(mcMMOPlayer.getPlayer(), party.getName(), null, EventReason.DISBANDED_PARTY);
+        if (mmoPlayer != null) {
+            handlePartyChangeEvent(mmoPlayer.getPlayer(), party.getName(), null, EventReason.DISBANDED_PARTY);
         }
     }
 
     /**
      * Create a new party
      *
-     * @param mcMMOPlayer The player to add to the party
+     * @param mmoPlayer The player to add to the party
      * @param partyName   The party to add the player to
      * @param password    The password for this party, null if there was no password
      */
-    public void createParty(@NotNull McMMOPlayer mcMMOPlayer, @NotNull String partyName, @Nullable String password) {
-        Player player = mcMMOPlayer.getPlayer();
+    public void createParty(@NotNull McMMOPlayer mmoPlayer, @NotNull String partyName, @Nullable String password) {
+        Player player = mmoPlayer.getPlayer();
         Party party = new Party(new PartyLeader(player.getUniqueId(), player.getName()), partyName.replace(".", ""), password);
         if (password != null) {
             player.sendMessage(LocaleLoader.getString("Party.Password.Set", password));
@@ -362,7 +362,7 @@ public final class PartyManager {
         parties.add(party);
 
         player.sendMessage(LocaleLoader.getString("Commands.Party.Create", party.getName()));
-        addToParty(mcMMOPlayer, party);
+        addToParty(mmoPlayer, party);
         handlePartyChangeEvent(player, null, partyName, EventReason.CREATED_PARTY);
     }
 
@@ -400,15 +400,15 @@ public final class PartyManager {
     /**
      * Accept a party invitation
      *
-     * @param mcMMOPlayer The player to add to the party
+     * @param mmoPlayer The player to add to the party
      */
-    public void joinInvitedParty(@NotNull McMMOPlayer mcMMOPlayer) {
-        requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
-        Party invite = mcMMOPlayer.getPartyInvite();
+    public void joinInvitedParty(@NotNull McMMOPlayer mmoPlayer) {
+        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
+        Party invite = mmoPlayer.getPartyInvite();
 
         // Check if the party still exists, it might have been disbanded
         if (!parties.contains(invite)) {
-            NotificationManager.sendPlayerInformation(mcMMOPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Party.Disband");
+            NotificationManager.sendPlayerInformation(mmoPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Party.Disband");
             return;
         }
 
@@ -416,24 +416,24 @@ public final class PartyManager {
          * Don't let players join a full party
          */
         if (pluginRef.getGeneralConfig().getPartyMaxSize() > 0 && invite.getMembers().size() >= pluginRef.getGeneralConfig().getPartyMaxSize()) {
-            NotificationManager.sendPlayerInformation(mcMMOPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Commands.Party.PartyFull.InviteAccept", invite.getName(), String.valueOf(pluginRef.getGeneralConfig().getPartyMaxSize()));
+            NotificationManager.sendPlayerInformation(mmoPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Commands.Party.PartyFull.InviteAccept", invite.getName(), String.valueOf(pluginRef.getGeneralConfig().getPartyMaxSize()));
             return;
         }
 
-        NotificationManager.sendPlayerInformation(mcMMOPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Commands.Party.Invite.Accepted", invite.getName());
-        mcMMOPlayer.removePartyInvite();
-        addToParty(mcMMOPlayer, invite);
+        NotificationManager.sendPlayerInformation(mmoPlayer.getPlayer(), NotificationType.PARTY_MESSAGE, "Commands.Party.Invite.Accepted", invite.getName());
+        mmoPlayer.removePartyInvite();
+        addToParty(mmoPlayer, invite);
     }
 
     /**
      * Accept a party alliance invitation
      *
-     * @param mcMMOPlayer The player who accepts the alliance invite
+     * @param mmoPlayer The player who accepts the alliance invite
      */
-    public void acceptAllianceInvite(@NotNull McMMOPlayer mcMMOPlayer) {
-        requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
-        Party invite = mcMMOPlayer.getPartyAllianceInvite();
-        Player player = mcMMOPlayer.getPlayer();
+    public void acceptAllianceInvite(@NotNull McMMOPlayer mmoPlayer) {
+        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
+        Party invite = mmoPlayer.getPartyAllianceInvite();
+        Player player = mmoPlayer.getPlayer();
 
         // Check if the party still exists, it might have been disbanded
         if (!parties.contains(invite)) {
@@ -441,14 +441,14 @@ public final class PartyManager {
             return;
         }
 
-        if (!handlePartyChangeAllianceEvent(player, mcMMOPlayer.getParty().getName(), invite.getName(), McMMOPartyAllianceChangeEvent.EventReason.FORMED_ALLIANCE)) {
+        if (!handlePartyChangeAllianceEvent(player, mmoPlayer.getParty().getName(), invite.getName(), McMMOPartyAllianceChangeEvent.EventReason.FORMED_ALLIANCE)) {
             return;
         }
 
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Invite.Accepted", invite.getName()));
-        mcMMOPlayer.removePartyAllianceInvite();
+        mmoPlayer.removePartyAllianceInvite();
 
-        createAlliance(mcMMOPlayer.getParty(), invite);
+        createAlliance(mmoPlayer.getParty(), invite);
     }
 
     public void createAlliance(@NotNull Party firstParty, @NotNull Party secondParty) {
@@ -498,18 +498,18 @@ public final class PartyManager {
     /**
      * Add a player to a party
      *
-     * @param mcMMOPlayer The player to add to the party
+     * @param mmoPlayer The player to add to the party
      * @param party       The party
      */
-    public void addToParty(@NotNull McMMOPlayer mcMMOPlayer, @NotNull Party party) {
-        requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
+    public void addToParty(@NotNull McMMOPlayer mmoPlayer, @NotNull Party party) {
+        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
         requireNonNull(party, "party cannot be null!");
 
-        Player player = mcMMOPlayer.getPlayer();
+        Player player = mmoPlayer.getPlayer();
         String playerName = player.getName();
 
         informPartyMembersJoin(party, playerName);
-        mcMMOPlayer.setParty(party);
+        mmoPlayer.setParty(party);
         party.getMembers().put(player.getUniqueId(), player.getName());
         party.getOnlineMembers().add(player);
     }
@@ -559,11 +559,11 @@ public final class PartyManager {
      *
      * @return true if the player can invite
      */
-    public boolean canInvite(@NotNull McMMOPlayer mcMMOPlayer) {
-        requireNonNull(mcMMOPlayer, "mcMMOPlayer cannot be null!");
-        Party party = mcMMOPlayer.getParty();
+    public boolean canInvite(@NotNull McMMOPlayer mmoPlayer) {
+        requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
+        Party party = mmoPlayer.getParty();
 
-        return !party.isLocked() || party.getLeader().getUniqueId().equals(mcMMOPlayer.getPlayer().getUniqueId());
+        return !party.isLocked() || party.getLeader().getUniqueId().equals(mmoPlayer.getPlayer().getUniqueId());
     }
 
     /**
@@ -788,14 +788,14 @@ public final class PartyManager {
     }
 
     /**
-     * Remove party data from the mcMMOPlayer.
+     * Remove party data from the mmoPlayer.
      *
-     * @param mcMMOPlayer The player to remove party data from.
+     * @param mmoPlayer The player to remove party data from.
      */
-    public void processPartyLeaving(@NotNull McMMOPlayer mcMMOPlayer) {
-        mcMMOPlayer.removeParty();
-        mcMMOPlayer.setChatMode(ChatChannel.NONE);
-        mcMMOPlayer.setItemShareModifier(10);
+    public void processPartyLeaving(@NotNull McMMOPlayer mmoPlayer) {
+        mmoPlayer.removeParty();
+        mmoPlayer.setChatMode(ChatChannel.NONE);
+        mmoPlayer.setItemShareModifier(10);
     }
 
     /**

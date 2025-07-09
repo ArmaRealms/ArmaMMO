@@ -62,8 +62,8 @@ public class WoodcuttingManager extends SkillManager {
             new int[] { 2, -1}, new int[] { 2, 0}, new int[] { 2, 1},
     };
 
-    public WoodcuttingManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.WOODCUTTING);
+    public WoodcuttingManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.WOODCUTTING);
         treeFellerThreshold = mcMMO.p.getGeneralConfig().getTreeFellerThreshold();
     }
 

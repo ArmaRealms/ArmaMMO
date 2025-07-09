@@ -47,17 +47,17 @@ public abstract class ToggleCommand implements TabExecutor {
                 }
 
                 String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(playerName);
+                McMMOPlayer mmoPlayer = UserManager.getPlayer(playerName);
 
-                if (!CommandUtils.checkPlayerExistence(sender, playerName, mcMMOPlayer)) {
+                if (!CommandUtils.checkPlayerExistence(sender, playerName, mmoPlayer)) {
                     return true;
                 }
 
-                if (CommandUtils.isOffline(sender, mcMMOPlayer.getPlayer())) {
+                if (CommandUtils.isOffline(sender, mmoPlayer.getPlayer())) {
                     return true;
                 }
 
-                applyCommandAction(mcMMOPlayer);
+                applyCommandAction(mmoPlayer);
                 sendSuccessMessage(sender, playerName);
                 return true;
 
@@ -76,6 +76,6 @@ public abstract class ToggleCommand implements TabExecutor {
 
     protected abstract boolean hasOtherPermission(CommandSender sender);
     protected abstract boolean hasSelfPermission(CommandSender sender);
-    protected abstract void applyCommandAction(McMMOPlayer mcMMOPlayer);
+    protected abstract void applyCommandAction(McMMOPlayer mmoPlayer);
     protected abstract void sendSuccessMessage(CommandSender sender, String playerName);
 }

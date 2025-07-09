@@ -47,8 +47,8 @@ public class NotificationManager {
      * @param key              the locale key for the notifications defined message
      */
     public static void sendPlayerInformation(Player player, NotificationType notificationType, String key) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) return;
 
         McMMOMessageType destination
                 = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
@@ -62,9 +62,9 @@ public class NotificationManager {
 
 
     public static boolean doesPlayerUseNotifications(Player player) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null) return false;
-        else return mcMMOPlayer.useChatNotifications();
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null) return false;
+        else return mmoPlayer.useChatNotifications();
     }
 
     /**
@@ -83,16 +83,16 @@ public class NotificationManager {
     }
 
     public static void sendPlayerInformationChatOnly(Player player, String key, String... values) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) return;
 
         String preColoredString = LocaleLoader.getString(key, (Object[]) values);
         player.sendMessage(preColoredString);
     }
 
     public static void sendPlayerInformationChatOnlyPrefixed(Player player, String key, String... values) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) return;
 
         String preColoredString = LocaleLoader.getString(key, (Object[]) values);
         String prefixFormattedMessage = LocaleLoader.getString("mcMMO.Template.Prefix", preColoredString);
@@ -101,8 +101,8 @@ public class NotificationManager {
 
     public static void sendPlayerInformation(Player player, NotificationType notificationType, String key,
                                              String... values) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) return;
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) return;
 
         McMMOMessageType destination = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
                 ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
@@ -147,15 +147,15 @@ public class NotificationManager {
     }
 
     /**
-     * Handles sending level up notifications to a mcMMOPlayer
+     * Handles sending level up notifications to a mmoPlayer
      *
-     * @param mcMMOPlayer target mcMMOPlayer
+     * @param mmoPlayer target mmoPlayer
      * @param skillName   skill that leveled up
      * @param newLevel    new level of that skill
      */
-    public static void sendPlayerLevelUpNotification(McMMOPlayer mcMMOPlayer, PrimarySkillType skillName,
+    public static void sendPlayerLevelUpNotification(McMMOPlayer mmoPlayer, PrimarySkillType skillName,
                                                      int levelsGained, int newLevel) {
-        if (!mcMMOPlayer.useChatNotifications())
+        if (!mmoPlayer.useChatNotifications())
             return;
 
         McMMOMessageType destination
@@ -165,12 +165,12 @@ public class NotificationManager {
         Component levelUpTextComponent = TextComponentFactory.getNotificationLevelUpTextComponent(
                 skillName, levelsGained, newLevel);
         McMMOPlayerNotificationEvent customEvent = checkNotificationEvent(
-                mcMMOPlayer.getPlayer(),
+                mmoPlayer.getPlayer(),
                 NotificationType.LEVEL_UP_MESSAGE,
                 destination,
                 levelUpTextComponent);
 
-        sendNotification(mcMMOPlayer.getPlayer(), customEvent);
+        sendNotification(mmoPlayer.getPlayer(), customEvent);
     }
 
     public static void broadcastTitle(Server server, String title, String subtitle, int i1, int i2, int i3) {
@@ -179,16 +179,16 @@ public class NotificationManager {
         }
     }
 
-    public static void sendPlayerUnlockNotification(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType) {
-        if (!mcMMOPlayer.useChatNotifications())
+    public static void sendPlayerUnlockNotification(McMMOPlayer mmoPlayer, SubSkillType subSkillType) {
+        if (!mmoPlayer.useChatNotifications())
             return;
 
         //CHAT MESSAGE
-        mcMMO.getAudiences().player(mcMMOPlayer.getPlayer()).sendMessage(Identity.nil(),
-                TextComponentFactory.getSubSkillUnlockedNotificationComponents(mcMMOPlayer.getPlayer(), subSkillType));
+        mcMMO.getAudiences().player(mmoPlayer.getPlayer()).sendMessage(Identity.nil(),
+                TextComponentFactory.getSubSkillUnlockedNotificationComponents(mmoPlayer.getPlayer(), subSkillType));
 
         //Unlock Sound Effect
-        SoundManager.sendCategorizedSound(mcMMOPlayer.getPlayer(), mcMMOPlayer.getPlayer().getLocation(), SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
+        SoundManager.sendCategorizedSound(mmoPlayer.getPlayer(), mmoPlayer.getPlayer().getLocation(), SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
     }
 
     /**

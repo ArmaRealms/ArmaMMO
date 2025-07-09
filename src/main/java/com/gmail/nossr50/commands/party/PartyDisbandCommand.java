@@ -21,13 +21,13 @@ public class PartyDisbandCommand implements CommandExecutor {
                 return true;
             }
 
-            final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            final Party playerParty = mcMMOPlayer.getParty();
+            final Party playerParty = mmoPlayer.getParty();
             if (playerParty == null) {
                 return true;
             }
@@ -42,7 +42,7 @@ public class PartyDisbandCommand implements CommandExecutor {
                 member.sendMessage(LocaleLoader.getString("Party.Disband"));
             }
 
-            mcMMO.p.getPartyManager().disbandParty(mcMMOPlayer, playerParty);
+            mcMMO.p.getPartyManager().disbandParty(mmoPlayer, playerParty);
             return true;
         }
         sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "debandar"));

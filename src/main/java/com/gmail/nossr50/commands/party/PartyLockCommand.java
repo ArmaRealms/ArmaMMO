@@ -61,13 +61,13 @@ public class PartyLockCommand implements CommandExecutor {
             return;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null) {
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return;
         }
 
-        Party party = mcMMOPlayer.getParty();
+        Party party = mmoPlayer.getParty();
         if (party == null) {
             return;
         }

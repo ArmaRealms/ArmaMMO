@@ -326,9 +326,9 @@ public class EntityListener implements Listener {
                 }
 
                 //Deflect checks
-                final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(defendingPlayer);
-                if (mcMMOPlayer != null) {
-                    final UnarmedManager unarmedManager = mcMMOPlayer.getUnarmedManager();
+                final McMMOPlayer mmoPlayer = UserManager.getPlayer(defendingPlayer);
+                if (mmoPlayer != null) {
+                    final UnarmedManager unarmedManager = mmoPlayer.getUnarmedManager();
 
                     if (unarmedManager.canDeflect() && projectile instanceof Arrow && unarmedManager.deflectCheck()) {
                         event.setCancelled(true);
@@ -494,18 +494,18 @@ public class EntityListener implements Listener {
         if (livingEntity instanceof final Player player) {
             if (!UserManager.hasPlayerDataKey(player)) return;
 
-            final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             //Profile not loaded
-            if (mcMMOPlayer == null) return;
+            if (mmoPlayer == null) return;
 
             /* Check for invincibility */
-            if (mcMMOPlayer.getGodMode()) {
+            if (mmoPlayer.getGodMode()) {
                 event.setCancelled(true);
                 return;
             }
 
             if (event.getFinalDamage() >= 1) {
-                mcMMOPlayer.actualizeRecentlyHurt();
+                mmoPlayer.actualizeRecentlyHurt();
             }
 
         } else if (livingEntity instanceof final Tameable pet) {
@@ -520,11 +520,11 @@ public class EntityListener implements Listener {
                 final Player player = (Player) owner;
                 final Wolf wolf = (Wolf) pet;
 
-                final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
                 //Profile not loaded
-                if (mcMMOPlayer == null) return;
+                if (mmoPlayer == null) return;
 
-                final TamingManager tamingManager = mcMMOPlayer.getTamingManager();
+                final TamingManager tamingManager = mmoPlayer.getTamingManager();
 
                 switch (cause) {
                     case CONTACT, FIRE, HOT_FLOOR, LAVA -> {
@@ -686,14 +686,14 @@ public class EntityListener implements Listener {
 
         if (!UserManager.hasPlayerDataKey(player)) return;
 
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         //Profile not loaded
-        if (mcMMOPlayer == null) return;
+        if (mmoPlayer == null) return;
 
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
-        final MiningManager miningManager = mcMMOPlayer.getMiningManager();
+        final MiningManager miningManager = mmoPlayer.getMiningManager();
 
         if (miningManager.canUseBiggerBombs()) {
             event.setRadius(miningManager.biggerBombs(event.getRadius()));
@@ -723,11 +723,11 @@ public class EntityListener implements Listener {
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
 
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         //Profile not loaded
-        if (mcMMOPlayer == null) return;
+        if (mmoPlayer == null) return;
 
-        final MiningManager miningManager = mcMMOPlayer.getMiningManager();
+        final MiningManager miningManager = mmoPlayer.getMiningManager();
 
         if (miningManager.canUseBlastMining()) {
             miningManager.blastMiningDropProcessing(event.getYield(), event);
@@ -748,9 +748,9 @@ public class EntityListener implements Listener {
 
         if (!(entity instanceof final Player player)) return;
 
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         //Profile not loaded
-        if (mcMMOPlayer == null) return;
+        if (mmoPlayer == null) return;
 
         /* WORLD GUARD MAIN FLAG CHECK */
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag(player)) return;
@@ -784,7 +784,7 @@ public class EntityListener implements Listener {
         //Hacky 1.17 support
         if (foodInHand.getKey().getKey().equalsIgnoreCase("glow_berries")) {
             if (Permissions.isSubSkillEnabled(player, SubSkillType.HERBALISM_FARMERS_DIET)) {
-                event.setFoodLevel(mcMMOPlayer.getHerbalismManager().farmersDiet(newFoodLevel));
+                event.setFoodLevel(mmoPlayer.getHerbalismManager().farmersDiet(newFoodLevel));
             }
             return;
         }
@@ -793,12 +793,12 @@ public class EntityListener implements Listener {
             case BAKED_POTATO, BEETROOT, BREAD, CARROT, GOLDEN_CARROT, MUSHROOM_STEW, PUMPKIN_PIE, COOKIE, MELON_SLICE,
                  POISONOUS_POTATO, POTATO -> {
                 if (Permissions.isSubSkillEnabled(player, SubSkillType.HERBALISM_FARMERS_DIET)) {
-                    event.setFoodLevel(mcMMOPlayer.getHerbalismManager().farmersDiet(newFoodLevel));
+                    event.setFoodLevel(mmoPlayer.getHerbalismManager().farmersDiet(newFoodLevel));
                 }
             }
             case COD, SALMON, TROPICAL_FISH, COOKED_COD, COOKED_SALMON -> {
                 if (Permissions.isSubSkillEnabled(player, SubSkillType.FISHING_FISHERMANS_DIET)) {
-                    event.setFoodLevel(mcMMOPlayer.getFishingManager().handleFishermanDiet(newFoodLevel));
+                    event.setFoodLevel(mmoPlayer.getFishingManager().handleFishermanDiet(newFoodLevel));
                 }
             }
         }
@@ -832,11 +832,11 @@ public class EntityListener implements Listener {
 
         flagMetadata(MobMetaFlagType.PLAYER_TAMED_MOB, livingEntity);
 
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         //Profile not loaded
-        if (mcMMOPlayer == null) return;
+        if (mmoPlayer == null) return;
 
-        mcMMOPlayer.getTamingManager().awardTamingXP(livingEntity);
+        mmoPlayer.getTamingManager().awardTamingXP(livingEntity);
     }
 
     /**

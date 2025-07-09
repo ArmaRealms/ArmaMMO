@@ -75,8 +75,8 @@ public class HerbalismManager extends SkillManager {
         plantBreakLimits.put("chorus_plant", 22);
     }
 
-    public HerbalismManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.HERBALISM);
+    public HerbalismManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.HERBALISM);
     }
 
     public boolean canGreenThumbBlock(BlockState blockState) {

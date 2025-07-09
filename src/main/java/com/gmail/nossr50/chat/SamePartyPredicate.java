@@ -24,9 +24,9 @@ public class SamePartyPredicate<T extends CommandSender> implements Predicate<T>
             return false; //Party audiences are special, we exclude console from them to avoid double messaging since we send a more verbose version to consoles
         } else {
             if (t instanceof Player player) {
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-                if (mcMMOPlayer != null) {
-                    return mcMMOPlayer.getParty() == party;
+                McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+                if (mmoPlayer != null) {
+                    return mmoPlayer.getParty() == party;
                 }
             }
         }

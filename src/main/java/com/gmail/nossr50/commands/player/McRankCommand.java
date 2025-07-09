@@ -51,10 +51,10 @@ public class McRankCommand implements TabExecutor {
                 }
 
                 String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-                McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(playerName);
+                McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
 
-                if (mcMMOPlayer != null) {
-                    Player player = mcMMOPlayer.getPlayer();
+                if (mmoPlayer != null) {
+                    Player player = mmoPlayer.getPlayer();
                     playerName = player.getName();
 
                     if (CommandUtils.tooFar(sender, player, Permissions.mcrankFar(sender))) {
@@ -80,17 +80,17 @@ public class McRankCommand implements TabExecutor {
 
     private void display(CommandSender sender, String playerName) {
         if (sender instanceof Player player) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-            if (mcMMOPlayer == null) {
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return;
             }
 
             long cooldownMillis = Math.min(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
-            if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
-                sender.sendMessage(LocaleLoader.getString("Commands.Database.CooldownMS", getCDSeconds(mcMMOPlayer, cooldownMillis)));
+            if (mmoPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
+                sender.sendMessage(LocaleLoader.getString("Commands.Database.CooldownMS", getCDSeconds(mmoPlayer, cooldownMillis)));
                 return;
             }
 
@@ -101,7 +101,7 @@ public class McRankCommand implements TabExecutor {
                 player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
-            mcMMOPlayer.actualizeDatabaseATS();
+            mmoPlayer.actualizeDatabaseATS();
         }
 
         boolean useBoard = mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && (sender instanceof Player) && (mcMMO.p.getGeneralConfig().getRankUseBoard());
@@ -110,7 +110,7 @@ public class McRankCommand implements TabExecutor {
         mcMMO.p.getFoliaLib().getScheduler().runAsync(new McRankCommandAsyncTask(playerName, sender, useBoard, useChat));
     }
 
-    private long getCDSeconds(McMMOPlayer mcMMOPlayer, long cooldownMillis) {
-        return ((mcMMOPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis());
+    private long getCDSeconds(McMMOPlayer mmoPlayer, long cooldownMillis) {
+        return ((mmoPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis());
     }
 }

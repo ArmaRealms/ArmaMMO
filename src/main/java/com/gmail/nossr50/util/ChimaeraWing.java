@@ -46,13 +46,13 @@ public final class ChimaeraWing {
             return;
         }
 
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Not loaded
-        if (mcMMOPlayer == null)
+        if (mmoPlayer == null)
             return;
 
-        if (mcMMOPlayer.getTeleportCommenceLocation() != null) {
+        if (mmoPlayer.getTeleportCommenceLocation() != null) {
             return;
         }
 
@@ -63,7 +63,7 @@ public final class ChimaeraWing {
             return;
         }
 
-        long lastTeleport = mcMMOPlayer.getChimeraWingLastUse();
+        long lastTeleport = mmoPlayer.getChimeraWingLastUse();
         int cooldown = mcMMO.p.getGeneralConfig().getChimaeraCooldown();
 
         if (cooldown > 0) {
@@ -75,7 +75,7 @@ public final class ChimaeraWing {
             }
         }
 
-        long recentlyHurt = mcMMOPlayer.getRecentlyHurt();
+        long recentlyHurt = mmoPlayer.getRecentlyHurt();
         int hurtCooldown = mcMMO.p.getGeneralConfig().getChimaeraRecentlyHurtCooldown();
 
         if (hurtCooldown > 0) {
@@ -97,18 +97,18 @@ public final class ChimaeraWing {
                 player.setVelocity(new Vector(0, 0.5D, 0));
                 final int dmg = Misc.getRandom().nextInt((int) (player.getHealth() - 10));
                 CombatUtils.safeDealDamage(player, dmg);
-                mcMMOPlayer.actualizeChimeraWingLastUse();
+                mmoPlayer.actualizeChimeraWingLastUse();
                 return;
             }
         }
 
-        mcMMOPlayer.actualizeTeleportCommenceLocation(player);
+        mmoPlayer.actualizeTeleportCommenceLocation(player);
         long teleportDelay = mcMMO.p.getGeneralConfig().getChimaeraWarmup();
         if (teleportDelay > 0) {
             NotificationManager.sendPlayerInformation(player, NotificationType.ITEM_MESSAGE, "Teleport.Commencing", String.valueOf(teleportDelay));
-            mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(player, new ChimaeraWingWarmup(mcMMOPlayer, playerLocation), 20 * teleportDelay);
+            mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(player, new ChimaeraWingWarmup(mmoPlayer, playerLocation), 20 * teleportDelay);
         } else {
-            mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(player, new ChimaeraWingWarmup(mcMMOPlayer, playerLocation), 0);
+            mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(player, new ChimaeraWingWarmup(mmoPlayer, playerLocation), 0);
         }
     }
 

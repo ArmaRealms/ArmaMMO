@@ -27,13 +27,13 @@ public class PartyInfoCommand implements CommandExecutor {
                     return true;
                 }
 
-                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-                if (mcMMOPlayer == null) {
+                McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+                if (mmoPlayer == null) {
                     sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
 
-                Party party = mcMMOPlayer.getParty();
+                Party party = mmoPlayer.getParty();
                 if (party == null) {
                     return true;
                 }
@@ -41,7 +41,7 @@ public class PartyInfoCommand implements CommandExecutor {
                 displayPartyHeader(player, party);
                 displayShareModeInfo(player, party);
                 displayPartyFeatures(player, party);
-                displayMemberInfo(player, mcMMOPlayer, party);
+                displayMemberInfo(player, mmoPlayer, party);
                 return true;
             }
 
@@ -128,12 +128,12 @@ public class PartyInfoCommand implements CommandExecutor {
         }
     }
 
-    private void displayMemberInfo(Player player, McMMOPlayer mcMMOPlayer, Party party) {
+    private void displayMemberInfo(Player player, McMMOPlayer mmoPlayer, Party party) {
         /*
          * Only show members of the party that this member can see
          */
 
-        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearVisibleMembers(mcMMOPlayer);
+        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearVisibleMembers(mmoPlayer);
         int membersOnline = party.getVisibleMembers(player).size();
 
         player.sendMessage(LocaleLoader.getString("Commands.Party.Members.Header"));

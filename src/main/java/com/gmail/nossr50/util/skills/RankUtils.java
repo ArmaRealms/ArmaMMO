@@ -23,13 +23,13 @@ public class RankUtils {
     /**
      *
      * @param plugin plugin instance ref
-     * @param mcMMOPlayer target player
+     * @param mmoPlayer target player
      * @param primarySkillType the skill to check
      * @param newLevel the new level of this skill
      */
-    public static void executeSkillUnlockNotifications(Plugin plugin, McMMOPlayer mcMMOPlayer, PrimarySkillType primarySkillType, int newLevel) {
+    public static void executeSkillUnlockNotifications(Plugin plugin, McMMOPlayer mmoPlayer, PrimarySkillType primarySkillType, int newLevel) {
         for(SubSkillType subSkillType : mcMMO.p.getSkillTools().getSubSkills(primarySkillType)) {
-            int playerRankInSkill = getRank(mcMMOPlayer.getPlayer(), subSkillType);
+            int playerRankInSkill = getRank(mmoPlayer.getPlayer(), subSkillType);
 
             HashMap<Integer, Integer> innerMap = subSkillRanks.get(subSkillType.toString());
 
@@ -38,14 +38,14 @@ public class RankUtils {
                 continue;
 
             //Don't send notifications if the player lacks the permission node
-            if (!Permissions.isSubSkillEnabled(mcMMOPlayer.getPlayer(), subSkillType))
+            if (!Permissions.isSubSkillEnabled(mmoPlayer.getPlayer(), subSkillType))
                 continue;
 
             //The players level is the exact level requirement for this skill
             if (newLevel == innerMap.get(playerRankInSkill)) {
-                SkillUnlockNotificationTask skillUnlockNotificationTask = new SkillUnlockNotificationTask(mcMMOPlayer, subSkillType, newLevel);
+                SkillUnlockNotificationTask skillUnlockNotificationTask = new SkillUnlockNotificationTask(mmoPlayer, subSkillType, newLevel);
 
-                mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mcMMOPlayer.getPlayer(), skillUnlockNotificationTask, (count * 100L));
+                mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mmoPlayer.getPlayer(), skillUnlockNotificationTask, (count * 100L));
 
                 count++;
             }

@@ -20,18 +20,18 @@ public class PartyAllianceAcceptCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            if (!mcMMOPlayer.hasPartyAllianceInvite()) {
+            if (!mmoPlayer.hasPartyAllianceInvite()) {
                 sender.sendMessage(LocaleLoader.getString("mcMMO.NoInvites"));
                 return true;
             }
 
-            Party party = mcMMOPlayer.getParty();
+            Party party = mmoPlayer.getParty();
             if (party == null) return true;
 
             if (party.getAlly() != null) {
@@ -39,7 +39,7 @@ public class PartyAllianceAcceptCommand implements CommandExecutor {
                 return true;
             }
 
-            mcMMO.p.getPartyManager().acceptAllianceInvite(mcMMOPlayer);
+            mcMMO.p.getPartyManager().acceptAllianceInvite(mmoPlayer);
             return true;
         }
 

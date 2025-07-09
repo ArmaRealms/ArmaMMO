@@ -37,8 +37,8 @@ public class MccooldownCommand implements TabExecutor {
                 }
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 player.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
@@ -51,7 +51,7 @@ public class MccooldownCommand implements TabExecutor {
                     continue;
                 }
 
-                int seconds = mcMMOPlayer.calculateTimeRemaining(ability);
+                int seconds = mmoPlayer.calculateTimeRemaining(ability);
 
                 if (seconds <= 0) {
                     player.sendMessage(LocaleLoader.getString("Commands.Cooldowns.Row.Y", ability.getLocalizedName()));

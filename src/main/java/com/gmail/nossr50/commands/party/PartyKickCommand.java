@@ -26,14 +26,14 @@ public class PartyKickCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-            if (mcMMOPlayer == null) {
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            Party playerParty = mcMMOPlayer.getParty();
+            Party playerParty = mmoPlayer.getParty();
             if (playerParty == null) {
                 return true;
             }

@@ -25,20 +25,20 @@ public final class UserManager {
     /**
      * Track a new user.
      *
-     * @param mcMMOPlayer the player profile to start tracking
+     * @param mmoPlayer the player profile to start tracking
      */
-    public static void track(@NotNull McMMOPlayer mcMMOPlayer) {
-        mcMMOPlayer.getPlayer().setMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA, new FixedMetadataValue(mcMMO.p, mcMMOPlayer));
+    public static void track(@NotNull McMMOPlayer mmoPlayer) {
+        mmoPlayer.getPlayer().setMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA, new FixedMetadataValue(mcMMO.p, mmoPlayer));
 
         if (playerDataSet == null)
             playerDataSet = new HashSet<>();
 
-        playerDataSet.add(mcMMOPlayer); //for sync saves on shutdown
+        playerDataSet.add(mmoPlayer); //for sync saves on shutdown
     }
 
-    public static void cleanupPlayer(McMMOPlayer mcMMOPlayer) {
+    public static void cleanupPlayer(McMMOPlayer mmoPlayer) {
         if (playerDataSet != null)
-            playerDataSet.remove(mcMMOPlayer);
+            playerDataSet.remove(mmoPlayer);
     }
 
     /**
@@ -47,16 +47,16 @@ public final class UserManager {
      * @param player The Player object
      */
     public static void remove(@NotNull Player player) {
-        McMMOPlayer mcMMOPlayer = getPlayer(player);
+        McMMOPlayer mmoPlayer = getPlayer(player);
 
-        if (mcMMOPlayer == null)
+        if (mmoPlayer == null)
             return;
 
-        mcMMOPlayer.cleanup();
+        mmoPlayer.cleanup();
         player.removeMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA, mcMMO.p);
 
         if (playerDataSet != null) {
-            playerDataSet.remove(mcMMOPlayer); //Clear sync save tracking
+            playerDataSet.remove(mmoPlayer); //Clear sync save tracking
         }
     }
 
@@ -81,7 +81,7 @@ public final class UserManager {
 
         ImmutableList<McMMOPlayer> trackedSyncData = ImmutableList.copyOf(playerDataSet);
 
-        mcMMO.p.getLogger().info("Saving mcMMOPlayers... (" + trackedSyncData.size() + ")");
+        mcMMO.p.getLogger().info("Saving mmoPlayers... (" + trackedSyncData.size() + ")");
 
         for (McMMOPlayer playerData : trackedSyncData) {
             try {
@@ -151,7 +151,7 @@ public final class UserManager {
 
         if (player == null) {
             if (!offlineValid) {
-                mcMMO.p.getLogger().warning("A valid mcMMOPlayer object could not be found for " + playerName + ".");
+                mcMMO.p.getLogger().warning("A valid mmoPlayer object could not be found for " + playerName + ".");
             }
 
             return null;

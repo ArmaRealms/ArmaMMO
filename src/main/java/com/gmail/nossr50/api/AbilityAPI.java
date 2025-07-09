@@ -39,10 +39,10 @@ public final class AbilityAPI {
     }
 
     public static boolean isAnyAbilityEnabled(Player player) {
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         for (SuperAbilityType ability : SuperAbilityType.values()) {
-            if (mcMMOPlayer.getAbilityMode(ability)) {
+            if (mmoPlayer.getAbilityMode(ability)) {
                 return true;
             }
         }

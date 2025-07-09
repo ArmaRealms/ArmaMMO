@@ -42,12 +42,12 @@ public final class SkillUtils {
      */
     private SkillUtils() {}
 
-    public static void applyXpGain(McMMOPlayer mcMMOPlayer, PrimarySkillType skill, float xp, XPGainReason xpGainReason) {
-        mcMMOPlayer.beginXpGain(skill, xp, xpGainReason, XPGainSource.SELF);
+    public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp, XPGainReason xpGainReason) {
+        mmoPlayer.beginXpGain(skill, xp, xpGainReason, XPGainSource.SELF);
     }
 
-    public static void applyXpGain(McMMOPlayer mcMMOPlayer, PrimarySkillType skill, float xp, XPGainReason xpGainReason, XPGainSource xpGainSource) {
-        mcMMOPlayer.beginXpGain(skill, xp, xpGainReason, xpGainSource);
+    public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp, XPGainReason xpGainReason, XPGainSource xpGainSource) {
+        mmoPlayer.beginXpGain(skill, xp, xpGainReason, xpGainSource);
     }
 
     /*
@@ -167,13 +167,13 @@ public final class SkillUtils {
                 }
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
             //Not Loaded
-            if (mcMMOPlayer == null)
+            if (mmoPlayer == null)
                 return;
 
-            PrimarySkillType skill = mcMMOPlayer.getAbilityMode(SuperAbilityType.SUPER_BREAKER) ? PrimarySkillType.MINING : PrimarySkillType.EXCAVATION;
+            PrimarySkillType skill = mmoPlayer.getAbilityMode(SuperAbilityType.SUPER_BREAKER) ? PrimarySkillType.MINING : PrimarySkillType.EXCAVATION;
 
             int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
             int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
@@ -181,10 +181,10 @@ public final class SkillUtils {
             int ticks;
 
             if (abilityLengthCap > 0) {
-                ticks = PerksUtils.handleActivationPerks(player,  Math.min(abilityLengthCap, 2 + (mcMMOPlayer.getSkillLevel(skill) / abilityLengthVar)),
+                ticks = PerksUtils.handleActivationPerks(player,  Math.min(abilityLengthCap, 2 + (mmoPlayer.getSkillLevel(skill) / abilityLengthVar)),
                         mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill))) * Misc.TICK_CONVERSION_FACTOR;
             } else {
-                ticks = PerksUtils.handleActivationPerks(player, 2 + ((mcMMOPlayer.getSkillLevel(skill)) / abilityLengthVar),
+                ticks = PerksUtils.handleActivationPerks(player, 2 + ((mmoPlayer.getSkillLevel(skill)) / abilityLengthVar),
                         mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill))) * Misc.TICK_CONVERSION_FACTOR;
             }
 

@@ -487,14 +487,14 @@ public class ScoreboardManager {
         }
 
         for (String playerName : dirtyPowerLevels) {
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(playerName);
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(playerName);
 
-            if (mcMMOPlayer == null) {
+            if (mmoPlayer == null) {
                 continue;
             }
 
-            Player player = mcMMOPlayer.getPlayer();
-            int power = mcMMOPlayer.getPowerLevel();
+            Player player = mmoPlayer.getPlayer();
+            int power = mmoPlayer.getPowerLevel();
 
             mainObjective.getScore(playerName).setScore(power);
 

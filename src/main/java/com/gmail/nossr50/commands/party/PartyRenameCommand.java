@@ -21,13 +21,13 @@ public class PartyRenameCommand implements CommandExecutor {
                 return true;
             }
 
-            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-            if (mcMMOPlayer == null) {
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            Party playerParty = mcMMOPlayer.getParty();
+            Party playerParty = mmoPlayer.getParty();
             if (playerParty == null) return true;
 
             String oldPartyName = playerParty.getName();

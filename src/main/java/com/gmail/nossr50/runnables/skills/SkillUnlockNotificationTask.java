@@ -7,17 +7,17 @@ import com.gmail.nossr50.util.player.NotificationManager;
 
 
 public class SkillUnlockNotificationTask extends CancellableRunnable {
-    private final McMMOPlayer mcMMOPlayer;
+    private final McMMOPlayer mmoPlayer;
     private final SubSkillType subSkillType;
     private final int rank;
     /**
      * Notify a player about a newly unlocked subskill
-     * @param mcMMOPlayer target player
+     * @param mmoPlayer target player
      * @param subSkillType the subskill that they just unlocked
      * @param rank the rank of the subskill
      */
-    public SkillUnlockNotificationTask(McMMOPlayer mcMMOPlayer, SubSkillType subSkillType, int rank) {
-        this.mcMMOPlayer = mcMMOPlayer;
+    public SkillUnlockNotificationTask(McMMOPlayer mmoPlayer, SubSkillType subSkillType, int rank) {
+        this.mmoPlayer = mmoPlayer;
         this.subSkillType = subSkillType;
         this.rank = rank;
     }
@@ -34,7 +34,7 @@ public class SkillUnlockNotificationTask extends CancellableRunnable {
      */
     @Override
     public void run() {
-        //mcMMOPlayer.getPlayer().sendTitle(subSkillType.getLocaleName(), "Rank "+rank, 7, 20, 7);
-        NotificationManager.sendPlayerUnlockNotification(mcMMOPlayer, subSkillType);
+        //mmoPlayer.getPlayer().sendTitle(subSkillType.getLocaleName(), "Rank "+rank, 7, 20, 7);
+        NotificationManager.sendPlayerUnlockNotification(mmoPlayer, subSkillType);
     }
 }

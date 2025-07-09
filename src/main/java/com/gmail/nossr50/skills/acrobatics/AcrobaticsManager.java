@@ -29,8 +29,8 @@ import org.bukkit.metadata.MetadataValue;
 
 public class AcrobaticsManager extends SkillManager {
 
-    public AcrobaticsManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.ACROBATICS);
+    public AcrobaticsManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.ACROBATICS);
         fallLocationMap = new BlockLocationHistory(50);
     }
 

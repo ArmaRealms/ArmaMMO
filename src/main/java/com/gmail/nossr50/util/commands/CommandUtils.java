@@ -59,16 +59,16 @@ public final class CommandUtils {
     }
 
     /**
-     * Checks if there is a valid mcMMOPlayer object.
+     * Checks if there is a valid mmoPlayer object.
      *
      * @param sender      CommandSender, who used the command
      * @param playerName  name of the target player
-     * @param mcMMOPlayer mcMMOPlayer object of the target player
-     * @return true if the player is online and a valid mcMMOPlayer object was found
+     * @param mmoPlayer mmoPlayer object of the target player
+     * @return true if the player is online and a valid mmoPlayer object was found
      */
-    public static boolean checkPlayerExistence(CommandSender sender, String playerName, McMMOPlayer mcMMOPlayer) {
-        if (mcMMOPlayer != null) {
-            if (CommandUtils.hidden(sender, mcMMOPlayer.getPlayer(), false)) {
+    public static boolean checkPlayerExistence(CommandSender sender, String playerName, McMMOPlayer mmoPlayer) {
+        if (mmoPlayer != null) {
+            if (CommandUtils.hidden(sender, mmoPlayer.getPlayer(), false)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
                 return false;
             }
@@ -192,10 +192,10 @@ public final class CommandUtils {
 
     private static void printGroupedSkillData(Player inspectTarget, CommandSender display,
                                               String header, List<PrimarySkillType> skillGroup) {
-        var mcMMOPlayer = UserManager.getPlayer(inspectTarget);
-        if (mcMMOPlayer == null) return;
+        var mmoPlayer = UserManager.getPlayer(inspectTarget);
+        if (mmoPlayer == null) return;
 
-        PlayerProfile profile = mcMMOPlayer.getProfile();
+        PlayerProfile profile = mmoPlayer.getProfile();
 
         final List<String> displayData = new ArrayList<>();
         displayData.add(header);

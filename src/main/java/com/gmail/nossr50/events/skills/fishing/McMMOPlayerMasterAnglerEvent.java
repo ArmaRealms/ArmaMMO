@@ -9,11 +9,11 @@ public class McMMOPlayerMasterAnglerEvent extends McMMOPlayerFishingEvent {
     private int reducedMaxWaitTime;
     private final FishingManager fishingManager;
 
-    public McMMOPlayerMasterAnglerEvent(@NotNull McMMOPlayer mcMMOPlayer,
+    public McMMOPlayerMasterAnglerEvent(@NotNull McMMOPlayer mmoPlayer,
                                         int reducedMinWaitTime,
                                         int reducedMaxWaitTime,
                                         FishingManager fishingManager) {
-        super(mcMMOPlayer);
+        super(mmoPlayer);
         this.fishingManager = fishingManager;
         this.reducedMinWaitTime = Math.max(reducedMinWaitTime, getReducedMinWaitTimeLowerBound());
         this.reducedMaxWaitTime = Math.max(reducedMaxWaitTime, getReducedMaxWaitTimeLowerBound());

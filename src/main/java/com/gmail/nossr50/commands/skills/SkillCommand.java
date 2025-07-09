@@ -144,7 +144,7 @@ public abstract class SkillCommand implements TabExecutor {
                 skillName.toLowerCase(Locale.ENGLISH)));
     }
 
-    private void sendSkillCommandHeader(String skillName, Player player, McMMOPlayer mcMMOPlayer, int skillValue) {
+    private void sendSkillCommandHeader(String skillName, Player player, McMMOPlayer mmoPlayer, int skillValue) {
         // send header
         player.sendMessage(LocaleLoader.getString("Skills.Overhaul.Header", skillName));
 
@@ -155,7 +155,7 @@ public abstract class SkillCommand implements TabExecutor {
 
             //XP GAIN METHOD
             player.sendMessage(LocaleLoader.getString("Commands.XPGain.Overhaul", LocaleLoader.getString("Commands.XPGain." + StringUtils.getCapitalized(skill.toString()))));
-            player.sendMessage(LocaleLoader.getString("Effects.Level.Overhaul", skillValue, mcMMOPlayer.getSkillXpLevel(skill), mcMMOPlayer.getXpToLevel(skill)));
+            player.sendMessage(LocaleLoader.getString("Effects.Level.Overhaul", skillValue, mmoPlayer.getSkillXpLevel(skill), mmoPlayer.getXpToLevel(skill)));
 
         } else {
             /*
@@ -169,10 +169,10 @@ public abstract class SkillCommand implements TabExecutor {
 
             for(int i = 0; i < parentList.size(); i++) {
                 if (i+1 < parentList.size()) {
-                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
+                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mmoPlayer.getSkillLevel(parentList.get(i))));
                     parentMessage.append(ChatColor.GRAY).append(", ");
                 } else {
-                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
+                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mmoPlayer.getSkillLevel(parentList.get(i))));
                 }
             }
 

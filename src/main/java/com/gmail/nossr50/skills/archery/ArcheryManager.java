@@ -22,8 +22,8 @@ import org.bukkit.potion.PotionEffect;
 import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
 
 public class ArcheryManager extends SkillManager {
-    public ArcheryManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.ARCHERY);
+    public ArcheryManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.ARCHERY);
     }
 
     public boolean canDaze(LivingEntity target) {

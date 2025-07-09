@@ -22,8 +22,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class SwordsManager extends SkillManager {
-    public SwordsManager(McMMOPlayer mcMMOPlayer) {
-        super(mcMMOPlayer, PrimarySkillType.SWORDS);
+    public SwordsManager(McMMOPlayer mmoPlayer) {
+        super(mmoPlayer, PrimarySkillType.SWORDS);
     }
 
     public boolean canActivateAbility() {

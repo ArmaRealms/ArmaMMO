@@ -18,7 +18,7 @@ import java.util.HashSet;
  * Each ExperienceBarManager only manages a single player
  */
 public class ExperienceBarManager {
-    private final McMMOPlayer mcMMOPlayer;
+    private final McMMOPlayer mmoPlayer;
     int delaySeconds = 3;
 
     private HashMap<PrimarySkillType, ExperienceBarWrapper> experienceBars;
@@ -27,8 +27,8 @@ public class ExperienceBarManager {
     private HashSet<PrimarySkillType> alwaysVisible;
     private HashSet<PrimarySkillType> disabledBars;
 
-    public ExperienceBarManager(McMMOPlayer mcMMOPlayer) {
-        this.mcMMOPlayer = mcMMOPlayer;
+    public ExperienceBarManager(McMMOPlayer mmoPlayer) {
+        this.mmoPlayer = mmoPlayer;
         init();
     }
 
@@ -51,10 +51,10 @@ public class ExperienceBarManager {
 
         // Get or Initialize Bar
         ExperienceBarWrapper experienceBarWrapper = experienceBars.computeIfAbsent(primarySkillType,
-                key -> new ExperienceBarWrapper(primarySkillType, mcMMOPlayer));
+                key -> new ExperienceBarWrapper(primarySkillType, mmoPlayer));
 
         // Update Progress and Show Bar
-        experienceBarWrapper.setProgress(mcMMOPlayer.getProgressInCurrentSkillLevel(primarySkillType));
+        experienceBarWrapper.setProgress(mmoPlayer.getProgressInCurrentSkillLevel(primarySkillType));
         experienceBarWrapper.showExperienceBar();
 
         // Cancel any existing Hide Task
@@ -71,8 +71,8 @@ public class ExperienceBarManager {
     private void scheduleHideTask(PrimarySkillType primarySkillType) {
         if (alwaysVisible.contains(primarySkillType)) return;
 
-        ExperienceBarHideTask experienceBarHideTask = new ExperienceBarHideTask(this, mcMMOPlayer, primarySkillType);
-        mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mcMMOPlayer.getPlayer(), experienceBarHideTask, (long) delaySeconds * Misc.TICK_CONVERSION_FACTOR);
+        ExperienceBarHideTask experienceBarHideTask = new ExperienceBarHideTask(this, mmoPlayer, primarySkillType);
+        mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(mmoPlayer.getPlayer(), experienceBarHideTask, (long) delaySeconds * Misc.TICK_CONVERSION_FACTOR);
         experienceBarHideTaskHashMap.put(primarySkillType, experienceBarHideTask);
     }
 
@@ -90,7 +90,7 @@ public class ExperienceBarManager {
             xpBarSettingToggle(XPBarSettingTarget.HIDE, primarySkillType);
         }
 
-        NotificationManager.sendPlayerInformationChatOnlyPrefixed(mcMMOPlayer.getPlayer(), "Commands.XPBar.DisableAll");
+        NotificationManager.sendPlayerInformationChatOnlyPrefixed(mmoPlayer.getPlayer(), "Commands.XPBar.DisableAll");
     }
 
     public void xpBarSettingToggle(@NotNull XPBarSettingTarget settingTarget, @Nullable PrimarySkillType skillType) {
@@ -140,9 +140,9 @@ public class ExperienceBarManager {
     private void informPlayer(@NotNull ExperienceBarManager.@NotNull XPBarSettingTarget settingTarget, @Nullable PrimarySkillType primarySkillType) {
         //Inform player of setting change
         if (settingTarget != XPBarSettingTarget.RESET) {
-            NotificationManager.sendPlayerInformationChatOnlyPrefixed(mcMMOPlayer.getPlayer(), "Commands.XPBar.SettingChanged", mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType), settingTarget.toString());
+            NotificationManager.sendPlayerInformationChatOnlyPrefixed(mmoPlayer.getPlayer(), "Commands.XPBar.SettingChanged", mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType), settingTarget.toString());
         } else {
-            NotificationManager.sendPlayerInformationChatOnlyPrefixed(mcMMOPlayer.getPlayer(), "Commands.XPBar.Reset");
+            NotificationManager.sendPlayerInformationChatOnlyPrefixed(mmoPlayer.getPlayer(), "Commands.XPBar.Reset");
         }
     }
 

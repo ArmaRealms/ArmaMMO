@@ -30,13 +30,13 @@ public class PtpAcceptCommand implements CommandExecutor {
             return true;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null) {
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }
 
-        PartyTeleportRecord ptpRecord = mcMMOPlayer.getPartyTeleportRecord();
+        PartyTeleportRecord ptpRecord = mmoPlayer.getPartyTeleportRecord();
         if (ptpRecord == null) return true;
 
         if (!ptpRecord.hasRequest()) {
