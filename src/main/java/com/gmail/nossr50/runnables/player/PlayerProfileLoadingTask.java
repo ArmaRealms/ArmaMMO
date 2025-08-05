@@ -38,21 +38,25 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
 
         // Quit if they logged out
         if (!player.isOnline()) {
-            LogUtils.debug(mcMMO.p.getLogger(), "Aborting profile loading recovery for " + player.getName() + " - player logged out");
+            LogUtils.debug(mcMMO.p.getLogger(),
+                    "Aborting profile loading recovery for " + player.getName()
+                            + " - player logged out");
             return;
         }
 
         PlayerProfile profile = mcMMO.getDatabaseManager().loadPlayerProfile(player);
 
         if (!profile.isLoaded()) {
-            LogUtils.debug(mcMMO.p.getLogger(), "Creating new data for player: "+player.getName());
+            LogUtils.debug(mcMMO.p.getLogger(),
+                    "Creating new data for player: " + player.getName());
             //Profile isn't loaded so add as new user
             profile = mcMMO.getDatabaseManager().newUser(player);
         }
 
         // If successful, schedule the apply
         if (profile.isLoaded()) {
-            mcMMO.p.getFoliaLib().getScheduler().runAtEntity(player, new ApplySuccessfulProfile(new McMMOPlayer(player, profile)));
+            mcMMO.p.getFoliaLib().getScheduler().runAtEntity(player,
+                    new ApplySuccessfulProfile(new McMMOPlayer(player, profile)));
             EventUtils.callPlayerProfileLoadEvent(player, profile);
             return;
         }
@@ -64,16 +68,22 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
                     player.getName(), String.valueOf(attempt)));
 
             //Notify the admins
-            mcMMO.p.getServer().broadcast(LocaleLoader.getString("Profile.Loading.FailureNotice", player.getName()), Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
+            mcMMO.p.getServer().broadcast(
+                    LocaleLoader.getString("Profile.Loading.FailureNotice", player.getName()),
+                    Server.BROADCAST_CHANNEL_ADMINISTRATIVE);
 
             //Notify the player
-            player.sendMessage(LocaleLoader.getString("Profile.Loading.FailurePlayer", String.valueOf(attempt)).split("\n"));
+            player.sendMessage(
+                    LocaleLoader.getString("Profile.Loading.FailurePlayer", String.valueOf(attempt))
+                            .split("\n"));
         }
 
         // Increment attempt counter and try
         attempt++;
 
-        mcMMO.p.getFoliaLib().getScheduler().runLaterAsync(new PlayerProfileLoadingTask(player, attempt), (100 + (attempt * 100L)));
+        mcMMO.p.getFoliaLib().getScheduler()
+                .runLaterAsync(new PlayerProfileLoadingTask(player, attempt),
+                        (100 + (attempt * 100L)));
     }
 
     private class ApplySuccessfulProfile extends CancellableRunnable {
@@ -88,7 +98,8 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
         @Override
         public void run() {
             if (!player.isOnline()) {
-                mcMMO.p.getLogger().info("Aborting profile loading recovery for " + player.getName() + " - player logged out");
+                mcMMO.p.getLogger().info("Aborting profile loading recovery for " + player.getName()
+                        + " - player logged out");
                 return;
             }
 
@@ -103,7 +114,9 @@ public class PlayerProfileLoadingTask extends CancellableRunnable {
 
                 if (mcMMO.p.getGeneralConfig().getShowStatsAfterLogin()) {
                     ScoreboardManager.enablePlayerStatsScoreboard(player);
-                    mcMMO.p.getFoliaLib().getScheduler().runAtEntityLater(player, new McScoreboardKeepTask(player), Misc.TICK_CONVERSION_FACTOR);
+                    mcMMO.p.getFoliaLib().getScheduler()
+                            .runAtEntityLater(player, new McScoreboardKeepTask(player),
+                                    Misc.TICK_CONVERSION_FACTOR);
                 }
             }
 
