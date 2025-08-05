@@ -9,6 +9,7 @@ public class Herbalism {
      * Convert blocks affected by the Green Thumb & Green Terra abilities.
      *
      * @param blockState The {@link BlockState} to check ability activation for
+     *
      * @return true if the ability was successful, false otherwise
      */
     protected static boolean convertGreenTerraBlocks(BlockState blockState) {
@@ -39,6 +40,7 @@ public class Herbalism {
      * Convert blocks affected by the Green Thumb & Green Terra abilities.
      *
      * @param blockState The {@link BlockState} to check ability activation for
+     *
      * @return true if the ability was successful, false otherwise
      */
     protected static boolean convertShroomThumb(BlockState blockState) {

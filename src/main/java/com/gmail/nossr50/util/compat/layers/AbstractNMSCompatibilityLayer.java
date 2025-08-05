@@ -4,8 +4,10 @@ import com.gmail.nossr50.util.nms.NMSVersion;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * These classes are a band-aid solution for adding NMS support into 2.1.XXX In 2.2 we are switching
- * to modules and that will clean things up significantly
+ *
+ * These classes are a band-aid solution for adding NMS support into 2.1.XXX
+ * In 2.2 we are switching to modules and that will clean things up significantly
+ *
  */
 public abstract class AbstractNMSCompatibilityLayer extends AbstractCompatibilityLayer {
 
@@ -17,7 +19,6 @@ public abstract class AbstractNMSCompatibilityLayer extends AbstractCompatibilit
 
     /**
      * Initialize the CompatibilityLayer
-     *
      * @return true if the CompatibilityLayer initialized and should be functional
      */
     public abstract boolean initializeLayer();

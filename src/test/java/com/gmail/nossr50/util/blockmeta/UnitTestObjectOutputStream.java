@@ -1,9 +1,10 @@
 package com.gmail.nossr50.util.blockmeta;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import org.jetbrains.annotations.NotNull;
 
 class UnitTestObjectOutputStream extends ObjectOutputStream {
 
@@ -14,9 +15,8 @@ class UnitTestObjectOutputStream extends ObjectOutputStream {
     @Override
     public void writeUTF(@NotNull String str) throws IOException {
         // Pretend to be the old class
-        if (str.equals(LegacyChunkStore.class.getName())) {
+        if (str.equals(LegacyChunkStore.class.getName()))
             str = "com.gmail.nossr50.util.blockmeta.chunkmeta.PrimitiveChunkStore";
-        }
         super.writeUTF(str);
     }
 

@@ -2,11 +2,8 @@ package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.mcMMO;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.io.*;
 
 public class FixSpellingNetheriteUtil {
 
@@ -56,8 +53,7 @@ public class FixSpellingNetheriteUtil {
             }
         }
 
-        pluginRef.getLogger()
-                .info("Finished checking " + fileName + " for certain misspelled material names.");
+        pluginRef.getLogger().info("Finished checking "+fileName+" for certain misspelled material names.");
 
         mcMMO.getUpgradeManager().setUpgradeCompleted(upgradeType);
     }

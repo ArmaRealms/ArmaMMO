@@ -6,7 +6,6 @@ import org.bukkit.event.Event;
 public interface Progression {
     /**
      * The interaction vector for gaining XP
-     *
      * @return the interaction vector for gaining XP
      */
     InteractType getXpGainInteractType();

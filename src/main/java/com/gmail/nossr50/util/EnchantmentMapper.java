@@ -1,12 +1,13 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
-import java.util.Locale;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Locale;
 
 public class EnchantmentMapper {
     private final mcMMO pluginRef;
@@ -24,7 +25,7 @@ public class EnchantmentMapper {
         this.featherFalling = initFeatherFalling();
         this.luckOfTheSea = initLuckOfTheSea();
     }
-
+    
     private static @Nullable Enchantment mockSpigotMatch(@NotNull String input) {
         // Replicates match() behaviour for older versions lacking this API
         final String filtered = input.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");

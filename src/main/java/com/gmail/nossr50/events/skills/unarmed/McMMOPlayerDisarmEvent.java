@@ -18,9 +18,7 @@ public class McMMOPlayerDisarmEvent extends McMMOPlayerSkillEvent implements Can
         return defender;
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;

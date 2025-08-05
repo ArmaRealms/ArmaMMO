@@ -11,14 +11,17 @@ import com.gmail.nossr50.util.compat.layers.skills.MasterAnglerCompatibilityLaye
 import com.gmail.nossr50.util.nms.NMSVersion;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.HashMap;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
+
 /**
- * These classes are a band-aid solution for adding NMS support into 2.1.XXX In 2.2 we are switching
- * to modules and that will clean things up significantly
+ *
+ * These classes are a band-aid solution for adding NMS support into 2.1.XXX
+ * In 2.2 we are switching to modules and that will clean things up significantly
+ *
  */
 public class CompatibilityManager {
     private @NotNull HashMap<CompatibilityType, Boolean> supportedLayers;
@@ -46,14 +49,14 @@ public class CompatibilityManager {
     private void initSupportedLayersMap() {
         supportedLayers = new HashMap<>(); //Init map
 
-        for (CompatibilityType compatibilityType : CompatibilityType.values()) {
-            supportedLayers.put(compatibilityType,
-                    false); //All layers are set to false when initialized
+        for(CompatibilityType compatibilityType : CompatibilityType.values()) {
+            supportedLayers.put(compatibilityType, false); //All layers are set to false when initialized
         }
     }
 
     /**
-     * Initialize all necessary compatibility layers For any unsupported layers, load a dummy layer
+     * Initialize all necessary compatibility layers
+     * For any unsupported layers, load a dummy layer
      */
     private void initCompatibilityLayers() {
         initBungeeSerializerLayer();
@@ -87,17 +90,15 @@ public class CompatibilityManager {
                     "mcMMO is fully compatible with the currently running server software."));
         } else {
             //TODO: Better messages for each incompatible layer
-            for (CompatibilityType compatibilityType : CompatibilityType.values()) {
+            for(CompatibilityType compatibilityType : CompatibilityType.values()) {
                 if (!supportedLayers.get(compatibilityType)) {
                     commandSender.sendMessage(LocaleLoader.getString("mcMMO.Template.Prefix",
-                            LocaleLoader.getString("Compatibility.Layer.Unsupported",
-                                    StringUtils.getCapitalized(compatibilityType.toString()))));
+                            LocaleLoader.getString("Compatibility.Layer.Unsupported",  StringUtils.getCapitalized(compatibilityType.toString()))));
                 }
             }
         }
 
-        commandSender.sendMessage(LocaleLoader.getString("mcMMO.Template.Prefix",
-                "NMS Status - " + nmsVersion));
+        commandSender.sendMessage(LocaleLoader.getString("mcMMO.Template.Prefix", "NMS Status - " + nmsVersion.toString()));
     }
 
     public boolean isCompatibilityLayerOperational(@NotNull CompatibilityType compatibilityType) {

@@ -14,9 +14,7 @@ public class McMMOPlayerPreDeathPenaltyEvent extends PlayerEvent implements Canc
         this.cancelled = false;
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;
@@ -27,9 +25,7 @@ public class McMMOPlayerPreDeathPenaltyEvent extends PlayerEvent implements Canc
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
+    /** Rest of file is required boilerplate for custom events **/
     private static final HandlerList handlers = new HandlerList();
 
     @Override

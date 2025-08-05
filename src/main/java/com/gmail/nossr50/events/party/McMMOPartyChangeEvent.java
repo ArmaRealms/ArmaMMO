@@ -15,8 +15,7 @@ public class McMMOPartyChangeEvent extends PlayerEvent implements Cancellable {
     private final EventReason reason;
     private boolean cancelled;
 
-    public McMMOPartyChangeEvent(Player player, String oldParty, String newParty,
-            EventReason reason) {
+    public McMMOPartyChangeEvent(Player player, String oldParty, String newParty, EventReason reason) {
         super(player);
 
         if (newParty != null) {
@@ -90,9 +89,7 @@ public class McMMOPartyChangeEvent extends PlayerEvent implements Cancellable {
         CUSTOM
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;
@@ -103,9 +100,7 @@ public class McMMOPartyChangeEvent extends PlayerEvent implements Cancellable {
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
+    /** Rest of file is required boilerplate for custom events **/
     private static final HandlerList handlers = new HandlerList();
 
     @Override

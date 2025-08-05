@@ -1,7 +1,5 @@
 package com.gmail.nossr50.events.skills.alchemy;
 
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.events.skills.McMMOPlayerSkillEvent;
@@ -12,6 +10,8 @@ import org.bukkit.block.BrewingStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
+
+import static java.util.Objects.requireNonNull;
 
 public class McMMOPlayerBrewEvent extends McMMOPlayerSkillEvent implements Cancellable {
     private final BlockState brewingStand;

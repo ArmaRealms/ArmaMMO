@@ -32,9 +32,7 @@ public class McMMOPartyTeleportEvent extends PlayerTeleportEvent {
         return target;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
+    /** Rest of file is required boilerplate for custom events **/
     private static final HandlerList handlers = new HandlerList();
 
     @Override

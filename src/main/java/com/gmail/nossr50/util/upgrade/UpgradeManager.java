@@ -4,6 +4,7 @@ import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
@@ -23,6 +24,7 @@ public class UpgradeManager extends BukkitConfig {
      * Check if the given {@link UpgradeType} is necessary.
      *
      * @param type Upgrade type to check
+     *
      * @return true if plugin data needs to have the given upgrade
      */
     public boolean shouldUpgrade(final UpgradeType type) {
@@ -30,8 +32,8 @@ public class UpgradeManager extends BukkitConfig {
     }
 
     /**
-     * Set the given {@link UpgradeType} as completed. Does nothing if the upgrade was applied
-     * previously.
+     * Set the given {@link UpgradeType} as completed. Does nothing if
+     * the upgrade was applied previously.
      *
      * @param type Upgrade type to set as complete
      */
@@ -40,14 +42,14 @@ public class UpgradeManager extends BukkitConfig {
             return;
         }
 
-        LogUtils.debug(mcMMO.p.getLogger(),
-                "Saving upgrade status for type " + type.toString() + "...");
+        LogUtils.debug(mcMMO.p.getLogger(), "Saving upgrade status for type " + type.toString() + "...");
 
-        config.set("Upgrades_Finished." + type, true);
+        config.set("Upgrades_Finished." + type.toString(), true);
 
         try {
             config.save(getFile());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -60,7 +62,6 @@ public class UpgradeManager extends BukkitConfig {
             }
         }
 
-        LogUtils.debug(mcMMO.p.getLogger(), "Needed upgrades: " + Arrays.toString(
-                setNeededUpgrades.toArray(new UpgradeType[setNeededUpgrades.size()])));
+        LogUtils.debug(mcMMO.p.getLogger(), "Needed upgrades: " + Arrays.toString(setNeededUpgrades.toArray(new UpgradeType[setNeededUpgrades.size()])));
     }
 }

@@ -32,8 +32,7 @@ public class TeleportationWarmup extends CancellableRunnable {
         mmoPlayer.setTeleportCommenceLocation(null);
 
         if (!mcMMO.p.getPartyManager().inSameParty(teleportingPlayer, targetPlayer)) {
-            teleportingPlayer.sendMessage(
-                    LocaleLoader.getString("Party.NotInYourParty", targetPlayer.getName()));
+            teleportingPlayer.sendMessage(LocaleLoader.getString("Party.NotInYourParty", targetPlayer.getName()));
             return;
         }
 
@@ -45,12 +44,10 @@ public class TeleportationWarmup extends CancellableRunnable {
         int hurtCooldown = mcMMO.p.getGeneralConfig().getPTPCommandRecentlyHurtCooldown();
 
         if (hurtCooldown > 0) {
-            int timeRemaining = SkillUtils.calculateTimeLeft(
-                    recentlyHurt * Misc.TIME_CONVERSION_FACTOR, hurtCooldown, teleportingPlayer);
+            int timeRemaining = SkillUtils.calculateTimeLeft(recentlyHurt * Misc.TIME_CONVERSION_FACTOR, hurtCooldown, teleportingPlayer);
 
             if (timeRemaining > 0) {
-                teleportingPlayer.sendMessage(
-                        LocaleLoader.getString("Item.Injured.Wait", timeRemaining));
+                teleportingPlayer.sendMessage(LocaleLoader.getString("Item.Injured.Wait", timeRemaining));
                 return;
             }
         }
@@ -61,19 +58,15 @@ public class TeleportationWarmup extends CancellableRunnable {
 
             if (!Permissions.partyTeleportAllWorlds(teleportingPlayer)) {
                 if (!Permissions.partyTeleportWorld(targetPlayer, targetWorld)) {
-                    teleportingPlayer.sendMessage(
-                            LocaleLoader.getString("Commands.ptp.NoWorldPermissions",
-                                    targetWorld.getName()));
+                    teleportingPlayer.sendMessage(LocaleLoader.getString("Commands.ptp.NoWorldPermissions", targetWorld.getName()));
                     return;
-                } else if (targetWorld != playerWorld && !Permissions.partyTeleportWorld(
-                        teleportingPlayer, targetWorld)) {
-                    teleportingPlayer.sendMessage(
-                            LocaleLoader.getString("Commands.ptp.NoWorldPermissions",
-                                    targetWorld.getName()));
+                } else if (targetWorld != playerWorld && !Permissions.partyTeleportWorld(teleportingPlayer, targetWorld)) {
+                    teleportingPlayer.sendMessage(LocaleLoader.getString("Commands.ptp.NoWorldPermissions", targetWorld.getName()));
                     return;
                 }
             }
         }
+
 
         EventUtils.handlePartyTeleportEvent(teleportingPlayer, targetPlayer);
     }

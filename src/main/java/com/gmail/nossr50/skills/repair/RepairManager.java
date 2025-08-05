@@ -20,11 +20,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.enchantments.Enchantment;
@@ -32,9 +27,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+
 public class RepairManager extends SkillManager {
     private boolean placedAnvil;
-    private int lastClick;
+    private int     lastClick;
 
     public RepairManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.REPAIR);
@@ -51,13 +52,11 @@ public class RepairManager extends SkillManager {
         }
 
         if (mcMMO.p.getGeneralConfig().getRepairAnvilMessagesEnabled()) {
-            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE,
-                    "Repair.Listener.Anvil");
+            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE, "Repair.Listener.Anvil");
         }
 
         if (mcMMO.p.getGeneralConfig().getRepairAnvilPlaceSoundsEnabled()) {
-            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ANVIL,
-                    SoundCategory.BLOCKS);
+            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ANVIL, SoundCategory.BLOCKS);
         }
 
         togglePlacedAnvil();
@@ -69,30 +68,26 @@ public class RepairManager extends SkillManager {
         if (item.getItemMeta() != null) {
             if (item.getItemMeta().hasCustomModelData()) {
                 if (!mcMMO.p.getCustomItemSupportConfig().isCustomRepairAllowed()) {
-                    NotificationManager.sendPlayerInformation(player,
-                            NotificationType.SUBSKILL_MESSAGE_FAILED,
+                    NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED,
                             "Anvil.Repair.Reject.CustomModelData");
                     return;
                 }
             }
 
             if (item.getItemMeta().isUnbreakable()) {
-                NotificationManager.sendPlayerInformation(player,
-                        NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Unbreakable");
+                NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Unbreakable");
                 return;
             }
         }
 
         // Permissions checks on material and item types
         if (!Permissions.repairMaterialType(player, repairable.getRepairMaterialType())) {
-            NotificationManager.sendPlayerInformation(player, NotificationType.NO_PERMISSION,
-                    "mcMMO.NoPermission");
+            NotificationManager.sendPlayerInformation(player, NotificationType.NO_PERMISSION, "mcMMO.NoPermission");
             return;
         }
 
         if (!Permissions.repairItemType(player, repairable.getRepairItemType())) {
-            NotificationManager.sendPlayerInformation(player, NotificationType.NO_PERMISSION,
-                    "mcMMO.NoPermission");
+            NotificationManager.sendPlayerInformation(player, NotificationType.NO_PERMISSION, "mcMMO.NoPermission");
             return;
         }
 
@@ -101,10 +96,7 @@ public class RepairManager extends SkillManager {
 
         // Level check
         if (skillLevel < minimumRepairableLevel) {
-            NotificationManager.sendPlayerInformation(player,
-                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.Adept",
-                    String.valueOf(minimumRepairableLevel),
-                    StringUtils.getPrettyMaterialString(item.getType()));
+            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.Adept", String.valueOf(minimumRepairableLevel), StringUtils.getPrettyMaterialString(item.getType()));
             return;
         }
 
@@ -117,29 +109,23 @@ public class RepairManager extends SkillManager {
 
         // Do not repair if at full durability
         if (startDurability <= 0) {
-            NotificationManager.sendPlayerInformation(player,
-                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.FullDurability");
+            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.FullDurability");
             return;
         }
 
         // Check if they have the proper material to repair with
         if (!inventory.contains(repairMaterial)) {
-            String prettyName = repairable.getRepairMaterialPrettyName() == null
-                    ? StringUtils.getPrettyMaterialString(repairMaterial)
-                    : repairable.getRepairMaterialPrettyName();
+            String prettyName = repairable.getRepairMaterialPrettyName() == null ? StringUtils.getPrettyMaterialString(repairMaterial) : repairable.getRepairMaterialPrettyName();
 
             String materialsNeeded = "";
 
-            NotificationManager.sendPlayerInformation(player,
-                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Skills.NeedMore.Extra", prettyName,
-                    materialsNeeded);
+            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Skills.NeedMore.Extra", prettyName, materialsNeeded);
             return;
         }
 
         // Do not repair stacked items
         if (item.getAmount() != 1) {
-            NotificationManager.sendPlayerInformation(player,
-                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.StackedItems");
+            NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Skills.StackedItems");
             return;
         }
 
@@ -148,10 +134,8 @@ public class RepairManager extends SkillManager {
 
         // Lets get down to business,
         // To defeat, the huns.
-        int baseRepairAmount = repairable.getBaseRepairDurability(
-                item); // Did they send me daughters?
-        short newDurability = repairCalculate(startDurability,
-                baseRepairAmount); // When I asked for sons?
+        int baseRepairAmount = repairable.getBaseRepairDurability(item); // Did they send me daughters?
+        short newDurability = repairCalculate(startDurability, baseRepairAmount); // When I asked for sons?
 
         // toRemove should be refreshed before the event call.
         toRemove = inventory.getItem(inventory.first(repairMaterial)).clone();
@@ -172,15 +156,11 @@ public class RepairManager extends SkillManager {
 
                 // Fail out with "you need material" if we don't find a suitable alternative.
                 if (possibleMaterial.isEmpty()) {
-                    String prettyName = repairable.getRepairMaterialPrettyName() == null
-                            ? StringUtils.getPrettyMaterialString(repairMaterial)
-                            : repairable.getRepairMaterialPrettyName();
+                    String prettyName = repairable.getRepairMaterialPrettyName() == null ? StringUtils.getPrettyMaterialString(repairMaterial) : repairable.getRepairMaterialPrettyName();
 
                     String materialsNeeded = "";
 
-                    NotificationManager.sendPlayerInformation(player,
-                            NotificationType.SUBSKILL_MESSAGE_FAILED, "Skills.NeedMore.Extra",
-                            prettyName, materialsNeeded);
+                    NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE_FAILED, "Skills.NeedMore.Extra", prettyName, materialsNeeded);
                     return;
                 }
 
@@ -190,14 +170,12 @@ public class RepairManager extends SkillManager {
         }
 
         // Call event
-        if (EventUtils.callRepairCheckEvent(player, (short) (startDurability - newDurability),
-                toRemove, item).isCancelled()) {
+        if (EventUtils.callRepairCheckEvent(player, (short) (startDurability - newDurability), toRemove, item).isCancelled()) {
             return;
         }
 
         // Handle the enchants
-        if (ArcaneForging.arcaneForgingEnchantLoss && !Permissions.hasRepairEnchantBypassPerk(
-                player)) {
+        if (ArcaneForging.arcaneForgingEnchantLoss && !Permissions.hasRepairEnchantBypassPerk(player)) {
             addEnchants(item);
         }
 
@@ -207,27 +185,22 @@ public class RepairManager extends SkillManager {
         inventory.removeItem(toRemove);
 
         // Give out XP like candy
-        applyXpGain((float) ((getPercentageRepaired(startDurability, newDurability,
-                        repairable.getMaximumDurability())
-                        * repairable.getXpMultiplier())
-                        * ExperienceConfig.getInstance().getRepairXPBase()
-                        * ExperienceConfig.getInstance().getRepairXP(repairable.getRepairMaterialType())),
-                XPGainReason.PVE);
+        applyXpGain((float) ((getPercentageRepaired(startDurability, newDurability, repairable.getMaximumDurability())
+                * repairable.getXpMultiplier())
+                * ExperienceConfig.getInstance().getRepairXPBase()
+                * ExperienceConfig.getInstance().getRepairXP(repairable.getRepairMaterialType())), XPGainReason.PVE);
 
         // BWONG BWONG BWONG
         if (mcMMO.p.getGeneralConfig().getRepairAnvilUseSoundsEnabled()) {
-            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ANVIL,
-                    SoundCategory.BLOCKS);
-            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ITEM_BREAK,
-                    SoundCategory.PLAYERS);
+            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ANVIL, SoundCategory.BLOCKS);
+            SoundManager.sendCategorizedSound(player, player.getLocation(), SoundType.ITEM_BREAK, SoundCategory.PLAYERS);
         }
 
         // Repair the item!
         item.setDurability(newDurability);
     }
 
-    private float getPercentageRepaired(short startDurability, short newDurability,
-            short totalDurability) {
+    private float getPercentageRepaired(short startDurability, short newDurability, short totalDurability) {
         return ((startDurability - newDurability) / (float) totalDurability);
     }
 
@@ -240,8 +213,7 @@ public class RepairManager extends SkillManager {
         Player player = getPlayer();
         long lastUse = getLastAnvilUse();
 
-        if (!SkillUtils.cooldownExpired(lastUse, 3) || !mcMMO.p.getGeneralConfig()
-                .getRepairConfirmRequired()) {
+        if (!SkillUtils.cooldownExpired(lastUse, 3) || !mcMMO.p.getGeneralConfig().getRepairConfirmRequired()) {
             return true;
         }
 
@@ -250,8 +222,7 @@ public class RepairManager extends SkillManager {
         }
 
         actualizeLastAnvilUse();
-        NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE,
-                "Skills.ConfirmOrCancel", LocaleLoader.getString("Repair.Pretty.Name"));
+        NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE, "Skills.ConfirmOrCancel", LocaleLoader.getString("Repair.Pretty.Name"));
 
         return false;
     }
@@ -271,8 +242,7 @@ public class RepairManager extends SkillManager {
      * @return The chance of keeping the enchantment
      */
     public double getKeepEnchantChance() {
-        return mcMMO.p.getAdvancedConfig()
-                .getArcaneForgingKeepEnchantsChance(getArcaneForgingRank());
+        return mcMMO.p.getAdvancedConfig().getArcaneForgingKeepEnchantsChance(getArcaneForgingRank());
     }
 
     /**
@@ -332,16 +302,14 @@ public class RepairManager extends SkillManager {
                 && RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.REPAIR_REPAIR_MASTERY)) {
 
             double maxBonusCalc = Repair.repairMasteryMaxBonus / 100.0D;
-            double skillLevelBonusCalc =
-                    (Repair.repairMasteryMaxBonus / Repair.repairMasteryMaxBonusLevel) * (
-                            getSkillLevel() / 100.0D);
+            double skillLevelBonusCalc = (Repair.repairMasteryMaxBonus / Repair.repairMasteryMaxBonusLevel) * (getSkillLevel() / 100.0D);
             double bonus = repairAmount * Math.min(skillLevelBonusCalc, maxBonusCalc);
+
 
             repairAmount += bonus;
         }
 
-        if (Permissions.isSubSkillEnabled(player, SubSkillType.REPAIR_SUPER_REPAIR)
-                && checkPlayerProcRepair()) {
+        if (Permissions.isSubSkillEnabled(player, SubSkillType.REPAIR_SUPER_REPAIR) && checkPlayerProcRepair()) {
             repairAmount *= 2.0D;
         }
 
@@ -358,13 +326,11 @@ public class RepairManager extends SkillManager {
      * @return true if bonus granted, false otherwise
      */
     private boolean checkPlayerProcRepair() {
-        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.REPAIR_SUPER_REPAIR)) {
+        if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.REPAIR_SUPER_REPAIR))
             return false;
-        }
 
         if (ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.REPAIR_SUPER_REPAIR, mmoPlayer)) {
-            NotificationManager.sendPlayerInformation(getPlayer(),
-                    NotificationType.SUBSKILL_MESSAGE, "Repair.Skills.FeltEasy");
+            NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE, "Repair.Skills.FeltEasy");
             return true;
         }
 
@@ -386,19 +352,16 @@ public class RepairManager extends SkillManager {
         }
 
         if (Permissions.arcaneBypass(player)) {
-            NotificationManager.sendPlayerInformation(getPlayer(),
-                    NotificationType.SUBSKILL_MESSAGE, "Repair.Arcane.Perfect");
+            NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE, "Repair.Arcane.Perfect");
             return;
         }
 
-        if (getArcaneForgingRank() == 0 || !Permissions.isSubSkillEnabled(player,
-                SubSkillType.REPAIR_ARCANE_FORGING)) {
+        if (getArcaneForgingRank() == 0 || !Permissions.isSubSkillEnabled(player, SubSkillType.REPAIR_ARCANE_FORGING)) {
             for (Enchantment enchant : enchants.keySet()) {
                 item.removeEnchantment(enchant);
             }
 
-            NotificationManager.sendPlayerInformation(getPlayer(),
-                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Arcane.Lost");
+            NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE_FAILED, "Repair.Arcane.Lost");
             return;
         }
 
@@ -411,18 +374,16 @@ public class RepairManager extends SkillManager {
                 if (enchantLevel > enchant.getKey().getMaxLevel()) {
                     enchantLevel = enchant.getKey().getMaxLevel();
 
-                    item.addUnsafeEnchantment(enchant.getKey(), enchantLevel);
+                    item.addEnchantment(enchant.getKey(), enchantLevel);
                 }
             }
 
             Enchantment enchantment = enchant.getKey();
 
-            if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR, mmoPlayer,
-                    getKeepEnchantChance())) {
+            if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR, mmoPlayer, getKeepEnchantChance())) {
 
                 if (ArcaneForging.arcaneForgingDowngrades && enchantLevel > 1
-                        && (!ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR,
-                        mmoPlayer, 100 - getDowngradeEnchantChance()))) {
+                        && (!ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR, mmoPlayer, 100 - getDowngradeEnchantChance()))) {
                     item.addUnsafeEnchantment(enchantment, enchantLevel - 1);
                     downgraded = true;
                 }
@@ -434,12 +395,11 @@ public class RepairManager extends SkillManager {
         Map<Enchantment, Integer> newEnchants = item.getEnchantments();
 
         if (newEnchants.isEmpty()) {
-            NotificationManager.sendPlayerInformationChatOnly(getPlayer(), "Repair.Arcane.Fail");
+            NotificationManager.sendPlayerInformationChatOnly(getPlayer(),  "Repair.Arcane.Fail");
         } else if (downgraded || newEnchants.size() < enchants.size()) {
-            NotificationManager.sendPlayerInformationChatOnly(getPlayer(),
-                    "Repair.Arcane.Downgrade");
+            NotificationManager.sendPlayerInformationChatOnly(getPlayer(),  "Repair.Arcane.Downgrade");
         } else {
-            NotificationManager.sendPlayerInformationChatOnly(getPlayer(), "Repair.Arcane.Perfect");
+            NotificationManager.sendPlayerInformationChatOnly(getPlayer(),  "Repair.Arcane.Perfect");
         }
     }
 

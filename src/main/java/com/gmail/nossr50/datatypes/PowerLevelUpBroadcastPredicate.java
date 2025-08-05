@@ -5,10 +5,11 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.function.Predicate;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Predicate;
 
 //TODO: Allow for offline players to broadcast
 public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements Predicate<T> {
@@ -32,8 +33,7 @@ public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements 
 
         if (mmoBroadcastingPlayer == null) {
             //This should never be null, but just in case...
-            mcMMO.p.getLogger()
-                    .severe("McMMOPlayer was null for broadcaster in LevelUpBroadcastPredicate when it should never be null!");
+            mcMMO.p.getLogger().severe("McMMOPlayer was null for broadcaster in LevelUpBroadcastPredicate when it should never be null!");
             return false;
         }
 
@@ -61,25 +61,24 @@ public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements 
 
             //Same world check
             if (isPowerLevelUpBroadcastsSameWorldOnly()) {
-                if (!mmoBroadcastingPlayer.getPlayer().getWorld()
-                        .equals(listeningPlayer.getWorld())) {
+                if (!mmoBroadcastingPlayer.getPlayer().getWorld().equals(listeningPlayer.getWorld())) {
                     return false; //Not in the same world when its required
                 }
 
                 //Distance checks
                 if (mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcastsRestrictDistance()) {
-                    if (!Misc.isNear(mmoBroadcastingPlayer.getPlayer().getLocation(),
-                            listeningPlayer.getLocation(),
-                            mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastRadius())) {
+                    if (!Misc.isNear(mmoBroadcastingPlayer.getPlayer().getLocation(), listeningPlayer.getLocation(), mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastRadius())) {
                         return false;
                     }
                 }
             }
 
             //Visibility checks
-            return listeningPlayer.canSee(mmoBroadcastingPlayer.getPlayer())
-                    || listeningPlayer
-                    == mmoBroadcastingPlayer.getPlayer(); //Player who leveled should be invisible to this player so don't send the message
+            if (!listeningPlayer.canSee(mmoBroadcastingPlayer.getPlayer()) && listeningPlayer != mmoBroadcastingPlayer.getPlayer()) {
+                return false; //Player who leveled should be invisible to this player so don't send the message
+            }
+
+            return true;
         } else {
             //Send out to console
             return mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcastToConsole();

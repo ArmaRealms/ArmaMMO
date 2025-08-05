@@ -18,8 +18,7 @@ public abstract class AbstractSubSkill implements SubSkill, Interaction, Rank, S
     protected String configKeyPrimary;
     protected SubSkillType subSkillType;
 
-    public AbstractSubSkill(String configKeySubSkill, String configKeyPrimary,
-            SubSkillType subSkillType) {
+    public AbstractSubSkill(String configKeySubSkill, String configKeyPrimary, SubSkillType subSkillType) {
         this.configKeySubSkill = configKeySubSkill;
         this.configKeyPrimary = configKeyPrimary;
         this.subSkillType = subSkillType;
@@ -32,8 +31,7 @@ public abstract class AbstractSubSkill implements SubSkill, Interaction, Rank, S
      */
     @Override
     public String getDescription() {
-        return LocaleLoader.getString(
-                getPrimaryKeyName() + ".SubSkill." + getConfigKeyName() + ".Description");
+        return LocaleLoader.getString(getPrimaryKeyName()+".SubSkill."+getConfigKeyName()+".Description");
     }
 
     /**
@@ -41,8 +39,7 @@ public abstract class AbstractSubSkill implements SubSkill, Interaction, Rank, S
      *
      * @return true if enabled
      */
-    @Override
-    @Deprecated
+    @Override @Deprecated
     public boolean isEnabled() {
         //TODO: This might be troublesome...
         return CoreSkillsConfig.getInstance().isSkillEnabled(this);
@@ -59,8 +56,7 @@ public abstract class AbstractSubSkill implements SubSkill, Interaction, Rank, S
 
         final Player player = mmoPlayer.getPlayer();
         player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.Header"));
-        player.sendMessage(
-                LocaleLoader.getString("Commands.MmoInfo.SubSkillHeader", getConfigKeyName()));
+        player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.SubSkillHeader", getConfigKeyName()));
         player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.DetailsHeader"));
     }
 

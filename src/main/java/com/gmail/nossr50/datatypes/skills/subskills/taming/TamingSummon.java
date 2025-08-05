@@ -16,8 +16,7 @@ public class TamingSummon {
     private final CallOfTheWildType callOfTheWildType;
     private EntityType entityType;
 
-    public TamingSummon(CallOfTheWildType callOfTheWildType, Material itemType,
-            int itemAmountRequired, int entitiesSummoned, int summonLifespan, int summonCap) {
+    public TamingSummon(CallOfTheWildType callOfTheWildType, Material itemType, int itemAmountRequired, int entitiesSummoned, int summonLifespan, int summonCap) {
         this.callOfTheWildType = callOfTheWildType;
         this.itemType = itemType;
         this.itemAmountRequired = Math.max(itemAmountRequired, 1);
@@ -29,7 +28,7 @@ public class TamingSummon {
     }
 
     private void initEntityType() {
-        switch (callOfTheWildType) {
+        switch(callOfTheWildType) {
             case WOLF:
                 entityType = EntityType.WOLF;
                 break;

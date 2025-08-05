@@ -1,8 +1,9 @@
 package com.gmail.nossr50.database.flatfile;
 
 import com.gmail.nossr50.database.FlatFileDataFlag;
-import java.util.HashSet;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
 
 public class FlatFileDataBuilder {
     private final @NotNull HashSet<FlatFileDataFlag> dataFlags;
@@ -28,8 +29,7 @@ public class FlatFileDataBuilder {
 
     public @NotNull FlatFileDataContainer build() {
         if (dataFlags.contains(FlatFileDataFlag.BAD_VALUES)) {
-            return new BadCategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData,
-                    badDataValues);
+            return new BadCategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData, badDataValues);
         }
 
         return new CategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData);

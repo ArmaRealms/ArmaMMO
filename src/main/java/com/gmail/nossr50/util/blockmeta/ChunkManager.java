@@ -5,8 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 public interface ChunkManager extends UserBlockTracker {
     void closeAll();
-
     void chunkUnloaded(int cx, int cz, @NotNull World world);
-
     void unloadWorld(@NotNull World world);
 }

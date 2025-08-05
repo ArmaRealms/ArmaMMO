@@ -6,8 +6,63 @@ import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.entity.Player;
 
 public final class ChatAPI {
-    private ChatAPI() {
-    }
+    private ChatAPI() {}
+
+//    /**
+//     * Send a message to all members of a party
+//     * </br>
+//     * This function is designed for API usage.
+//     *
+//     * @param plugin The plugin sending the message
+//     * @param sender The name of the sender
+//     * @param displayName The display name of the sender
+//     * @param party The name of the party to send to
+//     * @param message The message to send
+//     */
+//    public static void sendPartyChat(Plugin plugin, String sender, String displayName, String party, String message) {
+//        getPartyChatManager(plugin, party).handleChat(sender, displayName, message);
+//    }
+//
+//    /**
+//     * Send a message to all members of a party
+//     * </br>
+//     * This function is designed for API usage.
+//     *
+//     * @param plugin The plugin sending the message
+//     * @param sender The name of the sender to display in the chat
+//     * @param party The name of the party to send to
+//     * @param message The message to send
+//     */
+//    public static void sendPartyChat(Plugin plugin, String sender, String party, String message) {
+//        getPartyChatManager(plugin, party).handleChat(sender, message);
+//    }
+//
+//    /**
+//     * Send a message to administrators
+//     * </br>
+//     * This function is designed for API usage.
+//     *
+//     * @param plugin The plugin sending the message
+//     * @param sender The name of the sender
+//     * @param displayName The display name of the sender
+//     * @param message The message to send
+//     */
+//    public static void sendAdminChat(Plugin plugin, String sender, String displayName, String message) {
+//        ChatManagerFactory.getChatManager(plugin, ChatChannel.ADMIN).handleChat(sender, displayName, message);
+//    }
+//
+//    /**
+//     * Send a message to administrators
+//     * </br>
+//     * This function is designed for API usage.
+//     *
+//     * @param plugin The plugin sending the message
+//     * @param sender The name of the sender to display in the chat
+//     * @param message The message to send
+//     */
+//    public static void sendAdminChat(Plugin plugin, String sender, String message) {
+//        ChatManagerFactory.getChatManager(plugin, ChatChannel.ADMIN).handleChat(sender, message);
+//    }
 
     /**
      * Check if a player is currently talking in party chat.
@@ -55,8 +110,7 @@ public final class ChatAPI {
      * @param player The player to toggle party chat on.
      */
     public static void togglePartyChat(Player player) {
-        mcMMO.p.getChatManager()
-                .setOrToggleChatChannel(UserManager.getPlayer(player), ChatChannel.PARTY);
+        mcMMO.p.getChatManager().setOrToggleChatChannel(UserManager.getPlayer(player), ChatChannel.PARTY);
     }
 
     /**
@@ -65,8 +119,7 @@ public final class ChatAPI {
      * @param playerName The name of the player to toggle party chat on.
      */
     public static void togglePartyChat(String playerName) {
-        mcMMO.p.getChatManager()
-                .setOrToggleChatChannel(UserManager.getPlayer(playerName), ChatChannel.PARTY);
+        mcMMO.p.getChatManager().setOrToggleChatChannel(UserManager.getPlayer(playerName), ChatChannel.PARTY);
     }
 
     /**
@@ -75,8 +128,7 @@ public final class ChatAPI {
      * @param player The player to toggle admin chat on.
      */
     public static void toggleAdminChat(Player player) {
-        mcMMO.p.getChatManager()
-                .setOrToggleChatChannel(UserManager.getPlayer(player), ChatChannel.ADMIN);
+        mcMMO.p.getChatManager().setOrToggleChatChannel(UserManager.getPlayer(player), ChatChannel.ADMIN);
     }
 
     /**
@@ -85,7 +137,6 @@ public final class ChatAPI {
      * @param playerName The name of the player to toggle party chat on.
      */
     public static void toggleAdminChat(String playerName) {
-        mcMMO.p.getChatManager()
-                .setOrToggleChatChannel(UserManager.getPlayer(playerName), ChatChannel.ADMIN);
+        mcMMO.p.getChatManager().setOrToggleChatChannel(UserManager.getPlayer(playerName), ChatChannel.ADMIN);
     }
 }

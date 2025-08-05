@@ -1,7 +1,8 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 /**
  * A ChunkStore should be responsible for a 16x16xWorldHeight area of data
@@ -36,7 +37,6 @@ public interface ChunkStore {
     int getChunkZ();
 
     int getChunkMin();
-
     int getChunkMax();
 
     @NotNull UUID getWorldId();

@@ -6,8 +6,9 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.events.skills.McMMOPlayerSkillEvent;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.Objects;
 import org.bukkit.entity.Player;
+
+import java.util.Objects;
 
 public class McMMOPlayerAbilityEvent extends McMMOPlayerSkillEvent {
     private final SuperAbilityType ability;
@@ -27,7 +28,6 @@ public class McMMOPlayerAbilityEvent extends McMMOPlayerSkillEvent {
 
     /**
      * Create a new McMMOPlayerAbilityEvent.
-     *
      * @param mmoPlayer The McMMOPlayer involved in this event
      * @param skill The skill involved in this event
      */

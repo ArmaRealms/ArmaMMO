@@ -1,13 +1,14 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
+import org.bukkit.attribute.Attribute;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.bukkit.attribute.Attribute;
 
 public class AttributeMapper {
 
@@ -38,10 +39,8 @@ public class AttributeMapper {
 
     static {
         MAPPED_MAX_HEALTH = findAttribute(MAX_HEALTH_1_21_3_STR, MAX_HEALTH_1_18_2_STR);
-        MAPPED_JUMP_STRENGTH = findAttribute(JUMP_STRENGTH_1_23_1, JUMP_STRENGTH_1_21_1,
-                JUMP_STR_1_18_2);
-        MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_1,
-                MOVEMENT_SPEED_1_21_3);
+        MAPPED_JUMP_STRENGTH = findAttribute(JUMP_STRENGTH_1_23_1, JUMP_STRENGTH_1_21_1, JUMP_STR_1_18_2);
+        MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_1, MOVEMENT_SPEED_1_21_3);
     }
 
     private static Attribute findAttribute(String... keys) {
@@ -55,8 +54,7 @@ public class AttributeMapper {
             // Get the stream() method of the attribute registry
             Method streamMethod = attributeRegistry.getClass().getMethod("stream");
             attributeStream = (Stream<?>) streamMethod.invoke(attributeRegistry);
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException |
-                 NoSuchMethodException |
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {
             // Fallback to older versions where Attribute is an enum
             Object[] enumConstants = Attribute.class.getEnumConstants();
@@ -74,8 +72,7 @@ public class AttributeMapper {
                         Object namespacedKey = getKeyMethod.invoke(attr);
 
                         if (namespacedKey != null) {
-                            Method getKeyStringMethod = namespacedKey.getClass()
-                                    .getMethod("getKey");
+                            Method getKeyStringMethod = namespacedKey.getClass().getMethod("getKey");
                             attrKey = (String) getKeyStringMethod.invoke(namespacedKey);
                         }
 
@@ -97,10 +94,8 @@ public class AttributeMapper {
                             }
                         }
                     } catch (Exception e) {
-                        mcMMO.p.getLogger()
-                                .severe("Unable to find the attribute with possible keys: "
-                                        + Arrays.toString(keys)
-                                        + ", mcMMO will not function properly.");
+                        mcMMO.p.getLogger().severe("Unable to find the attribute with possible keys: "
+                                + Arrays.toString(keys) + ", mcMMO will not function properly.");
                         throw new RuntimeException(e);
                     }
                     return false;

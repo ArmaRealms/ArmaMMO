@@ -52,13 +52,11 @@ public class AlchemyBrewTask extends CancellableRunnable {
 
         if (mmoPlayer != null
                 && !Misc.isNPCEntityExcludingVillagers(mmoPlayer.getPlayer())
-                && Permissions.isSubSkillEnabled(mmoPlayer.getPlayer(),
-                SubSkillType.ALCHEMY_CATALYSIS)) {
+                && Permissions.isSubSkillEnabled(mmoPlayer.getPlayer(), SubSkillType.ALCHEMY_CATALYSIS)) {
             ingredientLevel = mmoPlayer.getAlchemyManager().getTier();
 
-            double catalysis = mmoPlayer.getAlchemyManager()
-                    .calculateBrewSpeed(Permissions.lucky(mmoPlayer.getPlayer(),
-                            PrimarySkillType.ALCHEMY));
+            double catalysis = mmoPlayer.getAlchemyManager().calculateBrewSpeed(Permissions.lucky(mmoPlayer.getPlayer(),
+                    PrimarySkillType.ALCHEMY));
 
             McMMOPlayerCatalysisEvent event = new McMMOPlayerCatalysisEvent(mmoPlayer, catalysis);
             mcMMO.p.getServer().getPluginManager().callEvent(event);
@@ -74,15 +72,11 @@ public class AlchemyBrewTask extends CancellableRunnable {
 
         fuel = ((BrewingStand) brewingStand).getFuelLevel();
 
-        if (((BrewingStand) brewingStand).getBrewingTime()
-                == -1) // Only decrement on our end if it isn't a vanilla ingredient.
-        {
+        if (((BrewingStand) brewingStand).getBrewingTime() == -1) // Only decrement on our end if it isn't a vanilla ingredient.
             fuel--;
-        }
 
         Alchemy.brewingStandMap.put(brewingStand.getLocation(), this);
-        mcMMO.p.getFoliaLib().getScheduler()
-                .runAtLocationTimer(brewingStand.getLocation(), this, 1, 1);
+        mcMMO.p.getFoliaLib().getScheduler().runAtLocationTimer(brewingStand.getLocation(), this, 1, 1);
     }
 
     @Override
@@ -120,8 +114,7 @@ public class AlchemyBrewTask extends CancellableRunnable {
             return true;
         }
         return !AlchemyPotionBrewer.isValidIngredientByLevel(
-                getIngredientLevelUpdated(), ((BrewingStand) brewingStand).getInventory()
-                        .getContents()[Alchemy.INGREDIENT_SLOT]);
+                getIngredientLevelUpdated(), ((BrewingStand) brewingStand).getInventory().getContents()[Alchemy.INGREDIENT_SLOT]);
     }
 
     private int getIngredientLevelUpdated() {

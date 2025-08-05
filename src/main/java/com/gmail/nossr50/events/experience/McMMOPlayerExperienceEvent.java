@@ -27,8 +27,7 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
         this.xpGainReason = XPGainReason.UNKNOWN;
     }
 
-    protected McMMOPlayerExperienceEvent(Player player, PrimarySkillType skill,
-            XPGainReason xpGainReason) {
+    protected McMMOPlayerExperienceEvent(Player player, PrimarySkillType skill, XPGainReason xpGainReason) {
         super(player);
         this.skill = skill;
 
@@ -63,9 +62,7 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
         return xpGainReason;
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;
@@ -75,7 +72,7 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
-
+    
     private static final HandlerList handlers = new HandlerList();
 
     @Override

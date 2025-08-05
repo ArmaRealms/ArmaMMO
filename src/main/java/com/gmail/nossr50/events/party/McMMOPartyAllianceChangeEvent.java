@@ -12,8 +12,7 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
     private final EventReason reason;
     private boolean cancelled;
 
-    public McMMOPartyAllianceChangeEvent(Player player, String oldAlly, String newAlly,
-            EventReason reason) {
+    public McMMOPartyAllianceChangeEvent(Player player, String oldAlly, String newAlly, EventReason reason) {
         super(player);
 
         if (newAlly != null) {
@@ -67,9 +66,7 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
         CUSTOM
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;
@@ -80,9 +77,7 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
+    /** Rest of file is required boilerplate for custom events **/
     private static final HandlerList handlers = new HandlerList();
 
     @Override

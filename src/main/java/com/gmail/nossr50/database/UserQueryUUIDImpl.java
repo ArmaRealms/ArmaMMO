@@ -1,7 +1,8 @@
 package com.gmail.nossr50.database;
 
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class UserQueryUUIDImpl implements UserQueryUUID {
     private final @NotNull UUID uuid;

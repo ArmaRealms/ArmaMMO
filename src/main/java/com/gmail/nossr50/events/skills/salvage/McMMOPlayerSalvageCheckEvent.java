@@ -15,8 +15,7 @@ public class McMMOPlayerSalvageCheckEvent extends McMMOPlayerSkillEvent implemen
     private final ItemStack enchantedBook;
     private boolean cancelled;
 
-    public McMMOPlayerSalvageCheckEvent(Player player, ItemStack salvageItem,
-            ItemStack salvageResults, ItemStack enchantedBook) {
+    public McMMOPlayerSalvageCheckEvent(Player player, ItemStack salvageItem, ItemStack salvageResults, ItemStack enchantedBook) {
         super(player, PrimarySkillType.SALVAGE);
         this.salvageItem = salvageItem;
         this.salvageResults = salvageResults;
@@ -39,16 +38,13 @@ public class McMMOPlayerSalvageCheckEvent extends McMMOPlayerSkillEvent implemen
     }
 
     /**
-     * @return The enchanted book that should drop after salvaging or null if no book should be
-     * dropped.
+     * @return The enchanted book that should drop after salvaging or null if no book should be dropped.
      */
     public ItemStack getEnchantedBook() {
         return enchantedBook;
     }
 
-    /**
-     * Following are required for Cancellable
-     **/
+    /** Following are required for Cancellable **/
     @Override
     public boolean isCancelled() {
         return cancelled;
