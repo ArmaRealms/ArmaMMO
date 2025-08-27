@@ -15,7 +15,8 @@ public final class Motd {
     public static final String PERK_PREFIX = LocaleLoader.getString("MOTD.PerksPrefix") + " ";
     private static final PluginDescriptionFile pluginDescription = mcMMO.p.getDescription();
 
-    private Motd() {}
+    private Motd() {
+    }
 
     public static void displayAll(Player player) {
         displayVersion(player, pluginDescription.getVersion());
@@ -68,14 +69,17 @@ public final class Motd {
             seperator = " & ";
         }
 
-        player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.Enabled", statLossInfo + seperator + vampirismInfo));
+        player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.Enabled",
+                statLossInfo + seperator + vampirismInfo));
 
         if (deathStatLossEnabled) {
-            player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.DeathStatLoss.Stats", mcMMO.p.getGeneralConfig().getHardcoreDeathStatPenaltyPercentage()));
+            player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.DeathStatLoss.Stats",
+                    mcMMO.p.getGeneralConfig().getHardcoreDeathStatPenaltyPercentage()));
         }
 
         if (vampirismEnabled) {
-            player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.Vampirism.Stats", mcMMO.p.getGeneralConfig().getHardcoreVampirismStatLeechPercentage()));
+            player.sendMessage(LocaleLoader.getString("MOTD.Hardcore.Vampirism.Stats",
+                    mcMMO.p.getGeneralConfig().getHardcoreVampirismStatLeechPercentage()));
         }
     }
 
@@ -88,7 +92,9 @@ public final class Motd {
         for (PrimarySkillType skill : PrimarySkillType.values()) {
             //TODO: Wow this is horrifying...
             if (PerksUtils.handleXpPerks(player, 1, skill) > 1) {
-                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template", LocaleLoader.getString("Perks.XP.Name"), LocaleLoader.getString("Perks.XP.Desc")));
+                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                        LocaleLoader.getString("Perks.XP.Name"),
+                        LocaleLoader.getString("Perks.XP.Desc")));
                 return;
             }
         }
@@ -103,8 +109,12 @@ public final class Motd {
         double cooldownReduction = 1 - (PerksUtils.handleCooldownPerks(player, 12) / 12.0);
 
         if (cooldownReduction > 0.0) {
-            DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
-            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template", LocaleLoader.getString("Perks.Cooldowns.Name"), LocaleLoader.getString("Perks.Cooldowns.Desc", percent.format(cooldownReduction))));
+            DecimalFormat percent = new DecimalFormat("##0.00%",
+                    DecimalFormatSymbols.getInstance(Locale.US));
+            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                    LocaleLoader.getString("Perks.Cooldowns.Name"),
+                    LocaleLoader.getString("Perks.Cooldowns.Desc",
+                            percent.format(cooldownReduction))));
         }
     }
 
@@ -117,7 +127,9 @@ public final class Motd {
         int perkAmount = PerksUtils.handleActivationPerks(player, 0, 0);
 
         if (perkAmount > 0) {
-            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template", LocaleLoader.getString("Perks.ActivationTime.Name"), LocaleLoader.getString("Perks.ActivationTime.Desc", perkAmount)));
+            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                    LocaleLoader.getString("Perks.ActivationTime.Name"),
+                    LocaleLoader.getString("Perks.ActivationTime.Desc", perkAmount)));
         }
     }
 
@@ -129,7 +141,9 @@ public final class Motd {
     public static void displayLuckyPerks(Player player) {
         for (PrimarySkillType skill : PrimarySkillType.values()) {
             if (Permissions.lucky(player, skill)) {
-                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template", LocaleLoader.getString("Perks.Lucky.Name"), LocaleLoader.getString("Perks.Lucky.Desc.Login")));
+                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                        LocaleLoader.getString("Perks.Lucky.Name"),
+                        LocaleLoader.getString("Perks.Lucky.Desc.Login")));
                 return;
             }
         }

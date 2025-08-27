@@ -14,7 +14,7 @@ public class UUIDMeta extends FixedMetadataValue {
      * @param owningPlugin the {@link Plugin} that created this metadata value
      * @param value        the value assigned to this metadata value
      */
-    public UUIDMeta(@NotNull Plugin owningPlugin, @Nullable UUID value) {
+    public UUIDMeta(@NotNull final Plugin owningPlugin, @Nullable final UUID value) {
         super(owningPlugin, value);
     }
 }

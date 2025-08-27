@@ -11,7 +11,11 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import com.gmail.nossr50.util.*;
+import com.gmail.nossr50.util.EventUtils;
+import com.gmail.nossr50.util.MaterialMapStore;
+import com.gmail.nossr50.util.Misc;
+import com.gmail.nossr50.util.Permissions;
+import com.gmail.nossr50.util.TransientEntityTracker;
 import com.gmail.nossr50.util.blockmeta.ChunkManager;
 import com.gmail.nossr50.util.compat.CompatibilityManager;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
@@ -20,7 +24,11 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.sounds.SoundManager;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
@@ -36,7 +44,11 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 public abstract class MMOTestEnvironment {
     protected MockedStatic<Bukkit> mockedBukkit;
@@ -76,7 +88,7 @@ public abstract class MMOTestEnvironment {
 
     protected CompatibilityManager compatibilityManager;
 
-    protected void mockBaseEnvironment(Logger logger) throws InvalidSkillException {
+    protected void mockBaseEnvironment(final Logger logger) throws InvalidSkillException {
         compatibilityManager = mock(CompatibilityManager.class);
         final MinecraftGameVersion minecraftGameVersion = mock(MinecraftGameVersion.class);
         when(compatibilityManager.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
@@ -141,7 +153,7 @@ public abstract class MMOTestEnvironment {
         when(Bukkit.getPluginManager()).thenReturn(pluginManager);
         // return the argument provided when call event is invoked on plugin manager mock
         doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
+            final Object[] args = invocation.getArguments();
             return args[0];
         }).when(pluginManager).callEvent(any(Event.class));
 
@@ -164,8 +176,8 @@ public abstract class MMOTestEnvironment {
         this.playerInventory = mock(PlayerInventory.class);
         when(player.getInventory()).thenReturn(playerInventory);
         // player location
-        Location playerLocation = mock(Location.class);
-        Block playerLocationBlock = mock(Block.class);
+        final Location playerLocation = mock(Location.class);
+        final Block playerLocationBlock = mock(Block.class);
         when(player.getLocation()).thenReturn(playerLocation);
         when(playerLocation.getBlock()).thenReturn(playerLocationBlock);
         // when(playerLocationBlock.getType()).thenReturn(Material.AIR);
@@ -190,11 +202,16 @@ public abstract class MMOTestEnvironment {
 
     private void mockPermissions() {
         mockedPermissions = mockStatic(Permissions.class);
-        when(Permissions.isSubSkillEnabled(any(Player.class), any(SubSkillType.class))).thenReturn(true);
-        when(Permissions.canUseSubSkill(any(Player.class), any(SubSkillType.class))).thenReturn(true);
-        when(Permissions.isSubSkillEnabled(any(Player.class), any(SubSkillType.class))).thenReturn(true);
-        when(Permissions.canUseSubSkill(any(Player.class), any(SubSkillType.class))).thenReturn(true);
-        when(Permissions.lucky(player, PrimarySkillType.WOODCUTTING)).thenReturn(false); // player is not lucky
+        when(Permissions.isSubSkillEnabled(any(Player.class), any(SubSkillType.class))).thenReturn(
+                true);
+        when(Permissions.canUseSubSkill(any(Player.class), any(SubSkillType.class))).thenReturn(
+                true);
+        when(Permissions.isSubSkillEnabled(any(Player.class), any(SubSkillType.class))).thenReturn(
+                true);
+        when(Permissions.canUseSubSkill(any(Player.class), any(SubSkillType.class))).thenReturn(
+                true);
+        when(Permissions.lucky(player, PrimarySkillType.WOODCUTTING)).thenReturn(
+                false); // player is not lucky
     }
 
     private void mockRankConfig() {
@@ -209,7 +226,8 @@ public abstract class MMOTestEnvironment {
     private void mockGeneralConfig() {
         generalConfig = mock(GeneralConfig.class);
         when(generalConfig.getTreeFellerThreshold()).thenReturn(100);
-        when(generalConfig.getDoubleDropsEnabled(PrimarySkillType.WOODCUTTING, Material.OAK_LOG)).thenReturn(true);
+        when(generalConfig.getDoubleDropsEnabled(PrimarySkillType.WOODCUTTING,
+                Material.OAK_LOG)).thenReturn(true);
         when(generalConfig.getLocale()).thenReturn("en_US");
         when(mcMMO.p.getGeneralConfig()).thenReturn(generalConfig);
     }

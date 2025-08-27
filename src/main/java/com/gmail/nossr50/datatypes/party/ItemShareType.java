@@ -17,10 +17,6 @@ public enum ItemShareType {
         this.customName = customName;
     }
 
-    public String customName() {
-        return this.customName;
-    }
-
     public static ItemShareType getShareType(String type) {
         for (ItemShareType shareType : values()) {
             if (shareType.toString().equalsIgnoreCase(type)) {
@@ -53,7 +49,12 @@ public enum ItemShareType {
         return null;
     }
 
+    public String customName() {
+        return this.customName;
+    }
+
     public String getLocaleString() {
-        return LocaleLoader.getString("Party.ItemShare.Category." + StringUtils.getCapitalized(this.toString()));
+        return LocaleLoader.getString(
+                "Party.ItemShare.Category." + StringUtils.getCapitalized(this.toString()));
     }
 }

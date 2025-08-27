@@ -23,7 +23,7 @@ class LocaleLoaderTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"§cTest", "[[RED]]Test"})
-    void addColorsShouldAddColorRed(String testString) {
+    void addColorsShouldAddColorRed(final String testString) {
         // When
         final String result = LocaleLoader.addColors(testString);
 
@@ -59,8 +59,9 @@ class LocaleLoaderTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"&#FF0000Te&#0000FFst", "&#FF0000Te[[RED]]st", "[[BLUE]]Te[[RED]]st", "§9Te§cst"})
-    void addColorsShouldAddRedAndBlue(String testString) {
+    @ValueSource(strings = {"&#FF0000Te&#0000FFst", "&#FF0000Te[[RED]]st", "[[BLUE]]Te[[RED]]st",
+            "§9Te§cst"})
+    void addColorsShouldAddRedAndBlue(final String testString) {
         // When
         final String result = LocaleLoader.addColors(testString);
 

@@ -14,36 +14,45 @@ public class BlockStoreTestUtils {
 
     /**
      * Asserts that the two ChunkStores are equal.
+     *
      * @param expected The expected ChunkStore
-     * @param actual The actual ChunkStore
+     * @param actual   The actual ChunkStore
      */
-    static void assertChunkStoreEquals(ChunkStore expected, ChunkStore actual) {
+    static void assertChunkStoreEquals(final ChunkStore expected, final ChunkStore actual) {
         assertEquals(expected.getChunkMin(), actual.getChunkMin());
         assertEquals(expected.getChunkMax(), actual.getChunkMax());
         assertEqualIgnoreMinMax(expected, actual);
     }
 
-    static byte[] serializeChunkStore(@NotNull ChunkStore chunkStore) throws IOException {
+    static byte[] serializeChunkStore(@NotNull final ChunkStore chunkStore) throws IOException {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        if (chunkStore instanceof BitSetChunkStore)
-            BitSetChunkStore.Serialization.writeChunkStore(new DataOutputStream(byteArrayOutputStream), chunkStore);
-        else
-            new UnitTestObjectOutputStream(byteArrayOutputStream).writeObject(chunkStore); // Serializes the class as if
+        if (chunkStore instanceof BitSetChunkStore) {
+            BitSetChunkStore.Serialization.writeChunkStore(
+                    new DataOutputStream(byteArrayOutputStream), chunkStore);
+        } else {
+            new UnitTestObjectOutputStream(byteArrayOutputStream).writeObject(
+                    chunkStore); // Serializes the class as if
+        }
         // it were the old
         // PrimitiveChunkStore
         return byteArrayOutputStream.toByteArray();
     }
 
-    static void assertEqualIgnoreMinMax(ChunkStore expected, ChunkStore actual) {
+    static void assertEqualIgnoreMinMax(final ChunkStore expected, final ChunkStore actual) {
         assertEquals(expected.getChunkX(), actual.getChunkX());
         assertEquals(expected.getChunkZ(), actual.getChunkZ());
         assertEquals(expected.getWorldId(), actual.getWorldId());
-        for (int y = Math.min(actual.getChunkMin(), expected.getChunkMin()); y < Math.max(actual.getChunkMax(), expected.getChunkMax()); y++) {
-            if (expected.getChunkMin() > y || actual.getChunkMin() > y || expected.getChunkMax() <= y || actual.getChunkMax() <= y)
+        for (int y = Math.min(actual.getChunkMin(), expected.getChunkMin());
+             y < Math.max(actual.getChunkMax(), expected.getChunkMax()); y++) {
+            if (expected.getChunkMin() > y || actual.getChunkMin() > y
+                    || expected.getChunkMax() <= y || actual.getChunkMax() <= y) {
                 continue; // Ignore
-            for (int x = 0; x < 16; x++)
-                for (int z = 0; z < 16; z++)
+            }
+            for (int x = 0; x < 16; x++) {
+                for (int z = 0; z < 16; z++) {
                     assertEquals(expected.isTrue(x, y, z), actual.isTrue(x, y, z));
+                }
+            }
         }
     }
 }

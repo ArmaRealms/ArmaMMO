@@ -16,7 +16,8 @@ public class ChunkListener implements Listener {
         final Chunk unloadingChunk = event.getChunk();
 
         // Avoid processing if chunk is null or unloaded
-        if (unloadingChunk == null || !unloadingChunk.isLoaded() || unloadingChunk.getEntities() == null) {
+        if (unloadingChunk == null || !unloadingChunk.isLoaded()
+                || unloadingChunk.getEntities() == null) {
             return;
         }
 
@@ -24,9 +25,11 @@ public class ChunkListener implements Listener {
             Arrays.stream(unloadingChunk.getEntities())
                     .filter(entity -> entity instanceof LivingEntity)
                     .map(entity -> (LivingEntity) entity)
-                    .forEach(livingEntity -> mcMMO.getTransientEntityTracker().removeTrackedEntity(livingEntity));
+                    .forEach(livingEntity -> mcMMO.getTransientEntityTracker()
+                            .removeTrackedEntity(livingEntity));
         } catch (Exception ex) {
-            mcMMO.p.getLogger().warning("Caught exception during chunk unload event processing: " + ex.getMessage());
+            mcMMO.p.getLogger().warning(
+                    "Caught exception during chunk unload event processing: " + ex.getMessage());
         }
     }
 }

@@ -24,7 +24,9 @@ public class ItemWeightConfig extends BukkitConfig {
     }
 
     public int getItemWeight(Material material) {
-        return config.getInt("Item_Weights." + getMaterialConfigString(material).replace(" ", "_"), config.getInt("Item_Weights.Default"));
+        return config.getInt(
+                "Item_Weights." + getMaterialConfigString(material).replace(" ", "_"),
+                config.getInt("Item_Weights.Default"));
     }
 
     public HashSet<Material> getMiscItems() {

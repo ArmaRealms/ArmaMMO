@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
  * Called just before a player teleports using the /ptp command.
  */
 public class McMMOPartyTeleportEvent extends PlayerTeleportEvent {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final HandlerList handlers = new HandlerList();
     private final String party;
     private final Player target;
 
@@ -16,6 +20,10 @@ public class McMMOPartyTeleportEvent extends PlayerTeleportEvent {
         super(player, player.getLocation(), target.getLocation(), TeleportCause.COMMAND);
         this.party = party;
         this.target = target;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -32,15 +40,8 @@ public class McMMOPartyTeleportEvent extends PlayerTeleportEvent {
         return target;
     }
 
-    /** Rest of file is required boilerplate for custom events **/
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 }

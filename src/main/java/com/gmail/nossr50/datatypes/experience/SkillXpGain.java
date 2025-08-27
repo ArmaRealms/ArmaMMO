@@ -18,16 +18,17 @@ public class SkillXpGain implements Delayed {
         this.type = type;
     }
 
+    private static long getDuration() {
+        return TimeUnit.MINUTES.toMillis(
+                ExperienceConfig.getInstance().getDiminishedReturnsTimeInterval());
+    }
+
     public PrimarySkillType getSkill() {
         return type;
     }
 
     public float getXp() {
         return xp;
-    }
-
-    private static long getDuration() {
-        return TimeUnit.MINUTES.toMillis(ExperienceConfig.getInstance().getDiminishedReturnsTimeInterval());
     }
 
     public int compareTo(SkillXpGain other) {

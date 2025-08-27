@@ -21,9 +21,6 @@ public class McconvertCommand implements TabExecutor {
     private static final List<String> DATABASE_TYPES;
     private static final List<String> SUBCOMMANDS = List.of("database", "experience");
 
-    private final CommandExecutor databaseConvertCommand = new ConvertDatabaseCommand();
-    private final CommandExecutor experienceConvertCommand = new ConvertExperienceCommand();
-
     static {
         ArrayList<String> formulaTypes = new ArrayList<>();
         ArrayList<String> databaseTypes = new ArrayList<>();
@@ -50,6 +47,9 @@ public class McconvertCommand implements TabExecutor {
         DATABASE_TYPES = List.copyOf(databaseTypes);
 
     }
+
+    private final CommandExecutor databaseConvertCommand = new ConvertDatabaseCommand();
+    private final CommandExecutor experienceConvertCommand = new ConvertExperienceCommand();
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {

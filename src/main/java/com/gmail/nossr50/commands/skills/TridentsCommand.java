@@ -21,18 +21,22 @@ public class TridentsCommand extends SkillCommand {
     }
 
     @Override
-    protected void dataCalculations(Player player, float skillValue) {}
+    protected void dataCalculations(Player player, float skillValue) {
+    }
 
     @Override
-    protected void permissionsCheck(Player player) {}
+    protected void permissionsCheck(Player player) {
+    }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance, boolean isLucky) {
+    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
 
         if (SkillUtils.canUseSubskill(player, TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
             messages.add(getStatMessage(TRIDENTS_TRIDENTS_LIMIT_BREAK,
-                    String.valueOf(CombatUtils.getLimitBreakDamageAgainstQuality(player, TRIDENTS_TRIDENTS_LIMIT_BREAK, 1000))));
+                    String.valueOf(CombatUtils.getLimitBreakDamageAgainstQuality(player,
+                            TRIDENTS_TRIDENTS_LIMIT_BREAK, 1000))));
         }
 
         if (SkillUtils.canUseSubskill(player, TRIDENTS_IMPALE)) {
@@ -47,7 +51,8 @@ public class TridentsCommand extends SkillCommand {
     protected List<Component> getTextComponents(Player player) {
         List<Component> textComponents = new ArrayList<>();
 
-        TextComponentFactory.getSubSkillTextComponents(player, textComponents, PrimarySkillType.TRIDENTS);
+        TextComponentFactory.getSubSkillTextComponents(player, textComponents,
+                PrimarySkillType.TRIDENTS);
 
         return textComponents;
     }

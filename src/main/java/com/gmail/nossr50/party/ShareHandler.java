@@ -19,13 +19,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public final class ShareHandler {
-    private ShareHandler() {}
+    private ShareHandler() {
+    }
 
     /**
      * Distribute Xp amongst party members.
      *
-     * @param xp Xp without party sharing
-     * @param mcMMOPlayer Player initiating the Xp gain
+     * @param xp               Xp without party sharing
+     * @param mcMMOPlayer      Player initiating the Xp gain
      * @param primarySkillType Skill being used
      * @return True is the xp has been shared
      */
@@ -66,7 +67,7 @@ public final class ShareHandler {
     /**
      * Distribute Items amongst party members.
      *
-     * @param drop Item that will get shared
+     * @param drop        Item that will get shared
      * @param mcMMOPlayer Player who picked up the item
      * @return True if the item has been shared
      */

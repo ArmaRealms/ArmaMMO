@@ -8,7 +8,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 public class FakeBrewEvent extends BrewEvent implements FakeEvent {
-    public FakeBrewEvent(Block brewer, BrewerInventory contents, List<ItemStack> results, int fuelLevel) {
+    public FakeBrewEvent(Block brewer, BrewerInventory contents, List<ItemStack> results,
+                         int fuelLevel) {
         super(brewer, contents, results, fuelLevel);
     }
 }

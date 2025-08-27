@@ -14,12 +14,15 @@ public class McRankCommandAsyncTask extends CancellableRunnable {
     private final CommandSender sender;
     private final boolean useBoard, useChat;
 
-    public McRankCommandAsyncTask(String playerName, CommandSender sender, boolean useBoard, boolean useChat) {
-        Validate.isTrue(useBoard || useChat, "Attempted to start a rank retrieval with both board and chat off");
+    public McRankCommandAsyncTask(String playerName, CommandSender sender, boolean useBoard,
+                                  boolean useChat) {
+        Validate.isTrue(useBoard || useChat,
+                "Attempted to start a rank retrieval with both board and chat off");
         Validate.notNull(sender, "Attempted to start a rank retrieval with no recipient");
 
         if (useBoard) {
-            Validate.isTrue(sender instanceof Player, "Attempted to start a rank retrieval displaying scoreboard to a non-player");
+            Validate.isTrue(sender instanceof Player,
+                    "Attempted to start a rank retrieval displaying scoreboard to a non-player");
         }
 
         this.playerName = playerName;
@@ -32,7 +35,8 @@ public class McRankCommandAsyncTask extends CancellableRunnable {
     public void run() {
         Map<PrimarySkillType, Integer> skills = mcMMO.getDatabaseManager().readRank(playerName);
 
-        mcMMO.p.getFoliaLib().getScheduler().runNextTick(new McRankCommandDisplayTask(skills, sender, playerName, useBoard, useChat));
+        mcMMO.p.getFoliaLib().getScheduler().runNextTick(
+                new McRankCommandDisplayTask(skills, sender, playerName, useBoard, useChat));
     }
 }
 

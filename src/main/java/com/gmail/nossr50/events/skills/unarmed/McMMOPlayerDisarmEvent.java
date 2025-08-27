@@ -6,8 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 
 public class McMMOPlayerDisarmEvent extends McMMOPlayerSkillEvent implements Cancellable {
-    private boolean cancelled;
     private final Player defender;
+    private boolean cancelled;
 
     public McMMOPlayerDisarmEvent(Player defender) {
         super(defender, PrimarySkillType.UNARMED);
@@ -18,7 +18,9 @@ public class McMMOPlayerDisarmEvent extends McMMOPlayerSkillEvent implements Can
         return defender;
     }
 
-    /** Following are required for Cancellable **/
+    /**
+     * Following are required for Cancellable
+     **/
     @Override
     public boolean isCancelled() {
         return cancelled;

@@ -7,7 +7,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProbabilityTest {
 
@@ -48,6 +50,22 @@ class ProbabilityTest {
                 Arguments.of(Probability.ofPercent(1000), 100)
         );
     }
+
+    private static void assertExpectations(Probability probability, double expectedWinPercent) {
+        double iterations = 2.0e7;
+        double winCount = 0;
+
+        for (int i = 0; i < iterations; i++) {
+            if (probability.evaluate()) {
+                winCount++;
+            }
+        }
+
+        double successPercent = (winCount / iterations) * 100;
+        System.out.println(successPercent + ", " + expectedWinPercent);
+        assertEquals(expectedWinPercent, successPercent, 0.05D);
+    }
+
     @Test
     void testAlwaysWinConstructor() {
         for (int i = 0; i < 100000; i++) {
@@ -86,20 +104,5 @@ class ProbabilityTest {
     @MethodSource("provideOfPercentageProbabilitiesForWithinExpectations")
     void testOddsExpectationsOfPercent(Probability probability, double expectedWinPercent) {
         assertExpectations(probability, expectedWinPercent);
-    }
-
-    private static void assertExpectations(Probability probability, double expectedWinPercent) {
-        double iterations = 2.0e7;
-        double winCount = 0;
-
-        for (int i = 0; i < iterations; i++) {
-            if (probability.evaluate()) {
-                winCount++;
-            }
-        }
-
-        double successPercent = (winCount / iterations) * 100;
-        System.out.println(successPercent + ", " + expectedWinPercent);
-        assertEquals(expectedWinPercent, successPercent, 0.05D);
     }
 }

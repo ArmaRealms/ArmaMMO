@@ -25,7 +25,7 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
     private final boolean useBoard;
     private final boolean useChat;
 
-    MctopCommandDisplayTask(List<PlayerStat> userStats, int page, PrimarySkillType skill, CommandSender sender, boolean useBoard, boolean useChat) {
+    MctopCommandDisplayTask(final List<PlayerStat> userStats, final int page, final PrimarySkillType skill, final CommandSender sender, final boolean useBoard, final boolean useChat) {
         this.userStats = userStats;
         this.page = page;
         this.skill = skill;
@@ -44,7 +44,7 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             displayChat();
         }
 
-        if (sender instanceof Player player) {
+        if (sender instanceof final Player player) {
             player.removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, mcMMO.p);
             sender.sendMessage(LocaleLoader.getString("Commands.mctop.Tip"));
         }
@@ -68,14 +68,14 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
 
         int place = (page * 10) - 9;
 
-        for (PlayerStat stat : userStats) {
+        for (final PlayerStat stat : userStats) {
             // Format:
             // 01. Playername - skill value
             // 12. Playername - skill value
             if (sender instanceof Player) {
-                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name, ChatColor.WHITE, StringUtils.formatNumber(stat.statVal)));
+                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name(), ChatColor.WHITE, StringUtils.formatNumber(stat.statVal())));
             } else {
-                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name, StringUtils.formatNumber(stat.statVal)));
+                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name(), StringUtils.formatNumber(stat.statVal())));
             }
 
             place++;

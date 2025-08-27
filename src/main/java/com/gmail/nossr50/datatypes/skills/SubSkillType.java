@@ -128,9 +128,10 @@ public enum SubSkillType {
 
     /**
      * If our SubSkillType has more than 1 rank define it
+     *
      * @param numRanks The number of ranks our SubSkillType has
      */
-    SubSkillType(int numRanks) {
+    SubSkillType(final int numRanks) {
         this.numRanks = numRanks;
     }
 
@@ -143,42 +144,52 @@ public enum SubSkillType {
     }
 
     /**
-     * !!! This relies on the immutable lists in PrimarySkillType being populated !!!
-     * If we add skills, those immutable lists need to be updated
+     * !!! This relies on the immutable lists in PrimarySkillType being populated !!! If we add
+     * skills, those immutable lists need to be updated
+     *
      * @return the parent skill of this subskill
      */
-    public PrimarySkillType getParentSkill() { return mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(this); }
+    public PrimarySkillType getParentSkill() {
+        return mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(this);
+    }
 
     /**
      * Returns the root address for this skill in the advanced.yml file
+     *
      * @return the root address for this skill in advanced.yml
      */
     public String getAdvConfigAddress() {
-        return "Skills." + StringUtils.getCapitalized(getParentSkill().toString()) + "." + getConfigName(toString());
+        return "Skills." + StringUtils.getCapitalized(getParentSkill().toString()) + "."
+                + getConfigName(toString());
     }
 
     /**
      * Returns the root address for this skill in the rankskills.yml file
+     *
      * @return the root address for this skill in rankskills.yml
      */
     public String getRankConfigAddress() {
-        return StringUtils.getCapitalized(getParentSkill().toString()) + "." + getConfigName(toString());
+        return StringUtils.getCapitalized(getParentSkill().toString()) + "." + getConfigName(
+                toString());
     }
 
     /**
      * Get the string representation of the permission node for this subskill
+     *
      * @return the permission node for this subskill
      */
     public String getPermissionNodeAddress() {
         //TODO: This could be optimized
-        return "mcmmo.ability." + getParentSkill().toString().toLowerCase(Locale.ENGLISH) + "." + getConfigName(toString()).toLowerCase(Locale.ENGLISH);
+        return "mcmmo.ability." + getParentSkill().toString().toLowerCase(Locale.ENGLISH) + "."
+                + getConfigName(toString()).toLowerCase(Locale.ENGLISH);
     }
 
     /**
      * Returns the name of the skill as it is used in advanced.yml and other config files
+     *
      * @return the yaml identifier for this skill
      */
-    private String getConfigName(String subSkillName) {
+    private String getConfigName(final String subSkillName) {
         /*
          * Our ENUM constants name is something like PREFIX_SUB_SKILL_NAME
          * We need to remove the prefix and then format the subskill to follow the naming conventions of our yaml configs
@@ -192,17 +203,17 @@ public enum SubSkillType {
         /*
          * Find where to begin our substring (after the prefix)
          */
-        StringBuilder endResult = new StringBuilder();
-        int subStringIndex = getSubStringIndex(subSkillName);
+        final StringBuilder endResult = new StringBuilder();
+        final int subStringIndex = getSubStringIndex(subSkillName);
 
         /*
          * Split the string up so we can capitalize each part
          */
-        String subskillNameWithoutPrefix = subSkillName.substring(subStringIndex);
+        final String subskillNameWithoutPrefix = subSkillName.substring(subStringIndex);
         if (subskillNameWithoutPrefix.contains("_")) {
-            String[] splitStrings = subskillNameWithoutPrefix.split("_");
+            final String[] splitStrings = subskillNameWithoutPrefix.split("_");
 
-            for(String string : splitStrings) {
+            for (final String string : splitStrings) {
                 endResult.append(StringUtils.getCapitalized(string));
             }
         } else {
@@ -214,36 +225,40 @@ public enum SubSkillType {
 
     public String getWikiUrl() {
         // remove the text before the first underscore
-        int subStringIndex = getSubStringIndex(name());
-        String afterPrefix = name().substring(subStringIndex);
+        final int subStringIndex = getSubStringIndex(name());
+        final String afterPrefix = name().substring(subStringIndex);
         // replace _ or spaces with -
         return afterPrefix.replace("_", "-").replace(" ", "-").toLowerCase(Locale.ENGLISH);
     }
 
     /**
      * Returns the name of the parent skill from the Locale file
+     *
      * @return The parent skill as defined in the locale
      */
     public String getParentNiceNameLocale() {
-        return LocaleLoader.getString(StringUtils.getCapitalized(getParentSkill().toString())+".SkillName");
+        return LocaleLoader.getString(
+                StringUtils.getCapitalized(getParentSkill().toString()) + ".SkillName");
     }
 
     /**
      * Gets the "nice" name of the subskill without spaces
+     *
      * @param subSkillType target subskill
      * @return the "nice" name without spaces
      */
-    public String getNiceNameNoSpaces(SubSkillType subSkillType) {
+    public String getNiceNameNoSpaces(final SubSkillType subSkillType) {
         return getConfigName(subSkillType.toString());
     }
 
     /**
      * This finds the substring index for our SubSkillType's name after its parent name prefix
+     *
      * @param subSkillName The name to process
      * @return The value of the substring index after our parent's prefix
      */
-    private int getSubStringIndex(String subSkillName) {
-        char[] enumNameCharArray = subSkillName.toCharArray();
+    private int getSubStringIndex(final String subSkillName) {
+        final char[] enumNameCharArray = subSkillName.toCharArray();
         int subStringIndex = 0;
 
         //Find where to start our substring for this constants name
@@ -258,7 +273,8 @@ public enum SubSkillType {
     }
 
     public String getLocaleKeyRoot() {
-        return StringUtils.getCapitalized(getParentSkill().toString())+".SubSkill."+getConfigName(toString());
+        return StringUtils.getCapitalized(getParentSkill().toString()) + ".SubSkill."
+                + getConfigName(toString());
     }
 
     public String getLocaleName() {
@@ -269,25 +285,35 @@ public enum SubSkillType {
         return getFromLocaleSubAddress(".Description");
     }
 
-    public String getLocaleStatDescription() { return getFromLocaleSubAddress(".Stat"); }
-    public String getLocaleKeyStatDescription() { return getLocaleKeyFromSubAddress(".Stat"); }
+    public String getLocaleStatDescription() {
+        return getFromLocaleSubAddress(".Stat");
+    }
 
-    public String getLocaleStatExtraDescription() { return getFromLocaleSubAddress(".Stat.Extra"); }
-    public String getLocaleKeyStatExtraDescription() { return getLocaleKeyFromSubAddress(".Stat.Extra"); }
+    public String getLocaleKeyStatDescription() {
+        return getLocaleKeyFromSubAddress(".Stat");
+    }
 
-    public String getLocaleStat(String... vars) {
+    public String getLocaleStatExtraDescription() {
+        return getFromLocaleSubAddress(".Stat.Extra");
+    }
+
+    public String getLocaleKeyStatExtraDescription() {
+        return getLocaleKeyFromSubAddress(".Stat.Extra");
+    }
+
+    public String getLocaleStat(final String... vars) {
         return LocaleLoader.getString("Ability.Generic.Template", (Object[]) vars);
     }
 
-    public String getCustomLocaleStat(String... vars) {
+    public String getCustomLocaleStat(final String... vars) {
         return LocaleLoader.getString("Ability.Generic.Template.Custom", (Object[]) vars);
     }
 
-    private String getFromLocaleSubAddress(String s) {
+    private String getFromLocaleSubAddress(final String s) {
         return LocaleLoader.getString(getLocaleKeyRoot() + s);
     }
 
-    private String getLocaleKeyFromSubAddress(String s) {
+    private String getLocaleKeyFromSubAddress(final String s) {
         return getLocaleKeyRoot() + s;
     }
 }

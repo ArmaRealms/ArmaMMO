@@ -14,11 +14,15 @@ import org.jetbrains.annotations.Nullable;
  * Called when mcMMO is preparing to drop an item.
  */
 public class McMMOItemSpawnEvent extends Event implements Cancellable {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final @NotNull HandlerList handlers = new HandlerList();
+    private final ItemSpawnReason itemSpawnReason;
+    private final Player player;
     private Location location;
     private ItemStack itemStack;
     private boolean cancelled;
-    private final ItemSpawnReason itemSpawnReason;
-    private final Player player;
 
     public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack, @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
         this.location = location;
@@ -26,6 +30,10 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
         this.itemSpawnReason = itemSpawnReason;
         this.player = player;
         this.cancelled = false;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -89,17 +97,8 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final @NotNull HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 }

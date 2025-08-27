@@ -12,7 +12,8 @@ import java.util.List;
 
 public class MmoshowdbCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
         if (args.length == 0) {
             Class<?> clazz = DatabaseManagerFactory.getCustomDatabaseManagerClass();
 
@@ -21,7 +22,8 @@ public class MmoshowdbCommand implements TabExecutor {
                 return true;
             }
 
-            sender.sendMessage(LocaleLoader.getString("Commands.mmoshowdb", (mcMMO.p.getGeneralConfig().getUseMySQL() ? "sql" : "flatfile")));
+            sender.sendMessage(LocaleLoader.getString("Commands.mmoshowdb",
+                    (mcMMO.p.getGeneralConfig().getUseMySQL() ? "sql" : "flatfile")));
             return true;
         }
         return false;

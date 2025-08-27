@@ -12,7 +12,8 @@ import java.util.function.Function;
 import static com.gmail.nossr50.util.text.StringUtils.getCapitalized;
 
 /**
- * Utility class for String operations, including formatting and caching deterministic results to improve performance.
+ * Utility class for String operations, including formatting and caching deterministic results to
+ * improve performance.
  */
 public class ConfigStringUtils {
     public static final String UNDERSCORE = "_";
@@ -22,13 +23,26 @@ public class ConfigStringUtils {
     private static final Map<EntityType, String> configEntityStrings = new ConcurrentHashMap<>();
     private static final Map<Material, String> configMaterialStrings = new ConcurrentHashMap<>();
     private static final Map<PartyFeature, String> configPartyFeatureStrings = new ConcurrentHashMap<>();
+    private static final Function<String, String> CONFIG_FRIENDLY_STRING_FORMATTER = baseString -> {
+        if (baseString.contains(UNDERSCORE) && !baseString.contains(SPACE)) {
+            return asConfigFormat(baseString.split(UNDERSCORE));
+        } else {
+            if (baseString.contains(SPACE)) {
+                return asConfigFormat(baseString.split(SPACE));
+            } else {
+                return getCapitalized(baseString);
+            }
+        }
+    };
 
     public static String getMaterialConfigString(Material material) {
-        return configMaterialStrings.computeIfAbsent(material, ConfigStringUtils::createConfigFriendlyString);
+        return configMaterialStrings.computeIfAbsent(material,
+                ConfigStringUtils::createConfigFriendlyString);
     }
 
     public static String getConfigEntityTypeString(EntityType entityType) {
-        return configEntityStrings.computeIfAbsent(entityType, ConfigStringUtils::createConfigFriendlyString);
+        return configEntityStrings.computeIfAbsent(entityType,
+                ConfigStringUtils::createConfigFriendlyString);
     }
 
     public static String getConfigPartyFeatureString(PartyFeature partyFeature) {
@@ -40,18 +54,6 @@ public class ConfigStringUtils {
     private static String createConfigFriendlyString(String baseString) {
         return CONFIG_FRIENDLY_STRING_FORMATTER.apply(baseString);
     }
-
-    private static final Function<String, String> CONFIG_FRIENDLY_STRING_FORMATTER = baseString -> {
-        if (baseString.contains(UNDERSCORE) && !baseString.contains(SPACE)) {
-            return asConfigFormat(baseString.split(UNDERSCORE));
-        } else {
-            if(baseString.contains(SPACE)) {
-                return asConfigFormat(baseString.split(SPACE));
-            } else{
-                return getCapitalized(baseString);
-            }
-        }
-    };
 
     private static @NotNull String asConfigFormat(String[] substrings) {
         final StringBuilder configString = new StringBuilder();

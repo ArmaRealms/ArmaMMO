@@ -20,7 +20,16 @@ import com.gmail.nossr50.skills.repair.RepairManager;
 import com.gmail.nossr50.skills.salvage.Salvage;
 import com.gmail.nossr50.skills.salvage.SalvageManager;
 import com.gmail.nossr50.skills.taming.TamingManager;
-import com.gmail.nossr50.util.*;
+import com.gmail.nossr50.util.BlockUtils;
+import com.gmail.nossr50.util.ChimaeraWing;
+import com.gmail.nossr50.util.EventUtils;
+import com.gmail.nossr50.util.HardcoreManager;
+import com.gmail.nossr50.util.LogUtils;
+import com.gmail.nossr50.util.MetadataConstants;
+import com.gmail.nossr50.util.Misc;
+import com.gmail.nossr50.util.MobHealthbarUtils;
+import com.gmail.nossr50.util.Motd;
+import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.RankUtils;
@@ -33,7 +42,16 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Minecart;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.minecart.PoweredMinecart;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -43,7 +61,18 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
@@ -119,7 +148,7 @@ public class PlayerListener implements Listener {
         LivingEntity attacker;
         if (event.getDamager() instanceof LivingEntity)
             attacker = (LivingEntity) event.getDamager();
-        // attempt to find creator of a projectile
+            // attempt to find creator of a projectile
         else if (event.getDamager() instanceof Projectile && ((Projectile) event.getDamager()).getShooter() instanceof LivingEntity)
             attacker = (LivingEntity) ((Projectile) event.getDamager()).getShooter();
         else
@@ -410,20 +439,20 @@ public class PlayerListener implements Listener {
                             && inHand.getItemMeta() != null
                             && inHand.getType().getKey().getKey().equalsIgnoreCase("fishing_rod")) {
                         if (inHand.getItemMeta().hasEnchants()) {
-                            for(Enchantment enchantment : inHand.getItemMeta().getEnchants().keySet()) {
+                            for (Enchantment enchantment : inHand.getItemMeta().getEnchants().keySet()) {
                                 if (enchantment.toString().toLowerCase().contains("lure")) {
                                     lureLevel = inHand.getEnchantmentLevel(enchantment);
                                 }
                             }
                         }
 
-                    // Prevent any potential odd behavior by only processing if no offhand fishing rod is present
-                    if (!player.getInventory().getItemInOffHand().getType().getKey().getKey().equalsIgnoreCase("fishing_rod")) {
-                        // In case of offhand fishing rod, don't process anything
-                        fishingManager.masterAngler(event.getHook(), lureLevel);
-                        fishingManager.setFishingTarget();
+                        // Prevent any potential odd behavior by only processing if no offhand fishing rod is present
+                        if (!player.getInventory().getItemInOffHand().getType().getKey().getKey().equalsIgnoreCase("fishing_rod")) {
+                            // In case of offhand fishing rod, don't process anything
+                            fishingManager.masterAngler(event.getHook(), lureLevel);
+                            fishingManager.setFishingTarget();
+                        }
                     }
-                }
                 }
                 return;
             case CAUGHT_FISH:
@@ -679,15 +708,15 @@ public class PlayerListener implements Listener {
                             && RankUtils.hasUnlockedSubskill(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR)
                             && mcMMO.getSalvageableManager().isSalvageable(heldItem)
                             && heldItem.getAmount() <= 1) {
-                                SalvageManager salvageManager = UserManager.getPlayer(player).getSalvageManager();
-                                event.setCancelled(true);
+                        SalvageManager salvageManager = UserManager.getPlayer(player).getSalvageManager();
+                        event.setCancelled(true);
 
-                                // Make sure the player knows what he's doing when trying to salvage an enchanted item
-                                if (salvageManager.checkConfirmation(true)) {
-                                    SkillUtils.removeAbilityBoostsFromInventory(player);
-                                    salvageManager.handleSalvage(clickedBlock.getLocation(), heldItem);
-                                    player.updateInventory();
-                                }
+                        // Make sure the player knows what he's doing when trying to salvage an enchanted item
+                        if (salvageManager.checkConfirmation(true)) {
+                            SkillUtils.removeAbilityBoostsFromInventory(player);
+                            salvageManager.handleSalvage(clickedBlock.getLocation(), heldItem);
+                            player.updateInventory();
+                        }
                     }
 
                 }
@@ -774,7 +803,7 @@ public class PlayerListener implements Listener {
         //Spam Fishing Detection
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK || event.getAction() == Action.RIGHT_CLICK_AIR) {
             if (ExperienceConfig.getInstance().isFishingExploitingPrevented()
-                       && (heldItem.getType() == Material.FISHING_ROD || player.getInventory().getItemInOffHand().getType() == Material.FISHING_ROD)) {
+                    && (heldItem.getType() == Material.FISHING_ROD || player.getInventory().getItemInOffHand().getType() == Material.FISHING_ROD)) {
                 if (player.isInsideVehicle() && (player.getVehicle() instanceof Minecart || player.getVehicle() instanceof PoweredMinecart)) {
                     player.getVehicle().eject();
                 }

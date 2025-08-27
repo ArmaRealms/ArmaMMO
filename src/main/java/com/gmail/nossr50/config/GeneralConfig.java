@@ -23,7 +23,7 @@ import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigStr
 
 public class GeneralConfig extends BukkitConfig {
 
-    public GeneralConfig(@NotNull File dataFolder) {
+    public GeneralConfig(@NotNull final File dataFolder) {
         super("config.yml", dataFolder);
         validate();
     }
@@ -36,7 +36,7 @@ public class GeneralConfig extends BukkitConfig {
     @Override
     protected boolean validateKeys() {
         // Validate all the settings!
-        List<String> reason = new ArrayList<>();
+        final List<String> reason = new ArrayList<>();
 
         /* General Settings */
         if (getSaveInterval() <= 0) {
@@ -44,18 +44,21 @@ public class GeneralConfig extends BukkitConfig {
         }
 
         /* MySQL Settings */
-        for (PoolIdentifier identifier : PoolIdentifier.values()) {
+        for (final PoolIdentifier identifier : PoolIdentifier.values()) {
             if (getMySQLMaxConnections(identifier) <= 0) {
-                reason.add("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(identifier.toString()) + " should be greater than 0!");
+                reason.add("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(
+                        identifier.toString()) + " should be greater than 0!");
             }
             if (getMySQLMaxPoolSize(identifier) <= 0) {
-                reason.add("MySQL.Database.MaxPoolSize." + StringUtils.getCapitalized(identifier.toString()) + " should be greater than 0!");
+                reason.add("MySQL.Database.MaxPoolSize." + StringUtils.getCapitalized(
+                        identifier.toString()) + " should be greater than 0!");
             }
         }
 
         /* Mob Healthbar */
         if (getMobHealthbarTime() == 0) {
-            reason.add("Mob_Healthbar.Display_Time cannot be 0! Set to -1 to disable or set a valid value.");
+            reason.add(
+                    "Mob_Healthbar.Display_Time cannot be 0! Set to -1 to disable or set a valid value.");
         }
 
         /* Database Purging */
@@ -68,11 +71,14 @@ public class GeneralConfig extends BukkitConfig {
         }
 
         /* Hardcore Mode */
-        if (getHardcoreDeathStatPenaltyPercentage() < 0.01 || getHardcoreDeathStatPenaltyPercentage() > 100) {
-            reason.add("Hardcore.Death_Stat_Loss.Penalty_Percentage only accepts values from 0.01 to 100!");
+        if (getHardcoreDeathStatPenaltyPercentage() < 0.01
+                || getHardcoreDeathStatPenaltyPercentage() > 100) {
+            reason.add(
+                    "Hardcore.Death_Stat_Loss.Penalty_Percentage only accepts values from 0.01 to 100!");
         }
 
-        if (getHardcoreVampirismStatLeechPercentage() < 0.01 || getHardcoreVampirismStatLeechPercentage() > 100) {
+        if (getHardcoreVampirismStatLeechPercentage() < 0.01
+                || getHardcoreVampirismStatLeechPercentage() > 100) {
             reason.add("Hardcore.Vampirism.Leech_Percentage only accepts values from 0.01 to 100!");
         }
 
@@ -123,9 +129,10 @@ public class GeneralConfig extends BukkitConfig {
             reason.add("Party.Leveling.Xp_Curve_Modifier should be at least 1!");
         }
 
-        for (PartyFeature partyFeature : PartyFeature.values()) {
+        for (final PartyFeature partyFeature : PartyFeature.values()) {
             if (getPartyFeatureUnlockLevel(partyFeature) < 0) {
-                reason.add("Party.Leveling." + getConfigPartyFeatureString(partyFeature) + "_UnlockLevel should be at least 0!");
+                reason.add("Party.Leveling." + getConfigPartyFeatureString(
+                        partyFeature) + "_UnlockLevel should be at least 0!");
             }
         }
 
@@ -231,8 +238,10 @@ public class GeneralConfig extends BukkitConfig {
     /* Mob Healthbar */
     public MobHealthbarType getMobHealthbarDefault() {
         try {
-            return MobHealthbarType.valueOf(config.getString("Mob_Healthbar.Display_Type", "HEARTS").toUpperCase(Locale.ENGLISH).trim());
-        } catch (IllegalArgumentException ex) {
+            return MobHealthbarType.valueOf(config.getString("Mob_Healthbar.Display_Type", "HEARTS")
+                    .toUpperCase(Locale.ENGLISH)
+                    .trim());
+        } catch (final IllegalArgumentException ex) {
             return MobHealthbarType.HEARTS;
         }
     }
@@ -401,12 +410,15 @@ public class GeneralConfig extends BukkitConfig {
         return getStringIncludingInts("MySQL.Database.User_Password");
     }
 
-    public int getMySQLMaxConnections(PoolIdentifier identifier) {
-        return config.getInt("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(identifier.toString()), 30);
+    public int getMySQLMaxConnections(final PoolIdentifier identifier) {
+        return config.getInt("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(
+                identifier.toString()), 30);
     }
 
-    public int getMySQLMaxPoolSize(PoolIdentifier identifier) {
-        return config.getInt("MySQL.Database.MaxPoolSize." + StringUtils.getCapitalized(identifier.toString()), 10);
+    public int getMySQLMaxPoolSize(final PoolIdentifier identifier) {
+        return config.getInt(
+                "MySQL.Database.MaxPoolSize." + StringUtils.getCapitalized(identifier.toString()),
+                10);
     }
 
     public boolean getMySQLSSL() {
@@ -421,7 +433,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("MySQL.Server.allowPublicKeyRetrieval", true);
     }
 
-    private String getStringIncludingInts(String key) {
+    private String getStringIncludingInts(final String key) {
         String str = config.getString(key);
 
         if (str == null) {
@@ -435,19 +447,24 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /* Hardcore Mode */
-    public boolean getHardcoreStatLossEnabled(PrimarySkillType primarySkillType) {
-        return config.getBoolean("Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(primarySkillType.toString()), false);
+    public boolean getHardcoreStatLossEnabled(final PrimarySkillType primarySkillType) {
+        return config.getBoolean(
+                "Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(
+                        primarySkillType.toString()), false);
     }
 
-    public void setHardcoreStatLossEnabled(PrimarySkillType primarySkillType, boolean enabled) {
-        config.set("Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(primarySkillType.toString()), enabled);
+    public void setHardcoreStatLossEnabled(final PrimarySkillType primarySkillType, final boolean enabled) {
+        config.set(
+                "Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(
+                        primarySkillType.toString()),
+                enabled);
     }
 
     public double getHardcoreDeathStatPenaltyPercentage() {
         return config.getDouble("Hardcore.Death_Stat_Loss.Penalty_Percentage", 75.0D);
     }
 
-    public void setHardcoreDeathStatPenaltyPercentage(double value) {
+    public void setHardcoreDeathStatPenaltyPercentage(final double value) {
         config.set("Hardcore.Death_Stat_Loss.Penalty_Percentage", value);
     }
 
@@ -455,19 +472,22 @@ public class GeneralConfig extends BukkitConfig {
         return config.getInt("Hardcore.Death_Stat_Loss.Level_Threshold", 0);
     }
 
-    public boolean getHardcoreVampirismEnabled(PrimarySkillType primarySkillType) {
-        return config.getBoolean("Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(primarySkillType.toString()), false);
+    public boolean getHardcoreVampirismEnabled(final PrimarySkillType primarySkillType) {
+        return config.getBoolean(
+                "Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(
+                        primarySkillType.toString()), false);
     }
 
-    public void setHardcoreVampirismEnabled(PrimarySkillType primarySkillType, boolean enabled) {
-        config.set("Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(primarySkillType.toString()), enabled);
+    public void setHardcoreVampirismEnabled(final PrimarySkillType primarySkillType, final boolean enabled) {
+        config.set("Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(
+                primarySkillType.toString()), enabled);
     }
 
     public double getHardcoreVampirismStatLeechPercentage() {
         return config.getDouble("Hardcore.Vampirism.Leech_Percentage", 5.0D);
     }
 
-    public void setHardcoreVampirismStatLeechPercentage(double value) {
+    public void setHardcoreVampirismStatLeechPercentage(final double value) {
         config.set("Hardcore.Vampirism.Leech_Percentage", value);
     }
 
@@ -577,7 +597,7 @@ public class GeneralConfig extends BukkitConfig {
     public int getLevelUpEffectsTier() {
         return config.getInt("Particles.LevelUp_Tier", 100);
     }
-//    public boolean getLargeFireworks() { return config.getBoolean("Particles.LargeFireworks", true); }
+    //    public boolean getLargeFireworks() { return config.getBoolean("Particles.LargeFireworks", true); }
 
     /* PARTY SETTINGS */
     public boolean getPartyFriendlyFire() {
@@ -613,7 +633,7 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public int getPartyLevelCap() {
-        int cap = config.getInt("Party.Leveling.Level_Cap", 10);
+        final int cap = config.getInt("Party.Leveling.Level_Cap", 10);
         return (cap <= 0) ? Integer.MAX_VALUE : cap;
     }
 
@@ -629,8 +649,9 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Party.Leveling.Inform_All_Party_Members_On_LevelUp", false);
     }
 
-    public int getPartyFeatureUnlockLevel(PartyFeature partyFeature) {
-        return config.getInt("Party.Leveling." + getConfigPartyFeatureString(partyFeature) + "_UnlockLevel", 0);
+    public int getPartyFeatureUnlockLevel(final PartyFeature partyFeature) {
+        return config.getInt(
+                "Party.Leveling." + getConfigPartyFeatureString(partyFeature) + "_UnlockLevel", 0);
     }
 
     /* Party Teleport Settings */
@@ -688,11 +709,11 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Abilities.Activation.Level_Gate_Abilities");
     }
 
-    public int getCooldown(SuperAbilityType ability) {
+    public int getCooldown(final SuperAbilityType ability) {
         return config.getInt("Abilities.Cooldowns." + ability.toString());
     }
 
-    public int getMaxLength(SuperAbilityType ability) {
+    public int getMaxLength(final SuperAbilityType ability) {
         return config.getInt("Abilities.Max_Seconds." + ability.toString());
     }
 
@@ -709,23 +730,28 @@ public class GeneralConfig extends BukkitConfig {
     /*
      * SKILL SETTINGS
      */
-    public boolean getDoubleDropsEnabled(PrimarySkillType skill, Material material) {
+    public boolean getDoubleDropsEnabled(final PrimarySkillType skill, final Material material) {
         //TODO: Temporary measure to fix an exploit caused by a yet to be fixed Spigot bug (as of 7/3/2020)
-        if (material.toString().equalsIgnoreCase("LILY_PAD"))
+        if (material.toString().equalsIgnoreCase("LILY_PAD")) {
             return false;
+        }
 
-        return config.getBoolean("Bonus_Drops." + StringUtils.getCapitalized(skill.toString()) + "." + getMaterialConfigString(material).replace(" ", "_"));
+        return config.getBoolean(
+                "Bonus_Drops." + StringUtils.getCapitalized(skill.toString()) + "."
+                        + getMaterialConfigString(
+                        material).replace(" ", "_"));
     }
 
-    public boolean getDoubleDropsDisabled(PrimarySkillType skill) {
-        String skillName = StringUtils.getCapitalized(skill.toString());
-        ConfigurationSection section = config.getConfigurationSection("Bonus_Drops." + skillName);
-        if (section == null)
+    public boolean getDoubleDropsDisabled(final PrimarySkillType skill) {
+        final String skillName = StringUtils.getCapitalized(skill.toString());
+        final ConfigurationSection section = config.getConfigurationSection("Bonus_Drops." + skillName);
+        if (section == null) {
             return false;
-        Set<String> keys = section.getKeys(false);
+        }
+        final Set<String> keys = section.getKeys(false);
         boolean disabled = true;
 
-        for (String key : keys) {
+        for (final String key : keys) {
             if (config.getBoolean("Bonus_Drops." + skillName + "." + key)) {
                 disabled = false;
                 break;
@@ -781,7 +807,8 @@ public class GeneralConfig extends BukkitConfig {
 
     /* Mining */
     public Material getDetonatorItem() {
-        return Material.matchMaterial(config.getString("Skills.Mining.Detonator_Name", "FLINT_AND_STEEL"));
+        return Material.matchMaterial(
+                config.getString("Skills.Mining.Detonator_Name", "FLINT_AND_STEEL"));
     }
 
     /* Excavation */
@@ -803,7 +830,8 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public @Nullable Material getRepairAnvilMaterial() {
-        return Material.matchMaterial(config.getString("Skills.Repair.Anvil_Material", "IRON_BLOCK"));
+        return Material.matchMaterial(
+                config.getString("Skills.Repair.Anvil_Material", "IRON_BLOCK"));
     }
 
     public boolean getRepairConfirmRequired() {
@@ -836,7 +864,8 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public @Nullable Material getSalvageAnvilMaterial() {
-        return Material.matchMaterial(config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
+        return Material.matchMaterial(
+                config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
     }
 
     public boolean getSalvageConfirmRequired() {
@@ -866,36 +895,39 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /* Taming */
-//    public Material getTamingCOTWMaterial(EntityType type) { return Material.matchMaterial(config.getString("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Item_Material")); }
-//    public int getTamingCOTWCost(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Item_Amount"); }
-//    public int getTamingCOTWAmount(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Summon_Amount"); }
-//    public int getTamingCOTWLength(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type)+ ".Summon_Length"); }
-//    public int getTamingCOTWMaxAmount(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type)+ ".Summon_Max_Amount"); }
+    //    public Material getTamingCOTWMaterial(EntityType type) { return Material.matchMaterial(config.getString("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Item_Material")); }
+    //    public int getTamingCOTWCost(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Item_Amount"); }
+    //    public int getTamingCOTWAmount(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type) + ".Summon_Amount"); }
+    //    public int getTamingCOTWLength(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type)+ ".Summon_Length"); }
+    //    public int getTamingCOTWMaxAmount(EntityType type) { return config.getInt("Skills.Taming.Call_Of_The_Wild." + StringUtils.getPrettyEntityTypeString(type)+ ".Summon_Max_Amount"); }
 
-    public Material getTamingCOTWMaterial(String cotwEntity) {
-        return Material.matchMaterial(config.getString("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Item_Material"));
+    public Material getTamingCOTWMaterial(final String cotwEntity) {
+        return Material.matchMaterial(
+                config.getString(
+                        "Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Item_Material"));
     }
 
-    public int getTamingCOTWCost(String cotwEntity) {
+    public int getTamingCOTWCost(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Item_Amount");
     }
 
-    public int getTamingCOTWAmount(String cotwEntity) {
+    public int getTamingCOTWAmount(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Summon_Amount");
     }
 
-    public int getTamingCOTWLength(String cotwEntity) {
+    public int getTamingCOTWLength(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Summon_Length");
     }
 
-    public int getTamingCOTWMaxAmount(String cotwEntity) {
-        return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Per_Player_Limit", 1);
+    public int getTamingCOTWMaxAmount(final String cotwEntity) {
+        return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Per_Player_Limit",
+                1);
     }
 
     /* Woodcutting */
-    public boolean getWoodcuttingDoubleDropsEnabled(BlockData blockData) {
-        return config.getBoolean("Bonus_Drops.Woodcutting."
-                + getMaterialConfigString(blockData.getMaterial()));
+    public boolean getWoodcuttingDoubleDropsEnabled(final BlockData blockData) {
+        return config.getBoolean(
+                "Bonus_Drops.Woodcutting." + getMaterialConfigString(blockData.getMaterial()));
     }
 
     public boolean getTreeFellerSoundsEnabled() {
@@ -913,12 +945,13 @@ public class GeneralConfig extends BukkitConfig {
 
     /* Level Caps */
     public int getPowerLevelCap() {
-        int cap = config.getInt("General.Power_Level_Cap", 0);
+        final int cap = config.getInt("General.Power_Level_Cap", 0);
         return (cap <= 0) ? Integer.MAX_VALUE : cap;
     }
 
-    public int getLevelCap(PrimarySkillType skill) {
-        int cap = config.getInt("Skills." + StringUtils.getCapitalized(skill.toString()) + ".Level_Cap");
+    public int getLevelCap(final PrimarySkillType skill) {
+        final int cap = config.getInt(
+                "Skills." + StringUtils.getCapitalized(skill.toString()) + ".Level_Cap");
         return (cap <= 0) ? Integer.MAX_VALUE : cap;
     }
 
@@ -932,12 +965,16 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /* PVP & PVE Settings */
-    public boolean getPVPEnabled(PrimarySkillType skill) {
-        return config.getBoolean("Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVP", true);
+    public boolean getPVPEnabled(final PrimarySkillType skill) {
+        return config.getBoolean(
+                "Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVP",
+                true);
     }
 
-    public boolean getPVEEnabled(PrimarySkillType skill) {
-        return config.getBoolean("Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVE", true);
+    public boolean getPVEEnabled(final PrimarySkillType skill) {
+        return config.getBoolean(
+                "Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVE",
+                true);
     }
 
     //public float getMasterVolume() { return (float) config.getDouble("Sounds.MasterVolume", 1.0); }
@@ -959,23 +996,30 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public boolean shouldLevelUpBroadcastToConsole() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Send_To_Console", true);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Send_To_Console", true);
     }
 
     public boolean isLevelUpBroadcastsPartyMembersOnly() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Only_Party_Members", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Only_Party_Members", false);
     }
 
     public boolean isLevelUpBroadcastsSameWorldOnly() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Only_Same_World", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Only_Same_World", false);
     }
 
     public boolean shouldLevelUpBroadcastsRestrictDistance() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Distance_Restrictions.Restrict_Distance", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Distance_Restrictions.Restrict_Distance",
+                false);
     }
 
     public int getLevelUpBroadcastRadius() {
-        return config.getInt("General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Distance_Restrictions.Restricted_Radius", 100);
+        return config.getInt(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Targets.Distance_Restrictions.Restricted_Radius",
+                100);
     }
 
     public int getLevelUpBroadcastInterval() {
@@ -983,40 +1027,56 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public boolean shouldPowerLevelUpBroadcasts() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Enabled", true);
+        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Enabled",
+                true);
     }
 
     public boolean shouldPowerLevelUpBroadcastToConsole() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Send_To_Console", true);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Send_To_Console",
+                true);
     }
 
     public boolean isPowerLevelUpBroadcastsPartyMembersOnly() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Only_Party_Members", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Only_Party_Members",
+                false);
     }
 
     public boolean isPowerLevelUpBroadcastsSameWorldOnly() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Only_Same_World", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Only_Same_World",
+                false);
     }
 
     public boolean shouldPowerLevelUpBroadcastsRestrictDistance() {
-        return config.getBoolean("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Distance_Restrictions.Restrict_Distance", false);
+        return config.getBoolean(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Distance_Restrictions.Restrict_Distance",
+                false);
     }
 
     public int getPowerLevelUpBroadcastRadius() {
-        return config.getInt("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Distance_Restrictions.Restricted_Radius", 100);
+        return config.getInt(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Broadcast_Targets.Distance_Restrictions.Restricted_Radius",
+                100);
     }
 
     public int getPowerLevelUpBroadcastInterval() {
-        return config.getInt("General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Milestone_Interval", 100);
+        return config.getInt(
+                "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Milestone_Interval", 100);
     }
 
-    public boolean isGreenThumbReplantableCrop(@NotNull Material material) {
-        return config.getBoolean("Green_Thumb_Replanting_Crops." + StringUtils.getCapitalized(material.toString()), true);
+    public boolean isGreenThumbReplantableCrop(@NotNull final Material material) {
+        return config.getBoolean(
+                "Green_Thumb_Replanting_Crops." + StringUtils.getCapitalized(material.toString()),
+                true);
     }
 
     public boolean useVerboseLogging() {
         return config.getBoolean("General.Verbose_Logging", false);
     }
 
-    public boolean isMasterySystemEnabled() { return config.getBoolean( "General.PowerLevel.Skill_Mastery.Enabled"); }
+    public boolean isMasterySystemEnabled() {
+        return config.getBoolean("General.PowerLevel.Skill_Mastery.Enabled");
+    }
 }

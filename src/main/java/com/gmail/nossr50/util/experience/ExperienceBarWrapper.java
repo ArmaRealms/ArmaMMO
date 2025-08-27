@@ -18,16 +18,15 @@ import java.util.List;
  */
 public class ExperienceBarWrapper {
 
-    private final PrimarySkillType primarySkillType; //Primary Skill
-    private BossBar bossBar;
     protected final McMMOPlayer mcMMOPlayer;
-    private int lastLevelUpdated;
-
+    private final PrimarySkillType primarySkillType; //Primary Skill
     /*
      * This is stored to help optimize updating the title
      */
     protected String niceSkillName;
     protected String title;
+    private BossBar bossBar;
+    private int lastLevelUpdated;
 
     public ExperienceBarWrapper(PrimarySkillType primarySkillType, McMMOPlayer mcMMOPlayer) {
         this.mcMMOPlayer = mcMMOPlayer;
@@ -107,6 +106,10 @@ public class ExperienceBarWrapper {
         bossBar.setStyle(barStyle);
     }
 
+    public double getProgress() {
+        return bossBar.getProgress();
+    }
+
     public void setProgress(double v) {
         //Clamp Values
         if (v < 0)
@@ -129,10 +132,6 @@ public class ExperienceBarWrapper {
             updateTitle();
             lastLevelUpdated = getLevel();
         }
-    }
-
-    public double getProgress() {
-        return bossBar.getProgress();
     }
 
     public List<Player> getPlayers() {

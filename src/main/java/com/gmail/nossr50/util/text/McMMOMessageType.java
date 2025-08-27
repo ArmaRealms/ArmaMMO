@@ -9,7 +9,8 @@ import java.util.function.BiConsumer;
 
 public enum McMMOMessageType {
     ACTION_BAR(Audience::sendActionBar),
-    SYSTEM((audience, message) -> audience.sendMessage(Identity.nil(), message, MessageType.SYSTEM));
+    SYSTEM((audience, message) -> audience.sendMessage(Identity.nil(), message,
+            MessageType.SYSTEM));
 
     private final BiConsumer<Audience, Component> sender;
 
@@ -18,6 +19,6 @@ public enum McMMOMessageType {
     }
 
     public void send(final Audience audience, final Component message) {
-      this.sender.accept(audience, message);
+        this.sender.accept(audience, message);
     }
 }

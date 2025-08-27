@@ -19,55 +19,65 @@ public class WorldGuardManager {
     private WorldGuardPlugin worldGuardPluginRef;
 
     public static WorldGuardManager getInstance() {
-        if (instance == null)
+        if (instance == null) {
             instance = new WorldGuardManager();
+        }
 
         return instance;
     }
 
     public boolean hasMainFlag(Player player) {
-        if (player == null)
+        if (player == null) {
             return false;
+        }
 
         BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
         com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
 
-        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), WorldGuardFlags.MCMMO_ENABLE_WG_FLAG);
+        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player),
+                WorldGuardFlags.MCMMO_ENABLE_WG_FLAG);
     }
 
     public boolean hasXPFlag(Player player) {
-        if (player == null)
+        if (player == null) {
             return false;
+        }
 
         BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
         com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
 
-        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), WorldGuardFlags.MCMMO_XP_WG_FLAG);
+        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player),
+                WorldGuardFlags.MCMMO_XP_WG_FLAG);
     }
 
     public boolean hasHardcoreFlag(Player player) {
-        if (player == null)
+        if (player == null) {
             return false;
+        }
 
         BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
         com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery();
+        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+                .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
 
-        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player), WorldGuardFlags.MCMMO_HARDCORE_WG_FLAG);
+        return query.testState(loc, WorldGuardPlugin.inst().wrapPlayer(player),
+                WorldGuardFlags.MCMMO_HARDCORE_WG_FLAG);
     }
 
     private WorldGuardPlugin getWorldGuard() {

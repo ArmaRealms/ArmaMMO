@@ -12,7 +12,8 @@ import java.util.Map.Entry;
 import java.util.UUID;
 
 public class PartyAutoKickTask extends CancellableRunnable {
-    private final static long KICK_TIME = 24L * 60L * 60L * 1000L * mcMMO.p.getGeneralConfig().getAutoPartyKickTime();
+    private final static long KICK_TIME =
+            24L * 60L * 60L * 1000L * mcMMO.p.getGeneralConfig().getAutoPartyKickTime();
 
     @Override
     public void run() {
@@ -26,7 +27,8 @@ public class PartyAutoKickTask extends CancellableRunnable {
                 OfflinePlayer member = mcMMO.p.getServer().getOfflinePlayer(memberUniqueId);
                 boolean isProcessed = processedPlayers.contains(memberUniqueId);
 
-                if ((!member.isOnline() && (currentTime - member.getLastPlayed() > KICK_TIME)) || isProcessed) {
+                if ((!member.isOnline() && (currentTime - member.getLastPlayed() > KICK_TIME))
+                        || isProcessed) {
                     toRemove.put(member, party);
                 }
 

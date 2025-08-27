@@ -7,7 +7,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -24,11 +29,14 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 /**
- * Could be a lot better. But some tests are better than none! Tests the major things, still kinda unit-testy. Verifies
- * that the serialization isn't completely broken.
+ * Could be a lot better. But some tests are better than none! Tests the major things, still kinda
+ * unit-testy. Verifies that the serialization isn't completely broken.
  */
 class UserBlockTrackerTest {
     private static File tempDir;
+    private World mockWorld;
+    private MockedStatic<Bukkit> bukkitMock;
+    private MockedStatic<mcMMO> mcMMOMock;
 
     @BeforeAll
     public static void setUpClass() {
@@ -40,14 +48,18 @@ class UserBlockTrackerTest {
         recursiveDelete(tempDir);
     }
 
-    private World mockWorld;
-
-    private MockedStatic<Bukkit> bukkitMock;
-    private MockedStatic<mcMMO> mcMMOMock;
+    public static void recursiveDelete(@NotNull final File directoryToBeDeleted) {
+        if (directoryToBeDeleted.isDirectory()) {
+            for (final File file : directoryToBeDeleted.listFiles()) {
+                recursiveDelete(file);
+            }
+        }
+        directoryToBeDeleted.delete();
+    }
 
     @BeforeEach
     void setUpMock() {
-        UUID worldUUID = UUID.randomUUID();
+        final UUID worldUUID = UUID.randomUUID();
         mockWorld = Mockito.mock(World.class);
         when(mockWorld.getUID()).thenReturn(worldUUID);
         when(mockWorld.getMaxHeight()).thenReturn(256);
@@ -61,7 +73,7 @@ class UserBlockTrackerTest {
         when(mockWorld.getMinHeight()).thenReturn(LEGACY_WORLD_HEIGHT_MIN);
         when(mockWorld.getMaxHeight()).thenReturn(LEGACY_WORLD_HEIGHT_MAX);
     }
-    
+
     @AfterEach
     void teardownMock() {
         bukkitMock.close();
@@ -74,20 +86,22 @@ class UserBlockTrackerTest {
         final HashChunkManager hashChunkManager = new HashChunkManager();
 
         // Top Block
-        int illegalMaxHeight = 256 + 1;
+        final int illegalMaxHeight = 256 + 1;
         final Block illegalHeightBlock = initMockBlock(1337, illegalMaxHeight, -1337);
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> hashChunkManager.setIneligible(illegalHeightBlock));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> hashChunkManager.setIneligible(illegalHeightBlock));
 
-        int illegalMinHeight = -65;
+        final int illegalMinHeight = -65;
         final Block otherIllegalHeightBlock = initMockBlock(1337, illegalMinHeight, -1337);
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> hashChunkManager.setIneligible(otherIllegalHeightBlock));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> hashChunkManager.setIneligible(otherIllegalHeightBlock));
     }
 
     @Test
     void testSetEligibility() {
         when(mockWorld.getMinHeight()).thenReturn(-64);
         final HashChunkManager hashChunkManager = new HashChunkManager();
-        int radius = 2; // Could be anything but drastically changes test time
+        final int radius = 2; // Could be anything but drastically changes test time
 
         for (int x = -radius; x <= radius; x++) {
             for (int y = mockWorld.getMinHeight(); y <= mockWorld.getMaxHeight(); y++) {
@@ -128,44 +142,55 @@ class UserBlockTrackerTest {
     void testChunkCoords() throws IOException {
         // TODO: Unfinished test?
         for (int x = -96; x < 0; x++) {
-            int cx = x >> 4;
-            int ix = Math.abs(x) % 16;
+            final int cx = x >> 4;
+            final int ix = Math.abs(x) % 16;
             //System.out.print(cx + ":" + ix + "  ");
         }
     }
 
     @Test
     void testSimpleRegionRejectsOutOfBounds() {
-        File file = new File(tempDir, "SimpleRegionRoundTrip.region");
-        McMMOSimpleRegionFile region = new McMMOSimpleRegionFile(file, 0, 0);
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> region.getOutputStream(-1, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> region.getOutputStream(0, -1));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> region.getOutputStream(32, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> region.getOutputStream(0, 32));
+        final File file = new File(tempDir, "SimpleRegionRoundTrip.region");
+        final McMMOSimpleRegionFile region = new McMMOSimpleRegionFile(file, 0, 0);
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> region.getOutputStream(-1, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> region.getOutputStream(0, -1));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> region.getOutputStream(32, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> region.getOutputStream(0, 32));
         region.close();
     }
 
     @Test
     void testChunkStoreRejectsOutOfBounds() {
-        ChunkStore chunkStore = new BitSetChunkStore(mockWorld, 0, 0);
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(-1, 0, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(0, -1, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(0, 0, -1));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(16, 0, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(0, mockWorld.getMaxHeight()+1, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(0, mockWorld.getMinHeight()-1, 0));
-        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> chunkStore.setTrue(0, 0, 16));
+        final ChunkStore chunkStore = new BitSetChunkStore(mockWorld, 0, 0);
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(-1, 0, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(0, -1, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(0, 0, -1));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(16, 0, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(0, mockWorld.getMaxHeight() + 1, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(0, mockWorld.getMinHeight() - 1, 0));
+        Assertions.assertThrows(IndexOutOfBoundsException.class,
+                () -> chunkStore.setTrue(0, 0, 16));
     }
 
     @Test
     void testRegressionChunkMirrorBug() {
         final UserBlockTracker chunkManager = new HashChunkManager();
-        Block mockBlockA = Mockito.mock(Block.class);
+        final Block mockBlockA = Mockito.mock(Block.class);
         when(mockBlockA.getX()).thenReturn(15);
         when(mockBlockA.getZ()).thenReturn(15);
         when(mockBlockA.getY()).thenReturn(0);
         when(mockBlockA.getWorld()).thenReturn(mockWorld);
-        Block mockBlockB = Mockito.mock(Block.class);
+        final Block mockBlockB = Mockito.mock(Block.class);
         when(mockBlockB.getX()).thenReturn(-15);
         when(mockBlockB.getZ()).thenReturn(-15);
         when(mockBlockB.getY()).thenReturn(0);
@@ -179,12 +204,12 @@ class UserBlockTrackerTest {
     @Test
     void testUnload() {
         final ChunkManager chunkManager = new HashChunkManager();
-        Block mockBlockA = Mockito.mock(Block.class);
+        final Block mockBlockA = Mockito.mock(Block.class);
         when(mockBlockA.getX()).thenReturn(15);
         when(mockBlockA.getZ()).thenReturn(15);
         when(mockBlockA.getY()).thenReturn(0);
         when(mockBlockA.getWorld()).thenReturn(mockWorld);
-        Block mockBlockB = Mockito.mock(Block.class);
+        final Block mockBlockB = Mockito.mock(Block.class);
         when(mockBlockB.getX()).thenReturn(-15);
         when(mockBlockB.getZ()).thenReturn(-15);
         when(mockBlockB.getY()).thenReturn(0);
@@ -198,21 +223,12 @@ class UserBlockTrackerTest {
     }
 
     @NotNull
-    private Block initMockBlock(int x, int y, int z) {
+    private Block initMockBlock(final int x, final int y, final int z) {
         final Block mockBlock = Mockito.mock(Block.class);
         when(mockBlock.getX()).thenReturn(x);
         when(mockBlock.getY()).thenReturn(y);
         when(mockBlock.getZ()).thenReturn(z);
         when(mockBlock.getWorld()).thenReturn(mockWorld);
         return mockBlock;
-    }
-
-    public static void recursiveDelete(@NotNull File directoryToBeDeleted) {
-        if (directoryToBeDeleted.isDirectory()) {
-            for (File file : directoryToBeDeleted.listFiles()) {
-                recursiveDelete(file);
-            }
-        }
-        directoryToBeDeleted.delete();
     }
 }

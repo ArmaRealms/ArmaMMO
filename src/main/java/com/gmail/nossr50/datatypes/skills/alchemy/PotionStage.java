@@ -4,7 +4,9 @@ import com.gmail.nossr50.util.PotionUtil;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 
-import static com.gmail.nossr50.util.PotionUtil.*;
+import static com.gmail.nossr50.util.PotionUtil.isLong;
+import static com.gmail.nossr50.util.PotionUtil.isPotionTypeWater;
+import static com.gmail.nossr50.util.PotionUtil.isStrong;
 
 public enum PotionStage {
     FIVE(5),
@@ -17,10 +19,6 @@ public enum PotionStage {
 
     PotionStage(int numerical) {
         this.numerical = numerical;
-    }
-
-    public int toNumerical() {
-        return numerical;
     }
 
     private static PotionStage getPotionStageNumerical(int numerical) {
@@ -59,12 +57,12 @@ public enum PotionStage {
         }
 
         // Check if potion has a glowstone dust amplifier
-        // Else check if the potion has a custom effect with an amplifier added by mcMMO 
+        // Else check if the potion has a custom effect with an amplifier added by mcMMO
         if (isStrong(potionMeta)) {
             stage++;
         } else if (!potionMeta.getCustomEffects().isEmpty()) {
-            for (PotionEffect effect : potionMeta.getCustomEffects()){
-                if (effect.getAmplifier() > 0){
+            for (PotionEffect effect : potionMeta.getCustomEffects()) {
+                if (effect.getAmplifier() > 0) {
                     stage++;
                     break;
                 }
@@ -82,5 +80,9 @@ public enum PotionStage {
         }
 
         return PotionStage.getPotionStageNumerical(stage);
+    }
+
+    public int toNumerical() {
+        return numerical;
     }
 }

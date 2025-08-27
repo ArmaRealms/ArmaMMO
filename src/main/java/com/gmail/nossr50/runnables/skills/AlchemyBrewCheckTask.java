@@ -42,13 +42,16 @@ public class AlchemyBrewCheckTask extends CancellableRunnable {
             }
         }
         final Location location = brewingStand.getLocation();
-        final ItemStack[] newInventory = Arrays.copyOfRange(brewingStand.getInventory().getContents(), 0, 4);
-        boolean validBrew = brewingStand.getFuelLevel() > 0 && isValidBrew(ingredientLevel, newInventory);
+        final ItemStack[] newInventory = Arrays.copyOfRange(
+                brewingStand.getInventory().getContents(), 0, 4);
+        boolean validBrew =
+                brewingStand.getFuelLevel() > 0 && isValidBrew(ingredientLevel, newInventory);
 
         if (Alchemy.brewingStandMap.containsKey(location)) {
             if (oldInventory[Alchemy.INGREDIENT_SLOT] == null
                     || newInventory[Alchemy.INGREDIENT_SLOT] == null
-                    || !oldInventory[Alchemy.INGREDIENT_SLOT].isSimilar(newInventory[Alchemy.INGREDIENT_SLOT])
+                    || !oldInventory[Alchemy.INGREDIENT_SLOT].isSimilar(
+                    newInventory[Alchemy.INGREDIENT_SLOT])
                     || !validBrew) {
                 Alchemy.brewingStandMap.get(location).cancelBrew();
             }

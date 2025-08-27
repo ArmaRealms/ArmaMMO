@@ -22,7 +22,8 @@ public class McRankCommandDisplayTask extends CancellableRunnable {
     private final boolean useBoard;
     private final boolean useChat;
 
-    McRankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender, String playerName,
+    McRankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender,
+                             String playerName,
                              boolean useBoard, boolean useChat) {
         this.skills = skills;
         this.sender = sender;
@@ -52,15 +53,19 @@ public class McRankCommandDisplayTask extends CancellableRunnable {
         for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
             // Check if the command is for Maces but the MC version is not correct
             if (skill == PrimarySkillType.MACES
-                    && !mcMMO.getCompatibilityManager().getMinecraftGameVersion().isAtLeast(1, 21, 0)) {
+                    && !mcMMO.getCompatibilityManager().getMinecraftGameVersion()
+                    .isAtLeast(1, 21, 0)) {
                 continue;
             }
             rank = skills.get(skill);
-            sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Skill", mcMMO.p.getSkillTools().getLocalizedSkillName(skill), (rank == null ? LocaleLoader.getString("Commands.mcrank.Unranked") : rank)));
+            sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Skill",
+                    mcMMO.p.getSkillTools().getLocalizedSkillName(skill),
+                    (rank == null ? LocaleLoader.getString("Commands.mcrank.Unranked") : rank)));
         }
 
         rank = skills.get(null);
-        sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Overall", (rank == null ? LocaleLoader.getString("Commands.mcrank.Unranked") : rank)));
+        sender.sendMessage(LocaleLoader.getString("Commands.mcrank.Overall",
+                (rank == null ? LocaleLoader.getString("Commands.mcrank.Unranked") : rank)));
     }
 
     public void displayBoard() {

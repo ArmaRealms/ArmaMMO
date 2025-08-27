@@ -12,7 +12,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -74,7 +73,7 @@ public class XprateCommand implements TabExecutor {
                 int newXpRate = Integer.parseInt(args[0]);
 
                 if (newXpRate < 0) {
-                    sender.sendMessage(ChatColor.RED+LocaleLoader.getString("Commands.NegativeNumberWarn"));
+                    sender.sendMessage(ChatColor.RED + LocaleLoader.getString("Commands.NegativeNumberWarn"));
                     return true;
                 }
                 ExperienceConfig.getInstance().setExperienceGainsGlobalMultiplier(newXpRate);

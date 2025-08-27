@@ -14,33 +14,32 @@ public class AttributeMapper {
 
     public static final String ATTRIBUTE = "ATTRIBUTE";
     public static final String ORG_BUKKIT_REGISTRY = "org.bukkit.Registry";
-
-    // Prevent instantiation
-    private AttributeMapper() {
-    }
-
+    public static final Attribute MAPPED_MAX_HEALTH;
+    public static final Attribute MAPPED_JUMP_STRENGTH;
+    public static final Attribute MAPPED_MOVEMENT_SPEED;
     // Define constants for attribute keys and their legacy counterparts
     private static final String MAX_HEALTH_1_21_3_STR = "max_health";
     private static final String MAX_HEALTH_1_18_2_STR = "generic.max_health";
-    public static final Attribute MAPPED_MAX_HEALTH;
-
     private static final String JUMP_STRENGTH_1_23_1 = "jump_strength";
     private static final String JUMP_STRENGTH_1_21_1 = "generic.jump_strength";
     private static final String JUMP_STR_1_18_2 = "horse.jump_strength";
-    public static final Attribute MAPPED_JUMP_STRENGTH;
-
-    public static final Attribute MAPPED_MOVEMENT_SPEED;
     private static final String MOVEMENT_SPEED_1_18_2 = "generic.movement_speed";
     private static final String MOVEMENT_SPEED_1_21_1 = "generic.movement_speed";
     private static final String MOVEMENT_SPEED_1_21_3 = "movement_speed";
 
+    static {
+        MAPPED_MAX_HEALTH = findAttribute(MAX_HEALTH_1_21_3_STR, MAX_HEALTH_1_18_2_STR);
+        MAPPED_JUMP_STRENGTH = findAttribute(JUMP_STRENGTH_1_23_1, JUMP_STRENGTH_1_21_1,
+                JUMP_STR_1_18_2);
+        MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_1,
+                MOVEMENT_SPEED_1_21_3);
+    }
+
     // Add other attributes similarly...
     // For brevity, only key attributes are shown
 
-    static {
-        MAPPED_MAX_HEALTH = findAttribute(MAX_HEALTH_1_21_3_STR, MAX_HEALTH_1_18_2_STR);
-        MAPPED_JUMP_STRENGTH = findAttribute(JUMP_STRENGTH_1_23_1, JUMP_STRENGTH_1_21_1, JUMP_STR_1_18_2);
-        MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_1, MOVEMENT_SPEED_1_21_3);
+    // Prevent instantiation
+    private AttributeMapper() {
     }
 
     private static Attribute findAttribute(String... keys) {
@@ -54,7 +53,8 @@ public class AttributeMapper {
             // Get the stream() method of the attribute registry
             Method streamMethod = attributeRegistry.getClass().getMethod("stream");
             attributeStream = (Stream<?>) streamMethod.invoke(attributeRegistry);
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException |
+                 NoSuchMethodException |
                  InvocationTargetException e) {
             // Fallback to older versions where Attribute is an enum
             Object[] enumConstants = Attribute.class.getEnumConstants();
@@ -72,7 +72,8 @@ public class AttributeMapper {
                         Object namespacedKey = getKeyMethod.invoke(attr);
 
                         if (namespacedKey != null) {
-                            Method getKeyStringMethod = namespacedKey.getClass().getMethod("getKey");
+                            Method getKeyStringMethod = namespacedKey.getClass()
+                                    .getMethod("getKey");
                             attrKey = (String) getKeyStringMethod.invoke(namespacedKey);
                         }
 
@@ -94,8 +95,10 @@ public class AttributeMapper {
                             }
                         }
                     } catch (Exception e) {
-                        mcMMO.p.getLogger().severe("Unable to find the attribute with possible keys: "
-                                + Arrays.toString(keys) + ", mcMMO will not function properly.");
+                        mcMMO.p.getLogger()
+                                .severe("Unable to find the attribute with possible keys: "
+                                        + Arrays.toString(keys)
+                                        + ", mcMMO will not function properly.");
                         throw new RuntimeException(e);
                     }
                     return false;

@@ -32,14 +32,14 @@ public interface DatabaseManager {
      * Remove a user from the database.
      *
      * @param playerName The name of the user to remove
-     * @param uuid player UUID, can be null
+     * @param uuid       player UUID, can be null
      * @return true if the user was successfully removed, false otherwise
      */
     boolean removeUser(String playerName, UUID uuid);
 
     /**
-     * Removes any cache used for faster lookups
-     * Currently only used for SQL
+     * Removes any cache used for faster lookups Currently only used for SQL
+     *
      * @param uuid target UUID to cleanup
      */
     void cleanupUser(UUID uuid);
@@ -53,21 +53,21 @@ public interface DatabaseManager {
     boolean saveUser(PlayerProfile profile);
 
     /**
-    * Retrieve leaderboard info.
-     * Will never be null but it may be empty
-    *
-    * @param skill The skill to retrieve info on
-    * @param pageNumber Which page in the leaderboards to retrieve
-    * @param statsPerPage The number of stats per page
-    * @return the requested leaderboard information
-    */
-    @NotNull List<PlayerStat> readLeaderboard(@Nullable PrimarySkillType skill, int pageNumber, int statsPerPage) throws InvalidSkillException;
+     * Retrieve leaderboard info. Will never be null but it may be empty
+     *
+     * @param skill        The skill to retrieve info on
+     * @param pageNumber   Which page in the leaderboards to retrieve
+     * @param statsPerPage The number of stats per page
+     * @return the requested leaderboard information
+     */
+    @NotNull List<PlayerStat> readLeaderboard(@Nullable PrimarySkillType skill, int pageNumber,
+                                              int statsPerPage) throws InvalidSkillException;
 
     /**
      * Retrieve rank info into a HashMap from PrimarySkillType to the rank.
      * <p>
-     * The special value <code>null</code> is used to represent the Power
-     * Level rank (the combination of all skill levels).
+     * The special value <code>null</code> is used to represent the Power Level rank (the
+     * combination of all skill levels).
      *
      * @param playerName The name of the user to retrieve the rankings for
      * @return the requested rank information
@@ -76,8 +76,9 @@ public interface DatabaseManager {
 
     /**
      * Add a new user to the database.
-     *  @param playerName The name of the player to be added to the database
-     * @param uuid The uuid of the player to be added to the database
+     *
+     * @param playerName The name of the player to be added to the database
+     * @param uuid       The uuid of the player to be added to the database
      * @return
      */
     @NotNull PlayerProfile newUser(String playerName, UUID uuid);
@@ -88,8 +89,7 @@ public interface DatabaseManager {
      * Load a player from the database.
      *
      * @param playerName The name of the player to load from the database
-     * @return The player's data, or an unloaded PlayerProfile if not found
-     *          and createNew is false
+     * @return The player's data, or an unloaded PlayerProfile if not found and createNew is false
      */
     @NotNull PlayerProfile loadPlayerProfile(@NotNull String playerName);
 

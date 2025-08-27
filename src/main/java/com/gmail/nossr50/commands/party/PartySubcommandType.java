@@ -27,21 +27,16 @@ public enum PartySubcommandType {
     CHAT("chat"),
     ALLIANCE("alianca");
 
-    private final String commandName;
-
     private static final List<String> HELP_ALIAS = List.of("?", "ajuda");
     private static final List<String> QUIT_ALIAS = List.of("q", "leave", "sair");
     private static final List<String> OWNER_ALIAS = List.of("leader", "lider");
     private static final List<String> XPSHARE_ALIAS = List.of("xpshare", "shareexp", "sharexp");
     private static final List<String> ITEMSHARE_ALIAS = List.of("shareitem", "shareitems");
     private static final List<String> ALLIANCE_ALIAS = List.of("ally", "aliado");
+    private final String commandName;
 
     PartySubcommandType(String commandName) {
         this.commandName = commandName;
-    }
-
-    public String string() {
-        return commandName;
     }
 
     public static @NotNull List<String> getSubcommands() {
@@ -85,5 +80,9 @@ public enum PartySubcommandType {
         }
 
         return null;
+    }
+
+    public String string() {
+        return commandName;
     }
 }

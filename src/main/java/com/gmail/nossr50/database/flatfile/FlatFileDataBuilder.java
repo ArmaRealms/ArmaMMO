@@ -7,8 +7,8 @@ import java.util.HashSet;
 
 public class FlatFileDataBuilder {
     private final @NotNull HashSet<FlatFileDataFlag> dataFlags;
-    private @NotNull String[] splitStringData;
     private final int uniqueProcessingId;
+    private @NotNull String[] splitStringData;
     private boolean[] badDataValues;
 
     public FlatFileDataBuilder(@NotNull String[] splitStringData, int uniqueProcessingId) {
@@ -29,7 +29,8 @@ public class FlatFileDataBuilder {
 
     public @NotNull FlatFileDataContainer build() {
         if (dataFlags.contains(FlatFileDataFlag.BAD_VALUES)) {
-            return new BadCategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData, badDataValues);
+            return new BadCategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData,
+                    badDataValues);
         }
 
         return new CategorizedFlatFileData(uniqueProcessingId, dataFlags, splitStringData);

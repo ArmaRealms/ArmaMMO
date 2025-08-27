@@ -28,19 +28,16 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Stream;
 
 public abstract class SkillCommand implements TabExecutor {
     public static final String ABILITY_GENERIC_TEMPLATE_CUSTOM = "Ability.Generic.Template.Custom";
     public static final String ABILITY_GENERIC_TEMPLATE = "Ability.Generic.Template";
+    private final CommandExecutor skillGuideCommand;
     protected PrimarySkillType skill;
-
     protected DecimalFormat percent = new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
     protected DecimalFormat decimal = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
     protected McMMOPlayer mmoPlayer;
-
-    private final CommandExecutor skillGuideCommand;
 
     protected SkillCommand(PrimarySkillType skill) {
         this.skill = skill;
@@ -167,8 +164,8 @@ public abstract class SkillCommand implements TabExecutor {
 
             StringBuilder parentMessage = new StringBuilder();
 
-            for(int i = 0; i < parentList.size(); i++) {
-                if (i+1 < parentList.size()) {
+            for (int i = 0; i < parentList.size(); i++) {
+                if (i + 1 < parentList.size()) {
                     parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
                     parentMessage.append(ChatColor.GRAY).append(", ");
                 } else {
@@ -228,7 +225,7 @@ public abstract class SkillCommand implements TabExecutor {
         } else {
             final String[] mergedList
                     = NotificationManager.addItemToFirstPositionOfArray(
-                            LocaleLoader.getString(statDescriptionKey), vars);
+                    LocaleLoader.getString(statDescriptionKey), vars);
             return LocaleLoader.getString(templateKey, mergedList);
         }
     }

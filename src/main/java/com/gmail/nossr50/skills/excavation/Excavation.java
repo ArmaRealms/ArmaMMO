@@ -11,15 +11,17 @@ import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigStr
 
 public class Excavation {
     /**
-     * Get the list of possible {@link ExcavationTreasure|ExcavationTreasures} obtained from a given block.
+     * Get the list of possible {@link ExcavationTreasure|ExcavationTreasures} obtained from a given
+     * block.
      *
      * @param block The {@link Block} to check for treasures
      * @return the list of treasures that could be found
      */
     protected static List<ExcavationTreasure> getTreasures(Block block) {
         String friendly = getMaterialConfigString(block.getBlockData().getMaterial());
-        if (TreasureConfig.getInstance().excavationMap.containsKey(friendly))
+        if (TreasureConfig.getInstance().excavationMap.containsKey(friendly)) {
             return TreasureConfig.getInstance().excavationMap.get(friendly);
+        }
         return new ArrayList<>();
     }
 }

@@ -8,13 +8,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 public class DatabaseAPI {
+    private DatabaseAPI() {
+    }
 
     /**
      * Checks if a player exists in the mcMMO Database
+     *
      * @param offlinePlayer target player
      * @return true if the player exists in the DB, false if they do not
      */
-    public boolean doesPlayerExistInDB(@NotNull OfflinePlayer offlinePlayer) {
+    public static boolean doesPlayerExistInDB(@NotNull OfflinePlayer offlinePlayer) {
         PlayerProfile playerProfile = mcMMO.getDatabaseManager().loadPlayerProfile(offlinePlayer);
 
         return playerProfile.isLoaded();
@@ -22,10 +25,11 @@ public class DatabaseAPI {
 
     /**
      * Checks if a player exists in the mcMMO Database
+     *
      * @param uuid target player
      * @return true if the player exists in the DB, false if they do not
      */
-    public boolean doesPlayerExistInDB(@NotNull UUID uuid) {
+    public static boolean doesPlayerExistInDB(@NotNull UUID uuid) {
         PlayerProfile playerProfile = null;
         try {
             playerProfile = mcMMO.getDatabaseManager().loadPlayerProfile(uuid);
@@ -38,10 +42,11 @@ public class DatabaseAPI {
 
     /**
      * Checks if a player exists in the mcMMO Database
+     *
      * @param playerName target player
      * @return true if the player exists in the DB, false if they do not
      */
-    public boolean doesPlayerExistInDB(@NotNull String playerName) {
+    public static boolean doesPlayerExistInDB(@NotNull String playerName) {
         PlayerProfile playerProfile = mcMMO.getDatabaseManager().loadPlayerProfile(playerName);
 
         return playerProfile.isLoaded();

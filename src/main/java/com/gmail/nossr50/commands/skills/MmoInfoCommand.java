@@ -28,7 +28,7 @@ public class MmoInfoCommand implements TabExecutor {
                 return false;
 
             if (Permissions.mmoinfo(player)) {
-                if (args[0].equalsIgnoreCase( "???")) {
+                if (args[0].equalsIgnoreCase("???")) {
                     player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.Header"));
                     player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.SubSkillHeader", "???"));
                     player.sendMessage(LocaleLoader.getString("Commands.MmoInfo.DetailsHeader"));
@@ -51,7 +51,7 @@ public class MmoInfoCommand implements TabExecutor {
     }
 
     public SubSkillType matchSubSkill(String name) {
-        for(SubSkillType subSkillType : SubSkillType.values()) {
+        for (SubSkillType subSkillType : SubSkillType.values()) {
             if (subSkillType.getNiceNameNoSpaces(subSkillType).equalsIgnoreCase(name)
                     || subSkillType.name().equalsIgnoreCase(name))
                 return subSkillType;

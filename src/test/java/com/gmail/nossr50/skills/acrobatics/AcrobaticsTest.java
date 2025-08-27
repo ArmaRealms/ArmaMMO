@@ -22,7 +22,10 @@ import static java.util.logging.Logger.getLogger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AcrobaticsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(AcrobaticsTest.class.getName());
@@ -38,12 +41,17 @@ class AcrobaticsTest extends MMOTestEnvironment {
         when(advancedConfig.getMaxBonusLevel(SubSkillType.ACROBATICS_ROLL)).thenReturn(1000);
         when(advancedConfig.getRollDamageThreshold()).thenReturn(7D);
 
-        Mockito.when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_ROLL, 1)).thenReturn(1); // needed?
-        Mockito.when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_DODGE, 1)).thenReturn(1000); // needed?
+        Mockito.when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_ROLL, 1))
+                .thenReturn(1); // needed?
+        Mockito.when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_DODGE, 1))
+                .thenReturn(1000); // needed?
 
-        when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_ROLL, 1)).thenReturn(1); // needed?
-        when(RankUtils.hasReachedRank(eq(1), any(Player.class), eq(SubSkillType.ACROBATICS_ROLL))).thenReturn(true);
-        when(RankUtils.hasReachedRank(eq(1), any(Player.class), any(AbstractSubSkill.class))).thenReturn(true);
+        when(RankUtils.getRankUnlockLevel(SubSkillType.ACROBATICS_ROLL, 1)).thenReturn(
+                1); // needed?
+        when(RankUtils.hasReachedRank(eq(1), any(Player.class),
+                eq(SubSkillType.ACROBATICS_ROLL))).thenReturn(true);
+        when(RankUtils.hasReachedRank(eq(1), any(Player.class),
+                any(AbstractSubSkill.class))).thenReturn(true);
     }
 
     @AfterEach
@@ -88,7 +96,7 @@ class AcrobaticsTest extends MMOTestEnvironment {
         verify(mockEvent, Mockito.never()).setDamage(any(Double.class));
     }
 
-    private @NotNull EntityDamageEvent mockEntityDamageEvent(double damage) {
+    private @NotNull EntityDamageEvent mockEntityDamageEvent(final double damage) {
         final EntityDamageEvent mockEvent = mock(EntityDamageEvent.class);
         when(mockEvent.isApplicable(any(EntityDamageEvent.DamageModifier.class))).thenReturn(true);
         when(mockEvent.getCause()).thenReturn(EntityDamageEvent.DamageCause.FALL);

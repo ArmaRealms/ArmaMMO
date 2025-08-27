@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class UserPurgeTask extends CancellableRunnable {
     private final ReentrantLock lock = new ReentrantLock();
+
     @Override
     public void run() {
         lock.lock();

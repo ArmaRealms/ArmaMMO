@@ -36,6 +36,7 @@ public final class AlchemyPotionBrewer {
      * This was introduced in Minecraft 1.21 if we drop support for versions older than 1.21 this can be removed.
      */
     private static final Method getItem, setItem;
+
     static {
         try {
             final Class<?> clazz = Class.forName("org.bukkit.inventory.InventoryView");

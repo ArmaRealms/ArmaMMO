@@ -20,7 +20,9 @@ public enum PartyFeature {
     }
 
     public String getFeatureLockedLocaleString() {
-        return LocaleLoader.getString("Ability.Generic.Template.Lock", LocaleLoader.getString("Party.Feature.Locked." + getConfigPartyFeatureString(this), mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(this)));
+        return LocaleLoader.getString("Ability.Generic.Template.Lock",
+                LocaleLoader.getString("Party.Feature.Locked." + getConfigPartyFeatureString(this),
+                        mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(this)));
     }
 
     public boolean hasPermission(Player player) {

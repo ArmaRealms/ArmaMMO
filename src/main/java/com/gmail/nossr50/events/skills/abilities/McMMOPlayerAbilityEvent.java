@@ -17,7 +17,7 @@ public class McMMOPlayerAbilityEvent extends McMMOPlayerSkillEvent {
      * Create a new McMMOPlayerAbilityEvent.
      *
      * @param player The player involved in this event
-     * @param skill The skill involved in this event
+     * @param skill  The skill involved in this event
      * @deprecated Use {@link #McMMOPlayerAbilityEvent(McMMOPlayer, PrimarySkillType)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
@@ -28,8 +28,9 @@ public class McMMOPlayerAbilityEvent extends McMMOPlayerSkillEvent {
 
     /**
      * Create a new McMMOPlayerAbilityEvent.
+     *
      * @param mmoPlayer The McMMOPlayer involved in this event
-     * @param skill The skill involved in this event
+     * @param skill     The skill involved in this event
      */
     protected McMMOPlayerAbilityEvent(McMMOPlayer mmoPlayer, PrimarySkillType skill) {
         super(mmoPlayer, skill);

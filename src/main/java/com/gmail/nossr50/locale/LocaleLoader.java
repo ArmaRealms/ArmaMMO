@@ -7,14 +7,25 @@ import net.kyori.adventure.text.TextComponent;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -23,18 +34,20 @@ import java.util.regex.Pattern;
 public final class LocaleLoader {
     private static final String BUNDLE_ROOT = "com.gmail.nossr50.locale.locale";
     private static final String OVERRIDE_FILE_NAME = "locale_override.properties";
+    // Matches the pattern &#RRGGBB
+    private static final Pattern hexPattern = Pattern.compile("&#([A-Fa-f0-9]{6})");
+    private static final Pattern minecraftHexPattern = Pattern.compile(
+            "§x(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])");
     // Must be concurrent to accomodate Folia
     private static Map<String, String> bundleCache = new ConcurrentHashMap<>();
     private static ResourceBundle bundle = null;
     private static ResourceBundle filesystemBundle = null;
     private static ResourceBundle enBundle = null;
-    // Matches the pattern &#RRGGBB
-    private static final Pattern hexPattern = Pattern.compile("&#([A-Fa-f0-9]{6})");
-    private static final Pattern minecraftHexPattern = Pattern.compile("§x(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])");
 
-    private LocaleLoader() {}
+    private LocaleLoader() {
+    }
 
-    public static String getString(String key) {
+    public static String getString(final String key) {
         return getString(key, (Object[]) null);
     }
 
@@ -43,32 +56,32 @@ public final class LocaleLoader {
      *
      * @param key              The key to look up the string with
      * @param messageArguments Any arguments to be added to the string
-     *
      * @return The properly formatted locale string
      */
-    public static String getString(String key, Object... messageArguments) {
+    public static String getString(final String key, final Object... messageArguments) {
         if (bundle == null) {
             initialize();
         }
 
-        String rawMessage = bundleCache.computeIfAbsent(key, LocaleLoader::getRawString);
+        final String rawMessage = bundleCache.computeIfAbsent(key, LocaleLoader::getRawString);
         return formatString(rawMessage, messageArguments);
     }
 
     /**
-     * Gets the appropriate TextComponent representation of a formatted string from the Locale files.
+     * Gets the appropriate TextComponent representation of a formatted string from the Locale
+     * files.
      *
      * @param key              The key to look up the string with
      * @param messageArguments Any arguments to be added to the text component
-     *
      * @return The properly formatted text component
      */
-    public static @NotNull TextComponent getTextComponent(@NotNull String key, Object... messageArguments) {
+    public static @NotNull TextComponent getTextComponent(@NotNull final String key,
+                                                          final Object... messageArguments) {
         if (bundle == null) {
             initialize();
         }
 
-        String rawMessage = bundleCache.computeIfAbsent(key, LocaleLoader::getRawString);
+        final String rawMessage = bundleCache.computeIfAbsent(key, LocaleLoader::getRawString);
         return formatComponent(rawMessage, messageArguments);
     }
 
@@ -83,22 +96,22 @@ public final class LocaleLoader {
         initialize();
     }
 
-    private static String getRawString(String key) {
+    private static String getRawString(final String key) {
         if (filesystemBundle != null) {
             try {
                 return filesystemBundle.getString(key);
-            } catch (MissingResourceException ignored) {
+            } catch (final MissingResourceException ignored) {
             }
         }
 
         try {
             return bundle.getString(key);
-        } catch (MissingResourceException ignored) {
+        } catch (final MissingResourceException ignored) {
         }
 
         try {
             return enBundle.getString(key);
-        } catch (MissingResourceException ignored) {
+        } catch (final MissingResourceException ignored) {
             if (!key.contains("Guides")) {
                 mcMMO.p.getLogger().warning("Could not find locale string: " + key);
             }
@@ -107,9 +120,9 @@ public final class LocaleLoader {
         }
     }
 
-    public static String formatString(String string, Object... messageArguments) {
+    public static String formatString(String string, final Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
+            final MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -119,9 +132,10 @@ public final class LocaleLoader {
         return string;
     }
 
-    public static @NotNull TextComponent formatComponent(@NotNull String string, Object... messageArguments) {
+    public static @NotNull TextComponent formatComponent(@NotNull String string,
+                                                         final Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
+            final MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -140,7 +154,7 @@ public final class LocaleLoader {
         if (bundle == null) {
             Locale locale = null;
 
-            String[] myLocale = mcMMO.p.getGeneralConfig().getLocale().split("[-_ ]");
+            final String[] myLocale = mcMMO.p.getGeneralConfig().getLocale().split("[-_ ]");
 
             if (myLocale.length == 1) {
                 locale = new Locale(myLocale[0]);
@@ -149,16 +163,19 @@ public final class LocaleLoader {
             }
 
             if (locale == null) {
-                throw new IllegalStateException("Failed to parse locale string '" + mcMMO.p.getGeneralConfig().getLocale() + "'");
+                throw new IllegalStateException(
+                        "Failed to parse locale string '" + mcMMO.p.getGeneralConfig().getLocale()
+                                + "'");
             }
 
-            Path localePath = Paths.get(mcMMO.getLocalesDirectory() + "locale_" + locale.toString() + ".properties");
-            Path overridePath = Paths.get(mcMMO.getLocalesDirectory() + OVERRIDE_FILE_NAME);
-            File overrideFile = overridePath.toFile();
+            final Path localePath = Paths.get(
+                    mcMMO.getLocalesDirectory() + "locale_" + locale + ".properties");
+            final Path overridePath = Paths.get(mcMMO.getLocalesDirectory() + OVERRIDE_FILE_NAME);
+            final File overrideFile = overridePath.toFile();
 
             if (Files.exists(localePath) && Files.isRegularFile(localePath)) {
 
-                File oldOverrideFile = localePath.toFile();
+                final File oldOverrideFile = localePath.toFile();
 
                 try {
                     //Copy the file
@@ -167,51 +184,62 @@ public final class LocaleLoader {
                     oldOverrideFile.delete();
 
                     //Insert our helpful text
-                    StringBuilder stringBuilder = new StringBuilder();
+                    final StringBuilder stringBuilder = new StringBuilder();
 
-                    try(BufferedReader bufferedReader = new BufferedReader(new FileReader(overrideFile.getPath()))) {
+                    try (final BufferedReader bufferedReader = new BufferedReader(
+                            new FileReader(overrideFile.getPath()))) {
                         // Open the file
                         String line;
-                        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm");
-                        LocalDateTime localDateTime = LocalDateTime.now();
-                        stringBuilder.append("# mcMMO Locale Override File created on ").append(localDateTime.format(dateTimeFormatter)).append("\r\n"); //Empty file
-                        stringBuilder.append(getLocaleHelpTextWithoutExamples()); //Add our helpful text
+                        final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+                                "MM/dd/yyyy HH:mm");
+                        final LocalDateTime localDateTime = LocalDateTime.now();
+                        stringBuilder.append("# mcMMO Locale Override File created on ")
+                                .append(localDateTime.format(dateTimeFormatter))
+                                .append("\r\n"); //Empty file
+                        stringBuilder.append(
+                                getLocaleHelpTextWithoutExamples()); //Add our helpful text
                         while ((line = bufferedReader.readLine()) != null) {
                             stringBuilder.append(line).append("\r\n");
                         }
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         e.printStackTrace();
                     }
 
-                    try(FileWriter fileWriter = new FileWriter(overrideFile.getPath())) {
+                    try (final FileWriter fileWriter = new FileWriter(overrideFile.getPath())) {
                         fileWriter.write(stringBuilder.toString());
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         e.printStackTrace();
                     }
 
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
                 }
             }
 
             //Use the new locale file
             if (Files.exists(overridePath) && Files.isRegularFile(overridePath)) {
-                try (Reader localeReader = Files.newBufferedReader(overridePath)) {
-                    LogUtils.debug(mcMMO.p.getLogger(), "Loading locale from " + overridePath.toString());
+                try (final Reader localeReader = Files.newBufferedReader(overridePath)) {
+                    LogUtils.debug(mcMMO.p.getLogger(),
+                            "Loading locale from " + overridePath);
                     filesystemBundle = new PropertyResourceBundle(localeReader);
-                } catch (IOException e) {
-                    mcMMO.p.getLogger().log(Level.WARNING, "Failed to load locale from " + overridePath, e);
+                } catch (final IOException e) {
+                    mcMMO.p.getLogger()
+                            .log(Level.WARNING, "Failed to load locale from " + overridePath, e);
                 }
             } else {
                 //Create a blank file and fill it in with some helpful text
-                try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(overrideFile, true))) {
+                try (final BufferedWriter bufferedWriter = new BufferedWriter(
+                        new FileWriter(overrideFile, true))) {
                     // Open the file to write the player
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm");
-                    LocalDateTime localDateTime = LocalDateTime.now();
-                    bufferedWriter.append("# mcMMO Locale Override File created on ").append(localDateTime.format(dateTimeFormatter)).append("\r\n"); //Empty file
-                    String localeExplanation = getLocaleHelpText();
+                    final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+                            "MM/dd/yyyy HH:mm");
+                    final LocalDateTime localDateTime = LocalDateTime.now();
+                    bufferedWriter.append("# mcMMO Locale Override File created on ")
+                            .append(localDateTime.format(dateTimeFormatter))
+                            .append("\r\n"); //Empty file
+                    final String localeExplanation = getLocaleHelpText();
                     bufferedWriter.append(localeExplanation);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -224,36 +252,53 @@ public final class LocaleLoader {
 
     @NotNull
     private static String getLocaleHelpText() {
-        String localeExplanation =
-                        "# -- Are you looking to change the language of mcMMO but without editing it yourself? --\n" +
+        final String localeExplanation =
+                "# -- Are you looking to change the language of mcMMO but without editing it yourself? --\n"
+                        +
                         "\n" +
-                        "# mcMMO has quite a few built in translations, you can choose which translation by editing config.yml with the appropriate locale code. The setting is `General.Locale` in config.yml\n" +
-                        "# Odds are, if you speak a popular language on earth we already have a translation for it.\n" +
-                        "# However our translations are done by the community, and update infrequently. (Please help us out <3)\n" +
-                        "# We would love more people to help update our locales, submit any updated translation file to our GitHub or email it to me at business@neetgames.com\n" +
-                        "# For a list of built in translations, view this link: https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n" +
+                        "# mcMMO has quite a few built in translations, you can choose which translation by editing config.yml with the appropriate locale code. The setting is `General.Locale` in config.yml\n"
+                        +
+                        "# Odds are, if you speak a popular language on earth we already have a translation for it.\n"
+                        +
+                        "# However our translations are done by the community, and update infrequently. (Please help us out <3)\n"
+                        +
+                        "# We would love more people to help update our locales, submit any updated translation file to our GitHub or email it to me at business@neetgames.com\n"
+                        +
+                        "# For a list of built in translations, view this link: https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n"
+                        +
                         "\n" +
                         "\n" +
                         "# -- Using a built in translation -- \n" +
-                        "# Assuming you read the above section, edit config.yml's General.Locale from en_US to the locale code that we support (see the above link), then reboot your server\n" +
+                        "# Assuming you read the above section, edit config.yml's General.Locale from en_US to the locale code that we support (see the above link), then reboot your server\n"
+                        +
                         "\n" +
                         "\n" +
-                        "# -- Do you want to change the text in mcMMO? Including adding colors? ( Locale Override ) -- \n" +
+                        "# -- Do you want to change the text in mcMMO? Including adding colors? ( Locale Override ) -- \n"
+                        +
                         "# First, a brief explanation.\n" +
-                        "# Locales are the language files used by mcMMO, they also contain color codes and most of the styling used by mcMMO.\n" +
-                        "# You can customize a locale outside of the JAR in version 2.1.51 and up.\n" +
+                        "# Locales are the language files used by mcMMO, they also contain color codes and most of the styling used by mcMMO.\n"
+                        +
+                        "# You can customize a locale outside of the JAR in version 2.1.51 and up.\n"
+                        +
                         "#\n" +
                         "# Locales can be overridden by editing this file\n" +
-                        "# You can find the up to date current locale files here https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n" +
-                        "# The master file is en_US, if a translation is missing entries (as they often are) it will pull from the en_US file https://github.com/mcMMO-Dev/mcMMO/blob/master/src/main/resources/locale/locale_en_US.properties\n" +
+                        "# You can find the up to date current locale files here https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n"
+                        +
+                        "# The master file is en_US, if a translation is missing entries (as they often are) it will pull from the en_US file https://github.com/mcMMO-Dev/mcMMO/blob/master/src/main/resources/locale/locale_en_US.properties\n"
+                        +
                         "#\n" +
-                        "# To override a locale, add entries to this file and copy ** only ** the strings you want to replace, otherwise you will not see any updated strings when mcMMO updates and will have to manually change them and read patch notes carefully.\n" +
-                        "# If you wish to replace every line in some way, feel free to copy the entire contents of this file, just be advised that you will need to be on top of locale updates in mcMMO and follow our changelog closely.\n" +
+                        "# To override a locale, add entries to this file and copy ** only ** the strings you want to replace, otherwise you will not see any updated strings when mcMMO updates and will have to manually change them and read patch notes carefully.\n"
+                        +
+                        "# If you wish to replace every line in some way, feel free to copy the entire contents of this file, just be advised that you will need to be on top of locale updates in mcMMO and follow our changelog closely.\n"
+                        +
                         "\n" +
                         "\n" +
-                        "# FIND KEYS HERE: On our github repo (en_US is our master file and has ALL the keys) -> https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n" +
-                        "# WARNING: Some keys in our master file are unused, make gratuitous use of Ctrl+F\n" +
-                        "# HOW TO APPLY: You can either restart the server for these changes to take effect or run /mcreloadlocale.\n" +
+                        "# FIND KEYS HERE: On our github repo (en_US is our master file and has ALL the keys) -> https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale\n"
+                        +
+                        "# WARNING: Some keys in our master file are unused, make gratuitous use of Ctrl+F\n"
+                        +
+                        "# HOW TO APPLY: You can either restart the server for these changes to take effect or run /mcreloadlocale.\n"
+                        +
                         "# -- Add Keys Below --\n" +
                         getExamples();
         return localeExplanation;
@@ -275,21 +320,21 @@ public final class LocaleLoader {
 
     @NotNull
     private static String getLocaleHelpTextWithoutExamples() {
-        String localeExplanation =
+        final String localeExplanation =
                 """
                         # -- Are you looking to change the language of mcMMO but without editing it yourself? --
-
+                        
                         # mcMMO has quite a few built in translations, you can choose which translation by editing config.yml with the appropriate locale code. The setting is `General.Locale` in config.yml
                         # Odds are, if you speak a popular language on earth we already have a translation for it.
                         # However our translations are done by the community, and update infrequently. (Please help us out <3)
                         # We would love more people to help update our locales, submit any updated translation file to our GitHub or email it to me at business@neetgames.com
                         # For a list of built in translations, view this link: https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale
-
-
+                        
+                        
                         # -- Using a built in translation --\s
                         # Assuming you read the above section, edit config.yml's General.Locale from en_US to the locale code that we support (see the above link), then reboot your server
-
-
+                        
+                        
                         # -- Do you want to change the text in mcMMO? Including adding colors? ( Locale Override ) --\s
                         # First, a brief explanation.
                         # Locales are the language files used by mcMMO, they also contain color codes and most of the styling used by mcMMO.
@@ -301,8 +346,8 @@ public final class LocaleLoader {
                         #
                         # To override a locale, add entries to this file and copy ** only ** the strings you want to replace, otherwise you will not see any updated strings when mcMMO updates and will have to manually change them and read patch notes carefully.
                         # If you wish to replace every line in some way, feel free to copy the entire contents of this file, just be advised that you will need to be on top of locale updates in mcMMO and follow our changelog closely.
-
-
+                        
+                        
                         # WARNING: Locales only support ASCII and UTF16 characters at the moment, so you'll need to run special characters through a UTF16 converter (google it) to get them to work. This will be fixed in the future!
                         # FIND KEYS HERE: On our github repo (en_US is our master file and has ALL the keys) -> https://github.com/mcMMO-Dev/mcMMO/tree/master/src/main/resources/locale
                         # WARNING: Some keys in our master file are unused, make gratuitous use of Ctrl+F
@@ -370,17 +415,17 @@ public final class LocaleLoader {
     /**
      * Translates hex color codes to the appropriate Minecraft color codes.
      * <p>
-     *     Hex color codes are in the format of &#RRGGBB
-     *     Minecraft color codes are in the format of §x§R§R§G§G§B§B
-     *     Where R, G, and B are the red, green, and blue values respectively.
-     *     The §x is a special character that tells Minecraft to use the following color codes as hex values.
-     *     The §R§R is the red value, the §G§G is the green value, and the §B§B is the blue value.
-     *     Example: §x§R§R§G§G§B§B is the equivalent of the hex color code &#RRGGBB
+     * Hex color codes are in the format of &#RRGGBB Minecraft color codes are in the format of
+     * §x§R§R§G§G§B§B Where R, G, and B are the red, green, and blue values respectively. The §x is
+     * a special character that tells Minecraft to use the following color codes as hex values. The
+     * §R§R is the red value, the §G§G is the green value, and the §B§B is the blue statVal. Example:
+     * §x§R§R§G§G§B§B is the equivalent of the hex color code &#RRGGBB
      * </p>
+     *
      * @param messageWithHex The message with hex color codes to translate
      * @return The message with the hex color codes translated to Minecraft color codes
      */
-    public static String translateHexColorCodes(String messageWithHex) {
+    public static String translateHexColorCodes(final String messageWithHex) {
         if (messageWithHex == null) {
             return null;
         }
@@ -388,8 +433,8 @@ public final class LocaleLoader {
         final Matcher matcher = hexPattern.matcher(messageWithHex);
         final StringBuilder buffer = new StringBuilder(messageWithHex.length() + 4 * 8);
         while (matcher.find()) {
-            String group = matcher.group(1);
-            String hexEquivalent = "§x" +
+            final String group = matcher.group(1);
+            final String hexEquivalent = "§x" +
                     "§" + group.charAt(0) + "§" + group.charAt(1) +
                     "§" + group.charAt(2) + "§" + group.charAt(3) +
                     "§" + group.charAt(4) + "§" + group.charAt(5);
@@ -399,13 +444,13 @@ public final class LocaleLoader {
     }
 
     // Method to reverse the transformation from Minecraft color codes to hex codes
-    public static String reverseTranslateHexColorCodes(String minecraftColorString) {
+    public static String reverseTranslateHexColorCodes(final String minecraftColorString) {
         // Matches the Minecraft color pattern: §x§R§R§G§G§B§B
-        Matcher matcher = minecraftHexPattern.matcher(minecraftColorString);
-        StringBuilder buffer = new StringBuilder();
+        final Matcher matcher = minecraftHexPattern.matcher(minecraftColorString);
+        final StringBuilder buffer = new StringBuilder();
 
         while (matcher.find()) {
-            String hexColor = "#" +
+            final String hexColor = "#" +
                     matcher.group(1).substring(1) + matcher.group(2).substring(1) +
                     matcher.group(3).substring(1) + matcher.group(4).substring(1) +
                     matcher.group(5).substring(1) + matcher.group(6).substring(1);

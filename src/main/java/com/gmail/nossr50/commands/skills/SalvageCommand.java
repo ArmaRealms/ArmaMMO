@@ -30,12 +30,14 @@ public class SalvageCommand extends SkillCommand {
 
     @Override
     protected void permissionsCheck(Player player) {
-        canScrapCollector = Permissions.canUseSubSkill(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
+        canScrapCollector = Permissions.canUseSubSkill(player,
+                SubSkillType.SALVAGE_SCRAP_COLLECTOR);
         canArcaneSalvage = Permissions.canUseSubSkill(player, SubSkillType.SALVAGE_ARCANE_SALVAGE);
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance, boolean isLucky) {
+    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
         SalvageManager salvageManager = mmoPlayer.getSalvageManager();
 
@@ -52,11 +54,15 @@ public class SalvageCommand extends SkillCommand {
                     String.valueOf(RankUtils.getHighestRank(SubSkillType.SALVAGE_ARCANE_SALVAGE))));
 
             if (Salvage.arcaneSalvageEnchantLoss) {
-                messages.add(LocaleLoader.getString("Ability.Generic.Template", LocaleLoader.getString("Salvage.Arcane.ExtractFull"), percent.format(salvageManager.getExtractFullEnchantChance() / 100)));
+                messages.add(LocaleLoader.getString("Ability.Generic.Template",
+                        LocaleLoader.getString("Salvage.Arcane.ExtractFull"),
+                        percent.format(salvageManager.getExtractFullEnchantChance() / 100)));
             }
 
             if (Salvage.arcaneSalvageDowngrades) {
-                messages.add(LocaleLoader.getString("Ability.Generic.Template", LocaleLoader.getString("Salvage.Arcane.ExtractPartial"), percent.format(salvageManager.getExtractPartialEnchantChance() / 100)));
+                messages.add(LocaleLoader.getString("Ability.Generic.Template",
+                        LocaleLoader.getString("Salvage.Arcane.ExtractPartial"),
+                        percent.format(salvageManager.getExtractPartialEnchantChance() / 100)));
             }
         }
 
@@ -67,7 +73,8 @@ public class SalvageCommand extends SkillCommand {
     protected List<Component> getTextComponents(Player player) {
         List<Component> textComponents = new ArrayList<>();
 
-        TextComponentFactory.getSubSkillTextComponents(player, textComponents, PrimarySkillType.SALVAGE);
+        TextComponentFactory.getSubSkillTextComponents(player, textComponents,
+                PrimarySkillType.SALVAGE);
 
         return textComponents;
     }

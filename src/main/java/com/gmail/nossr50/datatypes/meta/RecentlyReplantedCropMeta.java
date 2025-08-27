@@ -10,7 +10,7 @@ public class RecentlyReplantedCropMeta extends FixedMetadataValue {
      *
      * @param owningPlugin the {@link Plugin} that created this metadata value
      */
-    public RecentlyReplantedCropMeta(Plugin owningPlugin, Boolean recentlyPlanted) {
+    public RecentlyReplantedCropMeta(final Plugin owningPlugin, final Boolean recentlyPlanted) {
         super(owningPlugin, recentlyPlanted);
     }
 

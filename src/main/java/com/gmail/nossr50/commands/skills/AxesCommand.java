@@ -44,14 +44,15 @@ public class AxesCommand extends SkillCommand {
         if (canAxeMastery) {
             axeMasteryDamage = Axes.getAxeMasteryBonusDamage(player);
         }
-        
+
         // CRITICAL HIT
         if (canCritical) {
-            String[] criticalHitStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, SubSkillType.AXES_CRITICAL_STRIKES);
+            String[] criticalHitStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                    SubSkillType.AXES_CRITICAL_STRIKES);
             critChance = criticalHitStrings[0];
             critChanceLucky = criticalHitStrings[1];
         }
-        
+
         // SKULL SPLITTER
         if (canSkullSplitter) {
             String[] skullSplitterStrings = calculateLengthDisplayValues(player, skillValue);
@@ -62,7 +63,9 @@ public class AxesCommand extends SkillCommand {
 
     @Override
     protected void permissionsCheck(Player player) {
-        canSkullSplitter = Permissions.skullSplitter(player) && RankUtils.hasUnlockedSubskill(player, SubSkillType.AXES_SKULL_SPLITTER);
+        canSkullSplitter =
+                Permissions.skullSplitter(player) && RankUtils.hasUnlockedSubskill(player,
+                        SubSkillType.AXES_SKULL_SPLITTER);
         canCritical = Permissions.canUseSubSkill(player, SubSkillType.AXES_CRITICAL_STRIKES);
         canAxeMastery = Permissions.canUseSubSkill(player, SubSkillType.AXES_AXE_MASTERY);
         canImpact = Permissions.canUseSubSkill(player, SubSkillType.AXES_ARMOR_IMPACT);
@@ -70,34 +73,44 @@ public class AxesCommand extends SkillCommand {
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance, boolean isLucky) {
+    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
 
         if (canImpact) {
-            messages.add(LocaleLoader.getString("Ability.Generic.Template", LocaleLoader.getString("Axes.Ability.Bonus.2"), LocaleLoader.getString("Axes.Ability.Bonus.3", impactDamage)));
+            messages.add(LocaleLoader.getString("Ability.Generic.Template",
+                    LocaleLoader.getString("Axes.Ability.Bonus.2"),
+                    LocaleLoader.getString("Axes.Ability.Bonus.3", impactDamage)));
         }
-        
+
         if (canAxeMastery) {
-            messages.add(LocaleLoader.getString("Ability.Generic.Template", LocaleLoader.getString("Axes.Ability.Bonus.0"), LocaleLoader.getString("Axes.Ability.Bonus.1", axeMasteryDamage)));
+            messages.add(LocaleLoader.getString("Ability.Generic.Template",
+                    LocaleLoader.getString("Axes.Ability.Bonus.0"),
+                    LocaleLoader.getString("Axes.Ability.Bonus.1", axeMasteryDamage)));
         }
 
         if (canCritical) {
             messages.add(getStatMessage(SubSkillType.AXES_CRITICAL_STRIKES, critChance)
-                    + (isLucky ? LocaleLoader.getString("Perks.Lucky.Bonus", critChanceLucky) : ""));
+                    + (isLucky ? LocaleLoader.getString("Perks.Lucky.Bonus", critChanceLucky)
+                    : ""));
         }
-        
+
         if (canGreaterImpact) {
-            messages.add(LocaleLoader.getString("Ability.Generic.Template", LocaleLoader.getString("Axes.Ability.Bonus.4"), LocaleLoader.getString("Axes.Ability.Bonus.5", Axes.greaterImpactBonusDamage)));
+            messages.add(LocaleLoader.getString("Ability.Generic.Template",
+                    LocaleLoader.getString("Axes.Ability.Bonus.4"),
+                    LocaleLoader.getString("Axes.Ability.Bonus.5", Axes.greaterImpactBonusDamage)));
         }
 
         if (canSkullSplitter) {
             messages.add(getStatMessage(SubSkillType.AXES_SKULL_SPLITTER, skullSplitterLength)
-                    + (hasEndurance ? LocaleLoader.getString("Perks.ActivationTime.Bonus", skullSplitterLengthEndurance) : ""));
+                    + (hasEndurance ? LocaleLoader.getString("Perks.ActivationTime.Bonus",
+                    skullSplitterLengthEndurance) : ""));
         }
 
         if (Permissions.canUseSubSkill(player, SubSkillType.AXES_AXES_LIMIT_BREAK)) {
             messages.add(getStatMessage(SubSkillType.AXES_AXES_LIMIT_BREAK,
-                    String.valueOf(CombatUtils.getLimitBreakDamageAgainstQuality(player, SubSkillType.AXES_AXES_LIMIT_BREAK, 1000))));
+                    String.valueOf(CombatUtils.getLimitBreakDamageAgainstQuality(player,
+                            SubSkillType.AXES_AXES_LIMIT_BREAK, 1000))));
         }
 
         return messages;
@@ -107,7 +120,8 @@ public class AxesCommand extends SkillCommand {
     protected List<Component> getTextComponents(Player player) {
         final List<Component> textComponents = new ArrayList<>();
 
-        TextComponentFactory.getSubSkillTextComponents(player, textComponents, PrimarySkillType.AXES);
+        TextComponentFactory.getSubSkillTextComponents(player, textComponents,
+                PrimarySkillType.AXES);
 
         return textComponents;
     }

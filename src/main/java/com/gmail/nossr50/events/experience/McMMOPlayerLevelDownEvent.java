@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when a user loses levels in a skill
  */
 public class McMMOPlayerLevelDownEvent extends McMMOPlayerLevelChangeEvent {
+    private static final HandlerList handlers = new HandlerList();
     private int levelsLost;
 
     @Deprecated
@@ -24,21 +25,20 @@ public class McMMOPlayerLevelDownEvent extends McMMOPlayerLevelChangeEvent {
         this.levelsLost = levelsLost;
     }
 
-    public McMMOPlayerLevelDownEvent(Player player, PrimarySkillType skill, XPGainReason xpGainReason) {
+    public McMMOPlayerLevelDownEvent(Player player, PrimarySkillType skill,
+                                     XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
         this.levelsLost = 1;
     }
 
-    public McMMOPlayerLevelDownEvent(Player player, PrimarySkillType skill, int levelsLost, XPGainReason xpGainReason) {
+    public McMMOPlayerLevelDownEvent(Player player, PrimarySkillType skill, int levelsLost,
+                                     XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
         this.levelsLost = levelsLost;
     }
 
-    /**
-     * @param levelsLost Set the number of levels lost in this event
-     */
-    public void setLevelsLost(int levelsLost) {
-        this.levelsLost = levelsLost;
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -48,14 +48,15 @@ public class McMMOPlayerLevelDownEvent extends McMMOPlayerLevelChangeEvent {
         return levelsLost;
     }
 
-    private static final HandlerList handlers = new HandlerList();
+    /**
+     * @param levelsLost Set the number of levels lost in this event
+     */
+    public void setLevelsLost(int levelsLost) {
+        this.levelsLost = levelsLost;
+    }
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

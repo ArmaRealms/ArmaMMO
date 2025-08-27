@@ -35,14 +35,29 @@ public class MacesManager extends SkillManager {
         return (namespacedKey != null) ? Registry.EFFECT.get(namespacedKey) : null;
     }
 
+    public static int getCrippleTickDuration(boolean isPlayerTarget) {
+        // TODO: Make configurable
+        if (isPlayerTarget) {
+            return 20;
+        } else {
+            return 30;
+        }
+    }
+
+    public static int getCrippleStrength(boolean isPlayerTarget) {
+        // TODO: Make configurable
+        return isPlayerTarget ? 1 : 2;
+    }
+
     /**
      * Get the Crush damage bonus.
      *
      * @return the Crush damage bonus.
      */
     public double getCrushDamage() {
-        if (!Permissions.canUseSubSkill(mmoPlayer.getPlayer(), SubSkillType.MACES_CRUSH))
+        if (!Permissions.canUseSubSkill(mmoPlayer.getPlayer(), SubSkillType.MACES_CRUSH)) {
             return 0;
+        }
 
         int rank = RankUtils.getRank(getPlayer(), SubSkillType.MACES_CRUSH);
 
@@ -84,7 +99,8 @@ public class MacesManager extends SkillManager {
         double crippleOdds = (mcMMO.p.getAdvancedConfig().getCrippleChanceToApplyOnHit(crippleRank)
                 * mmoPlayer.getAttackStrength());
 
-        if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.MACES, mmoPlayer, crippleOdds)) {
+        if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.MACES, mmoPlayer,
+                crippleOdds)) {
             if (mmoPlayer.useChatNotifications()) {
                 NotificationManager.sendPlayerInformation(mmoPlayer.getPlayer(),
                         NotificationType.SUBSKILL_MESSAGE, "Maces.SubSkill.Cripple.Activated");
@@ -96,19 +112,5 @@ public class MacesManager extends SkillManager {
                     getCrippleStrength(isPlayerTarget)));
             ParticleEffectUtils.playCrippleEffect(target);
         }
-    }
-
-    public static int getCrippleTickDuration(boolean isPlayerTarget) {
-        // TODO: Make configurable
-        if (isPlayerTarget) {
-            return 20;
-        } else {
-            return 30;
-        }
-    }
-
-    public static int getCrippleStrength(boolean isPlayerTarget) {
-        // TODO: Make configurable
-        return isPlayerTarget ? 1 : 2;
     }
 }

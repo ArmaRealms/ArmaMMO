@@ -26,7 +26,8 @@ class FlatFileDataUtilTest {
     @Test
     void testTooManyDataEntriesSplitString() {
         Assertions.assertThrows(AssertionError.class, () -> {
-            FlatFileDataContainer dataContainer = new CategorizedFlatFileData(0, new HashSet<>(), new String[FlatFileDatabaseManager.DATA_ENTRY_COUNT + 1]);
+            final FlatFileDataContainer dataContainer = new CategorizedFlatFileData(0, new HashSet<>(),
+                    new String[FlatFileDatabaseManager.DATA_ENTRY_COUNT + 1]);
             FlatFileDataUtil.getPreparedSaveDataLine(dataContainer);
         });
     }

@@ -8,7 +8,8 @@ import org.bukkit.event.Cancellable;
 
 import java.util.Objects;
 
-public class McMMOPlayerAbilityActivateEvent extends McMMOPlayerAbilityEvent implements Cancellable {
+public class McMMOPlayerAbilityActivateEvent extends McMMOPlayerAbilityEvent implements
+        Cancellable {
     private boolean cancelled;
 
     @Deprecated(forRemoval = true, since = "2.2.010")

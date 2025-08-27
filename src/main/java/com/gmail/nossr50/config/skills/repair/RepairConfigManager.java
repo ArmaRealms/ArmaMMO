@@ -20,8 +20,9 @@ public class RepairConfigManager {
         repairables.addAll(mainRepairConfig.getLoadedRepairables());
 
         for (String fileName : dataFolder.list()) {
-            if (fileName.equals(REPAIR_VANILLA_YML))
+            if (fileName.equals(REPAIR_VANILLA_YML)) {
                 continue;
+            }
 
             if (!pattern.matcher(fileName).matches()) {
                 continue;

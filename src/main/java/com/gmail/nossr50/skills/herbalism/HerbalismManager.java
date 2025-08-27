@@ -141,31 +141,6 @@ public class HerbalismManager extends SkillManager {
         }
     }
 
-    private class CheckBushAge extends CancellableRunnable {
-
-        @NotNull
-        Block block;
-        @NotNull
-        McMMOPlayer mmoPlayer;
-        int xpReward;
-
-        public CheckBushAge(@NotNull Block block, @NotNull McMMOPlayer mmoPlayer, int xpReward) {
-            this.block = block;
-            this.mmoPlayer = mmoPlayer;
-            this.xpReward = xpReward;
-        }
-
-        @Override
-        public void run() {
-            BlockState blockState = block.getState();
-
-            if (blockState.getType().toString().equalsIgnoreCase("sweet_berry_bush") && blockState.getBlockData() instanceof Ageable ageable && (ageable.getAge() <= 1)) {
-                applyXpGain(xpReward, XPGainReason.PVE, XPGainSource.SELF);
-            }
-        }
-    }
-
-
     public boolean canUseHylianLuck() {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.HERBALISM_HYLIAN_LUCK)) return false;
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.HERBALISM_HYLIAN_LUCK);
@@ -559,7 +534,6 @@ public class HerbalismManager extends SkillManager {
             addChorusTreeBrokenBlocks(currentBlock.getRelative(blockFace, 1), traversed);
     }
 
-
     protected void addBrokenBlocksMultiBlockPlants(BlockState brokenBlock, Set<Block> brokenBlocks) {
         if (isChorusBranch(brokenBlock.getType())) {
             addChorusTreeBrokenBlocks(brokenBlock.getBlock(), brokenBlocks);
@@ -840,5 +814,29 @@ public class HerbalismManager extends SkillManager {
             return Math.min(RankUtils.getHighestRank(SubSkillType.HERBALISM_GREEN_THUMB), RankUtils.getRank(getPlayer(), SubSkillType.HERBALISM_GREEN_THUMB) + 1);
         }
         return RankUtils.getRank(getPlayer(), SubSkillType.HERBALISM_GREEN_THUMB);
+    }
+
+    private class CheckBushAge extends CancellableRunnable {
+
+        @NotNull
+        Block block;
+        @NotNull
+        McMMOPlayer mmoPlayer;
+        int xpReward;
+
+        public CheckBushAge(@NotNull Block block, @NotNull McMMOPlayer mmoPlayer, int xpReward) {
+            this.block = block;
+            this.mmoPlayer = mmoPlayer;
+            this.xpReward = xpReward;
+        }
+
+        @Override
+        public void run() {
+            BlockState blockState = block.getState();
+
+            if (blockState.getType().toString().equalsIgnoreCase("sweet_berry_bush") && blockState.getBlockData() instanceof Ageable ageable && (ageable.getAge() <= 1)) {
+                applyXpGain(xpReward, XPGainReason.PVE, XPGainSource.SELF);
+            }
+        }
     }
 }

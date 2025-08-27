@@ -4,7 +4,11 @@ import com.gmail.nossr50.mcMMO;
 import com.google.common.io.Files;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -14,7 +18,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.*;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertChunkStoreEquals;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertEqualIgnoreMinMax;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.serializeChunkStore;
 import static com.gmail.nossr50.util.blockmeta.UserBlockTrackerTest.recursiveDelete;
 import static org.bukkit.Bukkit.getWorld;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -24,6 +32,9 @@ import static org.mockito.Mockito.when;
 
 class BitSetChunkStoreTest {
     private static File tempDir;
+    private World mockWorld;
+    private MockedStatic<Bukkit> bukkitMock;
+    private MockedStatic<mcMMO> mcMMOMock;
 
     @BeforeAll
     public static void setUpClass() {
@@ -35,14 +46,9 @@ class BitSetChunkStoreTest {
         recursiveDelete(tempDir);
     }
 
-    private World mockWorld;
-
-    private MockedStatic<Bukkit> bukkitMock;
-    private MockedStatic<mcMMO> mcMMOMock;
-
     @BeforeEach
     void setUpMock() {
-        UUID worldUUID = UUID.randomUUID();
+        final UUID worldUUID = UUID.randomUUID();
         mockWorld = Mockito.mock(World.class);
         when(mockWorld.getUID()).thenReturn(worldUUID);
         when(mockWorld.getMaxHeight()).thenReturn(256);
@@ -87,8 +93,9 @@ class BitSetChunkStoreTest {
         original.setTrue(14, 89, 12);
         original.setTrue(14, 90, 12);
         original.setTrue(13, 89, 12);
-        byte[] serializedBytes = serializeChunkStore(original);
-        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(new DataInputStream(new ByteArrayInputStream(serializedBytes)));
+        final byte[] serializedBytes = serializeChunkStore(original);
+        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(
+                new DataInputStream(new ByteArrayInputStream(serializedBytes)));
         assertChunkStoreEquals(original, deserialized);
     }
 
@@ -100,8 +107,9 @@ class BitSetChunkStoreTest {
         original.setTrue(14, -32, 12);
         original.setTrue(14, -64, 12);
         original.setTrue(13, -63, 12);
-        byte[] serializedBytes = serializeChunkStore(original);
-        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(new DataInputStream(new ByteArrayInputStream(serializedBytes)));
+        final byte[] serializedBytes = serializeChunkStore(original);
+        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(
+                new DataInputStream(new ByteArrayInputStream(serializedBytes)));
         assertChunkStoreEquals(original, deserialized);
     }
 
@@ -111,10 +119,11 @@ class BitSetChunkStoreTest {
         original.setTrue(14, 1, 12);
         original.setTrue(14, 2, 12);
         original.setTrue(13, 3, 12);
-        byte[] serializedBytes = serializeChunkStore(original);
+        final byte[] serializedBytes = serializeChunkStore(original);
 
         when(mockWorld.getMinHeight()).thenReturn(-64);
-        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(new DataInputStream(new ByteArrayInputStream(serializedBytes)));
+        final ChunkStore deserialized = BitSetChunkStore.Serialization.readChunkStore(
+                new DataInputStream(new ByteArrayInputStream(serializedBytes)));
         assert deserialized != null;
         assertEqualIgnoreMinMax(original, deserialized);
     }

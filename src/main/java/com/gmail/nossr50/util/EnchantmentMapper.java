@@ -25,7 +25,7 @@ public class EnchantmentMapper {
         this.featherFalling = initFeatherFalling();
         this.luckOfTheSea = initLuckOfTheSea();
     }
-    
+
     private static @Nullable Enchantment mockSpigotMatch(@NotNull String input) {
         // Replicates match() behaviour for older versions lacking this API
         final String filtered = input.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");

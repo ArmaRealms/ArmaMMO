@@ -46,8 +46,10 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
 
         final ItemStack inHand = player.getInventory().getItemInMainHand();
 
-        if (!ItemUtils.isChimaeraWing(inHand) || inHand.getAmount() < mcMMO.p.getGeneralConfig().getChimaeraUseCost()) {
-            player.sendMessage(LocaleLoader.getString("Skills.NeedMore", LocaleLoader.getString("Item.ChimaeraWing.Name")));
+        if (!ItemUtils.isChimaeraWing(inHand) || inHand.getAmount() < mcMMO.p.getGeneralConfig()
+                .getChimaeraUseCost()) {
+            player.sendMessage(LocaleLoader.getString("Skills.NeedMore",
+                    LocaleLoader.getString("Item.ChimaeraWing.Name")));
             return;
         }
 
@@ -55,7 +57,8 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
         int hurtCooldown = mcMMO.p.getGeneralConfig().getChimaeraRecentlyHurtCooldown();
 
         if (hurtCooldown > 0) {
-            int timeRemaining = SkillUtils.calculateTimeLeft(recentlyHurt * Misc.TIME_CONVERSION_FACTOR, hurtCooldown, player);
+            int timeRemaining = SkillUtils.calculateTimeLeft(
+                    recentlyHurt * Misc.TIME_CONVERSION_FACTOR, hurtCooldown, player);
 
             if (timeRemaining > 0) {
                 player.sendMessage(LocaleLoader.getString("Item.Injured.Wait", timeRemaining));
@@ -69,8 +72,10 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
     private void chimaeraExecuteTeleport() {
         final Player player = mmoPlayer.getPlayer();
 
-        if (mcMMO.p.getGeneralConfig().getChimaeraUseBedSpawn() && player.getBedSpawnLocation() != null) {
-            mcMMO.p.getFoliaLib().getScheduler().teleportAsync(player, player.getBedSpawnLocation());
+        if (mcMMO.p.getGeneralConfig().getChimaeraUseBedSpawn()
+                && player.getBedSpawnLocation() != null) {
+            mcMMO.p.getFoliaLib().getScheduler()
+                    .teleportAsync(player, player.getBedSpawnLocation());
         } else {
             final Location spawnLocation = player.getWorld().getSpawnLocation();
             if (spawnLocation.getBlock().getType() == Material.AIR) {
@@ -81,7 +86,8 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
             }
         }
 
-        expendChimaeraWing(player, mcMMO.p.getGeneralConfig().getChimaeraUseCost(), player.getInventory().getItemInMainHand());
+        expendChimaeraWing(player, mcMMO.p.getGeneralConfig().getChimaeraUseCost(),
+                player.getInventory().getItemInMainHand());
         mmoPlayer.actualizeChimeraWingLastUse();
         mmoPlayer.setTeleportCommenceLocation(null);
 
@@ -89,6 +95,7 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
             SoundManager.sendSound(player, location, SoundType.CHIMAERA_WING);
         }
 
-        NotificationManager.sendPlayerInformation(player, NotificationType.ITEM_MESSAGE, "Item.ChimaeraWing.Pass");
+        NotificationManager.sendPlayerInformation(player, NotificationType.ITEM_MESSAGE,
+                "Item.ChimaeraWing.Pass");
     }
 }

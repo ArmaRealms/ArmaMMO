@@ -26,8 +26,10 @@ public class AlchemyPotion {
                          @NotNull Map<ItemStack, String> alchemyPotionChildren) {
         this.potionConfigName = requireNonNull(potionConfigName, "potionConfigName cannot be null");
         this.potionItemStack = requireNonNull(potionItemStack, "potionItemStack cannot be null");
-        this.alchemyPotionChildren = requireNonNull(alchemyPotionChildren, "alchemyPotionChildren cannot be null");
-        this.potionItemMeta = requireNonNull(potionItemStack.getItemMeta(), "potionItemMeta cannot be null"); // The potion item meta should never be null because it is a potion, but if it is null, then something went terribly wrong
+        this.alchemyPotionChildren = requireNonNull(alchemyPotionChildren,
+                "alchemyPotionChildren cannot be null");
+        this.potionItemMeta = requireNonNull(potionItemStack.getItemMeta(),
+                "potionItemMeta cannot be null"); // The potion item meta should never be null because it is a potion, but if it is null, then something went terribly wrong
     }
 
     public @NotNull ItemStack toItemStack(int amount) {
@@ -135,10 +137,16 @@ public class AlchemyPotion {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         AlchemyPotion that = (AlchemyPotion) o;
-        return Objects.equals(potionConfigName, that.potionConfigName) && Objects.equals(potionItemStack, that.potionItemStack) && Objects.equals(alchemyPotionChildren, that.alchemyPotionChildren);
+        return Objects.equals(potionConfigName, that.potionConfigName) && Objects.equals(
+                potionItemStack, that.potionItemStack) && Objects.equals(alchemyPotionChildren,
+                that.alchemyPotionChildren);
     }
 
     @Override

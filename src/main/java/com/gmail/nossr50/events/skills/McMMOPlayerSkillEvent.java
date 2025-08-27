@@ -14,6 +14,10 @@ import static java.util.Objects.requireNonNull;
  * Generic event for mcMMO skill handling.
  */
 public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final HandlerList handlers = new HandlerList();
     protected @NotNull PrimarySkillType skill;
     protected int skillLevel;
     protected McMMOPlayer mmoPlayer;
@@ -21,7 +25,7 @@ public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
     @Deprecated(forRemoval = true, since = "2.2.010")
     protected McMMOPlayerSkillEvent(@NotNull Player player, @NotNull PrimarySkillType skill) {
         super(player);
-        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         requireNonNull(mmoPlayer, "Player not found in UserManager," +
                 "contact the dev and tell them to use the constructor for" +
                 " McMMOPlayerSkillEvent(McMMOPlayer, PrimarySkillType) instead");
@@ -29,12 +33,17 @@ public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
         this.skillLevel = mmoPlayer.getSkillLevel(skill);
     }
 
-    protected McMMOPlayerSkillEvent(@NotNull McMMOPlayer mmoPlayer, @NotNull PrimarySkillType primarySkillType) {
+    protected McMMOPlayerSkillEvent(@NotNull McMMOPlayer mmoPlayer,
+                                    @NotNull PrimarySkillType primarySkillType) {
         super(mmoPlayer.getPlayer());
         requireNonNull(mmoPlayer, "mmoPlayer cannot be null");
         requireNonNull(primarySkillType, "primarySkillType cannot be null");
         this.skill = primarySkillType;
         this.skillLevel = mmoPlayer.getSkillLevel(primarySkillType);
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -51,9 +60,6 @@ public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
         return skillLevel;
     }
 
-    /** Rest of file is required boilerplate for custom events **/
-    private static final HandlerList handlers = new HandlerList();
-
     /**
      * Returns the {@link McMMOPlayer} associated with this event.
      *
@@ -65,10 +71,6 @@ public abstract class McMMOPlayerSkillEvent extends PlayerEvent {
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

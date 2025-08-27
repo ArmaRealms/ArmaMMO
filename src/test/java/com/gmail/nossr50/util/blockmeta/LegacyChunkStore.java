@@ -14,15 +14,15 @@ import java.util.UUID;
  */
 class LegacyChunkStore implements ChunkStore, Serializable {
     private static final long serialVersionUID = -1L;
-    transient private boolean dirty = false;
-    public boolean[][][] store;
     private static final int CURRENT_VERSION = 7;
     private static final int MAGIC_NUMBER = 0xEA5EDEBB;
     private final int cx;
     private final int cz;
     private final @NotNull UUID worldUid;
+    public boolean[][][] store;
+    transient private boolean dirty = false;
 
-    public LegacyChunkStore(@NotNull World world, int cx, int cz) {
+    public LegacyChunkStore(@NotNull final World world, final int cx, final int cz) {
         this.cx = cx;
         this.cz = cz;
         this.worldUid = world.getUID();
@@ -35,7 +35,7 @@ class LegacyChunkStore implements ChunkStore, Serializable {
     }
 
     @Override
-    public void setDirty(boolean dirty) {
+    public void setDirty(final boolean dirty) {
         this.dirty = dirty;
     }
 
@@ -65,30 +65,33 @@ class LegacyChunkStore implements ChunkStore, Serializable {
     }
 
     @Override
-    public boolean isTrue(int x, int y, int z) {
+    public boolean isTrue(final int x, final int y, final int z) {
         return store[x][z][y];
     }
 
     @Override
-    public void setTrue(int x, int y, int z) {
-        if (y >= store[0][0].length || y < 0)
+    public void setTrue(final int x, final int y, final int z) {
+        if (y >= store[0][0].length || y < 0) {
             return;
+        }
         store[x][z][y] = true;
         dirty = true;
     }
 
     @Override
-    public void setFalse(int x, int y, int z) {
-        if (y >= store[0][0].length || y < 0)
+    public void setFalse(final int x, final int y, final int z) {
+        if (y >= store[0][0].length || y < 0) {
             return;
+        }
         store[x][z][y] = false;
         dirty = true;
     }
 
     @Override
-    public void set(int x, int y, int z, boolean value) {
-        if (y >= store[0][0].length || y < 0)
+    public void set(final int x, final int y, final int z, final boolean value) {
+        if (y >= store[0][0].length || y < 0) {
             return;
+        }
         store[x][z][y] = value;
         dirty = true;
     }
@@ -107,7 +110,7 @@ class LegacyChunkStore implements ChunkStore, Serializable {
         return true;
     }
 
-    private void writeObject(@NotNull ObjectOutputStream out) throws IOException {
+    private void writeObject(@NotNull final ObjectOutputStream out) throws IOException {
         out.writeInt(MAGIC_NUMBER);
         out.writeInt(CURRENT_VERSION);
 
@@ -120,7 +123,8 @@ class LegacyChunkStore implements ChunkStore, Serializable {
         dirty = false;
     }
 
-    private void readObject(@NotNull ObjectInputStream in) throws IOException, ClassNotFoundException {
+    private void readObject(@NotNull final ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
         throw new UnsupportedOperationException();
     }
 

@@ -19,6 +19,7 @@ class TridentsTest extends MMOTestEnvironment {
 
     TridentsManager tridentsManager;
     ItemStack trident;
+
     @BeforeEach
     void setUp() throws InvalidSkillException {
         mockBaseEnvironment(logger);

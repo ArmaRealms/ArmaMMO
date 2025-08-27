@@ -18,7 +18,8 @@ public class McMMOPlayerFishingTreasureEvent extends McMMOPlayerFishingEvent {
         this(requireNonNull(UserManager.getPlayer(player)), treasure, xp);
     }
 
-    public McMMOPlayerFishingTreasureEvent(@NotNull McMMOPlayer mmoPlayer, @Nullable ItemStack treasure, int xp) {
+    public McMMOPlayerFishingTreasureEvent(@NotNull McMMOPlayer mmoPlayer,
+                                           @Nullable ItemStack treasure, int xp) {
         super(mmoPlayer);
         this.treasure = treasure;
         this.xp = xp;

@@ -12,25 +12,25 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class SoundManager {
-    private static Sound CRIPPLE_SOUND;
-
     private static final String ITEM_MACE_SMASH_GROUND = "ITEM_MACE_SMASH_GROUND";
-
     private static final String VALUE_OF = "valueOf";
-
     private static final String ORG_BUKKIT_SOUND = "org.bukkit.Sound";
+    private static Sound CRIPPLE_SOUND;
 
     /**
      * Sends a sound to the player
+     *
      * @param soundType the type of sound
      */
-    public static void sendSound(Player player, Location location, SoundType soundType) {
-        if (SoundConfig.getInstance().getIsEnabled(soundType))
+    public static void sendSound(final Player player, final Location location, final SoundType soundType) {
+        if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             player.playSound(location, getSound(soundType),
                     SoundCategory.MASTER, getVolume(soundType), getPitch(soundType));
+        }
     }
 
-    public static void sendCategorizedSound(Location location, SoundType soundType, SoundCategory soundCategory) {
+    public static void sendCategorizedSound(final Location location, final SoundType soundType,
+                                            final SoundCategory soundCategory) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             final World world = location.getWorld();
             if (world != null) {
@@ -40,60 +40,72 @@ public class SoundManager {
         }
     }
 
-    public static void sendCategorizedSound(Location location, SoundType soundType, SoundCategory soundCategory,
-                                            float pitchModifier) {
+    public static void sendCategorizedSound(final Location location, final SoundType soundType,
+                                            final SoundCategory soundCategory,
+                                            final float pitchModifier) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             final World world = location.getWorld();
             if (world != null) {
-                float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
-                world.playSound(location, getSound(soundType), soundCategory, getVolume(soundType), totalPitch);
+                final float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
+                world.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
+                        totalPitch);
             }
         }
     }
 
-    public static void sendCategorizedSound(Player player, Location location,
-                                            SoundType soundType, SoundCategory soundCategory) {
-        if (SoundConfig.getInstance().getIsEnabled(soundType))
-            player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType), getPitch(soundType));
+    public static void sendCategorizedSound(final Player player, final Location location,
+                                            final SoundType soundType, final SoundCategory soundCategory) {
+        if (SoundConfig.getInstance().getIsEnabled(soundType)) {
+            player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
+                    getPitch(soundType));
+        }
     }
 
-    public static void sendCategorizedSound(Player player, Location location,
-                                            SoundType soundType, SoundCategory soundCategory, float pitchModifier) {
-        float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
+    public static void sendCategorizedSound(final Player player, final Location location,
+                                            final SoundType soundType, final SoundCategory soundCategory, final float pitchModifier) {
+        final float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
 
-        if (SoundConfig.getInstance().getIsEnabled(soundType))
-            player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType), totalPitch);
+        if (SoundConfig.getInstance().getIsEnabled(soundType)) {
+            player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
+                    totalPitch);
+        }
     }
 
-    public static void worldSendSound(World world, Location location, SoundType soundType) {
-        if (SoundConfig.getInstance().getIsEnabled(soundType))
-            world.playSound(location, getSound(soundType), getVolume(soundType), getPitch(soundType));
+    public static void worldSendSound(final World world, final Location location, final SoundType soundType) {
+        if (SoundConfig.getInstance().getIsEnabled(soundType)) {
+            world.playSound(location, getSound(soundType), getVolume(soundType),
+                    getPitch(soundType));
+        }
     }
 
-    public static void worldSendSoundMaxPitch(World world, Location location, SoundType soundType) {
-        if (SoundConfig.getInstance().getIsEnabled(soundType))
+    public static void worldSendSoundMaxPitch(final World world, final Location location, final SoundType soundType) {
+        if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             world.playSound(location, getSound(soundType), getVolume(soundType), 2.0F);
+        }
     }
 
     /**
      * All volume is multiplied by the master volume to get its final value
+     *
      * @param soundType target soundtype
      * @return the volume for this soundtype
      */
-    private static float getVolume(SoundType soundType) {
-        return SoundConfig.getInstance().getVolume(soundType) * SoundConfig.getInstance().getMasterVolume();
+    private static float getVolume(final SoundType soundType) {
+        return SoundConfig.getInstance().getVolume(soundType) * SoundConfig.getInstance()
+                .getMasterVolume();
     }
 
-    private static float getPitch(SoundType soundType) {
-        if (soundType == SoundType.FIZZ)
+    private static float getPitch(final SoundType soundType) {
+        if (soundType == SoundType.FIZZ) {
             return getFizzPitch();
-        else if (soundType == SoundType.POP)
+        } else if (soundType == SoundType.POP) {
             return getPopPitch();
-        else
+        } else {
             return SoundConfig.getInstance().getPitch(soundType);
+        }
     }
 
-    private static Sound getSound(SoundType soundType) {
+    private static Sound getSound(final SoundType soundType) {
         return switch (soundType) {
             case ANVIL -> Sound.BLOCK_ANVIL_PLACE;
             case ITEM_BREAK -> Sound.ENTITY_ITEM_BREAK;
@@ -123,8 +135,9 @@ public class SoundManager {
             final Class<?> clazz = Class.forName(ORG_BUKKIT_SOUND);
             final Method valueOf = clazz.getMethod(VALUE_OF);
             CRIPPLE_SOUND = (Sound) valueOf.invoke(null, ITEM_MACE_SMASH_GROUND);
-        } catch (IllegalArgumentException | ClassNotFoundException | NoSuchMethodException | InvocationTargetException
-                 | IllegalAccessException e) {
+        } catch (final IllegalArgumentException | ClassNotFoundException | NoSuchMethodException |
+                       InvocationTargetException
+                       | IllegalAccessException e) {
             CRIPPLE_SOUND = Sound.BLOCK_ANVIL_PLACE;
         }
 

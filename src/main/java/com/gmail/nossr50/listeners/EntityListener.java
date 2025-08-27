@@ -86,8 +86,8 @@ import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
 import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
-    private final mcMMO plugin;
     private static final Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
+    private final mcMMO plugin;
 
     public EntityListener(final mcMMO plugin) {
         this.plugin = plugin;

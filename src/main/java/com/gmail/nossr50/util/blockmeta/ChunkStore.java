@@ -37,6 +37,7 @@ public interface ChunkStore {
     int getChunkZ();
 
     int getChunkMin();
+
     int getChunkMax();
 
     @NotNull UUID getWorldId();
@@ -72,9 +73,9 @@ public interface ChunkStore {
     /**
      * Set the value at the given coordinates
      *
-     * @param x x coordinate in current chunklet
-     * @param y y coordinate in current chunklet
-     * @param z z coordinate in current chunklet
+     * @param x     x coordinate in current chunklet
+     * @param y     y coordinate in current chunklet
+     * @param z     z coordinate in current chunklet
      * @param value value to set
      */
     void set(int x, int y, int z, boolean value);

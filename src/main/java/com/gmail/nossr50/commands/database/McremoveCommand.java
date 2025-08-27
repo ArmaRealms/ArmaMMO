@@ -15,11 +15,13 @@ import java.util.UUID;
 
 public class McremoveCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
         if (args.length == 1) {
             String playerName = CommandUtils.getMatchedPlayerName(args[0]);
 
-            if (UserManager.getOfflinePlayer(playerName) == null && CommandUtils.unloadedProfile(sender, mcMMO.getDatabaseManager().loadPlayerProfile(playerName))) {
+            if (UserManager.getOfflinePlayer(playerName) == null && CommandUtils.unloadedProfile(
+                    sender, mcMMO.getDatabaseManager().loadPlayerProfile(playerName))) {
                 return true;
             }
 
@@ -32,7 +34,8 @@ public class McremoveCommand implements TabExecutor {
             if (mcMMO.getDatabaseManager().removeUser(playerName, uuid)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.mcremove.Success", playerName));
             } else {
-                sender.sendMessage(playerName + " could not be removed from the database."); // Pretty sure this should NEVER happen.
+                sender.sendMessage(playerName
+                        + " could not be removed from the database."); // Pretty sure this should NEVER happen.
             }
 
             return true;
@@ -41,7 +44,8 @@ public class McremoveCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
+                                      @NotNull String alias, String[] args) {
         if (args.length == 1) {
             return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
         }

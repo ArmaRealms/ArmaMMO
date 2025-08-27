@@ -21,23 +21,34 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ExcavationTest extends MMOTestEnvironment {
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(ExcavationTest.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(
+            ExcavationTest.class.getName());
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
         mockBaseEnvironment(logger);
-        when(rankConfig.getSubSkillUnlockLevel(SubSkillType.EXCAVATION_ARCHAEOLOGY, 1)).thenReturn(1);
-        when(rankConfig.getSubSkillUnlockLevel(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER, 1)).thenReturn(1);
+        when(rankConfig.getSubSkillUnlockLevel(SubSkillType.EXCAVATION_ARCHAEOLOGY, 1)).thenReturn(
+                1);
+        when(rankConfig.getSubSkillUnlockLevel(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER,
+                1)).thenReturn(1);
 
         // wire advanced config
 
-        when(RankUtils.getRankUnlockLevel(SubSkillType.EXCAVATION_ARCHAEOLOGY, 1)).thenReturn(1); // needed?
-        when(RankUtils.getRankUnlockLevel(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER, 1)).thenReturn(1); // needed?
-        when(RankUtils.hasReachedRank(eq(1), any(Player.class), eq(SubSkillType.EXCAVATION_ARCHAEOLOGY))).thenReturn(true);
-        when(RankUtils.hasReachedRank(eq(1), any(Player.class), eq(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER))).thenReturn(true);
+        when(RankUtils.getRankUnlockLevel(SubSkillType.EXCAVATION_ARCHAEOLOGY, 1)).thenReturn(
+                1); // needed?
+        when(RankUtils.getRankUnlockLevel(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER,
+                1)).thenReturn(1); // needed?
+        when(RankUtils.hasReachedRank(eq(1), any(Player.class),
+                eq(SubSkillType.EXCAVATION_ARCHAEOLOGY))).thenReturn(true);
+        when(RankUtils.hasReachedRank(eq(1), any(Player.class),
+                eq(SubSkillType.EXCAVATION_GIGA_DRILL_BREAKER))).thenReturn(true);
 
         // setup player and player related mocks after everything else
         this.player = Mockito.mock(Player.class);
@@ -85,7 +96,8 @@ class ExcavationTest extends MMOTestEnvironment {
         excavationManager.excavationBlockCheck(block);
 
         // verify ExcavationManager.processExcavationBonusesOnBlock was called
-        verify(excavationManager, never()).processExcavationBonusesOnBlock(any(ExcavationTreasure.class),
+        verify(excavationManager, never()).processExcavationBonusesOnBlock(
+                any(ExcavationTreasure.class),
                 any(Location.class));
     }
 

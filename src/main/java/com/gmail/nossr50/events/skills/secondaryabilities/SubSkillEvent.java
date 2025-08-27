@@ -19,54 +19,63 @@ public class SubSkillEvent extends McMMOPlayerSkillEvent implements Cancellable 
 
     /**
      * Only skills using the old system will fire this event
-     * @param player target player
+     *
+     * @param player       target player
      * @param subSkillType target subskill
      * @deprecated Use {@link #SubSkillEvent(McMMOPlayer, SubSkillType)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public SubSkillEvent(@NotNull Player player, @NotNull SubSkillType subSkillType) {
+    public SubSkillEvent(@NotNull final Player player, @NotNull final SubSkillType subSkillType) {
         this(requireNonNull(UserManager.getPlayer(player)), subSkillType);
     }
 
     /**
      * Only skills using the old system will fire this event
-     * @param mmoPlayer target player
+     *
+     * @param mmoPlayer    target player
      * @param subSkillType target subskill
      */
-    public SubSkillEvent(@NotNull McMMOPlayer mmoPlayer, @NotNull SubSkillType subSkillType) {
+    public SubSkillEvent(@NotNull final McMMOPlayer mmoPlayer, @NotNull final SubSkillType subSkillType) {
         super(mmoPlayer, mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(subSkillType));
         this.subSkillType = subSkillType;
     }
 
     /**
      * Only skills using the old system will fire this event
-     * @param player target player
-     * @param subSkillType target subskill
-     * @param resultModifier a value multiplied against the final result of the dice roll, typically between 0-1.0
+     *
+     * @param player         target player
+     * @param subSkillType   target subskill
+     * @param resultModifier a value multiplied against the final result of the dice roll, typically
+     *                       between 0-1.0
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public SubSkillEvent(@NotNull Player player, @NotNull SubSkillType subSkillType, double resultModifier) {
+    public SubSkillEvent(@NotNull final Player player, @NotNull final SubSkillType subSkillType,
+                         final double resultModifier) {
         this(requireNonNull(UserManager.getPlayer(player)), subSkillType, resultModifier);
     }
 
     /**
      * Only skills using the old system will fire this event
-     * @param player target player
-     * @param subSkillType target subskill
-     * @param resultModifier a value multiplied against the final result of the dice roll, typically between 0-1.0
+     *
+     * @param player         target player
+     * @param subSkillType   target subskill
+     * @param resultModifier a statVal multiplied against the final result of the dice roll, typically
+     *                       between 0-1.0
      */
-    public SubSkillEvent(@NotNull McMMOPlayer player, @NotNull SubSkillType subSkillType, double resultModifier) {
+    public SubSkillEvent(@NotNull final McMMOPlayer player, @NotNull final SubSkillType subSkillType,
+                         final double resultModifier) {
         super(player, mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(subSkillType));
         this.subSkillType = requireNonNull(subSkillType, "subSkillType cannot be null");
         this.resultModifier = resultModifier;
     }
 
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public SubSkillEvent(@NotNull Player player, @NotNull AbstractSubSkill abstractSubSkill) {
+    public SubSkillEvent(@NotNull final Player player, @NotNull final AbstractSubSkill abstractSubSkill) {
         this(requireNonNull(UserManager.getPlayer(player)), abstractSubSkill);
     }
 
-    public SubSkillEvent(@NotNull McMMOPlayer mmoPlayer, @NotNull AbstractSubSkill abstractSubSkill) {
+    public SubSkillEvent(@NotNull final McMMOPlayer mmoPlayer,
+                         @NotNull final AbstractSubSkill abstractSubSkill) {
         super(mmoPlayer, abstractSubSkill.getPrimarySkill());
     }
 
@@ -74,12 +83,13 @@ public class SubSkillEvent extends McMMOPlayerSkillEvent implements Cancellable 
         return resultModifier;
     }
 
-    public void setResultModifier(double resultModifier) {
+    public void setResultModifier(final double resultModifier) {
         this.resultModifier = resultModifier;
     }
 
     /**
      * Gets the SubSkillType involved in the event
+     *
      * @return the SubSkillType
      */
     public SubSkillType getSubSkillType() {
@@ -90,7 +100,7 @@ public class SubSkillEvent extends McMMOPlayerSkillEvent implements Cancellable 
         return cancelled;
     }
 
-    public void setCancelled(boolean newValue) {
+    public void setCancelled(final boolean newValue) {
         this.cancelled = newValue;
     }
 }

@@ -118,7 +118,7 @@ public class SwordsManager extends SkillManager {
      * Handle the effects of the Counter Attack ability
      *
      * @param attacker The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param damage   The amount of damage initially dealt by the event
      */
     public void counterAttackChecks(@NotNull LivingEntity attacker, double damage) {
         if (ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.SWORDS_COUNTER_ATTACK, mmoPlayer)) {
@@ -135,7 +135,8 @@ public class SwordsManager extends SkillManager {
 
     /**
      * Handle the effects of the Serrated Strikes ability
-     *  @param target The {@link LivingEntity} being affected by the ability
+     *
+     * @param target The {@link LivingEntity} being affected by the ability
      * @param damage The amount of damage initially dealt by the event
      */
     public void serratedStrikes(@NotNull LivingEntity target, double damage) {

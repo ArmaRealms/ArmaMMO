@@ -22,11 +22,14 @@ public class PartyAllianceCommand implements TabExecutor {
     private final CommandExecutor partyAllianceInviteCommand = new PartyAllianceInviteCommand();
     private final CommandExecutor partyAllianceAcceptCommand = new PartyAllianceAcceptCommand();
     private final CommandExecutor partyAllianceDisbandCommand = new PartyAllianceDisbandCommand();
+    private Player player;
+    private Party playerParty;
+    private Party targetParty;
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
+        if (CommandUtils.noConsoleUsage(sender)) {
             return true;
         }
 
@@ -35,35 +38,34 @@ public class PartyAllianceCommand implements TabExecutor {
             return true;
         }
 
-        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null) {
-            sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
-            return true;
-        }
+        player = (Player) sender;
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        Party playerParty = mcMMOPlayer.getParty();
-        if (playerParty == null) return true;
+        playerParty = mmoPlayer.getParty();
 
         switch (args.length) {
-            case 1 -> {
-                if (playerParty.getLevel() < mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
+            case 1:
+                if (playerParty.getLevel() < mcMMO.p.getGeneralConfig()
+                        .getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
                     sender.sendMessage(LocaleLoader.getString("Party.Feature.Disabled.3"));
                     return true;
                 }
-                Party allyParty = playerParty.getAlly();
 
-                if (allyParty == null) {
-                    printUsage(player);
+                if (playerParty.getAlly() == null) {
+                    printUsage();
                     return true;
                 }
 
-                displayPartyHeader(player, playerParty, allyParty);
-                displayMemberInfo(player, playerParty, allyParty);
-                return true;
-            }
+                targetParty = playerParty.getAlly();
 
-            case 2, 3 -> {
-                if (playerParty.getLevel() < mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
+                displayPartyHeader();
+                displayMemberInfo(mmoPlayer);
+                return true;
+
+            case 2:
+            case 3:
+                if (playerParty.getLevel() < mcMMO.p.getGeneralConfig()
+                        .getPartyFeatureUnlockLevel(PartyFeature.ALLIANCE)) {
                     sender.sendMessage(LocaleLoader.getString("Party.Feature.Disabled.3"));
                     return true;
                 }
@@ -80,31 +82,31 @@ public class PartyAllianceCommand implements TabExecutor {
                     return partyAllianceDisbandCommand.onCommand(sender, command, label, args);
                 }
 
-                Party allyParty = playerParty.getAlly();
-                if (allyParty == null) {
-                    printUsage(player);
+                if (playerParty.getAlly() == null) {
+                    printUsage();
                     return true;
                 }
 
-                displayPartyHeader(player, playerParty, allyParty);
-                displayMemberInfo(player, playerParty, allyParty);
-                return true;
-            }
+                targetParty = playerParty.getAlly();
 
-            default -> {
+                displayPartyHeader();
+                displayMemberInfo(mmoPlayer);
+                return true;
+
+            default:
                 return false;
-            }
         }
     }
 
-    private boolean printUsage(Player player) {
+    private boolean printUsage() {
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Help.0"));
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Help.1"));
         return true;
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender,
+                                      @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
             List<String> matches = ALLIANCE_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
 
@@ -117,16 +119,18 @@ public class PartyAllianceCommand implements TabExecutor {
         return List.of();
     }
 
-    private void displayPartyHeader(Player player, Party playerParty, Party targetParty) {
+    private void displayPartyHeader() {
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Header"));
-        player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Ally", playerParty.getName(), targetParty.getName()));
+        player.sendMessage(
+                LocaleLoader.getString("Commands.Party.Alliance.Ally", playerParty.getName(),
+                        targetParty.getName()));
     }
 
-    private void displayMemberInfo(Player player, Party playerParty, Party targetParty) {
+    private void displayMemberInfo(McMMOPlayer mmoPlayer) {
+        List<Player> nearMembers = mcMMO.p.getPartyManager().getNearMembers(mmoPlayer);
         player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Members.Header"));
         player.sendMessage(playerParty.createMembersList(player));
         player.sendMessage(ChatColor.DARK_GRAY + "----------------------------");
         player.sendMessage(targetParty.createMembersList(player));
     }
-
 }

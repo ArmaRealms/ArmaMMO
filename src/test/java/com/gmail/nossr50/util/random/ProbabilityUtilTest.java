@@ -1,7 +1,23 @@
 package com.gmail.nossr50.util.random;
 
+import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
+import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.ACROBATICS_DODGE;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.AXES_ARMOR_IMPACT;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.AXES_GREATER_IMPACT;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.MINING_DOUBLE_DROPS;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.TAMING_FAST_FOOD_SERVICE;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.UNARMED_ARROW_DEFLECT;
+import static com.gmail.nossr50.util.random.ProbabilityTestUtils.assertProbabilityExpectations;
+import static com.gmail.nossr50.util.random.ProbabilityUtil.calculateCurrentSkillProbability;
+import static java.util.logging.Logger.getLogger;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,31 +25,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
-import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
-import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.*;
-import static com.gmail.nossr50.util.random.ProbabilityTestUtils.assertProbabilityExpectations;
-import static com.gmail.nossr50.util.random.ProbabilityUtil.calculateCurrentSkillProbability;
-import static java.util.logging.Logger.getLogger;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-
 class ProbabilityUtilTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
 
-    static final double IMPACT_CHANCE = 11D;
-    static final double GREATER_IMPACT_CHANCE = 0.007D;
-    static final double FAST_FOOD_CHANCE = 45.5D;
+    final static double impactChance = 11D;
+    final static double greaterImpactChance = 0.007D;
+    final static double fastFoodChance = 45.5D;
 
     @BeforeEach
     public void setupMocks() {
         mockBaseEnvironment(logger);
-        when(advancedConfig.getImpactChance()).thenReturn(IMPACT_CHANCE);
-        when(advancedConfig.getGreaterImpactChance()).thenReturn(GREATER_IMPACT_CHANCE);
-        when(advancedConfig.getFastFoodChance()).thenReturn(FAST_FOOD_CHANCE);
+        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
+        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
+        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
     }
 
     @AfterEach
@@ -44,28 +48,29 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     private static Stream<Arguments> staticChanceSkills() {
         return Stream.of(
                 // static probability, % of time for success
-                Arguments.of(AXES_ARMOR_IMPACT, IMPACT_CHANCE),
-                Arguments.of(AXES_GREATER_IMPACT, GREATER_IMPACT_CHANCE),
-                Arguments.of(TAMING_FAST_FOOD_SERVICE, FAST_FOOD_CHANCE)
+                Arguments.of(AXES_ARMOR_IMPACT, impactChance),
+                Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
+                Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
         );
     }
 
     @ParameterizedTest
     @MethodSource("staticChanceSkills")
-    void staticChanceSkillsShouldSucceedAsExpected(SubSkillType subSkillType, double expectedWinPercent)
+    void staticChanceSkillsShouldSucceedAsExpected(final SubSkillType subSkillType,
+                                                   final double expectedWinPercent)
             throws InvalidStaticChance {
-        Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
+        final Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
         assertProbabilityExpectations(expectedWinPercent, staticRandomChance);
     }
 
     @Test
-    void isSkillRNGSuccessfulShouldBehaveAsExpected() {
+    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
         // Given
         when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
 
-        @SuppressWarnings("all")
-        final Probability probability = ProbabilityUtil.getSkillProbability(UNARMED_ARROW_DEFLECT, mmoPlayer);
+        @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
+                UNARMED_ARROW_DEFLECT, mmoPlayer);
         assertEquals(0.2D, probability.getValue());
         assertProbabilityExpectations(20, probability);
     }
@@ -91,85 +96,93 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
     @ParameterizedTest
     @MethodSource("provideSkillProbabilityTestData")
-    void testCalculateCurrentSkillProbability(double skillLevel, double floor, double ceiling, double maxBonusLevel,
-                                              double expectedValue) {
+    void testCalculateCurrentSkillProbability(final double skillLevel, final double floor, final double ceiling,
+                                              final double maxBonusLevel,
+                                              final double expectedValue) {
         // When
-        final Probability probability = calculateCurrentSkillProbability(skillLevel, floor, ceiling, maxBonusLevel);
+        final Probability probability = calculateCurrentSkillProbability(skillLevel, floor, ceiling,
+                maxBonusLevel);
 
         // Then
         assertEquals(expectedValue, probability.getValue());
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn10PercentForDodge() {
+    public void getRNGDisplayValuesShouldReturn10PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
         mmoPlayer.modifySkill(ACROBATICS, 500);
 
         // When & Then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("10,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("10.00%", rngDisplayValues[0]);
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn20PercentForDodge() {
+    public void getRNGDisplayValuesShouldReturn20PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
         mmoPlayer.modifySkill(ACROBATICS, 1000);
 
         // When & then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("20,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("20.00%", rngDisplayValues[0]);
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn0PercentForDodge() {
+    public void getRNGDisplayValuesShouldReturn0PercentForDodge() {
         // Given
         when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
         when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
         mmoPlayer.modifySkill(ACROBATICS, 0);
 
         // When & then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, ACROBATICS_DODGE);
-        assertEquals("0,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("0.00%", rngDisplayValues[0]);
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn10PercentForDoubleDrops() {
+    public void getRNGDisplayValuesShouldReturn10PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
         mmoPlayer.modifySkill(MINING, 100);
 
         // When & Then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("10,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                MINING_DOUBLE_DROPS);
+        assertEquals("10.00%", rngDisplayValues[0]);
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn50PercentForDoubleDrops() {
+    public void getRNGDisplayValuesShouldReturn50PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
         mmoPlayer.modifySkill(MINING, 500);
 
         // When & Then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("50,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                MINING_DOUBLE_DROPS);
+        assertEquals("50.00%", rngDisplayValues[0]);
     }
 
     @Test
-    void getRNGDisplayValuesShouldReturn100PercentForDoubleDrops() {
+    public void getRNGDisplayValuesShouldReturn100PercentForDoubleDrops() {
         // Given
         when(advancedConfig.getMaximumProbability(MINING_DOUBLE_DROPS)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(MINING_DOUBLE_DROPS)).thenReturn(1000);
         mmoPlayer.modifySkill(MINING, 1000);
 
         // When & Then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer, MINING_DOUBLE_DROPS);
-        assertEquals("100,00%", rngDisplayValues[0]);
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                MINING_DOUBLE_DROPS);
+        assertEquals("100.00%", rngDisplayValues[0]);
     }
 
 }

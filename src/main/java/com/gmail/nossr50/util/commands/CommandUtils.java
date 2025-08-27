@@ -14,7 +14,6 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,9 @@ public final class CommandUtils {
         if (!target.isOnline() && !hasPermission) {
             sender.sendMessage(LocaleLoader.getString("Inspect.Offline"));
             return true;
-        } else if (sender instanceof Player player && !Misc.isNear(player.getLocation(), target.getLocation(), mcMMO.p.getGeneralConfig().getInspectDistance()) && !hasPermission) {
+        } else if (sender instanceof Player && !Misc.isNear(((Player) sender).getLocation(),
+                target.getLocation(), mcMMO.p.getGeneralConfig().getInspectDistance())
+                && !hasPermission) {
             sender.sendMessage(LocaleLoader.getString("Inspect.TooFar"));
             return true;
         }
@@ -48,27 +49,39 @@ public final class CommandUtils {
     }
 
     public static boolean hidden(CommandSender sender, Player target, boolean hasPermission) {
-        return sender instanceof Player player && !player.canSee(target) && !hasPermission;
+        return sender instanceof Player && !((Player) sender).canSee(target) && !hasPermission;
+    }
+
+    public static boolean noConsoleUsage(CommandSender sender) {
+        if (sender instanceof Player) {
+            return false;
+        }
+
+        sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+        return true;
     }
 
     public static boolean isOffline(CommandSender sender, OfflinePlayer player) {
-        if (player.isOnline()) return false;
+        if (player.isOnline()) {
+            return false;
+        }
 
         sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
         return true;
     }
 
     /**
-     * Checks if there is a valid mcMMOPlayer object.
+     * Checks if there is a valid mmoPlayer object.
      *
-     * @param sender      CommandSender, who used the command
-     * @param playerName  name of the target player
-     * @param mcMMOPlayer mcMMOPlayer object of the target player
-     * @return true if the player is online and a valid mcMMOPlayer object was found
+     * @param sender     CommandSender who used the command
+     * @param playerName name of the target player
+     * @param mmoPlayer  mmoPlayer object of the target player
+     * @return true if the player is online and a valid mmoPlayer object was found
      */
-    public static boolean checkPlayerExistence(CommandSender sender, String playerName, McMMOPlayer mcMMOPlayer) {
-        if (mcMMOPlayer != null) {
-            if (CommandUtils.hidden(sender, mcMMOPlayer.getPlayer(), false)) {
+    public static boolean checkPlayerExistence(CommandSender sender, String playerName,
+                                               McMMOPlayer mmoPlayer) {
+        if (mmoPlayer != null) {
+            if (CommandUtils.hidden(sender, mmoPlayer.getPlayer(), false)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
                 return false;
             }
@@ -86,15 +99,21 @@ public final class CommandUtils {
     }
 
     public static boolean unloadedProfile(CommandSender sender, PlayerProfile profile) {
-        if (profile.isLoaded()) return false;
+        if (profile.isLoaded()) {
+            return false;
+        }
+
         sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
         return true;
     }
 
     public static boolean hasPlayerDataKey(CommandSender sender) {
-        if (!(sender instanceof Player)) return false;
+        if (!(sender instanceof Player)) {
+            return false;
+        }
 
-        boolean hasPlayerDataKey = ((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA);
+        boolean hasPlayerDataKey = ((Player) sender).hasMetadata(
+                MetadataConstants.METADATA_KEY_PLAYER_DATA);
 
         if (!hasPlayerDataKey) {
             sender.sendMessage(LocaleLoader.getString("Commands.NotLoaded"));
@@ -104,27 +123,36 @@ public final class CommandUtils {
     }
 
     public static boolean isLoaded(CommandSender sender, PlayerProfile profile) {
-        if (profile.isLoaded()) return true;
+        if (profile.isLoaded()) {
+            return true;
+        }
+
         sender.sendMessage(LocaleLoader.getString("Commands.NotLoaded"));
         return false;
     }
 
     public static boolean isInvalidInteger(CommandSender sender, String value) {
-        if (StringUtils.isInt(value)) return false;
+        if (StringUtils.isInt(value)) {
+            return false;
+        }
 
         sender.sendMessage("That is not a valid integer."); // TODO: Localize
         return true;
     }
 
     public static boolean isInvalidDouble(CommandSender sender, String value) {
-        if (StringUtils.isDouble(value)) return false;
+        if (StringUtils.isDouble(value)) {
+            return false;
+        }
 
         sender.sendMessage("That is not a valid percentage."); // TODO: Localize
         return true;
     }
 
     public static boolean isInvalidSkill(CommandSender sender, String skillName) {
-        if (SkillUtils.isSkill(skillName)) return false;
+        if (SkillUtils.isSkill(skillName)) {
+            return false;
+        }
 
         sender.sendMessage(LocaleLoader.getString("Commands.Skill.Invalid"));
         return true;
@@ -145,7 +173,8 @@ public final class CommandUtils {
      * @param display The sender to display stats to
      */
     public static void printGatheringSkills(Player inspect, CommandSender display) {
-        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Gathering"), mcMMO.p.getSkillTools().GATHERING_SKILLS);
+        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Gathering"),
+                mcMMO.p.getSkillTools().GATHERING_SKILLS);
     }
 
     public static void printGatheringSkills(Player player) {
@@ -159,7 +188,8 @@ public final class CommandUtils {
      * @param display The sender to display stats to
      */
     public static void printCombatSkills(Player inspect, CommandSender display) {
-        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Combat"), mcMMO.p.getSkillTools().COMBAT_SKILLS);
+        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Combat"),
+                mcMMO.p.getSkillTools().COMBAT_SKILLS);
     }
 
     public static void printCombatSkills(Player player) {
@@ -173,35 +203,46 @@ public final class CommandUtils {
      * @param display The sender to display stats to
      */
     public static void printMiscSkills(Player inspect, CommandSender display) {
-        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Misc"), mcMMO.p.getSkillTools().getMiscSkills());
+        printGroupedSkillData(inspect, display, LocaleLoader.getString("Stats.Header.Misc"),
+                mcMMO.p.getSkillTools().getMiscSkills());
     }
 
     public static void printMiscSkills(Player player) {
         printMiscSkills(player, player);
     }
 
-    public static @NotNull String displaySkill(PlayerProfile profile, PrimarySkillType skill) {
+    public static String displaySkill(PlayerProfile profile, PrimarySkillType skill) {
         if (SkillTools.isChildSkill(skill)) {
-            return LocaleLoader.getString("Skills.ChildStats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)));
+            return LocaleLoader.getString("Skills.ChildStats", LocaleLoader.getString(
+                            StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ",
+                    profile.getSkillLevel(skill));
         }
         if (profile.getSkillLevel(skill) == mcMMO.p.getSkillTools().getLevelCap(skill)) {
-            return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)), StringUtils.formatNumber(profile.getSkillXpLevel(skill)), LocaleLoader.getString("Skills.MaxXP"));
+            return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(
+                            StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ",
+                    profile.getSkillLevel(skill), profile.getSkillXpLevel(skill),
+                    LocaleLoader.getString("Skills.MaxXP"));
         }
-        return LocaleLoader.getString("Skills.Stats", LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener") + " ", StringUtils.formatNumber(profile.getSkillLevel(skill)), StringUtils.formatNumber(profile.getSkillXpLevel(skill)), StringUtils.formatNumber(profile.getXpToLevel(skill)));
+        return LocaleLoader.getString("Skills.Stats",
+                LocaleLoader.getString(StringUtils.getCapitalized(skill.toString()) + ".Listener")
+                        + " ", profile.getSkillLevel(skill), profile.getSkillXpLevel(skill),
+                profile.getXpToLevel(skill));
     }
 
     private static void printGroupedSkillData(Player inspectTarget, CommandSender display,
                                               String header, List<PrimarySkillType> skillGroup) {
-        var mcMMOPlayer = UserManager.getPlayer(inspectTarget);
-        if (mcMMOPlayer == null) return;
+        if (UserManager.getPlayer(inspectTarget) == null) {
+            return;
+        }
 
-        PlayerProfile profile = mcMMOPlayer.getProfile();
+        final PlayerProfile profile = UserManager.getPlayer(inspectTarget).getProfile();
 
         final List<String> displayData = new ArrayList<>();
         displayData.add(header);
 
         for (PrimarySkillType primarySkillType : skillGroup) {
-            if (mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(inspectTarget, primarySkillType)) {
+            if (mcMMO.p.getSkillTools()
+                    .doesPlayerHaveSkillPermission(inspectTarget, primarySkillType)) {
                 displayData.add(displaySkill(profile, primarySkillType));
             }
         }
@@ -214,7 +255,7 @@ public final class CommandUtils {
     }
 
     public static List<String> getOnlinePlayerNames(CommandSender sender) {
-        Player player = sender instanceof Player p ? p : null;
+        Player player = sender instanceof Player ? (Player) sender : null;
         List<String> onlinePlayerNames = new ArrayList<>();
 
         for (Player onlinePlayer : mcMMO.p.getServer().getOnlinePlayers()) {
@@ -251,9 +292,11 @@ public final class CommandUtils {
     }
 
     /**
-     * Attempts to match any player names with the given name, and returns a list of all possibly matches.
-     * This list is not sorted in any particular order.
-     * If an exact match is found, the returned list will only contain a single result.
+     * Attempts to match any player names with the given name, and returns a list of all possibly
+     * matches.
+     * <p>
+     * This list is not sorted in any particular order. If an exact match is found, the returned
+     * list will only contain a single result.
      *
      * @param partialName Name to match
      * @return List of all possible names
@@ -264,8 +307,11 @@ public final class CommandUtils {
         for (OfflinePlayer offlinePlayer : mcMMO.p.getServer().getOfflinePlayers()) {
             String playerName = offlinePlayer.getName();
 
-            if (playerName == null) { //Do null checking here to detect corrupted data before sending it throuogh .equals
-                mcMMO.p.getLogger().warning("Player data file with UUID " + offlinePlayer.getUniqueId() + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
+            if (playerName
+                    == null) { //Do null checking here to detect corrupted data before sending it throuogh .equals
+                System.err.println(
+                        "[McMMO] Player data file with UIID " + offlinePlayer.getUniqueId()
+                                + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
                 continue; //Don't let an error here interrupt the loop
             }
 
@@ -276,7 +322,8 @@ public final class CommandUtils {
                 break;
             }
 
-            if (playerName.toLowerCase(Locale.ENGLISH).contains(partialName.toLowerCase(Locale.ENGLISH))) {
+            if (playerName.toLowerCase(Locale.ENGLISH)
+                    .contains(partialName.toLowerCase(Locale.ENGLISH))) {
                 // Partial match
                 matchedPlayers.add(playerName);
             }

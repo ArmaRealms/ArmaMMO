@@ -9,11 +9,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public final class SkillAPI {
-    private SkillAPI() {}
+    private SkillAPI() {
+    }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This includes parent and child skills
+     * Returns a list of strings with mcMMO's skills This includes parent and child skills
      * </br>
      * This function is designed for API usage.
      *
@@ -24,8 +24,7 @@ public final class SkillAPI {
     }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This only includes parent skills
+     * Returns a list of strings with mcMMO's skills This only includes parent skills
      * </br>
      * This function is designed for API usage.
      *
@@ -36,8 +35,7 @@ public final class SkillAPI {
     }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This only includes child skills
+     * Returns a list of strings with mcMMO's skills This only includes child skills
      * </br>
      * This function is designed for API usage.
      *
@@ -48,8 +46,7 @@ public final class SkillAPI {
     }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This only includes combat skills
+     * Returns a list of strings with mcMMO's skills This only includes combat skills
      * </br>
      * This function is designed for API usage.
      *
@@ -60,8 +57,7 @@ public final class SkillAPI {
     }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This only includes gathering skills
+     * Returns a list of strings with mcMMO's skills This only includes gathering skills
      * </br>
      * This function is designed for API usage.
      *
@@ -72,8 +68,7 @@ public final class SkillAPI {
     }
 
     /**
-     * Returns a list of strings with mcMMO's skills
-     * This only includes misc skills
+     * Returns a list of strings with mcMMO's skills This only includes misc skills
      * </br>
      * This function is designed for API usage.
      *

@@ -10,7 +10,9 @@ import java.util.HashSet;
 public class BadCategorizedFlatFileData extends CategorizedFlatFileData {
     private final boolean[] badDataIndexes;
 
-    protected BadCategorizedFlatFileData(int uniqueProcessingId, @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData, boolean[] badDataIndexes) {
+    protected BadCategorizedFlatFileData(int uniqueProcessingId,
+                                         @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData,
+                                         boolean[] badDataIndexes) {
         super(uniqueProcessingId, dataFlags, splitData);
         this.badDataIndexes = badDataIndexes;
     }
@@ -21,9 +23,15 @@ public class BadCategorizedFlatFileData extends CategorizedFlatFileData {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
         BadCategorizedFlatFileData that = (BadCategorizedFlatFileData) o;
         return Objects.equal(badDataIndexes, that.badDataIndexes);
     }

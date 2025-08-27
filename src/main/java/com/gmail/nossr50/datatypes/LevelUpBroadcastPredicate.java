@@ -20,6 +20,10 @@ public class LevelUpBroadcastPredicate<T extends CommandSender> implements Predi
         this.broadcaster = broadcaster;
     }
 
+    private static boolean isLevelUpBroadcastsSameWorldOnly() {
+        return mcMMO.p.getGeneralConfig().isLevelUpBroadcastsSameWorldOnly();
+    }
+
     @Override
     public boolean test(@NotNull T t) {
         Player broadcastingPlayer = (Player) broadcaster; //Always a player no need to check cast
@@ -33,7 +37,8 @@ public class LevelUpBroadcastPredicate<T extends CommandSender> implements Predi
 
         if (mmoBroadcastingPlayer == null) {
             //This should never be null, but just in case...
-            mcMMO.p.getLogger().severe("McMMOPlayer was null for broadcaster in LevelUpBroadcastPredicate when it should never be null!");
+            mcMMO.p.getLogger()
+                    .severe("McMMOPlayer was null for broadcaster in LevelUpBroadcastPredicate when it should never be null!");
             return false;
         }
 
@@ -61,32 +66,29 @@ public class LevelUpBroadcastPredicate<T extends CommandSender> implements Predi
 
             //Same world check
             if (isLevelUpBroadcastsSameWorldOnly()) {
-                if (!mmoBroadcastingPlayer.getPlayer().getWorld().equals(listeningPlayer.getWorld())) {
+                if (!mmoBroadcastingPlayer.getPlayer().getWorld()
+                        .equals(listeningPlayer.getWorld())) {
                     return false; //Not in the same world when its required
                 }
 
                 //Distance checks
                 if (mcMMO.p.getGeneralConfig().shouldLevelUpBroadcastsRestrictDistance()) {
-                    if (!Misc.isNear(mmoBroadcastingPlayer.getPlayer().getLocation(), listeningPlayer.getLocation(), mcMMO.p.getGeneralConfig().getLevelUpBroadcastRadius())) {
+                    if (!Misc.isNear(mmoBroadcastingPlayer.getPlayer().getLocation(),
+                            listeningPlayer.getLocation(),
+                            mcMMO.p.getGeneralConfig().getLevelUpBroadcastRadius())) {
                         return false;
                     }
                 }
             }
 
             //Visibility checks
-            if (!listeningPlayer.canSee(mmoBroadcastingPlayer.getPlayer()) && listeningPlayer != mmoBroadcastingPlayer.getPlayer()) {
-                return false; //Player who leveled should be invisible to this player so don't send the message
-            }
-
-            return true;
+            return listeningPlayer.canSee(mmoBroadcastingPlayer.getPlayer())
+                    || listeningPlayer
+                    == mmoBroadcastingPlayer.getPlayer(); //Player who leveled should be invisible to this player so don't send the message
         } else {
             //Send out to console
             return mcMMO.p.getGeneralConfig().shouldLevelUpBroadcastToConsole();
         }
-    }
-
-    private static boolean isLevelUpBroadcastsSameWorldOnly() {
-        return mcMMO.p.getGeneralConfig().isLevelUpBroadcastsSameWorldOnly();
     }
 
     @Override

@@ -19,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class PapiExpansion extends PlaceholderExpansion {
-    private final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
     public static final String SKILL_LEVEL = "level_";
     public static final String SKILL_EXP_NEEDED = "xp_needed_";
     public static final String SKILL_EXP_REMAINING = "xp_remaining_";
@@ -40,6 +39,7 @@ public class PapiExpansion extends PlaceholderExpansion {
     public static final String TOP_POWER_LEVEL = "top_power_";
     public static final String NAME = "name";
     public static final String LEVEL = "level";
+    private final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
     public List<PlayerStat> topPowerLevel = getTopPowerLevel();
 
     public PapiExpansion() {
@@ -83,23 +83,23 @@ public class PapiExpansion extends PlaceholderExpansion {
         }
 
         if (params.startsWith(TOP_POWER_LEVEL)) {
-            String sub = params.substring(TOP_POWER_LEVEL.length());
-            String[] split = sub.split("_");
+            final String sub = params.substring(TOP_POWER_LEVEL.length());
+            final String[] split = sub.split("_");
             if (split.length != 2) {
                 return "top param not valid. Use top_power_name_0 or top_power_level_0.";
             }
-            String type = split[0];
-            String rank = split[1];
+            final String type = split[0];
+            final String rank = split[1];
             if (type.equalsIgnoreCase(NAME)) {
                 if (Integer.parseInt(rank) >= topPowerLevel.size()) {
                     return "No player found at that rank.";
                 }
-                return topPowerLevel.get(Integer.parseInt(rank)).name;
+                return topPowerLevel.get(Integer.parseInt(rank)).name();
             } else if (type.equalsIgnoreCase(LEVEL)) {
                 if (Integer.parseInt(rank) >= topPowerLevel.size()) {
                     return "No player found at that rank.";
                 }
-                return StringUtils.formatNumber(topPowerLevel.get(Integer.parseInt(rank)).statVal);
+                return StringUtils.formatNumber(topPowerLevel.get(Integer.parseInt(rank)).statVal());
             }
         }
 
@@ -115,25 +115,25 @@ public class PapiExpansion extends PlaceholderExpansion {
         }
 
         if (params.startsWith(SKILL_LEVEL)) {
-            PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_LEVEL.length()).toUpperCase());
+            final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_LEVEL.length()).toUpperCase());
             return skill == null ? null : StringUtils.formatNumber(user.getSkillLevel(skill));
         } else if (params.startsWith(SKILL_EXP_NEEDED)) {
-            PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_NEEDED.length()).toUpperCase());
+            final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_NEEDED.length()).toUpperCase());
             return skill == null ? null : StringUtils.formatNumber(user.getXpToLevel(skill));
         } else if (params.startsWith(SKILL_EXP_REMAINING)) {
-            PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_REMAINING.length()).toUpperCase());
+            final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_REMAINING.length()).toUpperCase());
             return skill == null ? null : StringUtils.formatNumber(user.getXpToLevel(skill) - user.getSkillXpLevel(skill));
         } else if (params.startsWith(SKILL_EXP)) {
-            PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP.length()).toUpperCase());
+            final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP.length()).toUpperCase());
             return skill == null ? null : StringUtils.formatNumber(user.getSkillXpLevel(skill));
         } else if (params.startsWith(SKILL_RANK)) {
             try {
                 return StringUtils.formatNumber(ExperienceAPI.getPlayerRankSkill(player.getUniqueId(), StringUtils.getCapitalized(params.substring(SKILL_RANK.length()))));
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 return null;
             }
         } else if (params.startsWith(SKILL_EXP_RATE)) {
-            PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_RATE.length()).toUpperCase());
+            final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_RATE.length()).toUpperCase());
             if (skill == null) return null;
             double modifier = 1.0F;
             if (Permissions.customXpBoost(player, skill))

@@ -42,7 +42,7 @@ public class ProjectileUtils {
     /**
      * Copies metadata from one arrow to another.
      *
-     * @param pluginRef mcMMO plugin reference.
+     * @param pluginRef   mcMMO plugin reference.
      * @param sourceArrow The arrow from which metadata is copied.
      * @param targetArrow The arrow to which metadata is copied.
      */
@@ -53,7 +53,8 @@ public class ProjectileUtils {
                 .forEach(key -> {
                     final MetadataValue metadataValue = sourceArrow.getMetadata(key).get(0);
                     if (key.equals(MetadataConstants.METADATA_KEY_BOW_FORCE)) {
-                        targetArrow.setMetadata(key, new FixedMetadataValue(pluginRef, metadataValue.asDouble()));
+                        targetArrow.setMetadata(key,
+                                new FixedMetadataValue(pluginRef, metadataValue.asDouble()));
                     } else if (key.equals(MetadataConstants.METADATA_KEY_CROSSBOW_PROJECTILE)) {
                         targetArrow.setMetadata(key, MCMMO_METADATA_VALUE);
                     } else {

@@ -11,7 +11,8 @@ import java.util.List;
 
 public class McpurgeCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
+                             @NotNull String label, String[] args) {
         if (args.length == 0) {
             mcMMO.getDatabaseManager().purgePowerlessUsers();
 
