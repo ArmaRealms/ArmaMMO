@@ -73,9 +73,9 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             // 01. Playername - skill value
             // 12. Playername - skill value
             if (sender instanceof Player) {
-                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.name(), ChatColor.WHITE, StringUtils.formatNumber(stat.statVal())));
+                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.playerName(), ChatColor.WHITE, StringUtils.formatNumber(stat.value())));
             } else {
-                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.name(), StringUtils.formatNumber(stat.statVal())));
+                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.playerName(), StringUtils.formatNumber(stat.value())));
             }
 
             place++;

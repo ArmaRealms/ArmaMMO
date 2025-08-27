@@ -1,5 +1,17 @@
 package com.gmail.nossr50.util.random;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.ACROBATICS_DODGE;
@@ -14,23 +26,39 @@ import static java.util.logging.Logger.getLogger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 class ProbabilityUtilTest extends MMOTestEnvironment {
-    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
-
     final static double impactChance = 11D;
     final static double greaterImpactChance = 0.007D;
     final static double fastFoodChance = 45.5D;
+    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
+
+    private static Stream<Arguments> staticChanceSkills() {
+        return Stream.of(
+                // static probability, % of time for success
+                Arguments.of(AXES_ARMOR_IMPACT, impactChance),
+                Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
+                Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
+        );
+    }
+
+    private static Stream<Arguments> provideSkillProbabilityTestData() {
+        return Stream.of(
+                // skillLevel, floor, ceiling, maxBonusLevel, expectedValue
+
+                // 20% chance at skill level 1000
+                Arguments.of(1000, 0, 20, 1000, 0.2),
+                // 10% chance at skill level 500
+                Arguments.of(500, 0, 20, 1000, 0.1),
+                // 5% chance at skill level 250
+                Arguments.of(250, 0, 20, 1000, 0.05),
+                // 0% chance at skill level 0
+                Arguments.of(0, 0, 20, 1000, 0.0),
+                // 0% chance at skill level 1000
+                Arguments.of(1000, 0, 0, 1000, 0.0),
+                // 1% chance at skill level 1000
+                Arguments.of(1000, 0, 1, 1000, 0.01)
+        );
+    }
 
     @BeforeEach
     public void setupMocks() {
@@ -43,15 +71,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     @AfterEach
     public void tearDown() {
         cleanUpStaticMocks();
-    }
-
-    private static Stream<Arguments> staticChanceSkills() {
-        return Stream.of(
-                // static probability, % of time for success
-                Arguments.of(AXES_ARMOR_IMPACT, impactChance),
-                Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
-                Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
-        );
     }
 
     @ParameterizedTest
@@ -73,25 +92,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 UNARMED_ARROW_DEFLECT, mmoPlayer);
         assertEquals(0.2D, probability.getValue());
         assertProbabilityExpectations(20, probability);
-    }
-
-    private static Stream<Arguments> provideSkillProbabilityTestData() {
-        return Stream.of(
-                // skillLevel, floor, ceiling, maxBonusLevel, expectedValue
-
-                // 20% chance at skill level 1000
-                Arguments.of(1000, 0, 20, 1000, 0.2),
-                // 10% chance at skill level 500
-                Arguments.of(500, 0, 20, 1000, 0.1),
-                // 5% chance at skill level 250
-                Arguments.of(250, 0, 20, 1000, 0.05),
-                // 0% chance at skill level 0
-                Arguments.of(0, 0, 20, 1000, 0.0),
-                // 0% chance at skill level 1000
-                Arguments.of(1000, 0, 0, 1000, 0.0),
-                // 1% chance at skill level 1000
-                Arguments.of(1000, 0, 1, 1000, 0.01)
-        );
     }
 
     @ParameterizedTest

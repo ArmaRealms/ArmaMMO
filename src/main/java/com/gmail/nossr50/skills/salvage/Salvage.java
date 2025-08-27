@@ -15,6 +15,7 @@ public final class Salvage {
     public static int advancedSalvageUnlockLevel = RankUtils.getRankUnlockLevel(SubSkillType.SALVAGE_SCRAP_COLLECTOR, 1);*/
     public static boolean arcaneSalvageEnchantLoss = mcMMO.p.getAdvancedConfig()
             .getArcaneSalvageEnchantLossEnabled();
+
     /**
      * This is a static utility class, therefore we don't want any instances of this class. Making
      * the constructor private prevents accidents like that.
@@ -22,9 +23,9 @@ public final class Salvage {
     private Salvage() {
     }
 
-    static int calculateSalvageableAmount(int currentDurability, short maxDurability,
-                                          int baseAmount) {
-        double percentDamaged = (maxDurability <= 0) ? 1D
+    static int calculateSalvageableAmount(final int currentDurability, final short maxDurability,
+                                          final int baseAmount) {
+        final double percentDamaged = (maxDurability <= 0) ? 1D
                 : (double) (maxDurability - currentDurability) / maxDurability;
 
         return (int) Math.floor(baseAmount * percentDamaged);

@@ -94,12 +94,12 @@ public class PapiExpansion extends PlaceholderExpansion {
                 if (Integer.parseInt(rank) >= topPowerLevel.size()) {
                     return "No player found at that rank.";
                 }
-                return topPowerLevel.get(Integer.parseInt(rank)).name();
+                return topPowerLevel.get(Integer.parseInt(rank)).playerName();
             } else if (type.equalsIgnoreCase(LEVEL)) {
                 if (Integer.parseInt(rank) >= topPowerLevel.size()) {
                     return "No player found at that rank.";
                 }
-                return StringUtils.formatNumber(topPowerLevel.get(Integer.parseInt(rank)).statVal());
+                return StringUtils.formatNumber(topPowerLevel.get(Integer.parseInt(rank)).value());
             }
         }
 

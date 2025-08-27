@@ -622,13 +622,13 @@ public class ScoreboardWrapper {
 
     public void acceptLeaderboardData(@NotNull final List<PlayerStat> leaderboardData) {
         for (final PlayerStat stat : leaderboardData) {
-            String name = stat.name();
+            String name = stat.playerName();
 
             if (name.equals(playerName)) {
                 name = ChatColor.GOLD + "--You--";
             }
 
-            sidebarObjective.getScore(name).setScore(stat.statVal());
+            sidebarObjective.getScore(name).setScore(stat.value());
         }
     }
 

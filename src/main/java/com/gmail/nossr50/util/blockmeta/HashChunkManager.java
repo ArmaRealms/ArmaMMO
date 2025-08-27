@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 public class HashChunkManager implements ChunkManager {
@@ -269,34 +268,21 @@ public class HashChunkManager implements ChunkManager {
         return new CoordinateKey(worldUid, rx, rz);
     }
 
-    private static final class CoordinateKey {
-        public final @NotNull UUID worldID;
-        public final int x;
-        public final int z;
-
-        private CoordinateKey(@NotNull final UUID worldID, final int x, final int z) {
-            this.worldID = worldID;
-            this.x = x;
-            this.z = z;
-        }
+    private record CoordinateKey(@NotNull UUID worldID, int x, int z) {
 
         @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
+            public boolean equals(final Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                final CoordinateKey coordinateKey = (CoordinateKey) o;
+                return x == coordinateKey.x &&
+                        z == coordinateKey.z &&
+                        worldID.equals(coordinateKey.worldID);
             }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final CoordinateKey coordinateKey = (CoordinateKey) o;
-            return x == coordinateKey.x &&
-                    z == coordinateKey.z &&
-                    worldID.equals(coordinateKey.worldID);
-        }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(worldID, x, z);
-        }
     }
 }

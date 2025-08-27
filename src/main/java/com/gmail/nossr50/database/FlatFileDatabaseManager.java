@@ -660,7 +660,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     }
 
     private @NotNull PlayerProfile queryByName(@NotNull final UserQueryName userQuery) {
-        final String playerName = userQuery.getName();
+        final String playerName = userQuery.name();
         BufferedReader in = null;
 
         synchronized (fileWritingLock) {
@@ -764,7 +764,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
     private @NotNull PlayerProfile queryByUUIDAndName(@NotNull final UserQueryFull userQuery) {
         BufferedReader in = null;
-        final String playerName = userQuery.getName();
+        final String playerName = userQuery.name();
         final UUID uuid = userQuery.getUUID();
 
         synchronized (fileWritingLock) {
@@ -1258,7 +1258,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         int currentPos = 1;
 
         for (final PlayerStat stat : statsList) {
-            if (stat.name().equalsIgnoreCase(playerName)) {
+            if (stat.playerName().equalsIgnoreCase(playerName)) {
                 return currentPos;
             }
 
