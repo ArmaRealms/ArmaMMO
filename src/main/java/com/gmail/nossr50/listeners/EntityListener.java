@@ -310,9 +310,11 @@ public class EntityListener implements Listener {
             if (animalTamer != null && ((OfflinePlayer) animalTamer).isOnline()) {
                 attacker = (Entity) animalTamer;
             }
-        } else if (attacker instanceof final TNTPrimed tntPrimed && defender instanceof final Player defenderPlayer
-                && BlastMining.processBlastMiningExplosion(event, tntPrimed, defenderPlayer)) {
-            return;
+        } else if (attacker instanceof TNTPrimed tntAttacker && defender instanceof Player defenderPlayer) {
+            if (BlastMining.processBlastMiningExplosion(event, tntAttacker,
+                    defenderPlayer)) {
+                return;
+            }
         }
 
         //Friendly fire checks
