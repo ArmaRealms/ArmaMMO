@@ -164,6 +164,7 @@ commands:
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.salvage
     maces:
+        aliases: [clava]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.maces
     mmopower:
