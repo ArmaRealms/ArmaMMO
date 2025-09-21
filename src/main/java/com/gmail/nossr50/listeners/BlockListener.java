@@ -1,7 +1,5 @@
 package com.gmail.nossr50.listeners;
 
-import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
-
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -32,9 +30,6 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -63,6 +58,12 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
 
 public class BlockListener implements Listener {
     private final mcMMO plugin;
@@ -119,11 +120,11 @@ public class BlockListener implements Listener {
             // and will back out of rewarding bonus drops
             if (!block.getMetadata(METADATA_KEY_BONUS_DROPS).isEmpty()) {
                 final MetadataValue bonusDropMeta = block
-                        .getMetadata(METADATA_KEY_BONUS_DROPS).get(0);
+                        .getMetadata(METADATA_KEY_BONUS_DROPS).getFirst();
                 if (blockCount <= 1) {
                     for (final Item item : eventItems) {
                         final ItemStack eventItemStack = item.getItemStack();
-                        int originalAmount = eventItemStack.getAmount();
+                        final int originalAmount = eventItemStack.getAmount();
 
                         if (eventItemStack.getAmount() <= 0) {
                             continue;
@@ -146,7 +147,7 @@ public class BlockListener implements Listener {
                             }
                         }
 
-                        int amountToAddFromBonus = bonusDropMeta.asInt();
+                        final int amountToAddFromBonus = bonusDropMeta.asInt();
                         final McMMOModifyBlockDropItemEvent modifyBlockDropItemEvent
                                 = new McMMOModifyBlockDropItemEvent(event, item, amountToAddFromBonus);
                         plugin.getServer().getPluginManager().callEvent(modifyBlockDropItemEvent);
@@ -523,7 +524,8 @@ public class BlockListener implements Listener {
         }
 
         //Profile not loaded
-        if (UserManager.getPlayer(player) == null) {
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer == null) {
             return;
         }
 
@@ -531,7 +533,8 @@ public class BlockListener implements Listener {
         final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
         if (ItemUtils.isSword(heldItem)) {
-            final HerbalismManager herbalismManager = UserManager.getPlayer(player).getHerbalismManager();
+
+            final HerbalismManager herbalismManager = mmoPlayer.getHerbalismManager();
 
             if (herbalismManager.canUseHylianLuck()) {
                 if (herbalismManager.processHylianLuck(blockState)) {
@@ -544,16 +547,6 @@ public class BlockListener implements Listener {
                 }
             }
         }
-        /*else if (!heldItem.containsEnchantment(Enchantment.SILK_TOUCH)) {
-            SmeltingManager smeltingManager = UserManager.getPlayer(player).getSmeltingManager();
-
-            if (smeltingManager.canUseFluxMining(blockState)) {
-                if (smeltingManager.processFluxMining(blockState)) {
-                    blockState.update(true);
-                    event.setCancelled(true);
-                }
-            }
-        }*/
     }
 
     /**
