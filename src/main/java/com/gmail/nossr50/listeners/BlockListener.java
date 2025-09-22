@@ -58,6 +58,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.MetadataValue;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
@@ -72,8 +73,8 @@ public class BlockListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
-    public void onBlockDropItemEvent(final BlockDropItemEvent event) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onBlockDropItemEvent(final @NotNull BlockDropItemEvent event) {
         //Make sure we clean up metadata on these blocks
         final Block block = event.getBlock();
         if (event.isCancelled()) {

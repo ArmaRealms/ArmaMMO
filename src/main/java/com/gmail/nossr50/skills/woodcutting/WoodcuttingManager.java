@@ -471,10 +471,7 @@ public class WoodcuttingManager extends SkillManager {
     }
 
     void spawnHarvestLumberBonusDrops(@NotNull final Block block) {
-        spawnItemsFromCollection(
-                getPlayer(),
-                getBlockCenter(block),
-                block.getDrops(getPlayer().getInventory().getItemInMainHand()),
-                ItemSpawnReason.BONUS_DROPS);
+        final Player player = getPlayer();
+        spawnItemsFromCollection(player, getBlockCenter(block), block.getDrops(player.getInventory().getItemInMainHand()), ItemSpawnReason.BONUS_DROPS);
     }
 }

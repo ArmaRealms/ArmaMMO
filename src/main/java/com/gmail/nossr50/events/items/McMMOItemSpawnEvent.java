@@ -24,7 +24,8 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     private ItemStack itemStack;
     private boolean cancelled;
 
-    public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack, @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
+    public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack,
+                               @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
         this.location = location;
         this.itemStack = itemStack;
         this.itemSpawnReason = itemSpawnReason;

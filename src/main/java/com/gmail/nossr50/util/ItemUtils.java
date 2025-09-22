@@ -804,54 +804,6 @@ public final class ItemUtils {
     }
 
     /**
-     * Drop an item at a given location.
-     *
-     * @param location        The location to drop the item at
-     * @param itemStack       The item to drop
-     * @param itemSpawnReason the reason for the item drop
-     * @return Dropped Item entity or null if invalid or cancelled
-     */
-    public static @Nullable Item spawnItemNaturally(@Nullable final Player player,
-                                                    @NotNull final Location location,
-                                                    @NotNull final ItemStack itemStack,
-                                                    @NotNull final ItemSpawnReason itemSpawnReason) {
-        if (itemStack.getType() == Material.AIR || location.getWorld() == null) {
-            return null;
-        }
-
-        // We can't get the item until we spawn it and we want to make it cancellable, so we have a custom event.
-        final McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(location, itemStack,
-                itemSpawnReason, player);
-        mcMMO.p.getServer().getPluginManager().callEvent(event);
-
-        if (event.isCancelled()) {
-            return null;
-        }
-
-        return location.getWorld().dropItemNaturally(location, event.getItemStack());
-    }
-
-    /**
-     * Drop items at a given location.
-     *
-     * @param fromLocation The location to drop the items at
-     * @param is           The items to drop
-     * @param speed        the speed that the item should travel
-     * @param quantity     The amount of items to drop
-     */
-    public static void spawnItemsTowardsLocation(@Nullable final Player player,
-                                                 @NotNull final Location fromLocation,
-                                                 @NotNull final Location toLocation,
-                                                 @NotNull final ItemStack is,
-                                                 final int quantity,
-                                                 final double speed,
-                                                 @NotNull final ItemSpawnReason itemSpawnReason) {
-        for (int i = 0; i < quantity; i++) {
-            spawnItemTowardsLocation(player, fromLocation, toLocation, is, speed, itemSpawnReason);
-        }
-    }
-
-    /**
      * Drop an item at a given location. This method is fairly expensive as it creates clones of
      * everything passed to itself since they are mutable objects
      *

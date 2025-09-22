@@ -1,7 +1,5 @@
 package com.gmail.nossr50.events.items;
 
-import static java.util.Objects.requireNonNull;
-
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Item;
@@ -11,6 +9,8 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.jetbrains.annotations.NotNull;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Called when mcMMO is modifying the amount of bonus drops to add to an Item involved in a {@link BlockDropItemEvent}.
@@ -33,8 +33,8 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     private boolean isCancelled = false;
     private final int originalItemStackQuantity;
 
-    public McMMOModifyBlockDropItemEvent(@NotNull BlockDropItemEvent blockDropItemEvent,
-            @NotNull Item itemThatHasBonusDrops, int bonusDropsToAdd) {
+    public McMMOModifyBlockDropItemEvent(@NotNull final BlockDropItemEvent blockDropItemEvent,
+                                         @NotNull final Item itemThatHasBonusDrops, final int bonusDropsToAdd) {
         super(false);
         requireNonNull(blockDropItemEvent, "blockDropItemEvent cannot be null");
         requireNonNull(itemThatHasBonusDrops, "itemThatHasBonusDrops cannot be null");
@@ -56,12 +56,13 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     }
 
     @Override
-    public void setCancelled(boolean cancel) {
+    public void setCancelled(final boolean cancel) {
         this.isCancelled = cancel;
     }
 
     /**
      * The original BlockDropItemEvent which caused this event to be fired.
+     *
      * @return the original BlockDropItemEvent
      */
     public @NotNull BlockDropItemEvent getBlockDropItemEvent() {
@@ -71,6 +72,7 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     /**
      * The original bonus mcMMO would have added before any modifications to this event from
      * other plugins.
+     *
      * @return the original bonus amount to add
      */
     public int getOriginalBonusAmountToAdd() {
@@ -80,12 +82,12 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     /**
      * The Item entity that is being modified by this event.
      * This item returned by this call should not be modified, it is provided as a convenience.
+     *
      * @return the Item entity that is having bonus drops added to it.
      */
     public @NotNull Item getItem() {
         return itemThatHasBonusDrops;
     }
-
 
     /**
      * The modified ItemStack quantity that will be set on the Item entity if this event is not
@@ -101,6 +103,7 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
      * The original ItemStack quantity of the Item entity before any modifications from this event.
      * This is a reflection of the state of the Item when mcMMO fired this event.
      * It is possible it has modified since then, so do not rely on this value to be the current.
+     *
      * @return the original ItemStack quantity of the Item entity before any modifications from this event
      */
     public int getOriginalItemStackQuantity() {
@@ -110,6 +113,7 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     /**
      * The amount of bonus that will be added to the ItemStack quantity if this event is not
      * cancelled.
+     *
      * @return the amount of bonus that will be added to the ItemStack quantity
      */
     public int getBonusAmountToAdd() {
@@ -119,10 +123,11 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     /**
      * Set the amount of bonus that will be added to the ItemStack quantity if this event is not
      * cancelled.
+     *
      * @param bonus the amount of bonus that will be added to the ItemStack quantity
      * @throws IllegalArgumentException if bonus is less than 0
      */
-    public void setBonusAmountToAdd(int bonus) {
+    public void setBonusAmountToAdd(final int bonus) {
         if (bonus < 0) throw new IllegalArgumentException("bonus must be >= 0");
         this.modifiedItemStackQuantity = originalItemStackQuantity + bonus;
     }
@@ -130,10 +135,11 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     /**
      * Set the modified ItemStack quantity that will be set on the Item entity if this event is not
      * cancelled. This CANNOT be lower than the original quantity of the ItemStack.
+     *
      * @param modifiedItemStackQuantity the modified ItemStack quantity that will be set on the Item entity
      * @throws IllegalArgumentException if modifiedItemStackQuantity is less than originalItemStackQuantity
      */
-    public void setModifiedItemStackQuantity(int modifiedItemStackQuantity) {
+    public void setModifiedItemStackQuantity(final int modifiedItemStackQuantity) {
         if (modifiedItemStackQuantity < originalItemStackQuantity) {
             throw new IllegalArgumentException(
                     "modifiedItemStackQuantity cannot be less than the originalItemStackQuantity");
@@ -199,8 +205,8 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     }
 
     @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof McMMOModifyBlockDropItemEvent that)) {
+    public final boolean equals(final Object o) {
+        if (!(o instanceof final McMMOModifyBlockDropItemEvent that)) {
             return false;
         }
 
