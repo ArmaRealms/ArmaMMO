@@ -135,7 +135,6 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         this(new File(usersFilePath), logger, purgeTime, startingLevel, false);
     }
 
-
     public int purgePowerlessUsers() {
         int purgedUsers = 0;
 

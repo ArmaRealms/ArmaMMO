@@ -8,13 +8,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class SkillActivationPerkEvent extends Event {
 
-
     private static final HandlerList handlers = new HandlerList();
     private final Player player;
     private final int maxTicks;
     private int ticks;
 
-    public SkillActivationPerkEvent(Player player, int ticks, int maxTicks) {
+    public SkillActivationPerkEvent(final Player player, final int ticks, final int maxTicks) {
         super(!Bukkit.isPrimaryThread());
         this.player = player;
         this.ticks = ticks;
@@ -33,7 +32,7 @@ public class SkillActivationPerkEvent extends Event {
         return ticks;
     }
 
-    public void setTicks(int ticks) {
+    public void setTicks(final int ticks) {
         this.ticks = ticks;
     }
 

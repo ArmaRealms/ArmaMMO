@@ -102,7 +102,7 @@ public class TreasureConfig extends BukkitConfig {
             if (material == null) {
                 LogUtils.debug(mcMMO.p.getLogger(),
                         String.format("Material '%s' for treasure '%s' is not recognized."
-                                        + " Skipping...", materialName, treasureName));
+                                + " Skipping...", materialName, treasureName));
                 continue;
             }
 

@@ -50,7 +50,7 @@ public class TamingManager extends SkillManager {
     private static HashMap<CallOfTheWildType, TamingSummon> cotwSummonDataProperties;
     private long lastSummonTimeStamp;
 
-    public TamingManager(@NotNull McMMOPlayer mmoPlayer) {
+    public TamingManager(@NotNull final McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.TAMING);
         init();
     }
@@ -89,19 +89,19 @@ public class TamingManager extends SkillManager {
         if (cotwSummonDataProperties == null) {
             cotwSummonDataProperties = new HashMap<>();
 
-            for (CallOfTheWildType callOfTheWildType : CallOfTheWildType.values()) {
-                Material itemSummonMaterial = mcMMO.p.getGeneralConfig()
+            for (final CallOfTheWildType callOfTheWildType : CallOfTheWildType.values()) {
+                final Material itemSummonMaterial = mcMMO.p.getGeneralConfig()
                         .getTamingCOTWMaterial(callOfTheWildType.getConfigEntityTypeEntry());
-                int itemAmountRequired = mcMMO.p.getGeneralConfig()
+                final int itemAmountRequired = mcMMO.p.getGeneralConfig()
                         .getTamingCOTWCost(callOfTheWildType.getConfigEntityTypeEntry());
-                int entitiesSummonedPerCOTW = mcMMO.p.getGeneralConfig()
+                final int entitiesSummonedPerCOTW = mcMMO.p.getGeneralConfig()
                         .getTamingCOTWAmount(callOfTheWildType.getConfigEntityTypeEntry());
-                int summonLifespanSeconds = mcMMO.p.getGeneralConfig()
+                final int summonLifespanSeconds = mcMMO.p.getGeneralConfig()
                         .getTamingCOTWLength(callOfTheWildType.getConfigEntityTypeEntry());
-                int perPlayerMaxAmount = mcMMO.p.getGeneralConfig()
+                final int perPlayerMaxAmount = mcMMO.p.getGeneralConfig()
                         .getTamingCOTWMaxAmount(callOfTheWildType.getConfigEntityTypeEntry());
 
-                TamingSummon tamingSummon = new TamingSummon(callOfTheWildType, itemSummonMaterial,
+                final TamingSummon tamingSummon = new TamingSummon(callOfTheWildType, itemSummonMaterial,
                         itemAmountRequired, entitiesSummonedPerCOTW, summonLifespanSeconds,
                         perPlayerMaxAmount);
                 cotwSummonDataProperties.put(callOfTheWildType, tamingSummon);
@@ -162,8 +162,8 @@ public class TamingManager extends SkillManager {
      *
      * @param entity The LivingEntity to award XP for
      */
-    public void awardTamingXP(@NotNull LivingEntity entity) {
-        int xp = ExperienceConfig.getInstance().getTamingXP(entity.getType());
+    public void awardTamingXP(@NotNull final LivingEntity entity) {
+        final int xp = ExperienceConfig.getInstance().getTamingXP(entity.getType());
 
         final McMMOPlayerTameEntityEvent event = new McMMOPlayerTameEntityEvent(mmoPlayer, xp,
                 entity);
@@ -180,17 +180,17 @@ public class TamingManager extends SkillManager {
      * @param wolf   The wolf using the ability
      * @param damage The damage being absorbed by the wolf
      */
-    public void fastFoodService(@NotNull Wolf wolf, double damage) {
+    public void fastFoodService(@NotNull final Wolf wolf, final double damage) {
         if (!ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.TAMING_FAST_FOOD_SERVICE,
                 mmoPlayer)) {
             return;
         }
 
-        double health = wolf.getHealth();
-        double maxHealth = wolf.getMaxHealth();
+        final double health = wolf.getHealth();
+        final double maxHealth = wolf.getMaxHealth();
 
         if (health < maxHealth) {
-            double newHealth = health + damage;
+            final double newHealth = health + damage;
             wolf.setHealth(Math.min(newHealth, maxHealth));
         }
     }
@@ -201,7 +201,7 @@ public class TamingManager extends SkillManager {
      * @param target The LivingEntity to apply Gore on
      * @param damage The initial damage
      */
-    public double gore(@NotNull LivingEntity target, double damage) {
+    public double gore(@NotNull final LivingEntity target, double damage) {
         damage = (damage * Taming.goreModifier) - damage;
 
         return damage;
@@ -261,8 +261,8 @@ public class TamingManager extends SkillManager {
      *
      * @param beast The entity to examine
      */
-    public void beastLore(@NotNull Tameable beast) {
-        Player player = getPlayer();
+    public void beastLore(@NotNull final Tameable beast) {
+        final Player player = getPlayer();
 
         String message = LocaleLoader.getString("Combat.BeastLore") + " ";
 
@@ -277,8 +277,8 @@ public class TamingManager extends SkillManager {
                         beast.getMaxHealth()));
 
         // Bred mules & donkeys can actually have horse-like stats, but llamas cannot.
-        if (beast instanceof AbstractHorse horseLikeCreature && !(beast instanceof Llama)) {
-            AttributeInstance jumpAttribute = horseLikeCreature.getAttribute(MAPPED_JUMP_STRENGTH);
+        if (beast instanceof final AbstractHorse horseLikeCreature && !(beast instanceof Llama)) {
+            final AttributeInstance jumpAttribute = horseLikeCreature.getAttribute(MAPPED_JUMP_STRENGTH);
 
             if (jumpAttribute != null) {
                 double jumpStrength = jumpAttribute.getValue();
@@ -295,19 +295,19 @@ public class TamingManager extends SkillManager {
         player.sendMessage(message);
     }
 
-    public void processEnvironmentallyAware(@NotNull Wolf wolf, double damage) {
+    public void processEnvironmentallyAware(@NotNull final Wolf wolf, final double damage) {
         if (damage > wolf.getHealth()) {
             return;
         }
 
-        Player owner = getPlayer();
+        final Player owner = getPlayer();
 
         wolf.teleport(owner);
         NotificationManager.sendPlayerInformation(owner, NotificationType.SUBSKILL_MESSAGE,
                 "Taming.Listener.Wolf");
     }
 
-    public void pummel(LivingEntity target, Wolf wolf) {
+    public void pummel(final LivingEntity target, final Wolf wolf) {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.TAMING_PUMMEL)) {
             return;
         }
@@ -320,7 +320,7 @@ public class TamingManager extends SkillManager {
         ParticleEffectUtils.playGreaterImpactEffect(target);
         target.setVelocity(wolf.getLocation().getDirection().normalize().multiply(1.5D));
 
-        if (target instanceof Player defender) {
+        if (target instanceof final Player defender) {
 
             if (NotificationManager.doesPlayerUseNotifications(defender)) {
                 NotificationManager.sendPlayerInformation(defender,
@@ -329,22 +329,22 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    public void attackTarget(LivingEntity target) {
-        Player player = getPlayer();
-        if (target instanceof Tameable tameable && (tameable.getOwner() == player)) return;
+    public void attackTarget(final LivingEntity target) {
+        final Player player = getPlayer();
+        if (target instanceof final Tameable tameable && (tameable.getOwner() == player)) return;
 
-        double range = 5;
+        final double range = 5;
 
         if (!target.getWorld().equals(player.getWorld())) {
             return;
         }
 
-        for (Entity entity : player.getNearbyEntities(range, range, range)) {
+        for (final Entity entity : player.getNearbyEntities(range, range, range)) {
             if (entity.getType() != EntityType.WOLF) {
                 continue;
             }
 
-            Wolf wolf = (Wolf) entity;
+            final Wolf wolf = (Wolf) entity;
 
             if (!wolf.isTamed() || (wolf.getOwner() != player) || wolf.isSitting()) {
                 continue;
@@ -354,7 +354,6 @@ public class TamingManager extends SkillManager {
         }
     }
 
-
     private void processCallOfTheWild() {
         //Prevent summoning too many things accidentally if a player holds down the button
         if (lastSummonTimeStamp + 150 > System.currentTimeMillis()) {
@@ -363,14 +362,14 @@ public class TamingManager extends SkillManager {
             lastSummonTimeStamp = System.currentTimeMillis();
         }
 
-        Player player = getPlayer();
-        ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
+        final Player player = getPlayer();
+        final ItemStack itemInMainHand = player.getInventory().getItemInMainHand();
 
         //Check if the item the player is currently holding is a COTW item
         if (isCOTWItem(itemInMainHand)) {
             //Get the summoning type
-            CallOfTheWildType callOfTheWildType = summoningItems.get(itemInMainHand.getType());
-            TamingSummon tamingSummon = cotwSummonDataProperties.get(callOfTheWildType);
+            final CallOfTheWildType callOfTheWildType = summoningItems.get(itemInMainHand.getType());
+            final TamingSummon tamingSummon = cotwSummonDataProperties.get(callOfTheWildType);
 
             //Players will pay for the cost if at least one thing was summoned
             int amountSummoned = 0;
@@ -382,7 +381,7 @@ public class TamingManager extends SkillManager {
 
                 //COTW can summon multiple entities per usage
                 for (int i = 0; i < tamingSummon.getEntitiesSummoned(); i++) {
-                    String entityName = switch (callOfTheWildType) {
+                    final String entityName = switch (callOfTheWildType) {
                         case CAT -> "Gato";
                         case WOLF -> "Lobo";
                         case HORSE -> "Cavalo";
@@ -421,7 +420,7 @@ public class TamingManager extends SkillManager {
                 //Remove items from the player if they had at least one entity summoned successfully
                 if (amountSummoned >= 1) {
                     //Remove the items used to summon
-                    int itemAmountAfterPayingCost =
+                    final int itemAmountAfterPayingCost =
                             itemInMainHand.getAmount() - tamingSummon.getItemAmountRequired();
                     itemInMainHand.setAmount(itemAmountAfterPayingCost);
                     player.updateInventory();
@@ -429,8 +428,8 @@ public class TamingManager extends SkillManager {
 
             } else {
                 //Player did not have enough of the item in their main hand
-                int difference = tamingSummon.getItemAmountRequired() - itemInMainHand.getAmount();
-                String itemName = switch (callOfTheWildType) {
+                final int difference = tamingSummon.getItemAmountRequired() - itemInMainHand.getAmount();
+                final String itemName = switch (callOfTheWildType) {
                     case CAT -> "Bacalhau cru";
                     case WOLF -> "Osso";
                     case HORSE -> "Maçã";
@@ -442,8 +441,8 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    private void spawnCOTWEntity(CallOfTheWildType callOfTheWildType, Location spawnLocation,
-                                 EntityType entityType) {
+    private void spawnCOTWEntity(final CallOfTheWildType callOfTheWildType, final Location spawnLocation,
+                                 final EntityType entityType) {
         switch (callOfTheWildType) {
             //Entity type is needed for cats because in 1.13 and below we spawn ocelots, in 1.14 and above we spawn cats
             case CAT -> spawnCat(spawnLocation, entityType);
@@ -452,15 +451,15 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    private void spawnWolf(Location spawnLocation) {
-        LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
+    private void spawnWolf(final Location spawnLocation) {
+        final LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
                 .spawnEntity(spawnLocation, EntityType.WOLF);
 
         //This is used to prevent XP gains for damaging this entity
         applyMetaDataToCOTWEntity(callOfWildEntity);
 
         setBaseCOTWEntityProperties(callOfWildEntity);
-        if (callOfWildEntity instanceof Wolf wolf) {
+        if (callOfWildEntity instanceof final Wolf wolf) {
             wolf.setAdult();
             addToTracker(callOfWildEntity, CallOfTheWildType.WOLF);
             //Setup wolf stats
@@ -473,8 +472,8 @@ public class TamingManager extends SkillManager {
     }
 
     @SuppressWarnings("deprecation")
-    private void spawnCat(Location spawnLocation, EntityType entityType) {
-        LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
+    private void spawnCat(final Location spawnLocation, final EntityType entityType) {
+        final LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
                 .spawnEntity(spawnLocation, entityType);
 
         //This is used to prevent XP gains for damaging this entity
@@ -485,9 +484,9 @@ public class TamingManager extends SkillManager {
         addToTracker(callOfWildEntity, CallOfTheWildType.CAT);
 
         //Randomize the cat
-        if (callOfWildEntity instanceof Cat cat) {
-            Cat.Type[] catTypes = Cat.Type.values();
-            int numberOfTypes = catTypes.length;
+        if (callOfWildEntity instanceof final Cat cat) {
+            final Cat.Type[] catTypes = Cat.Type.values();
+            final int numberOfTypes = catTypes.length;
             cat.setCatType(catTypes[Misc.getRandom().nextInt(numberOfTypes)]);
             cat.setAdult();
             cat.setCustomName(
@@ -498,15 +497,15 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    private void spawnHorse(Location spawnLocation) {
-        LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
+    private void spawnHorse(final Location spawnLocation) {
+        final LivingEntity callOfWildEntity = (LivingEntity) getPlayer().getWorld()
                 .spawnEntity(spawnLocation, EntityType.HORSE);
         applyMetaDataToCOTWEntity(callOfWildEntity);
 
         setBaseCOTWEntityProperties(callOfWildEntity);
 
         addToTracker(callOfWildEntity, CallOfTheWildType.HORSE);
-        if (callOfWildEntity instanceof Horse horse) {
+        if (callOfWildEntity instanceof final Horse horse) {
             horse.setMaxHealth(15.0 + (Misc.getRandom().nextDouble() * 15));
             horse.setHealth(callOfWildEntity.getMaxHealth());
             horse.setColor(Horse.Color.values()[Misc.getRandom().nextInt(Horse.Color.values().length)]);
@@ -523,14 +522,14 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    private void setBaseCOTWEntityProperties(LivingEntity callOfWildEntity) {
-        if (callOfWildEntity instanceof Tameable tameable) {
+    private void setBaseCOTWEntityProperties(final LivingEntity callOfWildEntity) {
+        if (callOfWildEntity instanceof final Tameable tameable) {
             tameable.setOwner(getPlayer());
             tameable.setRemoveWhenFarAway(false);
         }
     }
 
-    private void applyMetaDataToCOTWEntity(LivingEntity summonedEntity) {
+    private void applyMetaDataToCOTWEntity(final LivingEntity summonedEntity) {
         //This helps identify the entity as being summoned by COTW
         flagMetadata(MobMetaFlagType.COTW_SUMMONED_MOB, summonedEntity);
     }
@@ -541,17 +540,17 @@ public class TamingManager extends SkillManager {
      * @param itemStack target ItemStack
      * @return true if it is used for any COTW
      */
-    public boolean isCOTWItem(@NotNull ItemStack itemStack) {
+    public boolean isCOTWItem(@NotNull final ItemStack itemStack) {
         return summoningItems.containsKey(itemStack.getType());
     }
 
-    private int getAmountCurrentlySummoned(@NotNull CallOfTheWildType callOfTheWildType) {
+    private int getAmountCurrentlySummoned(@NotNull final CallOfTheWildType callOfTheWildType) {
         return mcMMO.getTransientEntityTracker()
                 .getActiveSummonsForPlayerOfType(getPlayer().getUniqueId(), callOfTheWildType);
     }
 
-    private void addToTracker(@NotNull LivingEntity livingEntity,
-                              @NotNull CallOfTheWildType callOfTheWildType) {
+    private void addToTracker(@NotNull final LivingEntity livingEntity,
+                              @NotNull final CallOfTheWildType callOfTheWildType) {
         mcMMO.getTransientEntityTracker().addSummon(getPlayer().getUniqueId(),
                 new TrackedTamingEntity(livingEntity, callOfTheWildType, getPlayer()));
     }

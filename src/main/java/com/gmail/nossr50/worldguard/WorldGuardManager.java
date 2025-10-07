@@ -26,16 +26,16 @@ public class WorldGuardManager {
         return instance;
     }
 
-    public boolean hasMainFlag(Player player) {
+    public boolean hasMainFlag(final Player player) {
         if (player == null) {
             return false;
         }
 
-        BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
-        com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
+        final BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
+        final com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+        final RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
                 .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
@@ -44,16 +44,16 @@ public class WorldGuardManager {
                 WorldGuardFlags.MCMMO_ENABLE_WG_FLAG);
     }
 
-    public boolean hasXPFlag(Player player) {
+    public boolean hasXPFlag(final Player player) {
         if (player == null) {
             return false;
         }
 
-        BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
-        com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
+        final BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
+        final com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+        final RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
                 .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
@@ -62,16 +62,16 @@ public class WorldGuardManager {
                 WorldGuardFlags.MCMMO_XP_WG_FLAG);
     }
 
-    public boolean hasHardcoreFlag(Player player) {
+    public boolean hasHardcoreFlag(final Player player) {
         if (player == null) {
             return false;
         }
 
-        BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
-        com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
+        final BukkitPlayer localPlayer = BukkitAdapter.adapt(player);
+        final com.sk89q.worldedit.util.Location loc = localPlayer.getLocation();
 
         //WorldGuardPlugin worldGuard = getWorldGuard();
-        RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
+        final RegionQuery query = WorldGuard.getInstance().getPlatform().getRegionContainer()
                 .createQuery();
 
         //ApplicableRegionSet set = query.getApplicableRegions(loc);
@@ -81,7 +81,7 @@ public class WorldGuardManager {
     }
 
     private WorldGuardPlugin getWorldGuard() {
-        Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+        final Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
 
         // WorldGuard may not be loaded
         if (!(plugin instanceof WorldGuardPlugin)) {
@@ -94,7 +94,7 @@ public class WorldGuardManager {
 
     public void registerFlags() {
         try {
-            FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
+            final FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
 
             try {
                 // register our flag with the registry
@@ -102,7 +102,7 @@ public class WorldGuardManager {
                 registry.register(WorldGuardFlags.MCMMO_XP_WG_FLAG);
                 registry.register(WorldGuardFlags.MCMMO_HARDCORE_WG_FLAG);
                 LogUtils.debug(mcMMO.p.getLogger(), "Registered WG flags successfully!");
-            } catch (FlagConflictException e) {
+            } catch (final FlagConflictException e) {
                 e.printStackTrace();
                 mcMMO.p.getLogger().warning("Failed to register WG flags!");
                 // some other plugin registered a flag by the same name already.
@@ -110,10 +110,9 @@ public class WorldGuardManager {
                 // could cause issues with saved flags in region files. it's better
                 // to print a message to let the server admin know of the conflict
             }
-        } catch (NoClassDefFoundError e) {
+        } catch (final NoClassDefFoundError e) {
             System.out.println("[mcMMO] Could not register WG Flags!"); //Don't use the Logger here
         }
     }
-
 
 }

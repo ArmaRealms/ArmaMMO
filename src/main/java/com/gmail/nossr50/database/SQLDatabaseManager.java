@@ -1159,7 +1159,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-
     private void setStatementQuery(final PreparedStatement statement, final String tableName)
             throws SQLException {
         if (!this.h2) {
@@ -1411,7 +1410,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
             nextException = nextException.getNextException();
         }
     }
-
 
     public DatabaseType getDatabaseType() {
         return DatabaseType.SQL;

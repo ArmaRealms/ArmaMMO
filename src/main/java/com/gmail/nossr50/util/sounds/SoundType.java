@@ -18,19 +18,18 @@ public enum SoundType {
     GLASS("minecraft:block.glass.break"),
     ITEM_CONSUMED("minecraft:item.bottle.empty"),
     CRIPPLE("minecraft:block.anvil.place");
-    
+
     private final String soundRegistryId;
 
-    SoundType(String soundRegistryId) {
+    SoundType(final String soundRegistryId) {
         this.soundRegistryId = soundRegistryId;
     }
 
     public String id() {
         return soundRegistryId;
     }
-    
-    public boolean usesCustomPitch()
-    {
+
+    public boolean usesCustomPitch() {
         return switch (this) {
             case POP, FIZZ -> true;
             default -> false;

@@ -33,7 +33,7 @@ public class WoodcuttingCommand extends SkillCommand {
     }
 
     @Override
-    protected void dataCalculations(Player player, float skillValue) {
+    protected void dataCalculations(final Player player, final float skillValue) {
         // DOUBLE DROPS
         if (canDoubleDrop) {
             setDoubleDropClassicChanceStrings(player);
@@ -41,7 +41,7 @@ public class WoodcuttingCommand extends SkillCommand {
 
         //Clean Cuts
         if (canTripleDrop) {
-            String[] tripleDropStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+            final String[] tripleDropStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
                     SubSkillType.WOODCUTTING_CLEAN_CUTS);
             tripleDropChance = tripleDropStrings[0];
             tripleDropChanceLucky = tripleDropStrings[1];
@@ -49,21 +49,21 @@ public class WoodcuttingCommand extends SkillCommand {
 
         // TREE FELLER
         if (canTreeFell) {
-            String[] treeFellerStrings = calculateLengthDisplayValues(player, skillValue);
+            final String[] treeFellerStrings = calculateLengthDisplayValues(player, skillValue);
             treeFellerLength = treeFellerStrings[0];
             treeFellerLengthEndurance = treeFellerStrings[1];
         }
     }
 
-    private void setDoubleDropClassicChanceStrings(Player player) {
-        String[] doubleDropStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+    private void setDoubleDropClassicChanceStrings(final Player player) {
+        final String[] doubleDropStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
                 SubSkillType.WOODCUTTING_HARVEST_LUMBER);
         doubleDropChance = doubleDropStrings[0];
         doubleDropChanceLucky = doubleDropStrings[1];
     }
 
     @Override
-    protected void permissionsCheck(Player player) {
+    protected void permissionsCheck(final Player player) {
         canTreeFell = RankUtils.hasUnlockedSubskill(player, SubSkillType.WOODCUTTING_TREE_FELLER)
                 && Permissions.treeFeller(player);
         canDoubleDrop = !mcMMO.p.getGeneralConfig().getDoubleDropsDisabled(skill)
@@ -77,9 +77,9 @@ public class WoodcuttingCommand extends SkillCommand {
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-                                        boolean isLucky) {
-        List<String> messages = new ArrayList<>();
+    protected List<String> statsDisplay(final Player player, final float skillValue, final boolean hasEndurance,
+                                        final boolean isLucky) {
+        final List<String> messages = new ArrayList<>();
 
         if (canDoubleDrop) {
             messages.add(getStatMessage(SubSkillType.WOODCUTTING_HARVEST_LUMBER, doubleDropChance)
@@ -94,7 +94,7 @@ public class WoodcuttingCommand extends SkillCommand {
         }
 
         if (canKnockOnWood) {
-            String lootNote;
+            final String lootNote;
 
             if (RankUtils.hasReachedRank(2, player, SubSkillType.WOODCUTTING_KNOCK_ON_WOOD)) {
                 lootNote = LocaleLoader.getString("Woodcutting.SubSkill.KnockOnWood.Loot.Rank2");
@@ -121,14 +121,13 @@ public class WoodcuttingCommand extends SkillCommand {
     }
 
     @Override
-    protected List<Component> getTextComponents(Player player) {
-        List<Component> textComponents = new ArrayList<>();
+    protected List<Component> getTextComponents(final Player player) {
+        final List<Component> textComponents = new ArrayList<>();
 
         TextComponentFactory.getSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.WOODCUTTING);
 
         return textComponents;
     }
-
 
 }

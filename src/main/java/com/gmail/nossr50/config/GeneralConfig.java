@@ -214,7 +214,6 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("General.Verbose_Logging", false);
     }
 
-
     public boolean getMatchOfflinePlayers() {
         return config.getBoolean("Commands.Generic.Match_OfflinePlayers", false);
     }

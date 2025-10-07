@@ -64,7 +64,6 @@ public class NotificationManager {
         sendNotification(player, customEvent);
     }
 
-
     public static boolean doesPlayerUseNotifications(final Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         if (mmoPlayer == null) return false;

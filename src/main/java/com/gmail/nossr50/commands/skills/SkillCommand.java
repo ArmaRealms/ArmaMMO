@@ -39,14 +39,14 @@ public abstract class SkillCommand implements TabExecutor {
     protected DecimalFormat decimal = new DecimalFormat("##0.00", DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
     protected McMMOPlayer mmoPlayer;
 
-    protected SkillCommand(PrimarySkillType skill) {
+    protected SkillCommand(final PrimarySkillType skill) {
         this.skill = skill;
         skillGuideCommand = new SkillGuideCommand(skill);
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+    public boolean onCommand(@NotNull final CommandSender sender, @NotNull final Command command, @NotNull final String label, final String[] args) {
+        if (!(sender instanceof final Player player)) {
             sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
@@ -61,9 +61,9 @@ public abstract class SkillCommand implements TabExecutor {
         }
 
         if (args.length == 0) {
-            boolean isLucky = Permissions.lucky(player, skill);
-            boolean hasEndurance = PerksUtils.handleActivationPerks(player, 0, 0) != 0;
-            float skillValue = mmoPlayer.getSkillLevel(skill);
+            final boolean isLucky = Permissions.lucky(player, skill);
+            final boolean hasEndurance = PerksUtils.handleActivationPerks(player, 0, 0) != 0;
+            final float skillValue = mmoPlayer.getSkillLevel(skill);
 
             //Send the players a few blank lines to make finding the top of the skill command easier
             if (mcMMO.p.getAdvancedConfig().doesSkillCommandSendBlankLines()) {
@@ -79,7 +79,7 @@ public abstract class SkillCommand implements TabExecutor {
                     player, mmoPlayer, (int) skillValue);
 
             //Make JSON text components
-            List<Component> subskillTextComponents = getTextComponents(player);
+            final List<Component> subskillTextComponents = getTextComponents(player);
 
             //Subskills Header
             player.sendMessage(LocaleLoader.getString("Skills.Overhaul.Header", LocaleLoader.getString("Effects.SubSkills.Overhaul")));
@@ -100,7 +100,6 @@ public abstract class SkillCommand implements TabExecutor {
                 player.sendMessage(LocaleLoader.getString("Overhaul.mcMMO.Header"));
                 TextComponentFactory.sendPlayerUrlHeader(player);
             }
-
 
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && mcMMO.p.getGeneralConfig().getSkillUseBoard()) {
                 ScoreboardManager.enablePlayerSkillScoreboard(player, skill);
@@ -124,13 +123,13 @@ public abstract class SkillCommand implements TabExecutor {
         return skillGuideCommand.onCommand(sender, command, label, args);
     }
 
-    private void getStatMessages(Player player, boolean isLucky, boolean hasEndurance, float skillValue) {
-        List<String> statsMessages = statsDisplay(player, skillValue, hasEndurance, isLucky);
+    private void getStatMessages(final Player player, final boolean isLucky, final boolean hasEndurance, final float skillValue) {
+        final List<String> statsMessages = statsDisplay(player, skillValue, hasEndurance, isLucky);
 
         if (!statsMessages.isEmpty()) {
             player.sendMessage(LocaleLoader.getString("Skills.Overhaul.Header", LocaleLoader.getString("Commands.Stats.Self.Overhaul")));
 
-            for (String message : statsMessages) {
+            for (final String message : statsMessages) {
                 player.sendMessage(message);
             }
         }
@@ -141,7 +140,7 @@ public abstract class SkillCommand implements TabExecutor {
                 skillName.toLowerCase(Locale.ENGLISH)));
     }
 
-    private void sendSkillCommandHeader(String skillName, Player player, McMMOPlayer mcMMOPlayer, int skillValue) {
+    private void sendSkillCommandHeader(final String skillName, final Player player, final McMMOPlayer mcMMOPlayer, final int skillValue) {
         // send header
         player.sendMessage(LocaleLoader.getString("Skills.Overhaul.Header", skillName));
 
@@ -158,11 +157,11 @@ public abstract class SkillCommand implements TabExecutor {
             /*
              * CHILD SKILLS
              */
-            var parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            final var parents = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
-            ArrayList<PrimarySkillType> parentList = new ArrayList<>(parents);
+            final ArrayList<PrimarySkillType> parentList = new ArrayList<>(parents);
 
-            StringBuilder parentMessage = new StringBuilder();
+            final StringBuilder parentMessage = new StringBuilder();
 
             for (int i = 0; i < parentList.size(); i++) {
                 if (i + 1 < parentList.size()) {
@@ -180,17 +179,17 @@ public abstract class SkillCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull final CommandSender sender, @NotNull final Command command, @NotNull final String alias, final String[] args) {
         if (args.length == 1) {
             return Stream.of("?").filter(s -> s.startsWith(args[0])).toList();
         }
         return List.of();
     }
 
-    protected String[] calculateLengthDisplayValues(Player player, float skillValue) {
-        int maxLength = mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
-        int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
-        int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
+    protected String[] calculateLengthDisplayValues(final Player player, final float skillValue) {
+        final int maxLength = mcMMO.p.getSkillTools().getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
+        final int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
+        final int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
 
         int length;
 
@@ -200,7 +199,7 @@ public abstract class SkillCommand implements TabExecutor {
             length = 2 + (int) (Math.min(abilityLengthCap, skillValue) / abilityLengthVar);
         }
 
-        int enduranceLength = PerksUtils.handleActivationPerks(player, length, maxLength);
+        final int enduranceLength = PerksUtils.handleActivationPerks(player, length, maxLength);
 
         if (maxLength != 0) {
             length = Math.min(length, maxLength);
@@ -209,12 +208,12 @@ public abstract class SkillCommand implements TabExecutor {
         return new String[]{String.valueOf(length), String.valueOf(enduranceLength)};
     }
 
-    protected String getStatMessage(SubSkillType subSkillType, String... vars) {
+    protected String getStatMessage(final SubSkillType subSkillType, final String... vars) {
         return getStatMessage(false, false, subSkillType, vars);
     }
 
-    protected String getStatMessage(boolean isExtra, boolean isCustom,
-                                    @NotNull SubSkillType subSkillType, String... vars) {
+    protected String getStatMessage(final boolean isExtra, final boolean isCustom,
+                                    @NotNull final SubSkillType subSkillType, final String... vars) {
         final String templateKey = isCustom ? ABILITY_GENERIC_TEMPLATE_CUSTOM : ABILITY_GENERIC_TEMPLATE;
         final String statDescriptionKey = !isExtra
                 ? subSkillType.getLocaleKeyStatDescription()

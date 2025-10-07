@@ -37,7 +37,6 @@ import static com.gmail.nossr50.util.sounds.SoundManager.sendCategorizedSound;
 
 public class Roll extends AcrobaticsSubSkill {
 
-
     public static final String GRACEFUL_ROLL_ACTIVATED_LOCALE_STR_KEY = "Acrobatics.Ability.Proc";
     public static final String ROLL_ACTIVATED_LOCALE_KEY = "Acrobatics.Roll.Text";
 
@@ -46,19 +45,19 @@ public class Roll extends AcrobaticsSubSkill {
     }
 
     @NotNull
-    public static Probability getGracefulProbability(McMMOPlayer mmoPlayer) {
-        double gracefulOdds =
+    public static Probability getGracefulProbability(final McMMOPlayer mmoPlayer) {
+        final double gracefulOdds =
                 getSubSkillProbability(SubSkillType.ACROBATICS_ROLL, mmoPlayer).getValue() * 2;
         return Probability.ofValue(gracefulOdds);
     }
 
-    public static Probability getNonGracefulProbability(McMMOPlayer mmoPlayer) {
-        double gracefulOdds = getSubSkillProbability(SubSkillType.ACROBATICS_ROLL,
+    public static Probability getNonGracefulProbability(final McMMOPlayer mmoPlayer) {
+        final double gracefulOdds = getSubSkillProbability(SubSkillType.ACROBATICS_ROLL,
                 mmoPlayer).getValue();
         return Probability.ofValue(gracefulOdds);
     }
 
-    protected static double calculateModifiedRollDamage(double damage, double damageThreshold) {
+    protected static double calculateModifiedRollDamage(final double damage, final double damageThreshold) {
         return Math.max(damage - damageThreshold, 0.0);
     }
 
@@ -69,7 +68,7 @@ public class Roll extends AcrobaticsSubSkill {
      * @return true if interaction wasn't cancelled
      */
     @Override
-    public boolean doInteraction(Event event, mcMMO plugin) {
+    public boolean doInteraction(final Event event, final mcMMO plugin) {
         final EntityDamageEvent entityDamageEvent = (EntityDamageEvent) event;
 
         //Make sure a real player was damaged in this event
@@ -158,7 +157,7 @@ public class Roll extends AcrobaticsSubSkill {
      * @return true if player has permission
      */
     @Override
-    public boolean hasPermission(Player player) {
+    public boolean hasPermission(final Player player) {
         return Permissions.isSubSkillEnabled(player, getSubSkillType());
     }
 
@@ -169,14 +168,17 @@ public class Roll extends AcrobaticsSubSkill {
      * @param mmoPlayer        target player
      */
     @Override
-    public void addStats(TextComponent.Builder componentBuilder, McMMOPlayer mmoPlayer) {
-        String rollChance, rollChanceLucky, gracefulRollChance, gracefulRollChanceLucky;
+    public void addStats(TextComponent.Builder componentBuilder, final McMMOPlayer mmoPlayer) {
+        final String rollChance;
+        final String rollChanceLucky;
+        String gracefulRollChance;
+        final String gracefulRollChanceLucky;
 
         /* Values related to the player */
-        float skillValue = mmoPlayer.getSkillLevel(getPrimarySkill());
-        boolean isLucky = Permissions.lucky(mmoPlayer.getPlayer(), getPrimarySkill());
+        final float skillValue = mmoPlayer.getSkillLevel(getPrimarySkill());
+        final boolean isLucky = Permissions.lucky(mmoPlayer.getPlayer(), getPrimarySkill());
 
-        String[] rollStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+        final String[] rollStrings = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
                 SubSkillType.ACROBATICS_ROLL);
         rollChance = rollStrings[0];
         rollChanceLucky = rollStrings[1];
@@ -184,9 +186,9 @@ public class Roll extends AcrobaticsSubSkill {
         /*
          * Graceful is double the odds of a normal roll
          */
-        Probability probability = getRollProbability(mmoPlayer);
-        Probability gracefulProbability = Probability.ofValue(probability.getValue() * 2);
-        String[] gracefulRollStrings = ProbabilityUtil.getRNGDisplayValues(gracefulProbability);
+        final Probability probability = getRollProbability(mmoPlayer);
+        final Probability gracefulProbability = Probability.ofValue(probability.getValue() * 2);
+        final String[] gracefulRollStrings = ProbabilityUtil.getRNGDisplayValues(gracefulProbability);
         gracefulRollChance = gracefulRollStrings[0];
         gracefulRollChanceLucky = gracefulRollStrings[1];
 

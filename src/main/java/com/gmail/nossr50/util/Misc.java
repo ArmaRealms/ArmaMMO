@@ -209,16 +209,16 @@ public final class Misc {
     private record SpawnOrbTask(Location location, int orbExpValue) implements Runnable {
 
         @Override
-            public void run() {
-                if (location == null || location.getWorld() == null) {
-                    return;
-                }
-
-                final ExperienceOrb experienceOrb = (ExperienceOrb) location.getWorld()
-                        .spawnEntity(location, EntityType.EXPERIENCE_ORB);
-                experienceOrb.setExperience(orbExpValue);
+        public void run() {
+            if (location == null || location.getWorld() == null) {
+                return;
             }
+
+            final ExperienceOrb experienceOrb = (ExperienceOrb) location.getWorld()
+                    .spawnEntity(location, EntityType.EXPERIENCE_ORB);
+            experienceOrb.setExperience(orbExpValue);
         }
+    }
 
 //    public static void hackyUnitTest(@NotNull McMMOPlayer normalPlayer) {
 //        mcMMO.p.getLogger().info("Starting hacky unit test...");

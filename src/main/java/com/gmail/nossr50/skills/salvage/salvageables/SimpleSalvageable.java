@@ -4,7 +4,6 @@ import com.gmail.nossr50.datatypes.skills.ItemType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
 import org.bukkit.Material;
 
-
 public class SimpleSalvageable implements Salvageable {
     private final Material itemMaterial, salvageMaterial;
     private final int maximumQuantity, minimumLevel;
@@ -13,9 +12,9 @@ public class SimpleSalvageable implements Salvageable {
     private final MaterialType salvageMaterialType;
     private final double xpMultiplier;
 
-    protected SimpleSalvageable(Material type, Material salvageMaterial, int minimumLevel,
-                                int maximumQuantity, short maximumDurability, ItemType salvageItemType,
-                                MaterialType salvageMaterialType, double xpMultiplier) {
+    protected SimpleSalvageable(final Material type, final Material salvageMaterial, final int minimumLevel,
+                                final int maximumQuantity, final short maximumDurability, final ItemType salvageItemType,
+                                final MaterialType salvageMaterialType, final double xpMultiplier) {
         this.itemMaterial = type;
         this.salvageMaterial = salvageMaterial;
         this.salvageItemType = salvageItemType;

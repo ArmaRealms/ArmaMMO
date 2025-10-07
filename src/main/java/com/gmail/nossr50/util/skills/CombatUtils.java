@@ -62,7 +62,6 @@ public final class CombatUtils {
     private static final ThreadLocal<Boolean> IN_MCMMO_DAMAGE
             = ThreadLocal.withInitial(() -> false);
 
-
     private CombatUtils() {
     }
 

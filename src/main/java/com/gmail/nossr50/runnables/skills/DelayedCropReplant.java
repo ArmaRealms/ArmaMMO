@@ -33,11 +33,11 @@ public class DelayedCropReplant extends CancellableRunnable {
      * @param cropState      target {@link BlockState}
      * @param desiredCropAge desired age of the crop
      */
-    public DelayedCropReplant(BlockBreakEvent blockBreakEvent, BlockState cropState,
-                              int desiredCropAge, boolean wasImmaturePlant) {
-        BlockData cropData = cropState.getBlockData();
+    public DelayedCropReplant(final BlockBreakEvent blockBreakEvent, final BlockState cropState,
+                              final int desiredCropAge, final boolean wasImmaturePlant) {
+        final BlockData cropData = cropState.getBlockData();
 
-        if (cropData instanceof Directional cropDir) {
+        if (cropData instanceof final Directional cropDir) {
             cropFace = cropDir.getFacing();
         }
 
@@ -51,8 +51,8 @@ public class DelayedCropReplant extends CancellableRunnable {
 
     @Override
     public void run() {
-        Block cropBlock = cropLocation.getBlock();
-        BlockState currentState = cropBlock.getState();
+        final Block cropBlock = cropLocation.getBlock();
+        final BlockState currentState = cropBlock.getState();
         PlantAnchorType plantAnchorType = PlantAnchorType.NORMAL;
 
         //Remove the metadata marking the block as recently replanted
@@ -72,8 +72,8 @@ public class DelayedCropReplant extends CancellableRunnable {
             cropBlock.setType(cropMaterial);
 
             //Get new state (necessary?)
-            BlockState newState = cropBlock.getState();
-            BlockData newData = newState.getBlockData();
+            final BlockState newState = cropBlock.getState();
+            final BlockData newData = newState.getBlockData();
 
             int age = 0;
 
@@ -85,7 +85,7 @@ public class DelayedCropReplant extends CancellableRunnable {
 
             if (newData instanceof Directional) {
                 //Cocoa Version
-                Directional directional = (Directional) newState.getBlockData();
+                final Directional directional = (Directional) newState.getBlockData();
                 directional.setFacing(cropFace);
 
                 newState.setBlockData(directional);
@@ -96,7 +96,7 @@ public class DelayedCropReplant extends CancellableRunnable {
             }
 
             //Age the crop
-            Ageable ageable = (Ageable) newState.getBlockData();
+            final Ageable ageable = (Ageable) newState.getBlockData();
             ageable.setAge(age);
             newState.setBlockData(ageable);
 
@@ -119,8 +119,8 @@ public class DelayedCropReplant extends CancellableRunnable {
         private final PlantAnchorType plantAnchorType;
         private BlockFace plantFace;
 
-        private PhysicsBlockUpdate(@NotNull Block plantBlock, @Nullable BlockFace plantFace,
-                                   @NotNull PlantAnchorType plantAnchorType) {
+        private PhysicsBlockUpdate(@NotNull final Block plantBlock, @Nullable final BlockFace plantFace,
+                                   @NotNull final PlantAnchorType plantAnchorType) {
             this.plantBlock = plantBlock;
             this.plantAnchorType = plantAnchorType;
 
@@ -142,8 +142,8 @@ public class DelayedCropReplant extends CancellableRunnable {
             }
         }
 
-        private void checkPlantIntegrity(@NotNull BlockFace blockFace) {
-            Block neighbor = plantBlock.getRelative(blockFace);
+        private void checkPlantIntegrity(@NotNull final BlockFace blockFace) {
+            final Block neighbor = plantBlock.getRelative(blockFace);
 
             if (plantAnchorType == PlantAnchorType.COCOA) {
                 if (!neighbor.getType().toString().toLowerCase().contains("jungle")) {
@@ -163,18 +163,17 @@ public class DelayedCropReplant extends CancellableRunnable {
         }
     }
 
-
     private static class markPlantAsOld extends CancellableRunnable {
 
         private final Location cropLoc;
 
-        public markPlantAsOld(Location cropLoc) {
+        public markPlantAsOld(final Location cropLoc) {
             this.cropLoc = cropLoc;
         }
 
         @Override
         public void run() {
-            Block cropBlock = cropLoc.getBlock();
+            final Block cropBlock = cropLoc.getBlock();
             if (cropBlock.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).size() > 0) {
                 cropBlock.setMetadata(MetadataConstants.METADATA_KEY_REPLANT,
                         new RecentlyReplantedCropMeta(mcMMO.p, false));

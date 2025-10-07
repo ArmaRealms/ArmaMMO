@@ -281,7 +281,6 @@ public class PlayerListener implements Listener {
                 return;
         }
 
-
         // TODO: This sharing item system seems very unoptimized, temporarily disabling
         /*if (ItemUtils.isSharable(event.getItemDrop().getItemStack())) {
             event.getItemDrop().getItemStack().setMetadata(

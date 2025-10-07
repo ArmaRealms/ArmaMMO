@@ -6,7 +6,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-
 public class SimpleRepairable implements Repairable {
     private final Material itemMaterial, repairMaterial;
     private final int minimumLevel;
@@ -17,9 +16,9 @@ public class SimpleRepairable implements Repairable {
     private final double xpMultiplier;
     private int minQuantity = -1;
 
-    protected SimpleRepairable(Material type, Material repairMaterial,
-                               String repairMaterialPrettyName, int minimumLevel, short maximumDurability,
-                               ItemType repairItemType, MaterialType repairMaterialType, double xpMultiplier) {
+    protected SimpleRepairable(final Material type, final Material repairMaterial,
+                               final String repairMaterialPrettyName, final int minimumLevel, final short maximumDurability,
+                               final ItemType repairItemType, final MaterialType repairMaterialType, final double xpMultiplier) {
         this.itemMaterial = type;
         this.repairMaterial = repairMaterial;
         this.repairMaterialPrettyName = repairMaterialPrettyName;
@@ -30,10 +29,10 @@ public class SimpleRepairable implements Repairable {
         this.xpMultiplier = xpMultiplier;
     }
 
-    protected SimpleRepairable(Material type, Material repairMaterial,
-                               String repairMaterialPrettyName, int minimumLevel, short maximumDurability,
-                               ItemType repairItemType, MaterialType repairMaterialType, double xpMultiplier,
-                               int minQuantity) {
+    protected SimpleRepairable(final Material type, final Material repairMaterial,
+                               final String repairMaterialPrettyName, final int minimumLevel, final short maximumDurability,
+                               final ItemType repairItemType, final MaterialType repairMaterialType, final double xpMultiplier,
+                               final int minQuantity) {
         this.itemMaterial = type;
         this.repairMaterial = repairMaterial;
         this.repairMaterialPrettyName = repairMaterialPrettyName;
@@ -86,7 +85,7 @@ public class SimpleRepairable implements Repairable {
     }
 
     @Override
-    public short getBaseRepairDurability(ItemStack itemStack) {
+    public short getBaseRepairDurability(final ItemStack itemStack) {
         return (short) (maximumDurability / getMinimumQuantity());
     }
 

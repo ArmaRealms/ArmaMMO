@@ -1,8 +1,5 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
-import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
-
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.meta.OldName;
 import com.gmail.nossr50.mcMMO;
@@ -15,6 +12,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
+import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
+
 public final class MobHealthbarUtils {
     private MobHealthbarUtils() {
     }
@@ -26,9 +26,9 @@ public final class MobHealthbarUtils {
      * @param player       The player who died
      * @return the fixed death message
      */
-    public static String fixDeathMessage(String deathMessage, Player player) {
-        EntityDamageEvent lastDamageCause = player.getLastDamageCause();
-        String replaceString = lastDamageCause instanceof EntityDamageByEntityEvent
+    public static String fixDeathMessage(final String deathMessage, final Player player) {
+        final EntityDamageEvent lastDamageCause = player.getLastDamageCause();
+        final String replaceString = lastDamageCause instanceof EntityDamageByEntityEvent
                 ? StringUtils.getPrettyEntityTypeString(
                 ((EntityDamageByEntityEvent) lastDamageCause).getDamager().getType()) : "a mob";
 
@@ -42,7 +42,7 @@ public final class MobHealthbarUtils {
      * @param target the targetted entity
      * @param damage damage done by the attack triggering this
      */
-    public static void handleMobHealthbars(LivingEntity target, double damage, mcMMO plugin) {
+    public static void handleMobHealthbars(final LivingEntity target, final double damage, final mcMMO plugin) {
         if (isArmorStandEntity(target) || isMannequinEntity(target)) {
             return;
         }
@@ -76,17 +76,17 @@ public final class MobHealthbarUtils {
             oldName = "";
         }
 
-        boolean oldNameVisible = target.isCustomNameVisible();
-        String newName = createHealthDisplay(mcMMO.p.getGeneralConfig().getMobHealthbarDefault(),
+        final boolean oldNameVisible = target.isCustomNameVisible();
+        final String newName = createHealthDisplay(mcMMO.p.getGeneralConfig().getMobHealthbarDefault(),
                 target, damage);
 
         target.setCustomName(newName);
         target.setCustomNameVisible(true);
 
-        int displayTime = mcMMO.p.getGeneralConfig().getMobHealthbarTime();
+        final int displayTime = mcMMO.p.getGeneralConfig().getMobHealthbarTime();
 
         if (displayTime != -1) {
-            boolean updateName = !ChatColor.stripColor(oldName)
+            final boolean updateName = !ChatColor.stripColor(oldName)
                     .equalsIgnoreCase(ChatColor.stripColor(newName));
 
             if (updateName) {
@@ -108,15 +108,15 @@ public final class MobHealthbarUtils {
         }
     }
 
-    private static String createHealthDisplay(MobHealthbarType mobHealthbarType,
-                                              LivingEntity entity, double damage) {
-        double maxHealth = entity.getMaxHealth();
-        double currentHealth = Math.max(entity.getHealth() - damage, 0);
-        double healthPercentage = (currentHealth / maxHealth) * 100.0D;
+    private static String createHealthDisplay(final MobHealthbarType mobHealthbarType,
+                                              final LivingEntity entity, final double damage) {
+        final double maxHealth = entity.getMaxHealth();
+        final double currentHealth = Math.max(entity.getHealth() - damage, 0);
+        final double healthPercentage = (currentHealth / maxHealth) * 100.0D;
 
-        int fullDisplay;
+        final int fullDisplay;
         ChatColor color = ChatColor.BLACK;
-        String symbol;
+        final String symbol;
 
         switch (mobHealthbarType) {
             case HEARTS:
@@ -149,11 +149,11 @@ public final class MobHealthbarUtils {
                 return null;
         }
 
-        int coloredDisplay = (int) Math.max(Math.ceil(fullDisplay * (healthPercentage / 100.0D)),
+        final int coloredDisplay = (int) Math.max(Math.ceil(fullDisplay * (healthPercentage / 100.0D)),
                 0.5);
-        int grayDisplay = fullDisplay - coloredDisplay;
+        final int grayDisplay = fullDisplay - coloredDisplay;
 
-        StringBuilder healthbar = new StringBuilder(color + "");
+        final StringBuilder healthbar = new StringBuilder(color + "");
 
         for (int i = 0; i < coloredDisplay; i++) {
             healthbar.append(symbol);
@@ -174,7 +174,7 @@ public final class MobHealthbarUtils {
      * @param livingEntity The {@link LivingEntity} of the livingEntity to check
      * @return true if the livingEntity is a boss, false otherwise
      */
-    private static boolean isBoss(LivingEntity livingEntity) {
+    private static boolean isBoss(final LivingEntity livingEntity) {
         switch (livingEntity.getType()) {
             case ENDER_DRAGON:
             case WITHER:

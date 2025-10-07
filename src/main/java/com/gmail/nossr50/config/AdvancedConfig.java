@@ -565,7 +565,6 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getDouble("Skills.Alchemy.Catalysis.MaxSpeed", 4.0D);
     }
 
-
     /* ARCHERY */
     public double getSkillShotRankDamageMultiplier() {
         return config.getDouble("Skills.Archery.SkillShot.RankDamageMultiplier", 10.0D);
@@ -668,7 +667,6 @@ public class AdvancedConfig extends BukkitConfig {
     public int getFishermanDietRankChange() {
         return config.getInt("Skills.Fishing.FishermansDiet.RankChange", 200);
     }
-
 
     public double getMasterAnglerBoatModifier() {
         return config.getDouble("Skills.Fishing.MasterAngler.BoatModifier", 2.0);

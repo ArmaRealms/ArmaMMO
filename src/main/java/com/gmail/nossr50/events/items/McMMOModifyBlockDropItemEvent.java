@@ -26,12 +26,13 @@ import static java.util.Objects.requireNonNull;
  * less.
  */
 public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable {
+    private static final @NotNull HandlerList handlers = new HandlerList();
     private final @NotNull BlockDropItemEvent blockDropItemEvent;
     private final int originalBonusAmountToAdd;
-    private int modifiedItemStackQuantity;
     private final @NotNull Item itemThatHasBonusDrops;
-    private boolean isCancelled = false;
     private final int originalItemStackQuantity;
+    private int modifiedItemStackQuantity;
+    private boolean isCancelled = false;
 
     public McMMOModifyBlockDropItemEvent(@NotNull final BlockDropItemEvent blockDropItemEvent,
                                          @NotNull final Item itemThatHasBonusDrops, final int bonusDropsToAdd) {
@@ -48,6 +49,10 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
         this.originalBonusAmountToAdd = bonusDropsToAdd;
         this.modifiedItemStackQuantity = itemThatHasBonusDrops.getItemStack().getAmount()
                 + bonusDropsToAdd;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return handlers;
     }
 
     @Override
@@ -100,6 +105,21 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     }
 
     /**
+     * Set the modified ItemStack quantity that will be set on the Item entity if this event is not
+     * cancelled. This CANNOT be lower than the original quantity of the ItemStack.
+     *
+     * @param modifiedItemStackQuantity the modified ItemStack quantity that will be set on the Item entity
+     * @throws IllegalArgumentException if modifiedItemStackQuantity is less than originalItemStackQuantity
+     */
+    public void setModifiedItemStackQuantity(final int modifiedItemStackQuantity) {
+        if (modifiedItemStackQuantity < originalItemStackQuantity) {
+            throw new IllegalArgumentException(
+                    "modifiedItemStackQuantity cannot be less than the originalItemStackQuantity");
+        }
+        this.modifiedItemStackQuantity = modifiedItemStackQuantity;
+    }
+
+    /**
      * The original ItemStack quantity of the Item entity before any modifications from this event.
      * This is a reflection of the state of the Item when mcMMO fired this event.
      * It is possible it has modified since then, so do not rely on this value to be the current.
@@ -130,21 +150,6 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
     public void setBonusAmountToAdd(final int bonus) {
         if (bonus < 0) throw new IllegalArgumentException("bonus must be >= 0");
         this.modifiedItemStackQuantity = originalItemStackQuantity + bonus;
-    }
-
-    /**
-     * Set the modified ItemStack quantity that will be set on the Item entity if this event is not
-     * cancelled. This CANNOT be lower than the original quantity of the ItemStack.
-     *
-     * @param modifiedItemStackQuantity the modified ItemStack quantity that will be set on the Item entity
-     * @throws IllegalArgumentException if modifiedItemStackQuantity is less than originalItemStackQuantity
-     */
-    public void setModifiedItemStackQuantity(final int modifiedItemStackQuantity) {
-        if (modifiedItemStackQuantity < originalItemStackQuantity) {
-            throw new IllegalArgumentException(
-                    "modifiedItemStackQuantity cannot be less than the originalItemStackQuantity");
-        }
-        this.modifiedItemStackQuantity = modifiedItemStackQuantity;
     }
 
     public boolean isEffectivelyNoBonus() {
@@ -181,14 +186,8 @@ public class McMMOModifyBlockDropItemEvent extends Event implements Cancellable 
         return blockDropItemEvent.getBlockState();
     }
 
-    private static final @NotNull HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 

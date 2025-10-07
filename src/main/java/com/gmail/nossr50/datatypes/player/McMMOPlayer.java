@@ -1272,7 +1272,6 @@ public class McMMOPlayer implements Identified {
         return identity;
     }
 
-
     /**
      * The {@link com.gmail.nossr50.chat.author.Author} for this player, used by mcMMO chat
      *

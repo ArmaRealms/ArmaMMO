@@ -271,18 +271,18 @@ public class HashChunkManager implements ChunkManager {
     private record CoordinateKey(@NotNull UUID worldID, int x, int z) {
 
         @Override
-            public boolean equals(final Object o) {
-                if (this == o) {
-                    return true;
-                }
-                if (o == null || getClass() != o.getClass()) {
-                    return false;
-                }
-                final CoordinateKey coordinateKey = (CoordinateKey) o;
-                return x == coordinateKey.x &&
-                        z == coordinateKey.z &&
-                        worldID.equals(coordinateKey.worldID);
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
             }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final CoordinateKey coordinateKey = (CoordinateKey) o;
+            return x == coordinateKey.x &&
+                    z == coordinateKey.z &&
+                    worldID.equals(coordinateKey.worldID);
+        }
 
     }
 }

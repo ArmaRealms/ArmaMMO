@@ -24,7 +24,7 @@ public class AdminChatMailer extends AbstractChatMailer {
 
     public static final @NotNull String MCMMO_CHAT_ADMINCHAT_PERMISSION = "mcmmo.chat.adminchat";
 
-    public AdminChatMailer(Plugin pluginRef) {
+    public AdminChatMailer(final Plugin pluginRef) {
         super(pluginRef);
     }
 
@@ -57,8 +57,8 @@ public class AdminChatMailer extends AbstractChatMailer {
      * @param canColor whether to replace colors codes with colors in the raw message
      * @return the styled string, based on a locale entry
      */
-    public @NotNull TextComponent addStyle(@NotNull Author author, @NotNull String message,
-                                           boolean canColor) {
+    public @NotNull TextComponent addStyle(@NotNull final Author author, @NotNull final String message,
+                                           final boolean canColor) {
         if (canColor) {
             return LocaleLoader.getTextComponent(
                     "Chat.Style.Admin", author.getAuthoredName(ChatChannel.ADMIN),
@@ -71,7 +71,7 @@ public class AdminChatMailer extends AbstractChatMailer {
     }
 
     @Override
-    public void sendMail(@NotNull ChatMessage chatMessage) {
+    public void sendMail(@NotNull final ChatMessage chatMessage) {
         chatMessage.sendMessage();
     }
 
@@ -83,20 +83,19 @@ public class AdminChatMailer extends AbstractChatMailer {
      * @param isAsync   whether this is being processed asynchronously
      * @param canColor  whether the author can use colors in chat
      */
-    public void processChatMessage(@NotNull Author author, @NotNull String rawString,
-                                   boolean isAsync,
-                                   boolean canColor) {
-        AdminChatMessage chatMessage = new AdminChatMessage(
+    public void processChatMessage(@NotNull final Author author, @NotNull final String rawString,
+                                   final boolean isAsync,
+                                   final boolean canColor) {
+        final AdminChatMessage chatMessage = new AdminChatMessage(
                 pluginRef, author, constructAudience(), rawString,
                 addStyle(author, rawString, canColor));
 
-        McMMOChatEvent chatEvent = new McMMOAdminChatEvent(pluginRef, chatMessage, isAsync);
+        final McMMOChatEvent chatEvent = new McMMOAdminChatEvent(pluginRef, chatMessage, isAsync);
         Bukkit.getPluginManager().callEvent(chatEvent);
 
         if (!chatEvent.isCancelled()) {
             sendMail(chatMessage);
         }
     }
-
 
 }

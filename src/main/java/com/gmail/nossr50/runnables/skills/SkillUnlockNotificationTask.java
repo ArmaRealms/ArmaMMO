@@ -5,7 +5,6 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.player.NotificationManager;
 
-
 public class SkillUnlockNotificationTask extends CancellableRunnable {
     private final McMMOPlayer mmoPlayer;
     private final SubSkillType subSkillType;
@@ -18,7 +17,7 @@ public class SkillUnlockNotificationTask extends CancellableRunnable {
      * @param subSkillType the subskill that they just unlocked
      * @param rank         the rank of the subskill
      */
-    public SkillUnlockNotificationTask(McMMOPlayer mmoPlayer, SubSkillType subSkillType, int rank) {
+    public SkillUnlockNotificationTask(final McMMOPlayer mmoPlayer, final SubSkillType subSkillType, final int rank) {
         this.mmoPlayer = mmoPlayer;
         this.subSkillType = subSkillType;
         this.rank = rank;

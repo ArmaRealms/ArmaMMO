@@ -9,13 +9,6 @@ import com.gmail.nossr50.events.items.McMMOItemSpawnEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.smelting.Smelting;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Predicate;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -69,7 +62,7 @@ public final class ItemUtils {
      * @param itemMeta The item meta to set the name on
      * @param name     The name to set
      */
-    public static void customName(final ItemMeta itemMeta, final Component name, String fallbackName) {
+    public static void customName(final ItemMeta itemMeta, final Component name, final String fallbackName) {
         if (customName != null) {
             setItemNameModern(itemMeta, name);
         } else {
@@ -574,7 +567,6 @@ public final class ItemUtils {
             default -> false;
         };
     }
-
 
     /**
      * Checks to see if an item is a mob drop.

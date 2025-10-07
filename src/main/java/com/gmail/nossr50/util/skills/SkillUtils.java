@@ -45,13 +45,13 @@ public final class SkillUtils {
     private SkillUtils() {
     }
 
-    public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp,
-                                   XPGainReason xpGainReason) {
+    public static void applyXpGain(final McMMOPlayer mmoPlayer, final PrimarySkillType skill, final float xp,
+                                   final XPGainReason xpGainReason) {
         mmoPlayer.beginXpGain(skill, xp, xpGainReason, XPGainSource.SELF);
     }
 
-    public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp,
-                                   XPGainReason xpGainReason, XPGainSource xpGainSource) {
+    public static void applyXpGain(final McMMOPlayer mmoPlayer, final PrimarySkillType skill, final float xp,
+                                   final XPGainReason xpGainReason, final XPGainSource xpGainSource) {
         mmoPlayer.beginXpGain(skill, xp, xpGainReason, xpGainSource);
     }
 
@@ -59,12 +59,12 @@ public final class SkillUtils {
      * Skill Stat Calculations
      */
 
-    public static String[] calculateLengthDisplayValues(Player player, float skillValue,
-                                                        PrimarySkillType skill) {
-        int maxLength = mcMMO.p.getSkillTools()
+    public static String[] calculateLengthDisplayValues(final Player player, final float skillValue,
+                                                        final PrimarySkillType skill) {
+        final int maxLength = mcMMO.p.getSkillTools()
                 .getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
-        int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
-        int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
+        final int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
+        final int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
 
         int length;
 
@@ -74,7 +74,7 @@ public final class SkillUtils {
             length = 2 + (int) (skillValue / abilityLengthVar);
         }
 
-        int enduranceLength = PerksUtils.handleActivationPerks(player, length, maxLength);
+        final int enduranceLength = PerksUtils.handleActivationPerks(player, length, maxLength);
 
         if (maxLength != 0) {
             length = Math.min(length, maxLength);
@@ -87,11 +87,11 @@ public final class SkillUtils {
      * Others
      */
 
-    public static int handleFoodSkills(Player player, int eventFoodLevel,
-                                       SubSkillType subSkillType) {
-        int curRank = RankUtils.getRank(player, subSkillType);
+    public static int handleFoodSkills(final Player player, final int eventFoodLevel,
+                                       final SubSkillType subSkillType) {
+        final int curRank = RankUtils.getRank(player, subSkillType);
 
-        int currentFoodLevel = player.getFoodLevel();
+        final int currentFoodLevel = player.getFoodLevel();
         int foodChange = eventFoodLevel - currentFoodLevel;
 
         foodChange += curRank;
@@ -107,7 +107,7 @@ public final class SkillUtils {
      * @param player               The Player to check for cooldown perks
      * @return the number of seconds remaining before the cooldown expires
      */
-    public static int calculateTimeLeft(long deactivatedTimeStamp, int cooldown, Player player) {
+    public static int calculateTimeLeft(final long deactivatedTimeStamp, final int cooldown, final Player player) {
         return (int) (((deactivatedTimeStamp + (PerksUtils.handleCooldownPerks(player, cooldown)
                 * Misc.TIME_CONVERSION_FACTOR)) - System.currentTimeMillis())
                 / Misc.TIME_CONVERSION_FACTOR);
@@ -120,7 +120,7 @@ public final class SkillUtils {
      * @param cooldown             The length of the cooldown in seconds
      * @return true if the cooldown is expired
      */
-    public static boolean cooldownExpired(long deactivatedTimeStamp, int cooldown) {
+    public static boolean cooldownExpired(final long deactivatedTimeStamp, final int cooldown) {
         return System.currentTimeMillis()
                 >= (deactivatedTimeStamp + cooldown) * Misc.TIME_CONVERSION_FACTOR;
     }
@@ -131,16 +131,16 @@ public final class SkillUtils {
      * @param skillName The name of the skill to check
      * @return true if this is a valid skill, false otherwise
      */
-    public static boolean isSkill(String skillName) {
+    public static boolean isSkill(final String skillName) {
         return mcMMO.p.getGeneralConfig().getLocale().equalsIgnoreCase("en_US") ?
                 mcMMO.p.getSkillTools().matchSkill(skillName) != null : isLocalizedSkill(skillName);
     }
 
-    public static void sendSkillMessage(Player player, NotificationType notificationType,
-                                        String key) {
-        Location location = player.getLocation();
+    public static void sendSkillMessage(final Player player, final NotificationType notificationType,
+                                        final String key) {
+        final Location location = player.getLocation();
 
-        for (Player otherPlayer : player.getWorld().getPlayers()) {
+        for (final Player otherPlayer : player.getWorld().getPlayers()) {
             if (otherPlayer != player && Misc.isNear(location, otherPlayer.getLocation(),
                     Misc.SKILL_MESSAGE_MAX_SENDING_DISTANCE)) {
                 NotificationManager.sendNearbyPlayersInformation(otherPlayer, notificationType, key,
@@ -149,9 +149,9 @@ public final class SkillUtils {
         }
     }
 
-    public static void handleAbilitySpeedIncrease(Player player) {
+    public static void handleAbilitySpeedIncrease(final Player player) {
         if (HiddenConfig.getInstance().useEnchantmentBuffs()) {
-            ItemStack heldItem = player.getInventory().getItemInMainHand();
+            final ItemStack heldItem = player.getInventory().getItemInMainHand();
 
             if (heldItem == null) {
                 return;
@@ -161,7 +161,7 @@ public final class SkillUtils {
                 return;
             }
 
-            int originalDigSpeed = heldItem.getEnchantmentLevel(
+            final int originalDigSpeed = heldItem.getEnchantmentLevel(
                     mcMMO.p.getEnchantmentMapper().getEfficiency());
             ItemUtils.addDigSpeedToItem(heldItem,
                     heldItem.getEnchantmentLevel(mcMMO.p.getEnchantmentMapper().getEfficiency()));
@@ -173,7 +173,7 @@ public final class SkillUtils {
             int amplifier = 0;
 
             if (player.hasPotionEffect(getHastePotionEffectType())) {
-                for (PotionEffect effect : player.getActivePotionEffects()) {
+                for (final PotionEffect effect : player.getActivePotionEffects()) {
                     if (effect.getType() == getHastePotionEffectType()) {
                         duration = effect.getDuration();
                         amplifier = effect.getAmplifier();
@@ -189,13 +189,13 @@ public final class SkillUtils {
                 return;
             }
 
-            PrimarySkillType skill = mmoPlayer.getAbilityMode(SuperAbilityType.SUPER_BREAKER)
+            final PrimarySkillType skill = mmoPlayer.getAbilityMode(SuperAbilityType.SUPER_BREAKER)
                     ? PrimarySkillType.MINING : PrimarySkillType.EXCAVATION;
 
-            int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
-            int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
+            final int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
+            final int abilityLengthCap = mcMMO.p.getAdvancedConfig().getAbilityLengthCap();
 
-            int ticks;
+            final int ticks;
 
             if (abilityLengthCap > 0) {
                 ticks = PerksUtils.handleActivationPerks(player, Math.min(abilityLengthCap,
@@ -211,19 +211,19 @@ public final class SkillUtils {
                         * Misc.TICK_CONVERSION_FACTOR;
             }
 
-            PotionEffect abilityBuff = new PotionEffect(getHastePotionEffectType(),
+            final PotionEffect abilityBuff = new PotionEffect(getHastePotionEffectType(),
                     duration + ticks, amplifier + 10);
             player.addPotionEffect(abilityBuff, true);
         }
     }
 
-    public static void removeAbilityBoostsFromInventory(@NotNull Player player) {
-        for (ItemStack itemStack : player.getInventory().getContents()) {
+    public static void removeAbilityBoostsFromInventory(@NotNull final Player player) {
+        for (final ItemStack itemStack : player.getInventory().getContents()) {
             removeAbilityBuff(itemStack);
         }
     }
 
-    public static void removeAbilityBuff(@Nullable ItemStack itemStack) {
+    public static void removeAbilityBuff(@Nullable final ItemStack itemStack) {
         if (itemStack == null) {
             return;
         }
@@ -234,7 +234,7 @@ public final class SkillUtils {
 
         //1.13.2+ will have persistent metadata for this itemStack
         if (isLegacyAbilityTool(itemStack)) {
-            ItemMeta itemMeta = itemStack.getItemMeta();
+            final ItemMeta itemMeta = itemStack.getItemMeta();
 
             if (itemMeta != null) {
                 // This is safe to call without prior checks.
@@ -250,7 +250,7 @@ public final class SkillUtils {
         }
     }
 
-    public static void handleDurabilityChange(ItemStack itemStack, int durabilityModifier) {
+    public static void handleDurabilityChange(final ItemStack itemStack, final int durabilityModifier) {
         handleDurabilityChange(itemStack, durabilityModifier, 1.0);
     }
 
@@ -262,14 +262,14 @@ public final class SkillUtils {
      * @param durabilityModifier the amount to modify the durability by
      * @param maxDamageModifier  the amount to adjust the max damage by
      */
-    public static void handleDurabilityChange(ItemStack itemStack, double durabilityModifier,
-                                              double maxDamageModifier) {
+    public static void handleDurabilityChange(final ItemStack itemStack, double durabilityModifier,
+                                              final double maxDamageModifier) {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().isUnbreakable()) {
             return;
         }
 
-        Material type = itemStack.getType();
-        short maxDurability =
+        final Material type = itemStack.getType();
+        final short maxDurability =
                 mcMMO.getRepairableManager().isRepairable(type) ? mcMMO.getRepairableManager()
                         .getRepairable(type).getMaximumDurability() : type.getMaxDurability();
         durabilityModifier = (int) Math.min(durabilityModifier / (
@@ -280,8 +280,8 @@ public final class SkillUtils {
                 (short) Math.min(itemStack.getDurability() + durabilityModifier, maxDurability));
     }
 
-    private static boolean isLocalizedSkill(String skillName) {
-        for (PrimarySkillType skill : PrimarySkillType.values()) {
+    private static boolean isLocalizedSkill(final String skillName) {
+        for (final PrimarySkillType skill : PrimarySkillType.values()) {
             if (skillName.equalsIgnoreCase(LocaleLoader.getString(
                     StringUtils.getCapitalized(skill.toString()) + ".SkillName"))) {
                 return true;
@@ -291,7 +291,6 @@ public final class SkillUtils {
         return false;
     }
 
-
     /**
      * Modify the durability of an ItemStack, using Armor specific formula for unbreaking enchant
      * damage reduction
@@ -300,14 +299,14 @@ public final class SkillUtils {
      * @param durabilityModifier the amount to modify the durability by
      * @param maxDamageModifier  the amount to adjust the max damage by
      */
-    public static void handleArmorDurabilityChange(ItemStack itemStack, double durabilityModifier,
-                                                   double maxDamageModifier) {
+    public static void handleArmorDurabilityChange(final ItemStack itemStack, double durabilityModifier,
+                                                   final double maxDamageModifier) {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().isUnbreakable()) {
             return;
         }
 
-        Material type = itemStack.getType();
-        short maxDurability =
+        final Material type = itemStack.getType();
+        final short maxDurability =
                 mcMMO.getRepairableManager().isRepairable(type) ? mcMMO.getRepairableManager()
                         .getRepairable(type).getMaximumDurability() : type.getMaxDurability();
         durabilityModifier = (int) Math.min(durabilityModifier * (0.6 + 0.4 / (
@@ -319,7 +318,7 @@ public final class SkillUtils {
     }
 
     @Nullable
-    public static Material getRepairAndSalvageItem(@NotNull ItemStack inHand) {
+    public static Material getRepairAndSalvageItem(@NotNull final ItemStack inHand) {
         if (ItemUtils.isPrismarineTool(inHand)) {
             return Material.PRISMARINE_CRYSTALS;
         } else if (ItemUtils.isNetheriteTool(inHand) || ItemUtils.isNetheriteArmor(inHand)) {
@@ -343,12 +342,12 @@ public final class SkillUtils {
         }
     }
 
-    public static int getRepairAndSalvageQuantities(ItemStack item) {
+    public static int getRepairAndSalvageQuantities(final ItemStack item) {
         return getRepairAndSalvageQuantities(item.getType(), getRepairAndSalvageItem(item));
     }
 
-    public static int getRepairAndSalvageQuantities(Material itemMaterial,
-                                                    Material recipeMaterial) {
+    public static int getRepairAndSalvageQuantities(final Material itemMaterial,
+                                                    final Material recipeMaterial) {
         int quantity = 0;
 
         if (mcMMO.getMaterialMapStore().isPrismarineTool(itemMaterial)) {
@@ -361,16 +360,16 @@ public final class SkillUtils {
             return 4;
         }
 
-        for (Iterator<? extends Recipe> recipeIterator = Bukkit.getServer().recipeIterator();
+        for (final Iterator<? extends Recipe> recipeIterator = Bukkit.getServer().recipeIterator();
              recipeIterator.hasNext(); ) {
-            Recipe bukkitRecipe = recipeIterator.next();
+            final Recipe bukkitRecipe = recipeIterator.next();
 
             if (bukkitRecipe.getResult().getType() != itemMaterial) {
                 continue;
             }
 
             if (bukkitRecipe instanceof ShapelessRecipe) {
-                for (ItemStack ingredient : ((ShapelessRecipe) bukkitRecipe).getIngredientList()) {
+                for (final ItemStack ingredient : ((ShapelessRecipe) bukkitRecipe).getIngredientList()) {
                     if (ingredient != null
                             && (recipeMaterial == null || ingredient.getType() == recipeMaterial)
                             && (ingredient.getType() == recipeMaterial)) {
@@ -378,7 +377,7 @@ public final class SkillUtils {
                     }
                 }
             } else if (bukkitRecipe instanceof ShapedRecipe) {
-                for (ItemStack ingredient : ((ShapedRecipe) bukkitRecipe).getIngredientMap()
+                for (final ItemStack ingredient : ((ShapedRecipe) bukkitRecipe).getIngredientMap()
                         .values()) {
                     if (ingredient != null
                             && (recipeMaterial == null || ingredient.getType() == recipeMaterial)
@@ -399,7 +398,7 @@ public final class SkillUtils {
      * @param subSkillType target subskill
      * @return true if the player has permission and has the skill unlocked
      */
-    public static boolean canUseSubskill(Player player, @NotNull SubSkillType subSkillType) {
+    public static boolean canUseSubskill(final Player player, @NotNull final SubSkillType subSkillType) {
         return Permissions.isSubSkillEnabled(player, subSkillType) && RankUtils.hasUnlockedSubskill(
                 player, subSkillType);
     }
