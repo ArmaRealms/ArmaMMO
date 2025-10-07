@@ -1,6 +1,5 @@
 package com.gmail.nossr50.skills.unarmed;
 
-
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;

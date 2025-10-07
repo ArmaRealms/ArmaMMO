@@ -33,7 +33,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.entity.AnimalTamer;
 import org.bukkit.entity.Animals;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Endermite;
@@ -86,11 +85,24 @@ import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
 import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
-    private static final Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
+    private static final String MULTISHOT = "multishot";
+    private static final String PIERCING = "piercing";
+    private static final String DEEPSLATE_REDSTONE_ORE = "deepslate_redstone_ore";
+    private static final Set<String> ARMOR_STAND = Set.of("ARMOR_STAND", "armor_stand");
+    private static final Set<String> MANNEQUIN = Set.of("mannequin", "MANNEQUIN");
+    private final static Set<EntityType> TRANSFORMABLE_ENTITIES = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
     private final mcMMO plugin;
 
     public EntityListener(final mcMMO plugin) {
         this.plugin = plugin;
+    }
+
+    public static boolean isMannequinEntity(final Entity attacker) {
+        return MANNEQUIN.contains(attacker.getType().toString());
+    }
+
+    public static boolean isArmorStandEntity(final Entity attacker) {
+        return ARMOR_STAND.contains(attacker.getType().toString());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -166,7 +178,7 @@ public class EntityListener implements Listener {
                 CombatUtils.delayArrowMetaCleanup(arrow);
 
                 // If fired from an item with multi-shot, we need to track
-                if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, "multishot")) {
+                if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, MULTISHOT)) {
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_MULTI_SHOT_ARROW, MetadataConstants.MCMMO_METADATA_VALUE);
                 }
 
@@ -177,7 +189,7 @@ public class EntityListener implements Listener {
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE, new FixedMetadataValue(plugin, arrow.getLocation()));
 
                 //Check both hands
-                if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, "piercing")) return;
+                if (ItemUtils.doesPlayerHaveEnchantmentInHands(player, PIERCING)) return;
 
                 if (ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.ARCHERY_ARROW_RETRIEVAL, UserManager.getPlayer(player))) {
                     arrow.setMetadata(MetadataConstants.METADATA_KEY_TRACKED_ARROW, MetadataConstants.MCMMO_METADATA_VALUE);
@@ -221,14 +233,14 @@ public class EntityListener implements Listener {
                 mcMMO.getUserBlockTracker().setEligible(block);
 
                 entity.setMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, MetadataConstants.MCMMO_METADATA_VALUE);
-                TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, plugin);
+                final TravelingBlockMetaCleanup metaCleanupTask = new TravelingBlockMetaCleanup(entity, plugin);
                 mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(entity, metaCleanupTask, 20, 20 * 60L); //6000 ticks is 5 minutes
             } else if (isTracked) {
                 BlockUtils.setUnnaturalBlock(block);
                 entity.removeMetadata(MetadataConstants.METADATA_KEY_TRAVELING_BLOCK, plugin);
             }
         } else if ((block.getType() == Material.REDSTONE_ORE
-                || block.getType().getKey().getKey().equalsIgnoreCase("deepslate_redstone_ore"))) {
+                || block.getType().getKey().getKey().equalsIgnoreCase(DEEPSLATE_REDSTONE_ORE))) {
             //Redstone ore fire this event and should be ignored
         } else {
             if (mcMMO.getUserBlockTracker().isIneligible(block)) {
@@ -281,16 +293,17 @@ public class EntityListener implements Listener {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld())) return;
 
-        // Don't process this event for marked entities, for players this is handled above,
-        // However, for entities, we do not wanna cancel this event to allow plugins to observe changes
-        // properly
-
-        if (event.getEntity() instanceof ArmorStand) {
+        if (ExperienceConfig.getInstance().isArmorStandInteractionPrevented()
+                && isArmorStandEntity(attacker)) {
             return;
         }
 
+        if (ExperienceConfig.getInstance().isMannequinInteractionPrevented()
+                && isMannequinEntity(attacker)) {
+            return;
+        }
 
-        if ((ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(defender)) || !defender.isValid() || !(defender instanceof LivingEntity target)) {
+        if ((ExperienceConfig.getInstance().isNPCInteractionPrevented() && Misc.isNPCEntityExcludingVillagers(defender)) || !defender.isValid() || !(defender instanceof final LivingEntity target)) {
             return;
         }
 
@@ -310,7 +323,7 @@ public class EntityListener implements Listener {
             if (animalTamer != null && ((OfflinePlayer) animalTamer).isOnline()) {
                 attacker = (Entity) animalTamer;
             }
-        } else if (attacker instanceof TNTPrimed tntAttacker && defender instanceof Player defenderPlayer) {
+        } else if (attacker instanceof final TNTPrimed tntAttacker && defender instanceof final Player defenderPlayer) {
             if (BlastMining.processBlastMiningExplosion(event, tntAttacker,
                     defenderPlayer)) {
                 return;
@@ -578,7 +591,7 @@ public class EntityListener implements Listener {
      * @param event The event to watch
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onEntityDeathLowest(EntityDeathEvent event) {
+    public void onEntityDeathLowest(final EntityDeathEvent event) {
         final LivingEntity entity = event.getEntity();
 
         // Clear metadata for Slimes/Magma Cubes after transformation events take place, otherwise small spawned slimes will not have any tags

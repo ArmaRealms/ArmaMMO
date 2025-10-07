@@ -91,6 +91,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class mcMMO extends JavaPlugin {
     public static mcMMO p;
@@ -424,7 +425,7 @@ public class mcMMO extends JavaPlugin {
                 }
             }
         } catch (final Throwable t) {
-            getLogger().severe("There was an error while enabling mcMMO!");
+            getLogger().log(Level.SEVERE, "There was an error while enabling mcMMO!", t);
 
             if (!(t instanceof ExceptionInInitializerError)) {
                 t.printStackTrace();

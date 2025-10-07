@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 
 public class RepairConfig extends BukkitConfig {
     private final HashSet<String> notSupported;
@@ -154,17 +155,22 @@ public class RepairConfig extends BukkitConfig {
             }
 
             if (noErrorsInRepairable(reason)) {
-                Repairable repairable = RepairableFactory.getRepairable(
-                        itemMaterial, repairMaterial, null, minimumLevel, maximumDurability,
-                        repairItemType,
-                        repairMaterialType, xpMultiplier, minimumQuantity);
-                repairables.add(repairable);
+                try {
+                    final Repairable repairable = RepairableFactory.getRepairable(
+                            itemMaterial, repairMaterial, null, minimumLevel, maximumDurability,
+                            repairItemType,
+                            repairMaterialType, xpMultiplier, minimumQuantity);
+                    repairables.add(repairable);
+                } catch (Exception e) {
+                    mcMMO.p.getLogger().log(Level.SEVERE,
+                            "Error loading repairable from config entry: " + key, e);
+                }
             }
         }
         //Report unsupported
         StringBuilder stringBuilder = new StringBuilder();
 
-        if (notSupported.size() > 0) {
+        if (!notSupported.isEmpty()) {
             stringBuilder.append(
                     "mcMMO found the following materials in the Repair config that are not supported by the version of Minecraft running on this server: ");
 

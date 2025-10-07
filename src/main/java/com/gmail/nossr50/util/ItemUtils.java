@@ -9,6 +9,14 @@ import com.gmail.nossr50.events.items.McMMOItemSpawnEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.smelting.Smelting;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Predicate;
+import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -36,20 +44,20 @@ import java.util.function.Predicate;
 import static java.util.Objects.requireNonNull;
 
 public final class ItemUtils {
-    // Reflection for setItemName only available in newer APIs
-    private static final Method setItemName;
+    // Use custom name if available
+    private static final Method customName;
 
     static {
-        setItemName = getSetItemName();
+        customName = getCustomNameMethod();
     }
 
     private ItemUtils() {
         // private constructor
     }
 
-    private static Method getSetItemName() {
+    private static Method getCustomNameMethod() {
         try {
-            return ItemMeta.class.getMethod("setItemName", String.class);
+            return ItemMeta.class.getMethod("customName", Component.class);
         } catch (final NoSuchMethodException e) {
             return null;
         }
@@ -61,17 +69,17 @@ public final class ItemUtils {
      * @param itemMeta The item meta to set the name on
      * @param name     The name to set
      */
-    public static void setItemName(final ItemMeta itemMeta, final String name) {
-        if (setItemName != null) {
+    public static void customName(final ItemMeta itemMeta, final Component name, String fallbackName) {
+        if (customName != null) {
             setItemNameModern(itemMeta, name);
         } else {
-            itemMeta.setDisplayName(ChatColor.RESET + name);
+            itemMeta.setDisplayName(ChatColor.RESET + fallbackName);
         }
     }
 
-    private static void setItemNameModern(final ItemMeta itemMeta, final String name) {
+    private static void setItemNameModern(final ItemMeta itemMeta, final Component name) {
         try {
-            setItemName.invoke(itemMeta, name);
+            customName.invoke(itemMeta, name);
         } catch (final IllegalAccessException | InvocationTargetException e) {
             mcMMO.p.getLogger().severe("Failed to set item name: " + e.getMessage());
             throw new RuntimeException(e);
