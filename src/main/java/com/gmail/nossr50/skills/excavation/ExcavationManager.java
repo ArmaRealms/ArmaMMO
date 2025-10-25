@@ -16,6 +16,7 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 import static java.util.Objects.requireNonNull;
 
@@ -46,42 +48,36 @@ public class ExcavationManager extends SkillManager {
         final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
 
+        final Logger logger = Bukkit.getServer().getLogger();
         final Player player = getPlayer();
         final String prefix = "[" + PrimarySkillType.EXCAVATION.name() + "] ";
 
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
-            player.sendMessage("[" + prefix + "] " +
-                    "You carefully examine the block for hidden treasures...");
+            logger.info(prefix  + "player " + player.getName() + " carefully examine the block for hidden treasures...");
             final List<ExcavationTreasure> treasures = getTreasures(block);
-            player.sendMessage("[" + prefix + "] " + "You find " + treasures.size()
-                    + " potential hidden treasures for block type " + block.getType());
+            logger.info(prefix  + "player " + player.getName() + " found " + treasures.size() + " potential hidden treasures for block type " + block.getType());
 
             if (!treasures.isEmpty()) {
                 final int skillLevel = getSkillLevel();
-                player.sendMessage("[" + prefix + "] " +
-                        "Your excavation skill level is " + skillLevel + ".");
+                logger.info(prefix  + "player " + player.getName() + " excavation skill level is " + skillLevel + ".");
                 final Location centerOfBlock = Misc.getBlockCenter(block);
 
                 for (final ExcavationTreasure treasure : treasures) {
-                    player.sendMessage("[" + prefix + "] " +
-                            "Checking treasure " + treasure.getDrop().getType() +
-                            " with required level " + treasure.getDropLevel() +
-                            " and drop probability " + treasure.getDropProbability() + "%.");
+                    logger.info(prefix  + "Checking treasure " + treasure.getDrop().getType() + " with required level " + treasure.getDropLevel() + " and drop probability " + treasure.getDropProbability() + "%.");
 
                     final boolean success = ProbabilityUtil.isStaticSkillRNGSuccessful(
                             PrimarySkillType.EXCAVATION, mmoPlayer, treasure.getDropProbability());
 
-                    player.sendMessage("[" + prefix + "] " + "RNG roll for treasure drop was "
-                            + (success ? "successful" : "unsuccessful") + ".");
+                    logger.info(prefix  + "RNG roll for treasure drop was " + (success ? "successful" : "unsuccessful") + " for player " + player.getName() + ".");
 
                     if (skillLevel >= treasure.getDropLevel() && success) {
-                        player.sendMessage("[" + prefix + "] " + "You successfully uncover a hidden treasure!");
+                        logger.info(prefix  + "player " + player.getName() + " successfully uncover a hidden treasure!");
                         processExcavationBonusesOnBlock(treasure, centerOfBlock);
                     }
                 }
             }
         } else {
-            player.sendMessage("[" + prefix + "] " + "You dont have excavation permission...");
+            logger.info(prefix  + "player " + player.getName() + " dont have excavation permission...");
         }
 
         applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
