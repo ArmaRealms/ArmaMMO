@@ -53,7 +53,8 @@ public class ExcavationManager extends SkillManager {
                 final int skillLevel = getSkillLevel();
                 final Location centerOfBlock = Misc.getBlockCenter(block);
                 for (final ExcavationTreasure treasure : treasures) {
-                    if (skillLevel >= treasure.getDropLevel() && ProbabilityUtil.isStaticSkillRNGSuccessful(
+                    if (skillLevel >= treasure.getDropLevel()
+                            && ProbabilityUtil.isStaticSkillRNGSuccessful(
                             PrimarySkillType.EXCAVATION, mmoPlayer, treasure.getDropProbability())) {
                         processExcavationBonusesOnBlock(treasure, centerOfBlock);
                     }
