@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
+    private static final Logger logger = Bukkit.getServer().getLogger();
+
     public ExcavationManager(final McMMOPlayer mcMMOPlayer) {
         super(mcMMOPlayer, PrimarySkillType.EXCAVATION);
     }
@@ -48,7 +50,6 @@ public class ExcavationManager extends SkillManager {
         final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
 
-        final Logger logger = Bukkit.getServer().getLogger();
         final Player player = getPlayer();
         final String prefix = "[" + PrimarySkillType.EXCAVATION.name() + "] ";
 
@@ -96,7 +97,8 @@ public class ExcavationManager extends SkillManager {
 
     @VisibleForTesting
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure, final Location location) {
+    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure,
+                                                final Location location) {
         processExcavationBonusesOnBlock(treasure, location);
     }
 
@@ -109,7 +111,7 @@ public class ExcavationManager extends SkillManager {
 
         int xp = 0;
         xp += treasure.getXp();
-        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop(), ItemSpawnReason.EXCAVATION_TREASURE);
+        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop().clone(), ItemSpawnReason.EXCAVATION_TREASURE);
         if (xp > 0) {
             applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
         }
@@ -152,8 +154,6 @@ public class ExcavationManager extends SkillManager {
      */
     public void gigaDrillBreaker(final Block block) {
         excavationBlockCheck(block);
-        excavationBlockCheck(block);
-
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
     }
