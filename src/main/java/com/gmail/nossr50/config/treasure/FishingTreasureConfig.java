@@ -384,11 +384,9 @@ public class FishingTreasureConfig extends BukkitConfig {
         }
 
         for (final String str : enchantListStr) {
-            final NamespacedKey strKey = NamespacedKey.fromString(str);
             boolean foundMatch = false;
             for (final Enchantment enchantment : Enchantment.values()) {
-                final NamespacedKey enchantKey = enchantment.getKeyOrNull();
-                if (enchantKey != null && enchantKey.equals(strKey)) {
+                if (enchantment.getKey().getKey().equalsIgnoreCase(str)) {
                     permissiveList.add(enchantment);
                     foundMatch = true;
                     break;
