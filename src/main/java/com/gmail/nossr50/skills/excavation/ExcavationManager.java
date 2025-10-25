@@ -64,7 +64,8 @@ public class ExcavationManager extends SkillManager {
 
                 for (final ExcavationTreasure treasure : treasures) {
                     player.sendMessage("[" + prefix + "] " +
-                            "Checking treasure with required level " + treasure.getDropLevel() +
+                            "Checking treasure " + treasure.getDrop().getType() +
+                            " with required level " + treasure.getDropLevel() +
                             " and drop probability " + treasure.getDropProbability() + "%.");
 
                     final boolean success = ProbabilityUtil.isStaticSkillRNGSuccessful(
