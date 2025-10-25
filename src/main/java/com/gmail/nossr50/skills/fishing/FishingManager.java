@@ -463,7 +463,7 @@ public class FishingManager extends SkillManager {
             if (treasure instanceof FishingTreasureBook) {
                 treasureDrop = ItemUtils.createEnchantBook((FishingTreasureBook) treasure);
             } else {
-                treasureDrop = treasure.getDrop().clone(); // Not cloning is bad, m'kay?
+                treasureDrop = treasure.getDrop();
 
             }
             Map<Enchantment, Integer> enchants = new HashMap<>();

@@ -91,7 +91,7 @@ public class ExcavationManager extends SkillManager {
 
         int xp = 0;
         xp += treasure.getXp();
-        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop().clone(), ItemSpawnReason.EXCAVATION_TREASURE);
+        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop(), ItemSpawnReason.EXCAVATION_TREASURE);
         if (xp > 0) {
             applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
         }

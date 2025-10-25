@@ -25,7 +25,7 @@ public abstract class Treasure {
     }
 
     public @NotNull ItemStack getDrop() {
-        return drop;
+        return drop.clone();
     }
 
     public void setDrop(@NotNull final ItemStack drop) {
