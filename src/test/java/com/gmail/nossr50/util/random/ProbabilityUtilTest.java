@@ -90,7 +90,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
                 UNARMED_ARROW_DEFLECT, mmoPlayer);
-        assertEquals(0.2D, probability.getValue());
+        assertEquals(0.2D, probability.value());
         assertProbabilityExpectations(20, probability);
     }
 
@@ -104,7 +104,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 maxBonusLevel);
 
         // Then
-        assertEquals(expectedValue, probability.getValue());
+        assertEquals(expectedValue, probability.value());
     }
 
     @Test

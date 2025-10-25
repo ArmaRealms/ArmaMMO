@@ -12,7 +12,7 @@ public abstract class Treasure {
     private int dropLevel;
     private @NotNull ItemStack drop;
 
-    public Treasure(ItemStack drop, int xp, double dropChance, int dropLevel) {
+    public Treasure(@NotNull final ItemStack drop, final int xp, final double dropChance, final int dropLevel) {
         this.drop = drop;
         this.xp = xp;
         this.dropChance = dropChance;
@@ -28,7 +28,7 @@ public abstract class Treasure {
         return drop;
     }
 
-    public void setDrop(@NotNull ItemStack drop) {
+    public void setDrop(@NotNull final ItemStack drop) {
         this.drop = drop;
     }
 
@@ -36,7 +36,7 @@ public abstract class Treasure {
         return xp;
     }
 
-    public void setXp(int xp) {
+    public void setXp(final int xp) {
         this.xp = xp;
     }
 
@@ -44,7 +44,7 @@ public abstract class Treasure {
         return dropChance;
     }
 
-    public void setDropChance(double dropChance) {
+    public void setDropChance(final double dropChance) {
         this.dropChance = dropChance;
         this.dropProbability = Probability.ofPercent(dropChance);
     }
@@ -53,7 +53,7 @@ public abstract class Treasure {
         return dropLevel;
     }
 
-    public void setDropLevel(int dropLevel) {
+    public void setDropLevel(final int dropLevel) {
         this.dropLevel = dropLevel;
     }
 
@@ -69,14 +69,14 @@ public abstract class Treasure {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Treasure treasure = (Treasure) o;
+        final Treasure treasure = (Treasure) o;
         return xp == treasure.xp && Double.compare(treasure.dropChance, dropChance) == 0
                 && dropLevel == treasure.dropLevel && Objects.equal(dropProbability,
                 treasure.dropProbability) && Objects.equal(drop, treasure.drop);
