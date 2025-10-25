@@ -386,6 +386,8 @@ public class FishingTreasureConfig extends BukkitConfig {
             for (final Enchantment enchantment : Enchantment.values()) {
                 if (enchantment.getKey().getKey().equalsIgnoreCase(str)) {
                     permissiveList.add(enchantment);
+                    mcMMO.p.getLogger().info("[Fishing Treasure Init] Matched user defined enchantment named: "
+                            + str + " to enchantment: " + enchantment.getKey().getKey());
                     foundMatch = true;
                     break;
                 }

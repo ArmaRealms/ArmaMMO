@@ -20,10 +20,10 @@ public abstract class BukkitConfig {
     final File dataFolder;
     protected YamlConfiguration defaultYamlConfig;
     protected YamlConfiguration config;
-    boolean copyDefaults = true;
+    boolean copyDefaults;
     private boolean savedDefaults = false;
 
-    public BukkitConfig(@NotNull String fileName, @NotNull File dataFolder, boolean copyDefaults) {
+    public BukkitConfig(@NotNull final String fileName, @NotNull final File dataFolder, final boolean copyDefaults) {
         LogUtils.debug(mcMMO.p.getLogger(), "Initializing config: " + fileName);
         this.copyDefaults = copyDefaults;
         this.fileName = fileName;
@@ -35,15 +35,15 @@ public abstract class BukkitConfig {
         LogUtils.debug(mcMMO.p.getLogger(), "Config initialized: " + fileName);
     }
 
-    public BukkitConfig(@NotNull String fileName, @NotNull File dataFolder) {
+    public BukkitConfig(@NotNull final String fileName, @NotNull final File dataFolder) {
         this(fileName, dataFolder, true);
     }
 
-    public BukkitConfig(@NotNull String fileName) {
+    public BukkitConfig(@NotNull final String fileName) {
         this(fileName, mcMMO.p.getDataFolder());
     }
 
-    public BukkitConfig(@NotNull String fileName, boolean copyDefaults) {
+    public BukkitConfig(@NotNull final String fileName, final boolean copyDefaults) {
         this(fileName, mcMMO.p.getDataFolder(), copyDefaults);
     }
 
@@ -58,7 +58,7 @@ public abstract class BukkitConfig {
                 copyMissingDefaultsFromResource();
                 savedDefaults = true;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
@@ -68,7 +68,7 @@ public abstract class BukkitConfig {
      */
     private void copyMissingDefaultsFromResource() {
         boolean updated = false;
-        for (String key : defaultYamlConfig.getKeys(true)) {
+        for (final String key : defaultYamlConfig.getKeys(true)) {
             if (!config.contains(key)) {
                 config.set(key, defaultYamlConfig.get(key));
                 updated = true;
@@ -86,26 +86,26 @@ public abstract class BukkitConfig {
     YamlConfiguration saveDefaultConfigToDisk() {
         LogUtils.debug(mcMMO.p.getLogger(),
                 "Copying default config to disk: " + fileName + " to defaults/" + fileName);
-        try (InputStream inputStream = mcMMO.p.getResource(fileName)) {
+        try (final InputStream inputStream = mcMMO.p.getResource(fileName)) {
             if (inputStream == null) {
                 mcMMO.p.getLogger().severe("Unable to copy default config: " + fileName);
                 return null;
             }
 
             //Save default file into defaults/<fileName>
-            File defaultsFolder = new File(dataFolder, "defaults");
+            final File defaultsFolder = new File(dataFolder, "defaults");
             if (!defaultsFolder.exists()) {
                 defaultsFolder.mkdir();
             }
-            File defaultFile = new File(defaultsFolder, fileName);
-            Path path = defaultFile.toPath();
+            final File defaultFile = new File(defaultsFolder, fileName);
+            final Path path = defaultFile.toPath();
             Files.copy(inputStream, path, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
             // Load file into YAML config
-            YamlConfiguration defaultYamlConfig = new YamlConfiguration();
+            final YamlConfiguration defaultYamlConfig = new YamlConfiguration();
             defaultYamlConfig.load(defaultFile);
             return defaultYamlConfig;
-        } catch (IOException | InvalidConfigurationException e) {
+        } catch (final IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
         return null;
@@ -120,12 +120,12 @@ public abstract class BukkitConfig {
         }
 
         LogUtils.debug(mcMMO.p.getLogger(), "Loading config from disk: " + fileName);
-        YamlConfiguration config = new YamlConfiguration();
+        final YamlConfiguration config = new YamlConfiguration();
         config.options().indent(4);
 
         try {
             config.options().parseComments(true);
-        } catch (NoSuchMethodError e) {
+        } catch (final NoSuchMethodError e) {
             //e.printStackTrace();
             // mcMMO.p.getLogger().severe("Your Spigot/CraftBukkit API is out of date, update your server software!");
         }
@@ -134,7 +134,7 @@ public abstract class BukkitConfig {
 
         try {
             config.load(configFile);
-        } catch (IOException | InvalidConfigurationException e) {
+        } catch (final IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
 
@@ -147,8 +147,8 @@ public abstract class BukkitConfig {
         return true;
     }
 
-    protected boolean noErrorsInConfig(List<String> issues) {
-        for (String issue : issues) {
+    protected boolean noErrorsInConfig(final List<String> issues) {
+        for (final String issue : issues) {
             mcMMO.p.getLogger().warning(issue);
         }
 
