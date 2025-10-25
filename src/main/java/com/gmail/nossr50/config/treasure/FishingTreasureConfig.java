@@ -12,6 +12,8 @@ import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.PotionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
@@ -382,9 +384,11 @@ public class FishingTreasureConfig extends BukkitConfig {
         }
 
         for (final String str : enchantListStr) {
+            final NamespacedKey strKey = NamespacedKey.fromString(str);
             boolean foundMatch = false;
             for (final Enchantment enchantment : Enchantment.values()) {
-                if (enchantment.getKey().getKey().equalsIgnoreCase(str)) {
+                final NamespacedKey enchantKey = enchantment.getKeyOrNull();
+                if (enchantKey != null && enchantKey.equals(strKey)) {
                     permissiveList.add(enchantment);
                     foundMatch = true;
                     break;
