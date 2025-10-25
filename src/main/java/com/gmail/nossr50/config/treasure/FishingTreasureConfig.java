@@ -12,8 +12,6 @@ import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.PotionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
