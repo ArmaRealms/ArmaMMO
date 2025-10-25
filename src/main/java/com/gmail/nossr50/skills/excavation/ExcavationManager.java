@@ -47,43 +47,40 @@ public class ExcavationManager extends SkillManager {
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
 
         final Player player = getPlayer();
+        final String prefix = "[" + PrimarySkillType.EXCAVATION.name() + "] ";
+
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
-            player.sendMessage("[" + PrimarySkillType.EXCAVATION.name() + "] " +
+            player.sendMessage("[" + prefix + "] " +
                     "You carefully examine the block for hidden treasures...");
             final List<ExcavationTreasure> treasures = getTreasures(block);
-            player.sendMessage("[" + PrimarySkillType.EXCAVATION.name() + "] " +
-                    "You find " + treasures.size() + " potential hidden treasures for block type " + block.getType());
+            player.sendMessage("[" + prefix + "] " + "You find " + treasures.size()
+                    + " potential hidden treasures for block type " + block.getType());
 
             if (!treasures.isEmpty()) {
                 final int skillLevel = getSkillLevel();
-                player.sendMessage("[" + PrimarySkillType.EXCAVATION.name() + "] " +
+                player.sendMessage("[" + prefix + "] " +
                         "Your excavation skill level is " + skillLevel + ".");
                 final Location centerOfBlock = Misc.getBlockCenter(block);
 
                 for (final ExcavationTreasure treasure : treasures) {
-                    player.sendMessage("[" + PrimarySkillType.EXCAVATION.name() + "] " +
+                    player.sendMessage("[" + prefix + "] " +
                             "Checking treasure with required level " + treasure.getDropLevel() +
                             " and drop probability " + treasure.getDropProbability() + "%.");
 
                     final boolean success = ProbabilityUtil.isStaticSkillRNGSuccessful(
                             PrimarySkillType.EXCAVATION, mmoPlayer, treasure.getDropProbability());
-                    player.sendMessage(
-                            "[" + PrimarySkillType.EXCAVATION.name() + "] " +
-                                    "RNG roll for treasure drop was " + (success ? "successful" : "unsuccessful") + "."
-                    );
+
+                    player.sendMessage("[" + prefix + "] " + "RNG roll for treasure drop was "
+                            + (success ? "successful" : "unsuccessful") + ".");
 
                     if (skillLevel >= treasure.getDropLevel() && success) {
-                        player.sendMessage(
-                                "[" + PrimarySkillType.EXCAVATION.name() + "] " +
-                                        "You successfully uncover a hidden treasure!"
-                        );
+                        player.sendMessage("[" + prefix + "] " + "You successfully uncover a hidden treasure!");
                         processExcavationBonusesOnBlock(treasure, centerOfBlock);
                     }
                 }
             }
         } else {
-            player.sendMessage("[" + PrimarySkillType.EXCAVATION.name() + "] " +
-                    "You dont have excavation permission...");
+            player.sendMessage("[" + prefix + "] " + "You dont have excavation permission...");
         }
 
         applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
