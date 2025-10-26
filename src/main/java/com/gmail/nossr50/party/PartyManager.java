@@ -69,20 +69,21 @@ public final class PartyManager {
         requireNonNull(secondPlayer, "secondPlayer cannot be null!");
 
         //Profile not loaded
-        if (UserManager.getPlayer(firstPlayer) == null) {
+        final McMMOPlayer firstMmoPlayer = UserManager.getPlayer(firstPlayer);
+        if (firstMmoPlayer == null) {
             return false;
         }
 
         //Profile not loaded
-        if (UserManager.getPlayer(secondPlayer) == null) {
+        final McMMOPlayer secondMmoPlayer = UserManager.getPlayer(secondPlayer);
+        if (secondMmoPlayer == null) {
             return false;
         }
 
-        final Party firstParty = UserManager.getPlayer(firstPlayer).getParty();
-        final Party secondParty = UserManager.getPlayer(secondPlayer).getParty();
+        final Party firstParty = firstMmoPlayer.getParty();
+        final Party secondParty = secondMmoPlayer.getParty();
 
-        if (firstParty == null || secondParty == null || firstParty.getAlly() == null
-                || secondParty.getAlly() == null) {
+        if (firstParty == null || secondParty == null || firstParty.getAlly() == null || secondParty.getAlly() == null) {
             return false;
         }
 
@@ -343,11 +344,12 @@ public final class PartyManager {
         //TODO: Potential issues with unloaded profile?
         for (final Player member : party.getOnlineMembers()) {
             //Profile not loaded
-            if (UserManager.getPlayer(member) == null) {
+            final McMMOPlayer mmoMember = UserManager.getPlayer(member);
+            if (mmoMember == null) {
                 continue;
             }
 
-            processPartyLeaving(UserManager.getPlayer(member));
+            processPartyLeaving(mmoMember);
         }
 
         // Disband the alliance between the disbanded party and it's ally
@@ -472,17 +474,21 @@ public final class PartyManager {
             return;
         }
 
-        if (!handlePartyChangeAllianceEvent(player, mmoPlayer.getParty().getName(),
-                invite.getName(),
+        final Party ownParty = mmoPlayer.getParty();
+        if (ownParty == null) {
+            player.sendMessage(LocaleLoader.getString("Party.NoParty"));
+            return;
+        }
+
+        if (!handlePartyChangeAllianceEvent(player, ownParty.getName(), invite.getName(),
                 McMMOPartyAllianceChangeEvent.EventReason.FORMED_ALLIANCE)) {
             return;
         }
 
-        player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Invite.Accepted",
-                invite.getName()));
+        player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.Invite.Accepted", invite.getName()));
         mmoPlayer.removePartyAllianceInvite();
 
-        createAlliance(mmoPlayer.getParty(), invite);
+        createAlliance(ownParty, invite);
     }
 
     public void createAlliance(@NotNull final Party firstParty, @NotNull final Party secondParty) {
@@ -602,6 +608,9 @@ public final class PartyManager {
     public boolean canInvite(@NotNull final McMMOPlayer mmoPlayer) {
         requireNonNull(mmoPlayer, "mmoPlayer cannot be null!");
         final Party party = mmoPlayer.getParty();
+        if (party == null) {
+            return false;
+        }
 
         return !party.isLocked() || party.getLeader().getUniqueId()
                 .equals(mmoPlayer.getPlayer().getUniqueId());
@@ -639,10 +648,9 @@ public final class PartyManager {
 
         final Player player = mmoPlayer.getPlayer();
 
-        if (mmoPlayer.inParty()) {
-            final Party oldParty = mmoPlayer.getParty();
+        if (mmoPlayer.getParty() != null && mmoPlayer.inParty()) {
 
-            if (!handlePartyChangeEvent(player, oldParty.getName(), newPartyName,
+            if (!handlePartyChangeEvent(player, mmoPlayer.getParty().getName(), newPartyName,
                     EventReason.CHANGED_PARTIES)) {
                 return false;
             }
@@ -676,8 +684,19 @@ public final class PartyManager {
             return false;
         }
 
-        final Party firstParty = UserManager.getPlayer(firstPlayer).getParty();
-        final Party secondParty = UserManager.getPlayer(secondPlayer).getParty();
+        final McMMOPlayer firstMmoPlayer = UserManager.getPlayer(firstPlayer);
+        if (firstMmoPlayer == null) {
+            return false;
+        }
+
+        //Profile not loaded
+        final McMMOPlayer secondMmoPlayer = UserManager.getPlayer(secondPlayer);
+        if (secondMmoPlayer == null) {
+            return false;
+        }
+
+        final Party firstParty = firstMmoPlayer.getParty();
+        final Party secondParty = secondMmoPlayer.getParty();
 
         if (firstParty == null || secondParty == null) {
             return false;
@@ -700,11 +719,11 @@ public final class PartyManager {
 
             final ArrayList<Party> hasAlly = new ArrayList<>();
 
-            for (final String partyName : partiesFile.getConfigurationSection("").getKeys(false)) {
+            for (final String partyName : requireNonNull(partiesFile.getConfigurationSection("")).getKeys(false)) {
                 try {
                     final Party party = new Party(partyName);
 
-                    final String[] leaderSplit = partiesFile.getString(partyName + ".Leader")
+                    final String[] leaderSplit = requireNonNull(partiesFile.getString(partyName + ".Leader"))
                             .split("[|]");
                     party.setLeader(
                             new PartyLeader(UUID.fromString(leaderSplit[0]), leaderSplit[1]));
@@ -750,7 +769,7 @@ public final class PartyManager {
             LogUtils.debug(pluginRef.getLogger(), "Loaded (" + parties.size() + ") Parties...");
 
             for (final Party party : hasAlly) {
-                party.setAlly(getParty(partiesFile.getString(party.getName() + ".Ally")));
+                party.setAlly(getParty(requireNonNull(partiesFile.getString(party.getName() + ".Ally"))));
             }
 
         } catch (final Exception e) {

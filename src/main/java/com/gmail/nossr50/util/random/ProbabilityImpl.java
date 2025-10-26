@@ -1,10 +1,6 @@
 package com.gmail.nossr50.util.random;
 
-import com.google.common.base.Objects;
-
-public class ProbabilityImpl implements Probability {
-
-    private final double probabilityValue;
+public record ProbabilityImpl(double value) implements Probability {
 
     /**
      * Create a probability from a static value. A value of 0 represents a 0% chance of success, A
@@ -12,40 +8,12 @@ public class ProbabilityImpl implements Probability {
      * success. A value of 0.01 represents a 1% chance of success. And so on.
      *
      * @param value the value of the probability between 0 and 100
+     * @throws IllegalArgumentException if the value is negative
      */
-    public ProbabilityImpl(final double value) throws IllegalArgumentException {
+    public ProbabilityImpl {
         if (value < 0) {
             throw new IndexOutOfBoundsException("Value should never be negative for Probability!" +
                     " This suggests a coding mistake, contact the devs!");
         }
-
-        probabilityValue = value;
-    }
-
-    @Override
-    public double getValue() {
-        return probabilityValue;
-    }
-
-    @Override
-    public String toString() {
-        return "ProbabilityImpl{" + "probabilityValue=" + probabilityValue + '}';
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        final ProbabilityImpl that = (ProbabilityImpl) o;
-        return Double.compare(that.probabilityValue, probabilityValue) == 0;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(probabilityValue);
     }
 }

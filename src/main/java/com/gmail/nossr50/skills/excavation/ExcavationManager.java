@@ -28,6 +28,7 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
+
     public ExcavationManager(final McMMOPlayer mcMMOPlayer) {
         super(mcMMOPlayer, PrimarySkillType.EXCAVATION);
     }
@@ -38,20 +39,19 @@ public class ExcavationManager extends SkillManager {
      * @param blockState The {@link BlockState} to check ability activation for
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void excavationBlockCheck(final BlockState blockState) {
+    public void excavationBlockCheck(final @NotNull BlockState blockState) {
         excavationBlockCheck(blockState.getBlock());
     }
 
-    public void excavationBlockCheck(final Block block) {
+    public void excavationBlockCheck(final @NotNull Block block) {
         final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
+
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
             final List<ExcavationTreasure> treasures = getTreasures(block);
-
             if (!treasures.isEmpty()) {
                 final int skillLevel = getSkillLevel();
                 final Location centerOfBlock = Misc.getBlockCenter(block);
-
                 for (final ExcavationTreasure treasure : treasures) {
                     if (skillLevel >= treasure.getDropLevel()
                             && ProbabilityUtil.isStaticSkillRNGSuccessful(
@@ -78,7 +78,8 @@ public class ExcavationManager extends SkillManager {
 
     @VisibleForTesting
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure, final Location location) {
+    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure,
+                                                final Location location) {
         processExcavationBonusesOnBlock(treasure, location);
     }
 
@@ -134,8 +135,6 @@ public class ExcavationManager extends SkillManager {
      */
     public void gigaDrillBreaker(final Block block) {
         excavationBlockCheck(block);
-        excavationBlockCheck(block);
-
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
     }

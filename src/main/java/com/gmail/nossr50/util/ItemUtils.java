@@ -694,7 +694,7 @@ public final class ItemUtils {
 
     public static @NotNull ItemStack createEnchantBook(
             @NotNull final FishingTreasureBook fishingTreasureBook) {
-        final ItemStack itemStack = fishingTreasureBook.getDrop().clone();
+        final ItemStack itemStack = fishingTreasureBook.getDrop();
         final EnchantmentWrapper enchantmentWrapper = getRandomEnchantment(
                 fishingTreasureBook.getLegalEnchantments());
         final ItemMeta itemMeta = itemStack.getItemMeta();

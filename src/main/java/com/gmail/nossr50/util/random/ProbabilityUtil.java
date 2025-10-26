@@ -47,7 +47,7 @@ public class ProbabilityUtil {
                                                    final boolean isLucky) {
         final Probability probability = getSubSkillProbability(subSkillType, mmoPlayer);
         //Probability values are on a 0-1 scale and need to be "transformed" into a 1-100 scale
-        double percentageValue = probability.getValue(); //Doesn't need to be scaled
+        double percentageValue = probability.value(); //Doesn't need to be scaled
 
         //Apply lucky modifier
         if (isLucky) {
@@ -67,7 +67,7 @@ public class ProbabilityUtil {
     public static double chanceOfSuccessPercentage(@NotNull final Probability probability,
                                                    final boolean isLucky) {
         //Probability values are on a 0-1 scale and need to be "transformed" into a 1-100 scale
-        double percentageValue = probability.getValue();
+        double percentageValue = probability.value();
 
         //Apply lucky modifier
         if (isLucky) {
@@ -295,7 +295,7 @@ public class ProbabilityUtil {
 
             // Mutate probability
             if (resultModifier != 1.0D) {
-                probability = Probability.ofPercent(probability.getValue() * resultModifier);
+                probability = Probability.ofPercent(probability.value() * resultModifier);
             }
         }
 
@@ -368,9 +368,9 @@ public class ProbabilityUtil {
      * @return true if the RNG succeeds, false if it fails
      */
     public static boolean isStaticSkillRNGSuccessful(@NotNull final PrimarySkillType primarySkillType,
-                                                     @Nullable final McMMOPlayer mmoPlayer, @NotNull final Probability probability) {
-        final boolean isLucky =
-                mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(), primarySkillType);
+                                                     @Nullable final McMMOPlayer mmoPlayer,
+                                                     @NotNull final Probability probability) {
+        final boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(), primarySkillType);
 
         if (isLucky) {
             return probability.evaluate(LUCKY_MODIFIER);

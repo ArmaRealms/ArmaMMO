@@ -70,7 +70,7 @@ public interface Probability {
      *
      * @return the statVal of probability
      */
-    double getValue();
+    double value();
 
     /**
      * Simulate an outcome on a probability and return true or false for the result of that outcome
@@ -78,7 +78,7 @@ public interface Probability {
      * @return true if the probability succeeded, false if it failed
      */
     default boolean evaluate() {
-        return isSuccessfulRoll(getValue());
+        return isSuccessfulRoll(value());
     }
 
     /**
@@ -90,7 +90,7 @@ public interface Probability {
      * @return true if the probability succeeded, false if it failed
      */
     default boolean evaluate(final double probabilityMultiplier) {
-        final double probabilityValue = getValue() * probabilityMultiplier;
+        final double probabilityValue = value() * probabilityMultiplier;
         return isSuccessfulRoll(probabilityValue);
     }
 
@@ -105,7 +105,7 @@ public interface Probability {
      * @return true if the probability succeeded, false if it failed
      */
     default boolean evaluate(final double probabilityMultiplier, final double finalProbabilityMultiplier) {
-        final double probabilityValue = getValue() * probabilityMultiplier;
+        final double probabilityValue = value() * probabilityMultiplier;
         return isSuccessfulRoll(probabilityValue * finalProbabilityMultiplier);
     }
 }

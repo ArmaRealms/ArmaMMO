@@ -726,7 +726,7 @@ public class BlockListener implements Listener {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Profile not loaded
-        if (UserManager.getPlayer(player) == null) {
+        if (mmoPlayer == null) {
             return;
         }
 

@@ -24,7 +24,7 @@ public final class Fishing {
      * @param target Targeted entity
      * @return possibleDrops List of ItemStack that can be dropped
      */
-    static List<ShakeTreasure> findPossibleDrops(LivingEntity target) {
+    static List<ShakeTreasure> findPossibleDrops(final LivingEntity target) {
         if (FishingTreasureConfig.getInstance().shakeMap.containsKey(target.getType())) {
             return FishingTreasureConfig.getInstance().shakeMap.get(target.getType());
         }
@@ -38,15 +38,15 @@ public final class Fishing {
      * @param possibleDrops List of ItemStack that can be dropped
      * @return Chosen ItemStack
      */
-    static ItemStack chooseDrop(List<ShakeTreasure> possibleDrops) {
-        int dropProbability = Misc.getRandom().nextInt(100);
+    static ItemStack chooseDrop(final List<ShakeTreasure> possibleDrops) {
+        final int dropProbability = Misc.getRandom().nextInt(100);
         double cumulatedProbability = 0;
 
-        for (ShakeTreasure treasure : possibleDrops) {
+        for (final ShakeTreasure treasure : possibleDrops) {
             cumulatedProbability += treasure.getDropChance();
 
             if (dropProbability < cumulatedProbability) {
-                return treasure.getDrop().clone();
+                return treasure.getDrop();
             }
         }
 
