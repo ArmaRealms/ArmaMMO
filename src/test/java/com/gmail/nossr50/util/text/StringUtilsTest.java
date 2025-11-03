@@ -1,11 +1,5 @@
 package com.gmail.nossr50.util.text;
 
-import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
-import org.bukkit.Material;
-import org.bukkit.entity.EntityType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -13,6 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class StringUtilsTest {
 

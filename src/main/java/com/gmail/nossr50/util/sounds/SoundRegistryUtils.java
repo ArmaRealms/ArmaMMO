@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util.sounds;
 
+import static java.lang.String.format;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.AttributeMapper;
 import com.gmail.nossr50.util.LogUtils;
@@ -9,8 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import static java.lang.String.format;
 
 public final class SoundRegistryUtils {
 

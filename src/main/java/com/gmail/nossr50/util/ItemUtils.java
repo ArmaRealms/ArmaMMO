@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.party.ItemWeightConfig;
@@ -33,8 +34,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
-
-import static java.util.Objects.requireNonNull;
 
 public final class ItemUtils {
     // Use custom name if available
@@ -381,7 +380,7 @@ public final class ItemUtils {
         return mcMMO.getMaterialMapStore().isIronArmor(item.getType().getKey().getKey());
     }
 
-    public static boolean isCopperArmor(ItemStack item) {
+    public static boolean isCopperArmor(final ItemStack item) {
         return mcMMO.getMaterialMapStore().isCopperArmor(item.getType().getKey().getKey());
     }
 
@@ -457,7 +456,7 @@ public final class ItemUtils {
         return mcMMO.getMaterialMapStore().isPrismarineTool(item.getType().getKey().getKey());
     }
 
-    public static boolean isCopperTool(ItemStack item) {
+    public static boolean isCopperTool(final ItemStack item) {
         return mcMMO.getMaterialMapStore().isCopperTool(item.getType().getKey().getKey());
     }
 

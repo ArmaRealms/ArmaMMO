@@ -1,5 +1,6 @@
 package com.gmail.nossr50.runnables.skills;
 
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.events.skills.rupture.McMMOEntityDamageByRuptureEvent;
 import com.gmail.nossr50.mcMMO;
@@ -11,8 +12,6 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
 
 public class RuptureTask extends CancellableRunnable {
 
@@ -37,8 +36,8 @@ public class RuptureTask extends CancellableRunnable {
      * @param targetEntity   The LivingEntity that is the target of the rupture.
      * @param pureTickDamage The amount of damage to be applied per tick.
      */
-    public RuptureTask(@NotNull McMMOPlayer ruptureSource, @NotNull LivingEntity targetEntity,
-                       double pureTickDamage) {
+    public RuptureTask(@NotNull final McMMOPlayer ruptureSource, @NotNull final LivingEntity targetEntity,
+                       final double pureTickDamage) {
         this.ruptureSource = ruptureSource;
         this.targetEntity = targetEntity;
         this.expireTick = mcMMO.p.getAdvancedConfig()
@@ -62,8 +61,8 @@ public class RuptureTask extends CancellableRunnable {
      * {@link #RuptureTask(McMMOPlayer, LivingEntity, double)} instead.
      */
     @Deprecated(forRemoval = true, since = "2.2.023")
-    public RuptureTask(@NotNull McMMOPlayer ruptureSource, @NotNull LivingEntity targetEntity,
-                       double pureTickDamage, double ignored) {
+    public RuptureTask(@NotNull final McMMOPlayer ruptureSource, @NotNull final LivingEntity targetEntity,
+                       final double pureTickDamage, final double ignored) {
         this(ruptureSource, targetEntity, pureTickDamage);
     }
 
@@ -117,18 +116,18 @@ public class RuptureTask extends CancellableRunnable {
     }
 
     private boolean applyRupture() {
-        double healthBeforeRuptureIsApplied = targetEntity.getHealth();
+        final double healthBeforeRuptureIsApplied = targetEntity.getHealth();
 
         // Ensure victim has health
         if (healthBeforeRuptureIsApplied > 0.01) {
             //Send a fake damage event
-            McMMOEntityDamageByRuptureEvent event =
+            final McMMOEntityDamageByRuptureEvent event =
                     new McMMOEntityDamageByRuptureEvent(ruptureSource, targetEntity,
                             calculateAdjustedTickDamage());
             mcMMO.p.getServer().getPluginManager().callEvent(event);
 
             //Ensure the event wasn't canceled and damage is still greater than 0
-            double damage = event.getDamage(); //Use raw damage for Rupture
+            final double damage = event.getDamage(); //Use raw damage for Rupture
 
             if (event.isCancelled() || damage <= 0 || healthBeforeRuptureIsApplied - damage <= 0) {
                 return true;
@@ -190,8 +189,8 @@ public class RuptureTask extends CancellableRunnable {
     }
 
     @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof RuptureTask that)) {
+    public final boolean equals(final Object o) {
+        if (!(o instanceof final RuptureTask that)) {
             return false;
         }
 

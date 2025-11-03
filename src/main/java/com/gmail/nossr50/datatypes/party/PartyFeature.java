@@ -1,12 +1,11 @@
 package com.gmail.nossr50.datatypes.party;
 
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
 import com.gmail.nossr50.commands.party.PartySubcommandType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import org.bukkit.entity.Player;
-
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
 
 public enum PartyFeature {
     CHAT,
@@ -25,8 +24,8 @@ public enum PartyFeature {
                         mcMMO.p.getGeneralConfig().getPartyFeatureUnlockLevel(this)));
     }
 
-    public boolean hasPermission(Player player) {
-        PartySubcommandType partySubCommandType;
+    public boolean hasPermission(final Player player) {
+        final PartySubcommandType partySubCommandType;
         switch (this) {
             case CHAT -> partySubCommandType = PartySubcommandType.CHAT;
             case TELEPORT -> partySubCommandType = PartySubcommandType.TELEPORT;

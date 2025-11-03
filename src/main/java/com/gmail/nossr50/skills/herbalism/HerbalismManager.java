@@ -1,5 +1,10 @@
 package com.gmail.nossr50.skills.herbalism;
 
+import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
+import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.treasure.TreasureConfig;
@@ -52,12 +57,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
-import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
-import static com.gmail.nossr50.util.Misc.getBlockCenter;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-import static java.util.Objects.requireNonNull;
 
 public class HerbalismManager extends SkillManager {
     private static final HashMap<String, Integer> plantBreakLimits;

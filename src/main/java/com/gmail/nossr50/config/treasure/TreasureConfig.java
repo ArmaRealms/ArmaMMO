@@ -1,5 +1,6 @@
 package com.gmail.nossr50.config.treasure;
 
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.treasure.ExcavationTreasure;
 import com.gmail.nossr50.datatypes.treasure.HylianTreasure;
@@ -20,8 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class TreasureConfig extends BukkitConfig {
 

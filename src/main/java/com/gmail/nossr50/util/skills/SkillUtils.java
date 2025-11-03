@@ -1,5 +1,9 @@
 package com.gmail.nossr50.util.skills;
 
+import static com.gmail.nossr50.util.ItemMetadataUtils.isLegacyAbilityTool;
+import static com.gmail.nossr50.util.ItemMetadataUtils.isSuperAbilityBoosted;
+import static com.gmail.nossr50.util.ItemMetadataUtils.removeBonusDigSpeedOnSuperAbilityTool;
+import static com.gmail.nossr50.util.PotionEffectUtil.getHastePotionEffectType;
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -31,11 +35,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
-
-import static com.gmail.nossr50.util.ItemMetadataUtils.isLegacyAbilityTool;
-import static com.gmail.nossr50.util.ItemMetadataUtils.isSuperAbilityBoosted;
-import static com.gmail.nossr50.util.ItemMetadataUtils.removeBonusDigSpeedOnSuperAbilityTool;
-import static com.gmail.nossr50.util.PotionEffectUtil.getHastePotionEffectType;
 
 public final class SkillUtils {
     /**

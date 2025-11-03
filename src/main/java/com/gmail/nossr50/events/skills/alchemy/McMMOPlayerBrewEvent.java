@@ -1,5 +1,6 @@
 package com.gmail.nossr50.events.skills.alchemy;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.events.skills.McMMOPlayerSkillEvent;
@@ -11,21 +12,19 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 
-import static java.util.Objects.requireNonNull;
-
 public class McMMOPlayerBrewEvent extends McMMOPlayerSkillEvent implements Cancellable {
     private final BlockState brewingStand;
 
     private boolean cancelled;
 
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public McMMOPlayerBrewEvent(Player player, BlockState brewingStand) {
+    public McMMOPlayerBrewEvent(final Player player, final BlockState brewingStand) {
         super(requireNonNull(UserManager.getPlayer(player)), PrimarySkillType.ALCHEMY);
         this.brewingStand = brewingStand;
         cancelled = false;
     }
 
-    public McMMOPlayerBrewEvent(@NotNull McMMOPlayer mmoPlayer, @NotNull BlockState brewingStand) {
+    public McMMOPlayerBrewEvent(@NotNull final McMMOPlayer mmoPlayer, @NotNull final BlockState brewingStand) {
         super(mmoPlayer, PrimarySkillType.ALCHEMY);
         this.brewingStand = requireNonNull(brewingStand);
         cancelled = false;
@@ -35,7 +34,7 @@ public class McMMOPlayerBrewEvent extends McMMOPlayerSkillEvent implements Cance
         return cancelled;
     }
 
-    public void setCancelled(boolean newValue) {
+    public void setCancelled(final boolean newValue) {
         this.cancelled = newValue;
     }
 

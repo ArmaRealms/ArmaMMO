@@ -1,12 +1,11 @@
 package com.gmail.nossr50.util.blockmeta;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BlockStoreTestUtils {
     public static final int LEGACY_WORLD_HEIGHT_MAX = 256;

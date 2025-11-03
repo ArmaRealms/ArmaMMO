@@ -1,5 +1,9 @@
 package com.gmail.nossr50.datatypes.skills.subskills.acrobatics;
 
+import static com.gmail.nossr50.util.player.NotificationManager.sendPlayerInformation;
+import static com.gmail.nossr50.util.random.ProbabilityUtil.getSubSkillProbability;
+import static com.gmail.nossr50.util.skills.SkillUtils.applyXpGain;
+import static com.gmail.nossr50.util.sounds.SoundManager.sendCategorizedSound;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -29,11 +33,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Locale;
-
-import static com.gmail.nossr50.util.player.NotificationManager.sendPlayerInformation;
-import static com.gmail.nossr50.util.random.ProbabilityUtil.getSubSkillProbability;
-import static com.gmail.nossr50.util.skills.SkillUtils.applyXpGain;
-import static com.gmail.nossr50.util.sounds.SoundManager.sendCategorizedSound;
 
 public class Roll extends AcrobaticsSubSkill {
 

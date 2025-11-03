@@ -1,5 +1,8 @@
 package com.gmail.nossr50.skills.taming;
 
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_JUMP_STRENGTH;
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
+import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -39,10 +42,6 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
-
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_JUMP_STRENGTH;
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
-import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
 
 public class TamingManager extends SkillManager {
     //TODO: Temporary static cache, will be changed in 2.2

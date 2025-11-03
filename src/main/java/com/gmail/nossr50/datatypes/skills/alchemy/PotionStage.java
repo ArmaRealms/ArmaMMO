@@ -1,12 +1,11 @@
 package com.gmail.nossr50.datatypes.skills.alchemy;
 
-import com.gmail.nossr50.util.PotionUtil;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionEffect;
-
 import static com.gmail.nossr50.util.PotionUtil.isLong;
 import static com.gmail.nossr50.util.PotionUtil.isPotionTypeWater;
 import static com.gmail.nossr50.util.PotionUtil.isStrong;
+import com.gmail.nossr50.util.PotionUtil;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
 
 public enum PotionStage {
     FIVE(5),
@@ -17,12 +16,12 @@ public enum PotionStage {
 
     int numerical;
 
-    PotionStage(int numerical) {
+    PotionStage(final int numerical) {
         this.numerical = numerical;
     }
 
-    private static PotionStage getPotionStageNumerical(int numerical) {
-        for (PotionStage potionStage : values()) {
+    private static PotionStage getPotionStageNumerical(final int numerical) {
+        for (final PotionStage potionStage : values()) {
             if (numerical >= potionStage.toNumerical()) {
                 return potionStage;
             }
@@ -31,9 +30,9 @@ public enum PotionStage {
         return ONE;
     }
 
-    public static PotionStage getPotionStage(AlchemyPotion input, AlchemyPotion output) {
+    public static PotionStage getPotionStage(final AlchemyPotion input, final AlchemyPotion output) {
         PotionStage outputPotionStage = getPotionStage(output);
-        PotionStage inputPotionStage = getPotionStage(input);
+        final PotionStage inputPotionStage = getPotionStage(input);
         if (!isWaterBottle(input) && inputPotionStage == outputPotionStage) {
             outputPotionStage = PotionStage.FIVE;
         }
@@ -41,11 +40,11 @@ public enum PotionStage {
         return outputPotionStage;
     }
 
-    private static boolean isWaterBottle(AlchemyPotion alchemyPotion) {
+    private static boolean isWaterBottle(final AlchemyPotion alchemyPotion) {
         return isPotionTypeWater(alchemyPotion.getAlchemyPotionMeta());
     }
 
-    public static PotionStage getPotionStage(AlchemyPotion alchemyPotion) {
+    public static PotionStage getPotionStage(final AlchemyPotion alchemyPotion) {
         final PotionMeta potionMeta = alchemyPotion.getAlchemyPotionMeta();
 
         int stage = 1;
@@ -61,7 +60,7 @@ public enum PotionStage {
         if (isStrong(potionMeta)) {
             stage++;
         } else if (!potionMeta.getCustomEffects().isEmpty()) {
-            for (PotionEffect effect : potionMeta.getCustomEffects()) {
+            for (final PotionEffect effect : potionMeta.getCustomEffects()) {
                 if (effect.getAmplifier() > 0) {
                     stage++;
                     break;

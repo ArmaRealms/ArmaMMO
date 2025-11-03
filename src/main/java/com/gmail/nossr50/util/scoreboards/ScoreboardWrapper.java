@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util.scoreboards;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.database.PlayerStat;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
@@ -28,8 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 public class ScoreboardWrapper {
     public static final String SIDE_OBJECTIVE = "mcMMO_sideObjective";

@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.TreeFellerBlockBreakEvent;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -57,8 +58,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * This class is meant to help make event related code less boilerplate

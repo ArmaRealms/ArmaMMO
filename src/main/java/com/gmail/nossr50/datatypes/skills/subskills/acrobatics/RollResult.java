@@ -1,8 +1,7 @@
 package com.gmail.nossr50.datatypes.skills.subskills.acrobatics;
 
-import org.bukkit.event.entity.EntityDamageEvent;
-
 import static java.util.Objects.requireNonNull;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 /**
  * Immutable class representing the result of a roll action in acrobatics.
@@ -16,7 +15,7 @@ public class RollResult {
     private final boolean isExploiting;
     private final float xpGain;
 
-    private RollResult(Builder builder) {
+    private RollResult(final Builder builder) {
         this.rollSuccess = builder.rollSuccess;
         this.isGraceful = builder.isGraceful;
         this.eventDamage = builder.eventDamage;
@@ -72,33 +71,33 @@ public class RollResult {
          * @param entityDamageEvent the damage event, must not be null
          * @param isGracefulRoll    whether the roll is graceful
          */
-        public Builder(EntityDamageEvent entityDamageEvent, boolean isGracefulRoll) {
+        public Builder(final EntityDamageEvent entityDamageEvent, final boolean isGracefulRoll) {
             requireNonNull(entityDamageEvent, "EntityDamageEvent cannot be null");
             this.eventDamage = entityDamageEvent.getDamage();
             this.isGraceful = isGracefulRoll;
         }
 
-        public Builder modifiedDamage(double modifiedDamage) {
+        public Builder modifiedDamage(final double modifiedDamage) {
             this.modifiedDamage = modifiedDamage;
             return this;
         }
 
-        public Builder fatal(boolean isFatal) {
+        public Builder fatal(final boolean isFatal) {
             this.isFatal = isFatal;
             return this;
         }
 
-        public Builder rollSuccess(boolean rollSuccess) {
+        public Builder rollSuccess(final boolean rollSuccess) {
             this.rollSuccess = rollSuccess;
             return this;
         }
 
-        public Builder exploiting(boolean isExploiting) {
+        public Builder exploiting(final boolean isExploiting) {
             this.isExploiting = isExploiting;
             return this;
         }
 
-        public Builder xpGain(float xpGain) {
+        public Builder xpGain(final float xpGain) {
             this.xpGain = xpGain;
             return this;
         }

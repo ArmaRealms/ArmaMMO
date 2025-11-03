@@ -1,11 +1,10 @@
 package com.gmail.nossr50.database.flatfile;
 
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
 import com.gmail.nossr50.database.FlatFileDataFlag;
 import com.gmail.nossr50.database.FlatFileDatabaseManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
 
 public class FlatFileDataUtil {
 

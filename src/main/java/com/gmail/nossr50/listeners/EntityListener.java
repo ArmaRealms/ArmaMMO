@@ -1,5 +1,10 @@
 package com.gmail.nossr50.listeners;
 
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
+import static com.gmail.nossr50.util.MobMetadataUtils.addMobFlags;
+import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -77,12 +82,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
 import java.util.Set;
-
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
-import static com.gmail.nossr50.util.MobMetadataUtils.addMobFlags;
-import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
 
 public class EntityListener implements Listener {
     private static final String MULTISHOT = "multishot";

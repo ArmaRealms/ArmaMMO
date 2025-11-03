@@ -1,5 +1,11 @@
 package com.gmail.nossr50.util;
 
+import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
+import static java.util.logging.Logger.getLogger;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.compat.CompatibilityManager;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
@@ -9,13 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-
-import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
-import static java.util.logging.Logger.getLogger;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 class PotionEffectUtilTest {
     private static final java.util.logging.Logger logger = getLogger(

@@ -1,5 +1,6 @@
 package com.gmail.nossr50.worldguard;
 
+import static org.bukkit.Bukkit.getServer;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -11,8 +12,6 @@ import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import static org.bukkit.Bukkit.getServer;
 
 public class WorldGuardManager {
     private static WorldGuardManager instance;

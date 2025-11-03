@@ -1,5 +1,7 @@
 package com.gmail.nossr50.config;
 
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.database.SQLDatabaseManager.PoolIdentifier;
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.party.PartyFeature;
@@ -17,9 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class GeneralConfig extends BukkitConfig {
 

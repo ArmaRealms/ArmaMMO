@@ -1,5 +1,9 @@
 package com.gmail.nossr50.util.skills;
 
+import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.skills.ProjectileUtils.isCrossbowProjectile;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -51,11 +55,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-
-import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static com.gmail.nossr50.util.skills.ProjectileUtils.isCrossbowProjectile;
 
 public final class CombatUtils {
 

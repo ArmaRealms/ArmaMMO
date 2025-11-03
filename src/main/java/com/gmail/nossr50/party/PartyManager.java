@@ -1,5 +1,6 @@
 package com.gmail.nossr50.party;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.party.ItemShareType;
@@ -32,8 +33,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
-
-import static java.util.Objects.requireNonNull;
 
 public final class PartyManager {
     private final @NotNull List<Party> parties;

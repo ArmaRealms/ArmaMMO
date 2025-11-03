@@ -1,5 +1,7 @@
 package com.gmail.nossr50.datatypes.skills.alchemy;
 
+import static com.gmail.nossr50.util.PotionUtil.samePotionType;
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.PotionUtil;
 import org.bukkit.Material;
@@ -13,17 +15,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import static com.gmail.nossr50.util.PotionUtil.samePotionType;
-import static java.util.Objects.requireNonNull;
-
 public class AlchemyPotion {
     private final @NotNull String potionConfigName;
     private final @NotNull ItemStack potionItemStack;
     private final @NotNull ItemMeta potionItemMeta;
     private final @NotNull Map<ItemStack, String> alchemyPotionChildren;
 
-    public AlchemyPotion(@NotNull String potionConfigName, @NotNull ItemStack potionItemStack,
-                         @NotNull Map<ItemStack, String> alchemyPotionChildren) {
+    public AlchemyPotion(@NotNull final String potionConfigName, @NotNull final ItemStack potionItemStack,
+                         @NotNull final Map<ItemStack, String> alchemyPotionChildren) {
         this.potionConfigName = requireNonNull(potionConfigName, "potionConfigName cannot be null");
         this.potionItemStack = requireNonNull(potionItemStack, "potionItemStack cannot be null");
         this.alchemyPotionChildren = requireNonNull(alchemyPotionChildren,
@@ -32,7 +31,7 @@ public class AlchemyPotion {
                 "potionItemMeta cannot be null"); // The potion item meta should never be null because it is a potion, but if it is null, then something went terribly wrong
     }
 
-    public @NotNull ItemStack toItemStack(int amount) {
+    public @NotNull ItemStack toItemStack(final int amount) {
         final ItemStack clone = potionItemStack.clone();
         clone.setAmount(Math.max(1, amount));
         return clone;
@@ -42,9 +41,9 @@ public class AlchemyPotion {
         return alchemyPotionChildren;
     }
 
-    public @Nullable AlchemyPotion getChild(@NotNull ItemStack ingredient) {
+    public @Nullable AlchemyPotion getChild(@NotNull final ItemStack ingredient) {
         if (!alchemyPotionChildren.isEmpty()) {
-            for (Entry<ItemStack, String> child : alchemyPotionChildren.entrySet()) {
+            for (final Entry<ItemStack, String> child : alchemyPotionChildren.entrySet()) {
                 if (ingredient.isSimilar(child.getKey())) {
                     return mcMMO.p.getPotionConfig().getPotion(child.getValue());
                 }
@@ -53,11 +52,11 @@ public class AlchemyPotion {
         return null;
     }
 
-    public boolean isSimilarPotion(@NotNull ItemStack otherPotion) {
+    public boolean isSimilarPotion(@NotNull final ItemStack otherPotion) {
         return isSimilarPotion(otherPotion, otherPotion.getItemMeta());
     }
 
-    public boolean isSimilarPotion(@NotNull ItemStack otherPotion, @Nullable ItemMeta otherMeta) {
+    public boolean isSimilarPotion(@NotNull final ItemStack otherPotion, @Nullable final ItemMeta otherMeta) {
         requireNonNull(otherPotion, "otherPotion cannot be null");
 
         if (otherPotion.getType() != potionItemStack.getType()) {
@@ -104,16 +103,16 @@ public class AlchemyPotion {
                 || otherPotionMeta.getLore().equals(getAlchemyPotionMeta().getLore());
     }
 
-    private boolean hasDifferingCustomEffects(PotionMeta potionMeta, PotionMeta otherPotionMeta) {
+    private boolean hasDifferingCustomEffects(final PotionMeta potionMeta, final PotionMeta otherPotionMeta) {
         for (int i = 0; i < potionMeta.getCustomEffects().size(); i++) {
-            var effect = potionMeta.getCustomEffects().get(i);
+            final var effect = potionMeta.getCustomEffects().get(i);
 
             // One has an effect the other does not, they are not the same potion
             if (!otherPotionMeta.hasCustomEffect(effect.getType())) {
                 return true;
             }
 
-            var otherEffect = otherPotionMeta.getCustomEffects().get(i);
+            final var otherEffect = otherPotionMeta.getCustomEffects().get(i);
             // Amplifier or duration are not equal, they are not the same potion
             if (effect.getAmplifier() != otherEffect.getAmplifier()
                     || effect.getDuration() != otherEffect.getDuration()) {
@@ -136,14 +135,14 @@ public class AlchemyPotion {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        AlchemyPotion that = (AlchemyPotion) o;
+        final AlchemyPotion that = (AlchemyPotion) o;
         return Objects.equals(potionConfigName, that.potionConfigName) && Objects.equals(
                 potionItemStack, that.potionItemStack) && Objects.equals(alchemyPotionChildren,
                 that.alchemyPotionChildren);

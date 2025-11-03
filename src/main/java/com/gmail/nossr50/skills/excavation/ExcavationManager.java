@@ -1,5 +1,6 @@
 package com.gmail.nossr50.skills.excavation;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -24,8 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.List;
-
-import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
 

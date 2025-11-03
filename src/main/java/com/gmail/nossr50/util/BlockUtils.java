@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.meta.BonusDropMeta;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -22,8 +23,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 
-import static java.util.Objects.requireNonNull;
-
 public final class BlockUtils {
 
     public static final String SHORT_GRASS = "SHORT_GRASS";
@@ -39,7 +38,7 @@ public final class BlockUtils {
      * @param triple     marks the block to give triple drops
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public static void markDropsAsBonus(BlockState blockState, boolean triple) {
+    public static void markDropsAsBonus(final BlockState blockState, final boolean triple) {
         if (triple) {
             blockState.getBlock().setMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS,
                     new BonusDropMeta(2, mcMMO.p));
@@ -49,7 +48,7 @@ public final class BlockUtils {
         }
     }
 
-    public static void markDropsAsBonus(Block block, boolean triple) {
+    public static void markDropsAsBonus(final Block block, final boolean triple) {
         if (triple) {
             block.setMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS,
                     new BonusDropMeta(2, mcMMO.p));
@@ -81,7 +80,7 @@ public final class BlockUtils {
      *
      * @param block target block
      */
-    public static void setUnnaturalBlock(@NotNull Block block) {
+    public static void setUnnaturalBlock(@NotNull final Block block) {
         mcMMO.getUserBlockTracker().setIneligible(block);
 
         // Failsafe against lingering metadata
@@ -96,7 +95,7 @@ public final class BlockUtils {
      *
      * @param block target block
      */
-    public static void cleanupBlockMetadata(Block block) {
+    public static void cleanupBlockMetadata(final Block block) {
         if (block.hasMetadata(MetadataConstants.METADATA_KEY_REPLANT)) {
             block.removeMetadata(MetadataConstants.METADATA_KEY_REPLANT, mcMMO.p);
         }
@@ -111,7 +110,7 @@ public final class BlockUtils {
      * @param amount     amount of extra items to drop
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public static void markDropsAsBonus(BlockState blockState, int amount) {
+    public static void markDropsAsBonus(final BlockState blockState, final int amount) {
         blockState.setMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS,
                 new BonusDropMeta(amount, mcMMO.p));
     }
@@ -122,7 +121,7 @@ public final class BlockUtils {
      * @param block  target block
      * @param amount the number of extra items to drop
      */
-    public static void markDropsAsBonus(Block block, int amount) {
+    public static void markDropsAsBonus(final Block block, final int amount) {
         block.setMetadata(MetadataConstants.METADATA_KEY_BONUS_DROPS,
                 new BonusDropMeta(amount, mcMMO.p));
     }
@@ -135,8 +134,8 @@ public final class BlockUtils {
      * @deprecated Use {@link #checkDoubleDrops(McMMOPlayer, BlockState, SubSkillType)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static boolean checkDoubleDrops(Player player, BlockState blockState,
-                                           PrimarySkillType ignored, SubSkillType subSkillType) {
+    public static boolean checkDoubleDrops(final Player player, final BlockState blockState,
+                                           final PrimarySkillType ignored, final SubSkillType subSkillType) {
         return checkDoubleDrops(UserManager.getPlayer(player), blockState, subSkillType);
     }
 
@@ -149,9 +148,9 @@ public final class BlockUtils {
      * @return true if the player succeeded in the check
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public static boolean checkDoubleDrops(@Nullable McMMOPlayer mmoPlayer,
-                                           @NotNull BlockState blockState,
-                                           @NotNull SubSkillType subSkillType) {
+    public static boolean checkDoubleDrops(@Nullable final McMMOPlayer mmoPlayer,
+                                           @NotNull final BlockState blockState,
+                                           @NotNull final SubSkillType subSkillType) {
         requireNonNull(blockState, "blockState cannot be null");
         requireNonNull(subSkillType, "subSkillType cannot be null");
         if (mcMMO.p.getGeneralConfig()
@@ -171,8 +170,8 @@ public final class BlockUtils {
      * @param subSkillType the subskill involved
      * @return true if the player succeeded in the check
      */
-    public static boolean checkDoubleDrops(@Nullable McMMOPlayer mmoPlayer, @NotNull Block block,
-                                           @NotNull SubSkillType subSkillType) {
+    public static boolean checkDoubleDrops(@Nullable final McMMOPlayer mmoPlayer, @NotNull final Block block,
+                                           @NotNull final SubSkillType subSkillType) {
         requireNonNull(block, "block cannot be null");
         requireNonNull(subSkillType, "subSkillType cannot be null");
         if (mcMMO.p.getGeneralConfig()
@@ -190,11 +189,11 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block awards XP, false otherwise
      */
-    public static boolean shouldBeWatched(BlockState blockState) {
+    public static boolean shouldBeWatched(final BlockState blockState) {
         return shouldBeWatched(blockState.getType());
     }
 
-    public static boolean shouldBeWatched(Material material) {
+    public static boolean shouldBeWatched(final Material material) {
         return affectedByGigaDrillBreaker(material)
                 || affectedByGreenTerra(material)
                 || affectedBySuperBreaker(material)
@@ -216,11 +215,11 @@ public final class BlockUtils {
      * @return true if the block should allow ability activation, false otherwise
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public static boolean canActivateAbilities(BlockState blockState) {
+    public static boolean canActivateAbilities(final BlockState blockState) {
         return !mcMMO.getMaterialMapStore().isAbilityActivationBlackListed(blockState.getType());
     }
 
-    public static boolean canActivateAbilities(Block block) {
+    public static boolean canActivateAbilities(final Block block) {
         return !mcMMO.getMaterialMapStore().isAbilityActivationBlackListed(block.getType());
     }
 
@@ -231,7 +230,7 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block should allow ability activation, false otherwise
      */
-    public static boolean canActivateTools(BlockState blockState) {
+    public static boolean canActivateTools(final BlockState blockState) {
         return !mcMMO.getMaterialMapStore().isToolActivationBlackListed(blockState.getType())
                 && blockState.getType() != Repair.anvilMaterial
                 && blockState.getType() != Salvage.anvilMaterial;
@@ -243,7 +242,7 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block is an ore, false otherwise
      */
-    public static boolean isOre(BlockState blockState) {
+    public static boolean isOre(final BlockState blockState) {
         return isOre(blockState.getType());
     }
 
@@ -253,7 +252,7 @@ public final class BlockUtils {
      * @param block The {@link Block} to check
      * @return true if the block is an ore, false otherwise
      */
-    public static boolean isOre(Block block) {
+    public static boolean isOre(final Block block) {
         return isOre(block.getType());
     }
 
@@ -263,7 +262,7 @@ public final class BlockUtils {
      * @param material The {@link Material} to check
      * @return true if the material is an ore, false otherwise
      */
-    public static boolean isOre(Material material) {
+    public static boolean isOre(final Material material) {
         return MaterialUtils.isOre(material);
     }
 
@@ -274,11 +273,11 @@ public final class BlockUtils {
      * @return true if the block can be made mossy, false otherwise
      */
     @Deprecated(since = "2.2.024")
-    public static boolean canMakeMossy(BlockState blockState) {
+    public static boolean canMakeMossy(final BlockState blockState) {
         return mcMMO.getMaterialMapStore().isMossyWhiteListed(blockState.getType());
     }
 
-    public static boolean canMakeMossy(Block block) {
+    public static boolean canMakeMossy(final Block block) {
         return mcMMO.getMaterialMapStore().isMossyWhiteListed(block.getType());
     }
 
@@ -288,20 +287,20 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block should affected by Green Terra, false otherwise
      */
-    public static boolean affectedByGreenTerra(BlockState blockState) {
+    public static boolean affectedByGreenTerra(final BlockState blockState) {
         return affectedByGreenTerra(blockState.getType());
     }
 
-    public static boolean affectedByGreenTerra(Block block) {
+    public static boolean affectedByGreenTerra(final Block block) {
         return affectedByGreenTerra(block.getType());
     }
 
-    public static boolean affectedByGreenTerra(Material material) {
+    public static boolean affectedByGreenTerra(final Material material) {
         return ExperienceConfig.getInstance()
                 .doesBlockGiveSkillXP(PrimarySkillType.HERBALISM, material);
     }
 
-    public static boolean affectedBySuperBreaker(BlockState blockState) {
+    public static boolean affectedBySuperBreaker(final BlockState blockState) {
         return affectedBySuperBreaker(blockState.getType());
     }
 
@@ -311,11 +310,11 @@ public final class BlockUtils {
      * @param block The {@link Block} to check
      * @return true if the block should affected by Super Breaker, false otherwise
      */
-    public static boolean affectedBySuperBreaker(Block block) {
+    public static boolean affectedBySuperBreaker(final Block block) {
         return affectedBySuperBreaker(block.getType());
     }
 
-    public static boolean affectedBySuperBreaker(Material material) {
+    public static boolean affectedBySuperBreaker(final Material material) {
         if (mcMMO.getMaterialMapStore().isIntendedToolPickaxe(material)) {
             return true;
         }
@@ -330,15 +329,15 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block should be affected by Giga Drill Breaker, false otherwise
      */
-    public static boolean affectedByGigaDrillBreaker(@NotNull BlockState blockState) {
+    public static boolean affectedByGigaDrillBreaker(@NotNull final BlockState blockState) {
         return affectedByGigaDrillBreaker(blockState.getType());
     }
 
-    public static boolean affectedByGigaDrillBreaker(@NotNull Block block) {
+    public static boolean affectedByGigaDrillBreaker(@NotNull final Block block) {
         return affectedByGigaDrillBreaker(block.getType());
     }
 
-    public static boolean affectedByGigaDrillBreaker(@NotNull Material material) {
+    public static boolean affectedByGigaDrillBreaker(@NotNull final Material material) {
         return ExperienceConfig.getInstance()
                 .doesBlockGiveSkillXP(PrimarySkillType.EXCAVATION, material);
     }
@@ -349,15 +348,15 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block is a log, false otherwise
      */
-    public static boolean hasWoodcuttingXP(@NotNull BlockState blockState) {
+    public static boolean hasWoodcuttingXP(@NotNull final BlockState blockState) {
         return hasWoodcuttingXP(blockState.getType());
     }
 
-    public static boolean hasWoodcuttingXP(@NotNull Block block) {
+    public static boolean hasWoodcuttingXP(@NotNull final Block block) {
         return hasWoodcuttingXP(block.getType());
     }
 
-    public static boolean hasWoodcuttingXP(@NotNull Material material) {
+    public static boolean hasWoodcuttingXP(@NotNull final Material material) {
         return ExperienceConfig.getInstance()
                 .doesBlockGiveSkillXP(PrimarySkillType.WOODCUTTING, material);
     }
@@ -368,15 +367,15 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block is a leaf, false otherwise
      */
-    public static boolean isNonWoodPartOfTree(@NotNull BlockState blockState) {
+    public static boolean isNonWoodPartOfTree(@NotNull final BlockState blockState) {
         return isNonWoodPartOfTree(blockState.getType());
     }
 
-    public static boolean isNonWoodPartOfTree(@NotNull Block block) {
+    public static boolean isNonWoodPartOfTree(@NotNull final Block block) {
         return isNonWoodPartOfTree(block.getType());
     }
 
-    public static boolean isNonWoodPartOfTree(@NotNull Material material) {
+    public static boolean isNonWoodPartOfTree(@NotNull final Material material) {
         return mcMMO.getMaterialMapStore().isTreeFellerDestructible(material);
     }
 
@@ -403,7 +402,7 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block can be activate Herbalism abilities, false otherwise
      */
-    public static boolean canActivateHerbalism(BlockState blockState) {
+    public static boolean canActivateHerbalism(final BlockState blockState) {
         return mcMMO.getMaterialMapStore().isHerbalismAbilityWhiteListed(blockState.getType());
     }
 
@@ -413,15 +412,15 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block should affected by Block Cracker, false otherwise
      */
-    public static boolean affectedByBlockCracker(BlockState blockState) {
+    public static boolean affectedByBlockCracker(final BlockState blockState) {
         return affectedByBlockCracker(blockState.getType());
     }
 
-    public static boolean affectedByBlockCracker(Block block) {
+    public static boolean affectedByBlockCracker(final Block block) {
         return affectedByBlockCracker(block.getType());
     }
 
-    public static boolean affectedByBlockCracker(Material material) {
+    public static boolean affectedByBlockCracker(final Material material) {
         return mcMMO.getMaterialMapStore().isBlockCrackerWhiteListed(material);
     }
 
@@ -431,7 +430,7 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block can be made into Mycelium, false otherwise
      */
-    public static boolean canMakeShroomy(BlockState blockState) {
+    public static boolean canMakeShroomy(final BlockState blockState) {
         return mcMMO.getMaterialMapStore().isShroomyWhiteListed(blockState.getType());
     }
 
@@ -441,14 +440,14 @@ public final class BlockUtils {
      * @param blockState The {@link BlockState} of the block to check
      * @return true if the block is an mcMMO anvil, false otherwise
      */
-    public static boolean isMcMMOAnvil(BlockState blockState) {
-        Material type = blockState.getType();
+    public static boolean isMcMMOAnvil(final BlockState blockState) {
+        final Material type = blockState.getType();
 
         return type == Repair.anvilMaterial || type == Salvage.anvilMaterial;
     }
 
-    public static boolean isPistonPiece(BlockState blockState) {
-        Material type = blockState.getType();
+    public static boolean isPistonPiece(final BlockState blockState) {
+        final Material type = blockState.getType();
 
         return type == Material.MOVING_PISTON || type == Material.AIR;
     }
@@ -459,9 +458,9 @@ public final class BlockUtils {
      * @return HashSet with the IDs of every transparent block
      */
     public static HashSet<Material> getTransparentBlocks() {
-        HashSet<Material> transparentBlocks = new HashSet<>();
+        final HashSet<Material> transparentBlocks = new HashSet<>();
 
-        for (Material material : Material.values()) {
+        for (final Material material : Material.values()) {
             if (material.isTransparent()) {
                 transparentBlocks.add(material);
             }
@@ -470,18 +469,18 @@ public final class BlockUtils {
         return transparentBlocks;
     }
 
-    public static boolean isFullyGrown(BlockState blockState) {
-        BlockData data = blockState.getBlockData();
+    public static boolean isFullyGrown(final BlockState blockState) {
+        final BlockData data = blockState.getBlockData();
         if (data.getMaterial() == Material.CACTUS || data.getMaterial() == Material.SUGAR_CANE) {
             return true;
         }
-        if (data instanceof Ageable ageable) {
+        if (data instanceof final Ageable ageable) {
             return ageable.getAge() == ageable.getMaximumAge();
         }
         return true;
     }
 
-    public static boolean isPartOfTree(Block block) {
+    public static boolean isPartOfTree(final Block block) {
         return hasWoodcuttingXP(block.getState()) || isNonWoodPartOfTree(block.getType());
     }
 
@@ -493,8 +492,8 @@ public final class BlockUtils {
      * @param block
      * @return
      */
-    public static boolean isWithinWorldBounds(@NotNull Block block) {
-        World world = block.getWorld();
+    public static boolean isWithinWorldBounds(@NotNull final Block block) {
+        final World world = block.getWorld();
 
         //World min height = inclusive | World max height = exclusive
         return block.getY() >= world.getMinHeight() && block.getY() < world.getMaxHeight();

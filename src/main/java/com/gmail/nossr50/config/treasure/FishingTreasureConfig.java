@@ -1,5 +1,6 @@
 package com.gmail.nossr50.config.treasure;
 
+import static com.gmail.nossr50.util.PotionUtil.matchPotionType;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.treasure.EnchantmentTreasure;
 import com.gmail.nossr50.datatypes.treasure.FishingTreasure;
@@ -26,8 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static com.gmail.nossr50.util.PotionUtil.matchPotionType;
 
 public class FishingTreasureConfig extends BukkitConfig {
 

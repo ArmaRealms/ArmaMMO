@@ -1,5 +1,7 @@
 package com.gmail.nossr50.util;
 
+import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
+import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.meta.OldName;
 import com.gmail.nossr50.mcMMO;
@@ -11,9 +13,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.metadata.FixedMetadataValue;
-
-import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
-import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
 
 public final class MobHealthbarUtils {
     private MobHealthbarUtils() {

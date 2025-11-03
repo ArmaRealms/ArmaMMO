@@ -1,5 +1,7 @@
 package com.gmail.nossr50.datatypes.player;
 
+import static com.gmail.nossr50.util.EventUtils.callPlayerAbilityActivateEvent;
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.chat.author.PlayerAuthor;
 import com.gmail.nossr50.config.ChatConfig;
@@ -74,9 +76,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
-
-import static com.gmail.nossr50.util.EventUtils.callPlayerAbilityActivateEvent;
-import static java.util.Objects.requireNonNull;
 
 public class McMMOPlayer implements Identified {
     private final @NotNull Identity identity;

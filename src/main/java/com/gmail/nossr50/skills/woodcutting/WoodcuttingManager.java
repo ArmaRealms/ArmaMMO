@@ -1,5 +1,8 @@
 package com.gmail.nossr50.skills.woodcutting;
 
+import static com.gmail.nossr50.util.ItemUtils.spawnItemsFromCollection;
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -41,10 +44,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
-
-import static com.gmail.nossr50.util.ItemUtils.spawnItemsFromCollection;
-import static com.gmail.nossr50.util.Misc.getBlockCenter;
-import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
 
 public class WoodcuttingManager extends SkillManager {
     public static final String SAPLING = "sapling";

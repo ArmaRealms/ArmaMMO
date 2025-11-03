@@ -1,5 +1,7 @@
 package com.gmail.nossr50.config.experience;
 
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
@@ -18,9 +20,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class ExperienceConfig extends BukkitConfig {
     private static ExperienceConfig instance;

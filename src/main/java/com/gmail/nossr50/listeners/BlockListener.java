@@ -1,5 +1,6 @@
 package com.gmail.nossr50.listeners;
 
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -63,8 +64,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
 
 public class BlockListener implements Listener {
     private final mcMMO plugin;

@@ -1,17 +1,5 @@
 package com.gmail.nossr50.util.random;
 
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.ACROBATICS_DODGE;
@@ -25,6 +13,17 @@ import static com.gmail.nossr50.util.random.ProbabilityUtil.calculateCurrentSkil
 import static java.util.logging.Logger.getLogger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 class ProbabilityUtilTest extends MMOTestEnvironment {
     final static double impactChance = 11D;

@@ -1,5 +1,7 @@
 package com.gmail.nossr50.commands.skills;
 
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_IMPALE;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
@@ -9,9 +11,6 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_IMPALE;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK;
 
 public class TridentsCommand extends SkillCommand {
 

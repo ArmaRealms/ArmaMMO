@@ -1,5 +1,6 @@
 package com.gmail.nossr50.skills.tridents;
 
+import static java.util.logging.Logger.getLogger;
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import org.bukkit.Material;
@@ -11,8 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
 import java.util.logging.Logger;
-
-import static java.util.logging.Logger.getLogger;
 
 class TridentsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(TridentsTest.class.getName());

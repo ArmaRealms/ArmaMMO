@@ -1,5 +1,12 @@
 package com.gmail.nossr50.util;
 
+import static com.gmail.nossr50.util.MetadataService.NSK_COTW_SUMMONED_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_EGG_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_EXPLOITED_ENDERMEN;
+import static com.gmail.nossr50.util.MetadataService.NSK_MOB_SPAWNER_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_NETHER_GATE_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_BRED_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_TAMED_MOB;
 import com.gmail.nossr50.api.exceptions.IncompleteNamespacedKeyRegister;
 import com.gmail.nossr50.config.PersistentDataConfig;
 import com.gmail.nossr50.metadata.MobMetaFlagType;
@@ -15,14 +22,6 @@ import java.util.EnumMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static com.gmail.nossr50.util.MetadataService.NSK_COTW_SUMMONED_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_EGG_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_EXPLOITED_ENDERMEN;
-import static com.gmail.nossr50.util.MetadataService.NSK_MOB_SPAWNER_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_NETHER_GATE_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_BRED_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_TAMED_MOB;
 
 public final class MobMetadataUtils {
     private static final @NotNull ConcurrentMap<Entity, Set<MobMetaFlagType>> mobRegistry; // transient data

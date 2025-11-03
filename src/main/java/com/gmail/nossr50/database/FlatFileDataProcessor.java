@@ -1,5 +1,6 @@
 package com.gmail.nossr50.database;
 
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
 import com.gmail.nossr50.database.flatfile.FlatFileDataBuilder;
 import com.gmail.nossr50.database.flatfile.FlatFileDataContainer;
 import com.gmail.nossr50.database.flatfile.FlatFileDataUtil;
@@ -12,8 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
 
 public class FlatFileDataProcessor {
     private final @NotNull List<FlatFileDataContainer> flatFileDataContainers;

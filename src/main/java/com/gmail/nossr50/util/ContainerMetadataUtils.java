@@ -1,5 +1,7 @@
 package com.gmail.nossr50.util;
 
+import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_LEAST_SIG;
+import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_MOST_SIG;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.Bukkit;
@@ -14,9 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
-
-import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_LEAST_SIG;
-import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_MOST_SIG;
 
 public class ContainerMetadataUtils {
 

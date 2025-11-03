@@ -1,5 +1,6 @@
 package com.gmail.nossr50.skills.unarmed;
 
+import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -25,8 +26,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
 
 public class UnarmedManager extends SkillManager {
 

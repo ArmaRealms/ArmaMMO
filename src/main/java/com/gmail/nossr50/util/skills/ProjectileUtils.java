@@ -1,5 +1,7 @@
 package com.gmail.nossr50.util.skills;
 
+import static com.gmail.nossr50.util.MetadataConstants.ARROW_METADATA_KEYS;
+import static com.gmail.nossr50.util.MetadataConstants.MCMMO_METADATA_VALUE;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.MetadataConstants;
 import org.bukkit.block.BlockFace;
@@ -11,12 +13,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import static com.gmail.nossr50.util.MetadataConstants.ARROW_METADATA_KEYS;
-import static com.gmail.nossr50.util.MetadataConstants.MCMMO_METADATA_VALUE;
-
 public class ProjectileUtils {
 
-    public static Vector getNormal(BlockFace blockFace) {
+    public static Vector getNormal(final BlockFace blockFace) {
         return switch (blockFace) {
             case UP -> new Vector(0, 1, 0);
             case DOWN -> new Vector(0, -1, 0);
@@ -33,7 +32,7 @@ public class ProjectileUtils {
      *
      * @param arrow projectile
      */
-    public static void cleanupProjectileMetadata(@NotNull AbstractArrow arrow) {
+    public static void cleanupProjectileMetadata(@NotNull final AbstractArrow arrow) {
         ARROW_METADATA_KEYS.stream()
                 .filter(arrow::hasMetadata)
                 .forEach(key -> arrow.removeMetadata(key, mcMMO.p));
@@ -46,8 +45,8 @@ public class ProjectileUtils {
      * @param sourceArrow The arrow from which metadata is copied.
      * @param targetArrow The arrow to which metadata is copied.
      */
-    public static void copyArrowMetadata(@NotNull Plugin pluginRef, @NotNull Arrow sourceArrow,
-                                         @NotNull Arrow targetArrow) {
+    public static void copyArrowMetadata(@NotNull final Plugin pluginRef, @NotNull final Arrow sourceArrow,
+                                         @NotNull final Arrow targetArrow) {
         ARROW_METADATA_KEYS.stream()
                 .filter(sourceArrow::hasMetadata)
                 .forEach(key -> {
@@ -63,7 +62,7 @@ public class ProjectileUtils {
                 });
     }
 
-    public static boolean isCrossbowProjectile(@NotNull AbstractArrow arrow) {
+    public static boolean isCrossbowProjectile(@NotNull final AbstractArrow arrow) {
         return arrow.isShotFromCrossbow()
                 || arrow.hasMetadata(MetadataConstants.METADATA_KEY_CROSSBOW_PROJECTILE);
     }

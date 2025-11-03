@@ -1,5 +1,13 @@
 package com.gmail.nossr50.util.blockmeta;
 
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertChunkStoreEquals;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.serializeChunkStore;
+import static com.gmail.nossr50.util.blockmeta.UserBlockTrackerTest.recursiveDelete;
+import static org.bukkit.Bukkit.getWorld;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 import com.gmail.nossr50.mcMMO;
 import com.google.common.io.Files;
 import org.bukkit.Bukkit;
@@ -19,15 +27,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
-
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertChunkStoreEquals;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.serializeChunkStore;
-import static com.gmail.nossr50.util.blockmeta.UserBlockTrackerTest.recursiveDelete;
-import static org.bukkit.Bukkit.getWorld;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 class ChunkStoreTest {
     private static File tempDir;

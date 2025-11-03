@@ -1,5 +1,6 @@
 package com.gmail.nossr50.skills.archery;
 
+import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -18,8 +19,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.potion.PotionEffect;
-
-import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
 
 public class ArcheryManager extends SkillManager {
     public ArcheryManager(final McMMOPlayer mmoPlayer) {

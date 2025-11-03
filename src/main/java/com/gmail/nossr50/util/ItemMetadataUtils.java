@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util;
 
+import static com.gmail.nossr50.util.MetadataService.NSK_SUPER_ABILITY_BOOSTED_ITEM;
 import com.gmail.nossr50.mcMMO;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -8,8 +9,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-
-import static com.gmail.nossr50.util.MetadataService.NSK_SUPER_ABILITY_BOOSTED_ITEM;
 
 public final class ItemMetadataUtils {
 

@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util.random;
 
+import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -16,8 +17,6 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-
-import static java.util.Objects.requireNonNull;
 
 public class ProbabilityUtil {
     public static final @NotNull DecimalFormat percent = new DecimalFormat("##0.00%",

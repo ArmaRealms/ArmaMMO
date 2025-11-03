@@ -1,5 +1,6 @@
 package com.gmail.nossr50.events.items;
 
+import static java.util.Objects.requireNonNull;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Item;
@@ -9,8 +10,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.jetbrains.annotations.NotNull;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Called when mcMMO is modifying the amount of bonus drops to add to an Item involved in a {@link BlockDropItemEvent}.

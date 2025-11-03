@@ -1,15 +1,14 @@
 package com.gmail.nossr50.util.random;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProbabilityTest {
 
@@ -51,8 +50,8 @@ class ProbabilityTest {
         );
     }
 
-    private static void assertExpectations(Probability probability, double expectedWinPercent) {
-        double iterations = 2.0e7;
+    private static void assertExpectations(final Probability probability, final double expectedWinPercent) {
+        final double iterations = 2.0e7;
         double winCount = 0;
 
         for (int i = 0; i < iterations; i++) {
@@ -61,7 +60,7 @@ class ProbabilityTest {
             }
         }
 
-        double successPercent = (winCount / iterations) * 100;
+        final double successPercent = (winCount / iterations) * 100;
         System.out.println(successPercent + ", " + expectedWinPercent);
         assertEquals(expectedWinPercent, successPercent, 0.05D);
     }
@@ -96,13 +95,13 @@ class ProbabilityTest {
 
     @ParameterizedTest
     @MethodSource("provideProbabilitiesForWithinExpectations")
-    void testOddsExpectationsConstructor(Probability probability, double expectedWinPercent) {
+    void testOddsExpectationsConstructor(final Probability probability, final double expectedWinPercent) {
         assertExpectations(probability, expectedWinPercent);
     }
 
     @ParameterizedTest
     @MethodSource("provideOfPercentageProbabilitiesForWithinExpectations")
-    void testOddsExpectationsOfPercent(Probability probability, double expectedWinPercent) {
+    void testOddsExpectationsOfPercent(final Probability probability, final double expectedWinPercent) {
         assertExpectations(probability, expectedWinPercent);
     }
 }
