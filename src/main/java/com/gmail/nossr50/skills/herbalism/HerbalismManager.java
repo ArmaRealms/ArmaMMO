@@ -2,6 +2,7 @@ package com.gmail.nossr50.skills.herbalism;
 
 import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
 import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
+import static com.gmail.nossr50.util.Misc.TICK_CONVERSION_FACTOR;
 import static com.gmail.nossr50.util.Misc.getBlockCenter;
 import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import static java.util.Objects.requireNonNull;
@@ -700,7 +701,7 @@ public class HerbalismManager extends SkillManager {
      */
     private void startReplantTask(final int desiredCropAge, final BlockBreakEvent blockBreakEvent, final BlockState cropState, final boolean isImmature) {
         //Mark the plant as recently replanted to avoid accidental breakage
-        mcMMO.p.getFoliaLib().getScheduler().runAtLocationLater(blockBreakEvent.getBlock().getLocation(), new DelayedCropReplant(blockBreakEvent, cropState, desiredCropAge, isImmature), 2 * Misc.TICK_CONVERSION_FACTOR);
+        mcMMO.p.getFoliaLib().getScheduler().runAtLocationLater(blockBreakEvent.getBlock().getLocation(), new DelayedCropReplant(blockBreakEvent, cropState, desiredCropAge, isImmature), TICK_CONVERSION_FACTOR);
         blockBreakEvent.getBlock().setMetadata(MetadataConstants.METADATA_KEY_REPLANT, new RecentlyReplantedCropMeta(mcMMO.p, true));
     }
 

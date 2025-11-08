@@ -16,7 +16,7 @@ public class SalvageConfigManager {
         final Pattern pattern = Pattern.compile("salvage\\.(?:.+)\\.yml");
         final File dataFolder = plugin.getDataFolder();
 
-        final SalvageConfig mainSalvageConfig = new SalvageConfig(SALVAGE_VANILLA_YML, true);
+        final SalvageConfig mainSalvageConfig = new SalvageConfig(SALVAGE_VANILLA_YML);
         salvageables.addAll(mainSalvageConfig.getLoadedSalvageables());
 
         for (final String fileName : dataFolder.list()) {
@@ -34,7 +34,7 @@ public class SalvageConfigManager {
                 continue;
             }
 
-            final SalvageConfig salvageConfig = new SalvageConfig(fileName, false);
+            final SalvageConfig salvageConfig = new SalvageConfig(fileName);
             salvageables.addAll(salvageConfig.getLoadedSalvageables());
         }
     }

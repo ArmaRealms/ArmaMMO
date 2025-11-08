@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.logging.Level;
 
 public abstract class BukkitConfig {
     protected final String fileName;
@@ -59,7 +60,7 @@ public abstract class BukkitConfig {
                 savedDefaults = true;
             }
         } catch (final IOException e) {
-            e.printStackTrace();
+            mcMMO.p.getLogger().log(Level.SEVERE, "Unable to save config file: " + fileName, e);
         }
     }
 
