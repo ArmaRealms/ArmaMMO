@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util.blockmeta;
 
+import com.gestankbratwurst.playerblocktracker.PlayerBlockTracker;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -17,7 +18,7 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public boolean isIneligible(@NotNull final Block block) {
-        return false;
+        return PlayerBlockTracker.isTracked(block);
     }
 
     /**
@@ -29,7 +30,7 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public boolean isEligible(@NotNull final Block block) {
-        return false;
+        return !PlayerBlockTracker.isTracked(block);
     }
 
     /**
@@ -41,7 +42,7 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public boolean isEligible(@NotNull final BlockState blockState) {
-        return false;
+        return PlayerBlockTracker.isTracked(blockState.getBlock());
     }
 
     /**
@@ -53,7 +54,7 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public boolean isIneligible(@NotNull final BlockState blockState) {
-        return false;
+        return !PlayerBlockTracker.isTracked(blockState.getBlock());
     }
 
     /**
@@ -64,7 +65,9 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public void setIneligible(@NotNull final Block block) {
-
+        if (!PlayerBlockTracker.isTracked(block)) {
+            PlayerBlockTracker.track(block);
+        }
     }
 
     /**
@@ -74,7 +77,9 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public void setIneligible(@NotNull final BlockState blockState) {
-
+        if (!PlayerBlockTracker.isTracked(blockState.getBlock())) {
+            PlayerBlockTracker.track(blockState.getBlock());
+        }
     }
 
     /**
@@ -85,7 +90,9 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public void setEligible(@NotNull final Block block) {
-
+        if (PlayerBlockTracker.isTracked(block)) {
+            PlayerBlockTracker.unTrack(block);
+        }
     }
 
     /**
@@ -95,7 +102,9 @@ public class PlayerBlockTrackerHook implements ChunkManager {
      */
     @Override
     public void setEligible(@NotNull final BlockState blockState) {
-
+        if (PlayerBlockTracker.isTracked(blockState.getBlock())) {
+            PlayerBlockTracker.unTrack(blockState.getBlock());
+        }
     }
 
     @Override
