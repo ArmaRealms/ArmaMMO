@@ -13,40 +13,23 @@ import com.gmail.nossr50.util.text.StringUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class SkillTools {
-    private final mcMMO pluginRef;
-    // TODO: Java has immutable types now, switch to those
-    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
-    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
-    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
-    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
-    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
     public final static @NotNull ImmutableList<PrimarySkillType> NON_CHILD_SKILLS;
     public final static @NotNull ImmutableList<PrimarySkillType> SALVAGE_PARENTS;
     public final static @NotNull ImmutableList<PrimarySkillType> SMELTING_PARENTS;
-    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
-
-    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
-    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
-    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
-
-    // The map below is for the super abilities which require readying a tool, its everything except blast mining
-    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
-    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
 
     static {
         ArrayList<PrimarySkillType> tempNonChildSkills = new ArrayList<>();
@@ -61,6 +44,23 @@ public class SkillTools {
         SALVAGE_PARENTS = ImmutableList.of(PrimarySkillType.REPAIR, PrimarySkillType.FISHING);
         SMELTING_PARENTS = ImmutableList.of(PrimarySkillType.MINING, PrimarySkillType.REPAIR);
     }
+
+    // TODO: Java has immutable types now, switch to those
+    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
+    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
+    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
+    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
+    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
+    private final mcMMO pluginRef;
+    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
+    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
+    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
+    // The map below is for the super abilities which require readying a tool, its everything except blast mining
+    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
+    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
 
     public SkillTools(@NotNull mcMMO pluginRef) throws InvalidSkillException {
         this.pluginRef = pluginRef;
@@ -209,6 +209,14 @@ public class SkillTools {
         LOCALIZED_SKILL_NAMES = ImmutableList.copyOf(buildLocalizedPrimarySkillNames());
         FORMATTED_SUBSKILL_NAMES = ImmutableList.copyOf(buildFormattedSubSkillNameList());
         EXACT_SUBSKILL_NAMES = ImmutableSet.copyOf(buildExactSubSkillNameList());
+    }
+
+    // TODO: This is a little "hacky", we probably need to add something to distinguish child skills in the enum, or to use another enum for them
+    public static boolean isChildSkill(PrimarySkillType primarySkillType) {
+        return switch (primarySkillType) {
+            case SALVAGE, SMELTING -> true;
+            default -> false;
+        };
     }
 
     private @NotNull PrimarySkillType getSuperAbilityParent(SuperAbilityType superAbilityType)
@@ -368,14 +376,6 @@ public class SkillTools {
         return ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType);
     }
 
-    // TODO: This is a little "hacky", we probably need to add something to distinguish child skills in the enum, or to use another enum for them
-    public static boolean isChildSkill(PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case SALVAGE, SMELTING -> true;
-            default -> false;
-        };
-    }
-
     /**
      * Get the localized name for a {@link PrimarySkillType}
      *
@@ -416,7 +416,7 @@ public class SkillTools {
     /**
      * Get the permissions for this ability.
      *
-     * @param player Player to check permissions for
+     * @param player           Player to check permissions for
      * @param superAbilityType target super ability
      * @return true if the player has permissions, false otherwise
      */

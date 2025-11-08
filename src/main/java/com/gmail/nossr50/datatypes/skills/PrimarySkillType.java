@@ -4,11 +4,12 @@ import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public enum PrimarySkillType {
     ACROBATICS,
@@ -29,6 +30,48 @@ public enum PrimarySkillType {
     TRIDENTS,
     UNARMED,
     WOODCUTTING;
+
+    /**
+     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
+     * instead
+     *
+     * @return the max level of this skill
+     * @see SkillTools#matchSkill(java.lang.String)
+     * @deprecated this is being removed in an upcoming update, you should be using
+     * mcMMO.getSkillTools() instead
+     */
+    @Deprecated
+    public static PrimarySkillType getSkill(String skillName) {
+        return mcMMO.p.getSkillTools().matchSkill(skillName);
+    }
+
+    /**
+     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
+     * instead
+     *
+     * @return the max level of this skill
+     * @see SkillTools#getPrimarySkillBySubSkill(com.gmail.nossr50.datatypes.skills.SubSkillType)
+     * @deprecated this is being removed in an upcoming update, you should be using
+     * mcMMO.getSkillTools() instead
+     */
+    @Deprecated
+    public static PrimarySkillType bySecondaryAbility(SubSkillType subSkillType) {
+        return mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(subSkillType);
+    }
+
+    /**
+     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
+     * instead
+     *
+     * @return the max level of this skill
+     * @see SkillTools#getPrimarySkillBySuperAbility(com.gmail.nossr50.datatypes.skills.SuperAbilityType)
+     * @deprecated this is being removed in an upcoming update, you should be using
+     * mcMMO.getSkillTools() instead
+     */
+    @Deprecated
+    public static PrimarySkillType byAbility(SuperAbilityType superAbilityType) {
+        return mcMMO.p.getSkillTools().getPrimarySkillBySuperAbility(superAbilityType);
+    }
 
     /**
      * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
@@ -176,20 +219,6 @@ public enum PrimarySkillType {
      * instead
      *
      * @return the max level of this skill
-     * @see SkillTools#matchSkill(java.lang.String)
-     * @deprecated this is being removed in an upcoming update, you should be using
-     * mcMMO.getSkillTools() instead
-     */
-    @Deprecated
-    public static PrimarySkillType getSkill(String skillName) {
-        return mcMMO.p.getSkillTools().matchSkill(skillName);
-    }
-
-    /**
-     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
-     * instead
-     *
-     * @return the max level of this skill
      * @see SkillTools#isChildSkill(com.gmail.nossr50.datatypes.skills.PrimarySkillType)
      * @deprecated this is being removed in an upcoming update, you should be using
      * mcMMO.getSkillTools() instead
@@ -197,34 +226,6 @@ public enum PrimarySkillType {
     @Deprecated
     public boolean isChildSkill() {
         return SkillTools.isChildSkill(this);
-    }
-
-    /**
-     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
-     * instead
-     *
-     * @return the max level of this skill
-     * @see SkillTools#getPrimarySkillBySubSkill(com.gmail.nossr50.datatypes.skills.SubSkillType)
-     * @deprecated this is being removed in an upcoming update, you should be using
-     * mcMMO.getSkillTools() instead
-     */
-    @Deprecated
-    public static PrimarySkillType bySecondaryAbility(SubSkillType subSkillType) {
-        return mcMMO.p.getSkillTools().getPrimarySkillBySubSkill(subSkillType);
-    }
-
-    /**
-     * WARNING: Being removed in an upcoming update, you should be using mcMMO.getSkillTools()
-     * instead
-     *
-     * @return the max level of this skill
-     * @see SkillTools#getPrimarySkillBySuperAbility(com.gmail.nossr50.datatypes.skills.SuperAbilityType)
-     * @deprecated this is being removed in an upcoming update, you should be using
-     * mcMMO.getSkillTools() instead
-     */
-    @Deprecated
-    public static PrimarySkillType byAbility(SuperAbilityType superAbilityType) {
-        return mcMMO.p.getSkillTools().getPrimarySkillBySuperAbility(superAbilityType);
     }
 
     /**

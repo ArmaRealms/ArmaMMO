@@ -23,21 +23,21 @@ public class DelayedCropReplant extends CancellableRunnable {
     private final int desiredCropAge;
     private final Location cropLocation;
     private final Material cropMaterial;
-    private boolean wasImmaturePlant;
     private final BlockBreakEvent blockBreakEvent;
+    private boolean wasImmaturePlant;
     private @Nullable BlockFace cropFace;
 
     /**
      * Replants a crop after a delay setting the age to desiredCropAge
      *
-     * @param cropState target {@link BlockState}
+     * @param cropState      target {@link BlockState}
      * @param desiredCropAge desired age of the crop
      */
-    public DelayedCropReplant(BlockBreakEvent blockBreakEvent, BlockState cropState,
-            int desiredCropAge, boolean wasImmaturePlant) {
-        BlockData cropData = cropState.getBlockData();
+    public DelayedCropReplant(final BlockBreakEvent blockBreakEvent, final BlockState cropState,
+                              final int desiredCropAge, final boolean wasImmaturePlant) {
+        final BlockData cropData = cropState.getBlockData();
 
-        if (cropData instanceof Directional cropDir) {
+        if (cropData instanceof final Directional cropDir) {
             cropFace = cropDir.getFacing();
         }
 
@@ -51,8 +51,7 @@ public class DelayedCropReplant extends CancellableRunnable {
 
     @Override
     public void run() {
-        Block cropBlock = cropLocation.getBlock();
-        BlockState currentState = cropBlock.getState();
+        final BlockState blockState = cropLocation.getBlock().getState();
         PlantAnchorType plantAnchorType = PlantAnchorType.NORMAL;
 
         //Remove the metadata marking the block as recently replanted
@@ -64,49 +63,41 @@ public class DelayedCropReplant extends CancellableRunnable {
             wasImmaturePlant = true;
         }
 
-        //Two kinds of air in Minecraft
-        if (currentState.getType().equals(cropMaterial) || currentState.getType()
-                .equals(Material.AIR) || currentState.getType().equals(Material.CAVE_AIR)) {
-//            if (currentState.getBlock().getRelative(BlockFace.DOWN))
-            //The space is not currently occupied by a block so we can fill it
-            cropBlock.setType(cropMaterial);
+        if (blockIsAirOrExpectedCrop(blockState)) {
+            // Modify the new state of the block, not any old snapshot of it
+            blockState.setType(cropMaterial);
+            final BlockData newData = blockState.getBlockData();
 
-            //Get new state (necessary?)
-            BlockState newState = cropBlock.getState();
-            BlockData newData = newState.getBlockData();
-
-            int age = 0;
-
-            //Crop age should always be 0 if the plant was immature
-            if (!wasImmaturePlant) {
-                age = desiredCropAge;
-                //Otherwise make the plant the desired age
-            }
+            // Immature plants should be age 0, others get the desired age
+            int age = wasImmaturePlant ? 0 : desiredCropAge;
 
             if (newData instanceof Directional) {
-                //Cocoa Version
-                Directional directional = (Directional) newState.getBlockData();
+                // Cocoa Version
+                final Directional directional = (Directional) blockState.getBlockData();
                 directional.setFacing(cropFace);
 
-                newState.setBlockData(directional);
+                blockState.setBlockData(directional);
 
                 if (newData instanceof Cocoa) {
                     plantAnchorType = PlantAnchorType.COCOA;
                 }
             }
 
-            //Age the crop
-            Ageable ageable = (Ageable) newState.getBlockData();
-            ageable.setAge(age);
-            newState.setBlockData(ageable);
+            if (blockState.getBlockData() instanceof Ageable ageable) {
+                ageable.setAge(age);
+                blockState.setBlockData(ageable);
+                blockState.update(true, true);
 
-            newState.update(true, true);
-
-            //Play an effect
-            ParticleEffectUtils.playGreenThumbEffect(cropLocation);
-            mcMMO.p.getFoliaLib().getScheduler().runAtLocationLater(newState.getLocation(),
-                    new PhysicsBlockUpdate(newState.getBlock(), cropFace, plantAnchorType), 1);
+                //Play an effect
+                ParticleEffectUtils.playGreenThumbEffect(cropLocation);
+                mcMMO.p.getFoliaLib().getScheduler().runAtLocationLater(blockState.getLocation(),
+                        new PhysicsBlockUpdate(blockState.getBlock(), cropFace, plantAnchorType), 1);
+            }
         }
+    }
+
+    private boolean blockIsAirOrExpectedCrop(BlockState blockState) {
+        return blockState.getType().equals(cropMaterial) || blockState.getType().isAir();
     }
 
     private enum PlantAnchorType {
@@ -119,8 +110,8 @@ public class DelayedCropReplant extends CancellableRunnable {
         private final PlantAnchorType plantAnchorType;
         private BlockFace plantFace;
 
-        private PhysicsBlockUpdate(@NotNull Block plantBlock, @Nullable BlockFace plantFace,
-                @NotNull PlantAnchorType plantAnchorType) {
+        private PhysicsBlockUpdate(@NotNull final Block plantBlock, @Nullable final BlockFace plantFace,
+                                   @NotNull final PlantAnchorType plantAnchorType) {
             this.plantBlock = plantBlock;
             this.plantAnchorType = plantAnchorType;
 
@@ -142,8 +133,8 @@ public class DelayedCropReplant extends CancellableRunnable {
             }
         }
 
-        private void checkPlantIntegrity(@NotNull BlockFace blockFace) {
-            Block neighbor = plantBlock.getRelative(blockFace);
+        private void checkPlantIntegrity(@NotNull final BlockFace blockFace) {
+            final Block neighbor = plantBlock.getRelative(blockFace);
 
             if (plantAnchorType == PlantAnchorType.COCOA) {
                 if (!neighbor.getType().toString().toLowerCase().contains("jungle")) {
@@ -163,19 +154,18 @@ public class DelayedCropReplant extends CancellableRunnable {
         }
     }
 
-
     private static class markPlantAsOld extends CancellableRunnable {
 
         private final Location cropLoc;
 
-        public markPlantAsOld(Location cropLoc) {
+        public markPlantAsOld(final Location cropLoc) {
             this.cropLoc = cropLoc;
         }
 
         @Override
         public void run() {
-            Block cropBlock = cropLoc.getBlock();
-            if (cropBlock.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).size() > 0) {
+            final Block cropBlock = cropLoc.getBlock();
+            if (!cropBlock.getMetadata(MetadataConstants.METADATA_KEY_REPLANT).isEmpty()) {
                 cropBlock.setMetadata(MetadataConstants.METADATA_KEY_REPLANT,
                         new RecentlyReplantedCropMeta(mcMMO.p, false));
             }

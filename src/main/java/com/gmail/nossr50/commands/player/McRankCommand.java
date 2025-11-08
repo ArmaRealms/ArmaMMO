@@ -8,24 +8,22 @@ import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class McRankCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
             case 0:
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 
@@ -53,10 +51,10 @@ public class McRankCommand implements TabExecutor {
                 }
 
                 String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-                final McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
+                McMMOPlayer mcMMOPlayer = UserManager.getOfflinePlayer(playerName);
 
-                if (mmoPlayer != null) {
-                    Player player = mmoPlayer.getPlayer();
+                if (mcMMOPlayer != null) {
+                    Player player = mcMMOPlayer.getPlayer();
                     playerName = player.getName();
 
                     if (CommandUtils.tooFar(sender, player, Permissions.mcrankFar(sender))) {
@@ -73,55 +71,46 @@ public class McRankCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-            return StringUtil.copyPartialMatches(args[0], playerNames,
-                    new ArrayList<>(playerNames.size()));
+            return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void display(CommandSender sender, String playerName) {
-        if (sender instanceof Player) {
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(sender.getName());
+        if (sender instanceof Player player) {
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
 
-            if (mmoPlayer == null) {
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return;
             }
 
-            long cooldownMillis = Math.min(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(),
-                    1750);
+            long cooldownMillis = Math.min(mcMMO.p.getGeneralConfig().getDatabasePlayerCooldown(), 1750);
 
-            if (mmoPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
-                sender.sendMessage(LocaleLoader.getString("Commands.Database.CooldownMS",
-                        getCDSeconds(mmoPlayer, cooldownMillis)));
+            if (mcMMOPlayer.getDatabaseATS() + cooldownMillis > System.currentTimeMillis()) {
+                sender.sendMessage(LocaleLoader.getString("Commands.Database.CooldownMS", getCDSeconds(mcMMOPlayer, cooldownMillis)));
                 return;
             }
 
-            if (((Player) sender).hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
+            if (player.hasMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Database.Processing"));
                 return;
             } else {
-                ((Player) sender).setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND,
-                        new FixedMetadataValue(mcMMO.p, null));
+                player.setMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, new FixedMetadataValue(mcMMO.p, null));
             }
 
-            mmoPlayer.actualizeDatabaseATS();
+            mcMMOPlayer.actualizeDatabaseATS();
         }
 
-        boolean useBoard =
-                mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && (sender instanceof Player)
-                        && (mcMMO.p.getGeneralConfig().getRankUseBoard());
+        boolean useBoard = mcMMO.p.getGeneralConfig().getScoreboardsEnabled() && (sender instanceof Player) && (mcMMO.p.getGeneralConfig().getRankUseBoard());
         boolean useChat = !useBoard || mcMMO.p.getGeneralConfig().getRankUseChat();
 
-        mcMMO.p.getFoliaLib().getScheduler()
-                .runAsync(new McRankCommandAsyncTask(playerName, sender, useBoard, useChat));
+        mcMMO.p.getFoliaLib().getScheduler().runAsync(new McRankCommandAsyncTask(playerName, sender, useBoard, useChat));
     }
 
-    private long getCDSeconds(McMMOPlayer mmoPlayer, long cooldownMillis) {
-        return ((mmoPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis());
+    private long getCDSeconds(McMMOPlayer mcMMOPlayer, long cooldownMillis) {
+        return ((mcMMOPlayer.getDatabaseATS() + cooldownMillis) - System.currentTimeMillis());
     }
 }

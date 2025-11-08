@@ -10,6 +10,13 @@ import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
@@ -18,17 +25,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Predicate;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class Party {
 
     private static final DecimalFormat percent = new DecimalFormat("##0.00%",
-            DecimalFormatSymbols.getInstance(Locale.US));
+            DecimalFormatSymbols.getInstance(Locale.of("pt", "BR")));
 
     private final @NotNull Predicate<CommandSender> samePartyPredicate;
     private final LinkedHashMap<UUID, String> members = new LinkedHashMap<>();
@@ -127,20 +128,40 @@ public class Party {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public PartyLeader getLeader() {
         return leader;
+    }
+
+    public void setLeader(PartyLeader leader) {
+        this.leader = leader;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public boolean isLocked() {
         return locked;
     }
 
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
     public Party getAlly() {
         return ally;
+    }
+
+    public void setAlly(Party ally) {
+        this.ally = ally;
     }
 
     public List<String> getItemShareCategories() {
@@ -153,26 +174,6 @@ public class Party {
         }
 
         return shareCategories;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setLeader(PartyLeader leader) {
-        this.leader = leader;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setLocked(boolean locked) {
-        this.locked = locked;
-    }
-
-    public void setAlly(Party ally) {
-        this.ally = ally;
     }
 
     public int getLevel() {
@@ -266,67 +267,39 @@ public class Party {
         return mcMMO.p.getGeneralConfig().getPartyLevelCap() < getLevel() + 1;
     }
 
-    public void setXpShareMode(ShareMode xpShareMode) {
-        this.xpShareMode = xpShareMode;
-    }
-
     public ShareMode getXpShareMode() {
         return xpShareMode;
     }
 
-    public void setItemShareMode(ShareMode itemShareMode) {
-        this.itemShareMode = itemShareMode;
+    public void setXpShareMode(ShareMode xpShareMode) {
+        this.xpShareMode = xpShareMode;
     }
 
     public ShareMode getItemShareMode() {
         return itemShareMode;
     }
 
+    public void setItemShareMode(ShareMode itemShareMode) {
+        this.itemShareMode = itemShareMode;
+    }
+
     public boolean sharingDrops(ItemShareType shareType) {
-        switch (shareType) {
-            case HERBALISM:
-                return shareHerbalismDrops;
-
-            case LOOT:
-                return shareLootDrops;
-
-            case MINING:
-                return shareMiningDrops;
-
-            case MISC:
-                return shareMiscDrops;
-
-            case WOODCUTTING:
-                return shareWoodcuttingDrops;
-
-            default:
-                return false;
-        }
+        return switch (shareType) {
+            case HERBALISM -> shareHerbalismDrops;
+            case LOOT -> shareLootDrops;
+            case MINING -> shareMiningDrops;
+            case MISC -> shareMiscDrops;
+            case WOODCUTTING -> shareWoodcuttingDrops;
+        };
     }
 
     public void setSharingDrops(ItemShareType shareType, boolean enabled) {
         switch (shareType) {
-            case HERBALISM:
-                shareHerbalismDrops = enabled;
-                break;
-
-            case LOOT:
-                shareLootDrops = enabled;
-                break;
-
-            case MINING:
-                shareMiningDrops = enabled;
-                break;
-
-            case MISC:
-                shareMiscDrops = enabled;
-                break;
-
-            case WOODCUTTING:
-                shareWoodcuttingDrops = enabled;
-                break;
-
-            default:
+            case HERBALISM -> shareHerbalismDrops = enabled;
+            case LOOT -> shareLootDrops = enabled;
+            case MINING -> shareMiningDrops = enabled;
+            case MISC -> shareMiscDrops = enabled;
+            case WOODCUTTING -> shareWoodcuttingDrops = enabled;
         }
     }
 

@@ -1,8 +1,9 @@
 package com.gmail.nossr50.util.compat.layers.attackcooldown;
 
-import java.lang.reflect.InvocationTargetException;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.InvocationTargetException;
 
 public interface PlayerAttackCooldownMethods {
     /**

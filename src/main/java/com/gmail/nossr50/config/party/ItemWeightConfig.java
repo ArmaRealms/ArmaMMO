@@ -1,11 +1,11 @@
 package com.gmail.nossr50.config.party;
 
 import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-
 import com.gmail.nossr50.config.BukkitConfig;
+import org.bukkit.Material;
+
 import java.util.HashSet;
 import java.util.Locale;
-import org.bukkit.Material;
 
 public class ItemWeightConfig extends BukkitConfig {
     private static ItemWeightConfig instance;
@@ -22,17 +22,17 @@ public class ItemWeightConfig extends BukkitConfig {
         return instance;
     }
 
-    public int getItemWeight(Material material) {
+    public int getItemWeight(final Material material) {
         return config.getInt(
                 "Item_Weights." + getMaterialConfigString(material).replace(" ", "_"),
                 config.getInt("Item_Weights.Default"));
     }
 
     public HashSet<Material> getMiscItems() {
-        HashSet<Material> miscItems = new HashSet<>();
+        final HashSet<Material> miscItems = new HashSet<>();
 
-        for (String item : config.getStringList("Party_Shareables.Misc_Items")) {
-            Material material = Material.getMaterial(item.toUpperCase(Locale.ENGLISH));
+        for (final String item : config.getStringList("Party_Shareables.Misc_Items")) {
+            final Material material = Material.getMaterial(item.toUpperCase(Locale.ENGLISH));
 
             if (material != null) {
                 miscItems.add(material);

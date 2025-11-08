@@ -8,34 +8,28 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.text.StringUtils;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class XprateCommand implements TabExecutor {
-    private final double ORIGINAL_XP_RATE = ExperienceConfig.getInstance()
-            .getExperienceGainsGlobalMultiplier();
+    private final double ORIGINAL_XP_RATE = ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier();
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
-            case 1:
-                if (!args[0].equalsIgnoreCase("reset") && !args[0].equalsIgnoreCase("clear")) {
+            case 1 -> {
+                if (!args[0].equalsIgnoreCase("resetar") && !args[0].equalsIgnoreCase("limpar")) {
                     return false;
                 }
-
                 if (!Permissions.xprateReset(sender)) {
                     sender.sendMessage(command.getPermissionMessage());
                     return true;
                 }
-
                 if (mcMMO.p.isXPEventEnabled()) {
 
                     if (mcMMO.p.getAdvancedConfig().useTitlesForXPEvent()) {
@@ -46,32 +40,29 @@ public class XprateCommand implements TabExecutor {
                     }
 
                     if (mcMMO.p.getGeneralConfig().broadcastEventMessages()) {
-                        mcMMO.p.getServer()
-                                .broadcastMessage(LocaleLoader.getString("Commands.Event.Stop"));
-                        mcMMO.p.getServer().broadcastMessage(
-                                LocaleLoader.getString("Commands.Event.Stop.Subtitle"));
+                        mcMMO.p.getServer().broadcastMessage(LocaleLoader.getString("Commands.Event.Stop"));
+                        mcMMO.p.getServer().broadcastMessage(LocaleLoader.getString("Commands.Event.Stop.Subtitle"));
                     }
 
                     //Admin notification
-                    NotificationManager.processSensitiveCommandNotification(sender,
-                            SensitiveCommandType.XPRATE_END);
+                    NotificationManager.processSensitiveCommandNotification(sender, SensitiveCommandType.XPRATE_END);
 
                     mcMMO.p.toggleXpEventEnabled();
                 }
-
                 ExperienceConfig.getInstance().setExperienceGainsGlobalMultiplier(ORIGINAL_XP_RATE);
                 return true;
-
-            case 2:
+            }
+            case 2 -> {
                 if (CommandUtils.isInvalidInteger(sender, args[0])) {
                     return true;
                 }
-
                 if (!Permissions.xprateSet(sender)) {
-                    sender.sendMessage(command.getPermissionMessage());
+                    String commandPermissionMessage = command.getPermissionMessage();
+                    if (commandPermissionMessage != null) {
+                        sender.sendMessage(commandPermissionMessage);
+                    }
                     return true;
                 }
-
                 if (CommandUtils.shouldDisableToggle(args[1])) {
                     mcMMO.p.setXPEventEnabled(false);
                 } else if (CommandUtils.shouldEnableToggle(args[1])) {
@@ -79,15 +70,12 @@ public class XprateCommand implements TabExecutor {
                 } else {
                     return false;
                 }
-
                 int newXpRate = Integer.parseInt(args[0]);
 
                 if (newXpRate < 0) {
-                    sender.sendMessage(
-                            ChatColor.RED + LocaleLoader.getString("Commands.NegativeNumberWarn"));
+                    sender.sendMessage(ChatColor.RED + LocaleLoader.getString("Commands.NegativeNumberWarn"));
                     return true;
                 }
-
                 ExperienceConfig.getInstance().setExperienceGainsGlobalMultiplier(newXpRate);
 
                 if (mcMMO.p.getAdvancedConfig().useTitlesForXPEvent()) {
@@ -98,39 +86,35 @@ public class XprateCommand implements TabExecutor {
                 }
 
                 if (mcMMO.p.getGeneralConfig().broadcastEventMessages()) {
-                    mcMMO.p.getServer()
-                            .broadcastMessage(LocaleLoader.getString("Commands.Event.Start"));
-                    mcMMO.p.getServer().broadcastMessage(
-                            LocaleLoader.getString("Commands.Event.XP", newXpRate));
+                    mcMMO.p.getServer().broadcastMessage(LocaleLoader.getString("Commands.Event.Start"));
+                    mcMMO.p.getServer().broadcastMessage(LocaleLoader.getString("Commands.Event.XP", newXpRate));
                 }
 
                 //Admin notification
-                NotificationManager.processSensitiveCommandNotification(sender,
-                        SensitiveCommandType.XPRATE_MODIFY, String.valueOf(newXpRate));
-
+                NotificationManager.processSensitiveCommandNotification(sender, SensitiveCommandType.XPRATE_MODIFY, String.valueOf(newXpRate));
                 return true;
-
-            default:
+            }
+            default -> {
                 return false;
+            }
         }
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         switch (args.length) {
-            case 1:
+            case 1 -> {
                 if (StringUtils.isInt(args[0])) {
-                    return ImmutableList.of();
+                    return List.of();
                 }
-
-                return StringUtil.copyPartialMatches(args[0], CommandUtils.RESET_OPTIONS,
-                        new ArrayList<>(CommandUtils.RESET_OPTIONS.size()));
-            case 2:
-                return StringUtil.copyPartialMatches(args[1], CommandUtils.TRUE_FALSE_OPTIONS,
-                        new ArrayList<>(CommandUtils.TRUE_FALSE_OPTIONS.size()));
-            default:
-                return ImmutableList.of();
+                return CommandUtils.RESET_OPTIONS.stream().filter(s -> s.startsWith(args[0])).toList();
+            }
+            case 2 -> {
+                return CommandUtils.TRUE_FALSE_OPTIONS.stream().filter(s -> s.startsWith(args[1])).toList();
+            }
+            default -> {
+                return List.of();
+            }
         }
     }
 }

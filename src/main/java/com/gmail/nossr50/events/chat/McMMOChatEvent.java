@@ -14,15 +14,23 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class McMMOChatEvent extends Event implements Cancellable {
-    private boolean cancelled;
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final @NotNull HandlerList handlers = new HandlerList();
     protected final @NotNull Plugin plugin;
     protected final @NotNull AbstractChatMessage chatMessage;
+    private boolean cancelled;
 
     protected McMMOChatEvent(@NotNull Plugin plugin, @NotNull AbstractChatMessage chatMessage,
-            boolean isAsync) {
+                             boolean isAsync) {
         super(isAsync);
         this.plugin = plugin;
         this.chatMessage = chatMessage;
+    }
+
+    public static @NotNull HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -81,6 +89,15 @@ public abstract class McMMOChatEvent extends Event implements Cancellable {
     }
 
     /**
+     * @param message Adjusts the final message sent to players in the party
+     * @deprecated use {{@link #setMessagePayload(TextComponent)}}
+     */
+    @Deprecated
+    public void setMessage(@NotNull String message) {
+        chatMessage.setChatMessage(Component.text(message));
+    }
+
+    /**
      * The original message typed by the player before any formatting The raw message is immutable
      *
      * @return the message as it was typed by the player, this is before any formatting
@@ -110,15 +127,6 @@ public abstract class McMMOChatEvent extends Event implements Cancellable {
     }
 
     /**
-     * @param message Adjusts the final message sent to players in the party
-     * @deprecated use {{@link #setMessagePayload(TextComponent)}}
-     */
-    @Deprecated
-    public void setMessage(@NotNull String message) {
-        chatMessage.setChatMessage(Component.text(message));
-    }
-
-    /**
      * Following are required for Cancellable
      **/
     @Override
@@ -131,17 +139,8 @@ public abstract class McMMOChatEvent extends Event implements Cancellable {
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final @NotNull HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 

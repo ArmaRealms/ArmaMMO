@@ -13,6 +13,12 @@ import org.jetbrains.annotations.NotNull;
  * This event is sent for when mcMMO informs a player about various important information
  */
 public class McMMOPlayerNotificationEvent extends Event implements Cancellable {
+    private static final HandlerList handlers = new HandlerList();
+    protected final NotificationType notificationType;
+    protected final Player player;
+    protected McMMOMessageType chatMessageType;
+
+    protected Component notificationTextComponent;
     private boolean isCancelled;
     /*
      * Messages can be sent to both places, as configured in advanced.yml
@@ -21,17 +27,9 @@ public class McMMOPlayerNotificationEvent extends Event implements Cancellable {
      */
     private boolean isMessageAlsoBeingSentToChat;
 
-    private static final HandlerList handlers = new HandlerList();
-    protected McMMOMessageType chatMessageType;
-
-    protected Component notificationTextComponent;
-    protected final NotificationType notificationType;
-
-    protected final Player player;
-
     public McMMOPlayerNotificationEvent(Player player, NotificationType notificationType,
-            Component notificationTextComponent, McMMOMessageType chatMessageType,
-            boolean isMessageAlsoBeingSentToChat) {
+                                        Component notificationTextComponent, McMMOMessageType chatMessageType,
+                                        boolean isMessageAlsoBeingSentToChat) {
         super(false);
         this.player = player;
         this.notificationType = notificationType;
@@ -44,6 +42,10 @@ public class McMMOPlayerNotificationEvent extends Event implements Cancellable {
     /*
      * Getters & Setters
      */
+
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
     public boolean isMessageAlsoBeingSentToChat() {
         return isMessageAlsoBeingSentToChat;
@@ -73,6 +75,10 @@ public class McMMOPlayerNotificationEvent extends Event implements Cancellable {
         this.chatMessageType = chatMessageType;
     }
 
+    /*
+     * Custom Event Boilerplate
+     */
+
     /**
      * The notification type for this event
      *
@@ -82,16 +88,8 @@ public class McMMOPlayerNotificationEvent extends Event implements Cancellable {
         return notificationType;
     }
 
-    /*
-     * Custom Event Boilerplate
-     */
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

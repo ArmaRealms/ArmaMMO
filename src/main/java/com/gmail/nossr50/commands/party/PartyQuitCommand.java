@@ -14,30 +14,33 @@ import org.jetbrains.annotations.NotNull;
 
 public class PartyQuitCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
-            final Player player = (Player) sender;
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
 
-            if (UserManager.getPlayer((Player) sender) == null) {
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-            Party playerParty = mmoPlayer.getParty();
-
-            if (!mcMMO.p.getPartyManager()
-                    .handlePartyChangeEvent(player, playerParty.getName(), null,
-                            EventReason.LEFT_PARTY)) {
+            Party playerParty = mcMMOPlayer.getParty();
+            if (playerParty == null) {
                 return true;
             }
 
-            mcMMO.p.getPartyManager().removeFromParty(mmoPlayer);
+            if (!mcMMO.p.getPartyManager().handlePartyChangeEvent(player, playerParty.getName(), null, EventReason.LEFT_PARTY)) {
+                return true;
+            }
+
+            mcMMO.p.getPartyManager().removeFromParty(mcMMOPlayer);
             sender.sendMessage(LocaleLoader.getString("Commands.Party.Leave"));
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "quit"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "sair"));
         return true;
     }
 }

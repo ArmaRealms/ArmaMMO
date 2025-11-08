@@ -13,8 +13,8 @@ public class PlayerDebugCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label,
-            String[] args) {
+                             @NotNull String label,
+                             String[] args) {
         if (sender instanceof Player) {
             final McMMOPlayer mmoPlayer = UserManager.getPlayer((Player) sender);
             mmoPlayer.toggleDebugMode(); //Toggle debug mode

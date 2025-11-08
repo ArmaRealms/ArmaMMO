@@ -16,8 +16,8 @@ public abstract class AbstractChatMessage implements ChatMessage {
     protected @NotNull Audience audience;
 
     public AbstractChatMessage(@NotNull Plugin pluginRef, @NotNull Author author,
-            @NotNull Audience audience,
-            @NotNull String rawMessage, @NotNull TextComponent componentMessage) {
+                               @NotNull Audience audience,
+                               @NotNull String rawMessage, @NotNull TextComponent componentMessage) {
         this.pluginRef = pluginRef;
         this.author = author;
         this.audience = audience;

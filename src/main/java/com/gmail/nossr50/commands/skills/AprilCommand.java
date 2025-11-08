@@ -103,7 +103,7 @@
 //        if (args.length == 1) {
 //            return ImmutableList.of("?");
 //        }
-//        return ImmutableList.of();
+//        return List.of();
 //    }
 //
 //    private List<String> effectsDisplay(FakeSkillType fakeSkillType) {

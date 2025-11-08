@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ProbabilityTestUtils {
     public static void assertProbabilityExpectations(double expectedWinPercent,
-            Probability probability) {
+                                                     Probability probability) {
         double iterations = 2.0e7; //20 million
         double winCount = 0;
         for (int i = 0; i < iterations; i++) {

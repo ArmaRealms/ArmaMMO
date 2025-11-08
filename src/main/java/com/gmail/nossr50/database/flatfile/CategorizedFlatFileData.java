@@ -2,9 +2,10 @@ package com.gmail.nossr50.database.flatfile;
 
 import com.gmail.nossr50.database.FlatFileDataFlag;
 import com.google.common.base.Objects;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 public class CategorizedFlatFileData implements FlatFileDataContainer {
     private final @NotNull Set<FlatFileDataFlag> dataFlags;
@@ -12,7 +13,7 @@ public class CategorizedFlatFileData implements FlatFileDataContainer {
     private final int uniqueProcessingId;
 
     public CategorizedFlatFileData(int uniqueProcessingId,
-            @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData) {
+                                   @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData) {
         this.uniqueProcessingId = uniqueProcessingId;
         this.dataFlags = dataFlags;
         this.splitData = splitData;

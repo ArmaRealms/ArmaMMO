@@ -7,10 +7,12 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
-import java.util.List;
+import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.List;
 
 /**
  * Display the results of {@link McTopCommandAsyncTask} to the sender.
@@ -20,10 +22,10 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
     private final CommandSender sender;
     private final PrimarySkillType skill;
     private final int page;
-    private final boolean useBoard, useChat;
+    private final boolean useBoard;
+    private final boolean useChat;
 
-    MctopCommandDisplayTask(List<PlayerStat> userStats, int page, PrimarySkillType skill,
-            CommandSender sender, boolean useBoard, boolean useChat) {
+    MctopCommandDisplayTask(final List<PlayerStat> userStats, final int page, final PrimarySkillType skill, final CommandSender sender, final boolean useBoard, final boolean useChat) {
         this.userStats = userStats;
         this.page = page;
         this.skill = skill;
@@ -42,11 +44,8 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             displayChat();
         }
 
-        if (sender instanceof Player) {
-            ((Player) sender).removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND,
-                    mcMMO.p);
-        }
-        if (sender instanceof Player) {
+        if (sender instanceof final Player player) {
+            player.removeMetadata(MetadataConstants.METADATA_KEY_DATABASE_COMMAND, mcMMO.p);
             sender.sendMessage(LocaleLoader.getString("Commands.mctop.Tip"));
         }
     }
@@ -57,33 +56,26 @@ public class MctopCommandDisplayTask extends CancellableRunnable {
             if (sender instanceof Player) {
                 sender.sendMessage(LocaleLoader.getString("Commands.PowerLevel.Leaderboard"));
             } else {
-                sender.sendMessage(ChatColor.stripColor(
-                        LocaleLoader.getString("Commands.PowerLevel.Leaderboard")));
+                sender.sendMessage(ChatColor.stripColor(LocaleLoader.getString("Commands.PowerLevel.Leaderboard")));
             }
         } else {
             if (sender instanceof Player) {
-                sender.sendMessage(LocaleLoader.getString("Commands.Skill.Leaderboard",
-                        mcMMO.p.getSkillTools().getLocalizedSkillName(skill)));
+                sender.sendMessage(LocaleLoader.getString("Commands.Skill.Leaderboard", mcMMO.p.getSkillTools().getLocalizedSkillName(skill)));
             } else {
-                sender.sendMessage(ChatColor.stripColor(
-                        LocaleLoader.getString("Commands.Skill.Leaderboard",
-                                mcMMO.p.getSkillTools().getLocalizedSkillName(skill))));
+                sender.sendMessage(ChatColor.stripColor(LocaleLoader.getString("Commands.Skill.Leaderboard", mcMMO.p.getSkillTools().getLocalizedSkillName(skill))));
             }
         }
 
         int place = (page * 10) - 9;
 
-        for (PlayerStat stat : userStats) {
+        for (final PlayerStat stat : userStats) {
             // Format:
             // 01. Playername - skill value
             // 12. Playername - skill value
             if (sender instanceof Player) {
-                sender.sendMessage(
-                        String.format("%2d. %s%s - %s%s", place, ChatColor.GREEN, stat.playerName(),
-                                ChatColor.WHITE, stat.value()));
+                sender.sendMessage(String.format("#%02d - %s%s - %s%s", place, ChatColor.GREEN, stat.playerName(), ChatColor.WHITE, StringUtils.formatNumber(stat.value())));
             } else {
-                sender.sendMessage(String.format("%2d. %s - %s", place, stat.playerName(),
-                        stat.value()));
+                sender.sendMessage(String.format("#%02d - %s - %s", place, stat.playerName(), StringUtils.formatNumber(stat.value())));
             }
 
             place++;

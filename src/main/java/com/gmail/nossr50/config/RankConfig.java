@@ -4,10 +4,11 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import org.jetbrains.annotations.NotNull;
 
 public class RankConfig extends BukkitConfig {
     private static RankConfig instance;
@@ -47,7 +48,7 @@ public class RankConfig extends BukkitConfig {
      * Returns the unlock level for a subskill depending on the gamemode
      *
      * @param subSkillType target subskill
-     * @param rank the rank we are checking
+     * @param rank         the rank we are checking
      * @return the level requirement for a subskill at this particular rank
      */
     public int getSubSkillUnlockLevel(SubSkillType subSkillType, int rank) {
@@ -60,7 +61,7 @@ public class RankConfig extends BukkitConfig {
      * Returns the unlock level for a subskill depending on the gamemode
      *
      * @param subSkillType target subskill
-     * @param rank the rank we are checking
+     * @param rank         the rank we are checking
      * @return the level requirement for a subskill at this particular rank
      */
     public int getSubSkillUnlockLevel(SubSkillType subSkillType, int rank, boolean retroMode) {
@@ -72,7 +73,7 @@ public class RankConfig extends BukkitConfig {
      * Returns the unlock level for a subskill depending on the gamemode
      *
      * @param abstractSubSkill target subskill
-     * @param rank the rank we are checking
+     * @param rank             the rank we are checking
      * @return the level requirement for a subskill at this particular rank
      */
     public int getSubSkillUnlockLevel(AbstractSubSkill abstractSubSkill, int rank) {
@@ -85,7 +86,7 @@ public class RankConfig extends BukkitConfig {
     /**
      * Returns the unlock level for a subskill depending on the gamemode
      *
-     * @param key root address of the subskill in the rankskills.yml file
+     * @param key  root address of the subskill in the rankskills.yml file
      * @param rank the rank we are checking
      * @return the level requirement for a subskill at this particular rank
      */
@@ -161,8 +162,8 @@ public class RankConfig extends BukkitConfig {
     }
 
     private void checkConfig(@NotNull List<String> reasons,
-            @NotNull HashSet<SubSkillType> badSkillSetup,
-            boolean retroMode) {
+                             @NotNull HashSet<SubSkillType> badSkillSetup,
+                             boolean retroMode) {
         for (SubSkillType subSkillType : SubSkillType.values()) {
             //Keeping track of the rank requirements and making sure there are no logical errors
             int curRank = 0;

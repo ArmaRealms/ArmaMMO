@@ -1,11 +1,11 @@
 #
 #  Item Weights configuration
 #  
-#  This file is used to determine the value of an item. This will only 
+#  This file is used to determine the statVal of an item. This will only
 #  happen when users are sharing items in a party using the EQUAL item share mode.
 #
-#  Rare items should have a higher value than common items. If an item is not listed
-#  here, the value from "Default" will be used instead.
+#  Rare items should have a higher statVal than common items. If an item is not listed
+#  here, the statVal from "Default" will be used instead.
 #
 #####
 Item_Weights:

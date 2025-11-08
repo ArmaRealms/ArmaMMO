@@ -20,9 +20,9 @@ public class PartyChatMessage extends AbstractChatMessage {
     private final @NotNull Party party;
 
     public PartyChatMessage(@NotNull Plugin pluginRef, @NotNull Author author,
-            @NotNull Audience audience,
-            @NotNull String rawMessage, @NotNull TextComponent componentMessage,
-            @NotNull Party party) {
+                            @NotNull Audience audience,
+                            @NotNull String rawMessage, @NotNull TextComponent componentMessage,
+                            @NotNull Party party) {
         super(pluginRef, author, audience, rawMessage, componentMessage);
         this.party = party;
     }

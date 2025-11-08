@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class McMMOAdminChatEvent extends McMMOChatEvent {
     public McMMOAdminChatEvent(@NotNull Plugin plugin, @NotNull AbstractChatMessage chatMessage,
-            boolean isAsync) {
+                               boolean isAsync) {
         super(plugin, chatMessage, isAsync);
     }
 }

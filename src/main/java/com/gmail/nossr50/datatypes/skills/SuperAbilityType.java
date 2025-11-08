@@ -127,11 +127,11 @@ public enum SuperAbilityType {
     private final String abilityPlayer;
     private final String abilityRefresh;
     private final String abilityPlayerOff;
-    private SubSkillType subSkillTypeDefinition;
     private final String localizedName;
+    private SubSkillType subSkillTypeDefinition;
 
     SuperAbilityType(String abilityOn, String abilityOff, String abilityPlayer,
-            String abilityRefresh, String abilityPlayerOff, String localizedName) {
+                     String abilityRefresh, String abilityPlayerOff, String localizedName) {
         this.abilityOn = abilityOn;
         this.abilityOff = abilityOff;
         this.abilityPlayer = abilityPlayer;
@@ -216,8 +216,7 @@ public enum SuperAbilityType {
             case SUPER_BREAKER -> Permissions.superBreaker(player);
             case TREE_FELLER -> Permissions.treeFeller(player);
             // TODO: once implemented, return permissions for the following abilities
-            case EXPLOSIVE_SHOT, TRIDENTS_SUPER_ABILITY, SUPER_SHOTGUN, MACES_SUPER_ABILITY ->
-                    false;
+            case EXPLOSIVE_SHOT, TRIDENTS_SUPER_ABILITY, SUPER_SHOTGUN, MACES_SUPER_ABILITY -> false;
         };
     }
 

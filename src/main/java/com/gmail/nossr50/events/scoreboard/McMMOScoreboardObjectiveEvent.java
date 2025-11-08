@@ -6,14 +6,13 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 public class McMMOScoreboardObjectiveEvent extends McMMOScoreboardEvent implements Cancellable {
-    protected boolean cancelled;
-
-    protected Objective targetObjective;
     protected final ScoreboardObjectiveEventReason objectiveEventReason;
+    protected boolean cancelled;
+    protected Objective targetObjective;
 
     public McMMOScoreboardObjectiveEvent(Objective targetObjective,
-            ScoreboardObjectiveEventReason objectiveEventReason, Scoreboard scoreboard,
-            Scoreboard oldboard, Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
+                                         ScoreboardObjectiveEventReason objectiveEventReason, Scoreboard scoreboard,
+                                         Scoreboard oldboard, Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
         super(scoreboard, oldboard, targetPlayer, scoreboardEventReason);
         this.objectiveEventReason = objectiveEventReason;
         this.targetObjective = targetObjective;

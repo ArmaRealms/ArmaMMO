@@ -1,7 +1,8 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 /**
  * A ChunkStore should be responsible for a 16x16xWorldHeight area of data
@@ -72,9 +73,9 @@ public interface ChunkStore {
     /**
      * Set the value at the given coordinates
      *
-     * @param x x coordinate in current chunklet
-     * @param y y coordinate in current chunklet
-     * @param z z coordinate in current chunklet
+     * @param x     x coordinate in current chunklet
+     * @param y     y coordinate in current chunklet
+     * @param z     z coordinate in current chunklet
      * @param value value to set
      */
     void set(int x, int y, int z, boolean value);

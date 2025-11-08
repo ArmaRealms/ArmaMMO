@@ -3,6 +3,7 @@ package com.gmail.nossr50.runnables.backups;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.LogUtils;
+
 import java.io.File;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -118,7 +119,7 @@ public class CleanBackupsTask extends CancellableRunnable {
     }
 
     private Date getDate(String fileName) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.US);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss", Locale.of("pt", "BR"));
         Date date;
 
         try {

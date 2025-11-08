@@ -17,7 +17,7 @@
 ## This is required to be set.
 #
 # RepairMaterialMetadata: This is the metadata of the item used to repair this repairable.
-## A value of -1 means to ignore all metadata when repairing.
+## A statVal of -1 means to ignore all metadata when repairing.
 ## This defaults to -1
 #
 # MaximumDurability: This is the maximum durability of the item.

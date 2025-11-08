@@ -29,21 +29,21 @@ import org.bukkit.metadata.MetadataValue;
 
 public class AcrobaticsManager extends SkillManager {
 
-    public AcrobaticsManager(McMMOPlayer mmoPlayer) {
+    private final long rollXPInterval = (1000 * 3); //1 Minute
+    private final BlockLocationHistory fallLocationMap;
+    private long rollXPCooldown = 0;
+    private long rollXPIntervalLengthen = (1000 * 10); //10 Seconds
+
+    public AcrobaticsManager(final McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.ACROBATICS);
         fallLocationMap = new BlockLocationHistory(50);
     }
 
-    private long rollXPCooldown = 0;
-    private final long rollXPInterval = (1000 * 3); //1 Minute
-    private long rollXPIntervalLengthen = (1000 * 10); //10 Seconds
-    private final BlockLocationHistory fallLocationMap;
-
-    public boolean hasFallenInLocationBefore(Location location) {
+    public boolean hasFallenInLocationBefore(final Location location) {
         return fallLocationMap.contains(location);
     }
 
-    public void addLocationToFallMap(Location location) {
+    public void addLocationToFallMap(final Location location) {
         fallLocationMap.add(location);
     }
 
@@ -63,7 +63,7 @@ public class AcrobaticsManager extends SkillManager {
         }
     }
 
-    public boolean canDodge(Entity damager) {
+    public boolean canDodge(final Entity damager) {
         if (getPlayer().isBlocking()) {
             return false;
         }
@@ -90,10 +90,10 @@ public class AcrobaticsManager extends SkillManager {
      * @return the modified event damage if the ability was successful, the original event damage
      * otherwise
      */
-    public double dodgeCheck(Entity attacker, double damage) {
-        double modifiedDamage = Acrobatics.calculateModifiedDodgeDamage(damage,
+    public double dodgeCheck(final Entity attacker, final double damage) {
+        final double modifiedDamage = Acrobatics.calculateModifiedDodgeDamage(damage,
                 Acrobatics.dodgeDamageModifier);
-        Player player = getPlayer();
+        final Player player = getPlayer();
 
         if (!isFatal(modifiedDamage)
                 && ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.ACROBATICS_DODGE,
@@ -107,21 +107,21 @@ public class AcrobaticsManager extends SkillManager {
 
             if (SkillUtils.cooldownExpired(mmoPlayer.getRespawnATS(),
                     Misc.PLAYER_RESPAWN_COOLDOWN_SECONDS)) {
-                if (attacker instanceof Mob mob) {
+                if (attacker instanceof final Mob mob) {
                     //Check to see how many dodge XP rewards this mob has handed out
                     if (mob.hasMetadata(MetadataConstants.METADATA_KEY_DODGE_TRACKER)
                             && ExperienceConfig.getInstance().isAcrobaticsExploitingPrevented()) {
                         //If Dodge XP has been handed out 5 times then consider it being exploited
-                        MetadataValue metadataValue = mob.getMetadata(
+                        final MetadataValue metadataValue = mob.getMetadata(
                                 MetadataConstants.METADATA_KEY_DODGE_TRACKER).get(0);
-                        int count = metadataValue.asInt();
+                        final int count = metadataValue.asInt();
 
                         if (count <= 5) {
                             applyXpGain((float) (damage * Acrobatics.dodgeXpModifier),
                                     XPGainReason.PVE);
                             mob.setMetadata(MetadataConstants.METADATA_KEY_DODGE_TRACKER,
                                     new FixedMetadataValue(mcMMO.p, count + 1));
-                            MobDodgeMetaCleanup metaCleanupTask = new MobDodgeMetaCleanup(mob,
+                            final MobDodgeMetaCleanup metaCleanupTask = new MobDodgeMetaCleanup(mob,
                                     mcMMO.p);
                             mcMMO.p.getFoliaLib().getScheduler()
                                     .runAtEntityTimer(mob, metaCleanupTask, 20,
@@ -141,7 +141,7 @@ public class AcrobaticsManager extends SkillManager {
         return damage;
     }
 
-    private boolean isFatal(double damage) {
+    private boolean isFatal(final double damage) {
         return getPlayer().getHealth() - damage <= 0;
     }
 }

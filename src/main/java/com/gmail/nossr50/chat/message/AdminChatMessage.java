@@ -9,8 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class AdminChatMessage extends AbstractChatMessage {
     public AdminChatMessage(@NotNull Plugin pluginRef, @NotNull Author author,
-            @NotNull Audience audience,
-            @NotNull String rawMessage, @NotNull TextComponent componentMessage) {
+                            @NotNull Audience audience,
+                            @NotNull String rawMessage, @NotNull TextComponent componentMessage) {
         super(pluginRef, author, audience, rawMessage, componentMessage);
     }
 

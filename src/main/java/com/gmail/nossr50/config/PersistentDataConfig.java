@@ -29,14 +29,13 @@ public class PersistentDataConfig extends BukkitConfig {
     }
 
     //Persistent Data Toggles
-    public boolean isMobPersistent(MobMetaFlagType mobMetaFlagType) {
-        String key = "Persistent_Data.Mobs.Flags." + mobMetaFlagType.toString() + ".Saved_To_Disk";
+    public boolean isMobPersistent(final MobMetaFlagType mobMetaFlagType) {
+        final String key = "Persistent_Data.Mobs.Flags." + mobMetaFlagType.toString() + ".Saved_To_Disk";
         return config.getBoolean(key, false);
     }
 
     public boolean useBlockTracker() {
         return config.getBoolean("mcMMO_Region_System.Enabled", true);
     }
-
 
 }

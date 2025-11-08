@@ -5,15 +5,16 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 
 public final class UserManager {
 
@@ -156,7 +157,7 @@ public final class UserManager {
     }
 
     private static @Nullable McMMOPlayer retrieveMcMMOPlayer(@Nullable String playerName,
-            boolean offlineValid) {
+                                                             boolean offlineValid) {
         if (playerName == null) {
             return null;
         }

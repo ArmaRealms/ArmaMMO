@@ -13,11 +13,8 @@ import static com.gmail.nossr50.util.random.ProbabilityUtil.calculateCurrentSkil
 import static java.util.logging.Logger.getLogger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,25 +22,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class ProbabilityUtilTest extends MMOTestEnvironment {
-    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+class ProbabilityUtilTest extends MMOTestEnvironment {
     final static double impactChance = 11D;
     final static double greaterImpactChance = 0.007D;
     final static double fastFoodChance = 45.5D;
-
-    @BeforeEach
-    public void setupMocks() {
-        mockBaseEnvironment(logger);
-        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
-        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
-        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        cleanUpStaticMocks();
-    }
+    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
 
     private static Stream<Arguments> staticChanceSkills() {
         return Stream.of(
@@ -52,27 +38,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
                 Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
         );
-    }
-
-    @ParameterizedTest
-    @MethodSource("staticChanceSkills")
-    void staticChanceSkillsShouldSucceedAsExpected(SubSkillType subSkillType,
-            double expectedWinPercent)
-            throws InvalidStaticChance {
-        Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
-        assertProbabilityExpectations(expectedWinPercent, staticRandomChance);
-    }
-
-    @Test
-    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
-        // Given
-        when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
-        when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
-
-        @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
-                UNARMED_ARROW_DEFLECT, mmoPlayer);
-        assertEquals(0.2D, probability.getValue());
-        assertProbabilityExpectations(20, probability);
     }
 
     private static Stream<Arguments> provideSkillProbabilityTestData() {
@@ -94,17 +59,51 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
         );
     }
 
+    @BeforeEach
+    public void setupMocks() {
+        mockBaseEnvironment(logger);
+        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
+        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
+        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        cleanUpStaticMocks();
+    }
+
+    @ParameterizedTest
+    @MethodSource("staticChanceSkills")
+    void staticChanceSkillsShouldSucceedAsExpected(final SubSkillType subSkillType,
+                                                   final double expectedWinPercent)
+            throws InvalidStaticChance {
+        final Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
+        assertProbabilityExpectations(expectedWinPercent, staticRandomChance);
+    }
+
+    @Test
+    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
+        // Given
+        when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
+        when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
+
+        @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
+                UNARMED_ARROW_DEFLECT, mmoPlayer);
+        assertEquals(0.2D, probability.value());
+        assertProbabilityExpectations(20, probability);
+    }
+
     @ParameterizedTest
     @MethodSource("provideSkillProbabilityTestData")
-    void testCalculateCurrentSkillProbability(double skillLevel, double floor, double ceiling,
-            double maxBonusLevel,
-            double expectedValue) {
+    void testCalculateCurrentSkillProbability(final double skillLevel, final double floor, final double ceiling,
+                                              final double maxBonusLevel,
+                                              final double expectedValue) {
         // When
         final Probability probability = calculateCurrentSkillProbability(skillLevel, floor, ceiling,
                 maxBonusLevel);
 
         // Then
-        assertEquals(expectedValue, probability.getValue());
+        assertEquals(expectedValue, probability.value());
     }
 
     @Test

@@ -14,14 +14,18 @@ import org.jetbrains.annotations.Nullable;
  * Called when mcMMO is preparing to drop an item.
  */
 public class McMMOItemSpawnEvent extends Event implements Cancellable {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final @NotNull HandlerList handlers = new HandlerList();
+    private final ItemSpawnReason itemSpawnReason;
+    private final Player player;
     private Location location;
     private ItemStack itemStack;
     private boolean cancelled;
-    private final ItemSpawnReason itemSpawnReason;
-    private final Player player;
 
-    public McMMOItemSpawnEvent(@NotNull Location location, @NotNull ItemStack itemStack,
-            @NotNull ItemSpawnReason itemSpawnReason, @Nullable Player player) {
+    public McMMOItemSpawnEvent(@NotNull final Location location, @NotNull final ItemStack itemStack,
+                               @NotNull final ItemSpawnReason itemSpawnReason, @Nullable final Player player) {
         this.location = location;
         this.itemStack = itemStack;
         this.itemSpawnReason = itemSpawnReason;
@@ -29,8 +33,13 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
         this.cancelled = false;
     }
 
+    public static @NotNull HandlerList getHandlerList() {
+        return handlers;
+    }
+
     /**
-     * Get the associated player This can be null
+     * Get the associated player
+     * This can be null
      *
      * @return the associated player if one exists null otherwise
      */
@@ -58,7 +67,7 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     /**
      * @param location Location where to drop the item
      */
-    public void setLocation(@NotNull Location location) {
+    public void setLocation(@NotNull final Location location) {
         this.location = location;
     }
 
@@ -72,7 +81,7 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     /**
      * @param itemStack ItemStack to drop
      */
-    public void setItemStack(@NotNull ItemStack itemStack) {
+    public void setItemStack(@NotNull final ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
@@ -85,21 +94,12 @@ public class McMMOItemSpawnEvent extends Event implements Cancellable {
     }
 
     @Override
-    public void setCancelled(boolean cancelled) {
+    public void setCancelled(final boolean cancelled) {
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final @NotNull HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 }

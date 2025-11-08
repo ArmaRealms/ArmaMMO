@@ -3,6 +3,7 @@ package com.gmail.nossr50.datatypes.skills;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.text.StringUtils;
+
 import java.util.Locale;
 
 public enum SubSkillType {
@@ -130,7 +131,7 @@ public enum SubSkillType {
      *
      * @param numRanks The number of ranks our SubSkillType has
      */
-    SubSkillType(int numRanks) {
+    SubSkillType(final int numRanks) {
         this.numRanks = numRanks;
     }
 
@@ -188,7 +189,7 @@ public enum SubSkillType {
      *
      * @return the yaml identifier for this skill
      */
-    private String getConfigName(String subSkillName) {
+    private String getConfigName(final String subSkillName) {
         /*
          * Our ENUM constants name is something like PREFIX_SUB_SKILL_NAME
          * We need to remove the prefix and then format the subskill to follow the naming conventions of our yaml configs
@@ -202,17 +203,17 @@ public enum SubSkillType {
         /*
          * Find where to begin our substring (after the prefix)
          */
-        StringBuilder endResult = new StringBuilder();
-        int subStringIndex = getSubStringIndex(subSkillName);
+        final StringBuilder endResult = new StringBuilder();
+        final int subStringIndex = getSubStringIndex(subSkillName);
 
         /*
          * Split the string up so we can capitalize each part
          */
-        String subskillNameWithoutPrefix = subSkillName.substring(subStringIndex);
+        final String subskillNameWithoutPrefix = subSkillName.substring(subStringIndex);
         if (subskillNameWithoutPrefix.contains("_")) {
-            String[] splitStrings = subskillNameWithoutPrefix.split("_");
+            final String[] splitStrings = subskillNameWithoutPrefix.split("_");
 
-            for (String string : splitStrings) {
+            for (final String string : splitStrings) {
                 endResult.append(StringUtils.getCapitalized(string));
             }
         } else {
@@ -224,8 +225,8 @@ public enum SubSkillType {
 
     public String getWikiUrl() {
         // remove the text before the first underscore
-        int subStringIndex = getSubStringIndex(name());
-        String afterPrefix = name().substring(subStringIndex);
+        final int subStringIndex = getSubStringIndex(name());
+        final String afterPrefix = name().substring(subStringIndex);
         // replace _ or spaces with -
         return afterPrefix.replace("_", "-").replace(" ", "-").toLowerCase(Locale.ENGLISH);
     }
@@ -246,7 +247,7 @@ public enum SubSkillType {
      * @param subSkillType target subskill
      * @return the "nice" name without spaces
      */
-    public String getNiceNameNoSpaces(SubSkillType subSkillType) {
+    public String getNiceNameNoSpaces(final SubSkillType subSkillType) {
         return getConfigName(subSkillType.toString());
     }
 
@@ -256,8 +257,8 @@ public enum SubSkillType {
      * @param subSkillName The name to process
      * @return The value of the substring index after our parent's prefix
      */
-    private int getSubStringIndex(String subSkillName) {
-        char[] enumNameCharArray = subSkillName.toCharArray();
+    private int getSubStringIndex(final String subSkillName) {
+        final char[] enumNameCharArray = subSkillName.toCharArray();
         int subStringIndex = 0;
 
         //Find where to start our substring for this constants name
@@ -300,19 +301,19 @@ public enum SubSkillType {
         return getLocaleKeyFromSubAddress(".Stat.Extra");
     }
 
-    public String getLocaleStat(String... vars) {
+    public String getLocaleStat(final String... vars) {
         return LocaleLoader.getString("Ability.Generic.Template", (Object[]) vars);
     }
 
-    public String getCustomLocaleStat(String... vars) {
+    public String getCustomLocaleStat(final String... vars) {
         return LocaleLoader.getString("Ability.Generic.Template.Custom", (Object[]) vars);
     }
 
-    private String getFromLocaleSubAddress(String s) {
+    private String getFromLocaleSubAddress(final String s) {
         return LocaleLoader.getString(getLocaleKeyRoot() + s);
     }
 
-    private String getLocaleKeyFromSubAddress(String s) {
+    private String getLocaleKeyFromSubAddress(final String s) {
         return getLocaleKeyRoot() + s;
     }
 }

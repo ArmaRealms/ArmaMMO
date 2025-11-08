@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 public class PartyAllianceInviteCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (args.length == 3) {
             String targetName = CommandUtils.getMatchedPlayerName(args[2]);
             McMMOPlayer mcMMOTarget = UserManager.getOfflinePlayer(targetName);
@@ -24,15 +24,20 @@ public class PartyAllianceInviteCommand implements CommandExecutor {
                 return false;
             }
 
+            if (mcMMOTarget == null) return true;
             Player target = mcMMOTarget.getPlayer();
 
-            if (UserManager.getPlayer((Player) sender) == null) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
+
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            final Player player = (Player) sender;
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             String playerName = player.getName();
 
             if (player.equals(target)) {
@@ -50,12 +55,16 @@ public class PartyAllianceInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            if (!mcMMOTarget.getParty().getLeader().getUniqueId().equals(target.getUniqueId())) {
+            Party targetParty = mcMMOTarget.getParty();
+            if (targetParty == null) return true;
+
+            if (!targetParty.getLeader().getUniqueId().equals(target.getUniqueId())) {
                 player.sendMessage(LocaleLoader.getString("Party.Target.NotOwner", targetName));
                 return true;
             }
 
             Party playerParty = mmoPlayer.getParty();
+            if (playerParty == null) return true;
 
             if (playerParty.getAlly() != null) {
                 player.sendMessage(LocaleLoader.getString("Commands.Party.Alliance.AlreadyAllies"));

@@ -3,16 +3,16 @@ package com.gmail.nossr50.commands.skills;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_POWERED_SHOT;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_TRICK_SHOT;
-
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CrossbowsCommand extends SkillCommand {
     private boolean canTrickShot;
@@ -23,12 +23,12 @@ public class CrossbowsCommand extends SkillCommand {
     }
 
     @Override
-    protected void dataCalculations(Player player, float skillValue) {
+    protected void dataCalculations(final Player player, final float skillValue) {
         // TODO: Implement data calculations
     }
 
     @Override
-    protected void permissionsCheck(Player player) {
+    protected void permissionsCheck(final Player player) {
         canTrickShot = RankUtils.hasUnlockedSubskill(player, CROSSBOWS_TRICK_SHOT)
                 && Permissions.trickShot(player);
 
@@ -37,9 +37,9 @@ public class CrossbowsCommand extends SkillCommand {
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
-        List<String> messages = new ArrayList<>();
+    protected List<String> statsDisplay(final Player player, final float skillValue, final boolean hasEndurance,
+                                        final boolean isLucky) {
+        final List<String> messages = new ArrayList<>();
 
         if (mmoPlayer == null) {
             return messages;
@@ -65,8 +65,8 @@ public class CrossbowsCommand extends SkillCommand {
     }
 
     @Override
-    protected List<Component> getTextComponents(Player player) {
-        List<Component> textComponents = new ArrayList<>();
+    protected List<Component> getTextComponents(final Player player) {
+        final List<Component> textComponents = new ArrayList<>();
 
         TextComponentFactory.getSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.CROSSBOWS);

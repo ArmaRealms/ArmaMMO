@@ -11,29 +11,26 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.text.StringUtils;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public final class CommandUtils {
-    public static final List<String> TRUE_FALSE_OPTIONS = ImmutableList.of("on", "off", "true",
-            "false", "enabled", "disabled");
-    public static final List<String> RESET_OPTIONS = ImmutableList.of("clear", "reset");
+    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off", "sim", "nao");
+    public static final List<String> RESET_OPTIONS = List.of("limpar", "resetar");
+    public static final List<String> TRUE_OPTIONS = List.of("on", "true", "enabled", "ativar", "sim");
+    public static final List<String> FALSE_OPTIONS = List.of("off", "false", "disabled", "desativar", "nao");
 
     private CommandUtils() {
     }
 
     public static boolean isChildSkill(CommandSender sender, PrimarySkillType skill) {
-        if (skill == null || !SkillTools.isChildSkill(skill)) {
-            return false;
-        }
-
-        sender.sendMessage(
-                "Child skills are not supported by this command."); // TODO: Localize this
+        if (skill == null || !SkillTools.isChildSkill(skill)) return false;
+        sender.sendMessage("Skill secundária ainda não tem suporte para este comando!"); // TODO: Localize this
         return true;
     }
 
@@ -76,13 +73,13 @@ public final class CommandUtils {
     /**
      * Checks if there is a valid mmoPlayer object.
      *
-     * @param sender CommandSender who used the command
+     * @param sender     CommandSender who used the command
      * @param playerName name of the target player
-     * @param mmoPlayer mmoPlayer object of the target player
+     * @param mmoPlayer  mmoPlayer object of the target player
      * @return true if the player is online and a valid mmoPlayer object was found
      */
     public static boolean checkPlayerExistence(CommandSender sender, String playerName,
-            McMMOPlayer mmoPlayer) {
+                                               McMMOPlayer mmoPlayer) {
         if (mmoPlayer != null) {
             if (CommandUtils.hidden(sender, mmoPlayer.getPlayer(), false)) {
                 sender.sendMessage(LocaleLoader.getString("Commands.Offline"));
@@ -162,13 +159,11 @@ public final class CommandUtils {
     }
 
     public static boolean shouldEnableToggle(String arg) {
-        return arg.equalsIgnoreCase("on") || arg.equalsIgnoreCase("true") || arg.equalsIgnoreCase(
-                "enabled");
+        return TRUE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     public static boolean shouldDisableToggle(String arg) {
-        return arg.equalsIgnoreCase("off") || arg.equalsIgnoreCase("false") || arg.equalsIgnoreCase(
-                "disabled");
+        return FALSE_OPTIONS.contains(arg.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -235,7 +230,7 @@ public final class CommandUtils {
     }
 
     private static void printGroupedSkillData(Player inspectTarget, CommandSender display,
-            String header, List<PrimarySkillType> skillGroup) {
+                                              String header, List<PrimarySkillType> skillGroup) {
         if (UserManager.getPlayer(inspectTarget) == null) {
             return;
         }

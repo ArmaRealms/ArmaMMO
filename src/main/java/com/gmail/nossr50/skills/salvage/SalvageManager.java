@@ -21,8 +21,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Map;
-import java.util.Map.Entry;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -32,12 +30,24 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 public class SalvageManager extends SkillManager {
     private boolean placedAnvil;
     private int lastClick;
 
     public SalvageManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.SALVAGE);
+    }
+
+    public static int getSalvageLimit(Player player) {
+        if (RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR) == 1) {
+            return 1;
+        } else {
+            var curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
+            return curRank * 2;
+        }
     }
 
     /**
@@ -61,6 +71,10 @@ public class SalvageManager extends SkillManager {
 
         togglePlacedAnvil();
     }
+
+    /*public double getMaxSalvagePercentage() {
+        return Math.min((((Salvage.salvageMaxPercentage / Salvage.salvageMaxPercentageLevel) * getSkillLevel()) / 100.0D), Salvage.salvageMaxPercentage / 100.0D);
+    }*/
 
     public void handleSalvage(Location location, ItemStack item) {
         final Player player = getPlayer();
@@ -173,19 +187,6 @@ public class SalvageManager extends SkillManager {
 
         NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE,
                 "Salvage.Skills.Success");
-    }
-
-    /*public double getMaxSalvagePercentage() {
-        return Math.min((((Salvage.salvageMaxPercentage / Salvage.salvageMaxPercentageLevel) * getSkillLevel()) / 100.0D), Salvage.salvageMaxPercentage / 100.0D);
-    }*/
-
-    public static int getSalvageLimit(Player player) {
-        if (RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR) == 1) {
-            return 1;
-        } else {
-            var curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
-            return curRank * 2;
-        }
     }
 
     /**

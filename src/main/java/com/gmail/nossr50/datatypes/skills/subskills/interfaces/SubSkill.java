@@ -68,7 +68,7 @@ public interface SubSkill extends Skill {
      * Adds detailed stats specific to this skill
      *
      * @param componentBuilder target component builder
-     * @param mmoPlayer owner of this skill
+     * @param mmoPlayer        owner of this skill
      */
     void addStats(TextComponent.Builder componentBuilder, McMMOPlayer mmoPlayer);
 

@@ -3,16 +3,17 @@ package com.gmail.nossr50.database;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
-import java.util.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.logging.Logger;
+
 public class DatabaseManagerFactory {
-    private static Class<? extends DatabaseManager> customManager = null;
     public static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static Class<? extends DatabaseManager> customManager = null;
 
     public static DatabaseManager getDatabaseManager(@NotNull String userFilePath,
-            @NotNull Logger logger, long purgeTime, int startingLevel) {
+                                                     @NotNull Logger logger, long purgeTime, int startingLevel) {
         if (customManager != null) {
             try {
                 return createDefaultCustomDatabaseManager();
@@ -31,6 +32,10 @@ public class DatabaseManagerFactory {
         return mcMMO.p.getGeneralConfig().getUseMySQL() ? new SQLDatabaseManager(logger,
                 MYSQL_DRIVER)
                 : new FlatFileDatabaseManager(userFilePath, logger, purgeTime, startingLevel);
+    }
+
+    public static Class<? extends DatabaseManager> getCustomDatabaseManagerClass() {
+        return customManager;
     }
 
     /**
@@ -55,13 +60,9 @@ public class DatabaseManagerFactory {
         }
     }
 
-    public static Class<? extends DatabaseManager> getCustomDatabaseManagerClass() {
-        return customManager;
-    }
-
     public static @Nullable DatabaseManager createDatabaseManager(@NotNull DatabaseType type,
-            @NotNull String userFilePath, @NotNull Logger logger, long purgeTime,
-            int startingLevel) {
+                                                                  @NotNull String userFilePath, @NotNull Logger logger, long purgeTime,
+                                                                  int startingLevel) {
         switch (type) {
             case FLATFILE:
                 LogUtils.debug(mcMMO.p.getLogger(), "Using FlatFile Database");

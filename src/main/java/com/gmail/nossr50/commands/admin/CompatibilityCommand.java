@@ -15,15 +15,15 @@ public class CompatibilityCommand implements CommandExecutor {
      * sent to the player.
      *
      * @param commandSender Source of the command
-     * @param command Command which was executed
-     * @param s Alias of the command which was used
-     * @param strings Passed command arguments
+     * @param command       Command which was executed
+     * @param s             Alias of the command which was used
+     * @param strings       Passed command arguments
      * @return true if a valid command, otherwise false
      */
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command,
-            @NotNull String s,
-            @NotNull String[] strings) {
+                             @NotNull String s,
+                             @NotNull String[] strings) {
         mcMMO.getCompatibilityManager().reportCompatibilityStatus(commandSender);
         return true;
     }

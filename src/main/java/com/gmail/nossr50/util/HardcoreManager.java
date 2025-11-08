@@ -9,8 +9,9 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.HashMap;
 import org.bukkit.entity.Player;
+
+import java.util.HashMap;
 
 public final class HardcoreManager {
     private HardcoreManager() {

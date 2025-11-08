@@ -20,17 +20,18 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 
 public class RepairManager extends SkillManager {
     private boolean placedAnvil;
@@ -227,7 +228,7 @@ public class RepairManager extends SkillManager {
     }
 
     private float getPercentageRepaired(short startDurability, short newDurability,
-            short totalDurability) {
+                                        short totalDurability) {
         return ((startDurability - newDurability) / (float) totalDurability);
     }
 
@@ -321,7 +322,7 @@ public class RepairManager extends SkillManager {
     /**
      * Computes repair bonuses.
      *
-     * @param durability The durability of the item being repaired
+     * @param durability   The durability of the item being repaired
      * @param repairAmount The base amount of durability repaired to the item
      * @return The final amount of durability repaired to the item
      */

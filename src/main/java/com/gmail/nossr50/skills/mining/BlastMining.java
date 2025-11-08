@@ -42,7 +42,7 @@ public class BlastMining {
     }
 
     public static boolean processBlastMiningExplosion(EntityDamageByEntityEvent event,
-            TNTPrimed tntAttacker, Player defender) {
+                                                      TNTPrimed tntAttacker, Player defender) {
         if (!tntAttacker.hasMetadata(MetadataConstants.METADATA_KEY_TRACKED_TNT)
                 || !UserManager.hasPlayerDataKey(defender)) {
             return false;

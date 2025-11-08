@@ -1,7 +1,6 @@
 package com.gmail.nossr50.util.random;
 
 import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -10,13 +9,14 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 public class ProbabilityUtil {
     public static final @NotNull DecimalFormat percent = new DecimalFormat("##0.00%",
@@ -26,27 +26,27 @@ public class ProbabilityUtil {
     /**
      * Return a chance of success in "percentage" format, shown to the player in UI elements
      *
-     * @param player target player
+     * @param player       target player
      * @param subSkillType target subskill
-     * @param isLucky whether to apply luck modifiers
+     * @param isLucky      whether to apply luck modifiers
      * @return "percentage" representation of success
      * @deprecated use {@link #chanceOfSuccessPercentage(McMMOPlayer, SubSkillType, boolean)}
      * instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static double chanceOfSuccessPercentage(@Nullable Player player,
-            @NotNull SubSkillType subSkillType,
-            boolean isLucky) {
+    public static double chanceOfSuccessPercentage(@Nullable final Player player,
+                                                   @NotNull final SubSkillType subSkillType,
+                                                   final boolean isLucky) {
         return chanceOfSuccessPercentage(requireNonNull(UserManager.getPlayer(player)),
                 subSkillType, isLucky);
     }
 
-    public static double chanceOfSuccessPercentage(@Nullable McMMOPlayer mmoPlayer,
-            @NotNull SubSkillType subSkillType,
-            boolean isLucky) {
+    public static double chanceOfSuccessPercentage(@Nullable final McMMOPlayer mmoPlayer,
+                                                   @NotNull final SubSkillType subSkillType,
+                                                   final boolean isLucky) {
         final Probability probability = getSubSkillProbability(subSkillType, mmoPlayer);
         //Probability values are on a 0-1 scale and need to be "transformed" into a 1-100 scale
-        double percentageValue = probability.getValue(); //Doesn't need to be scaled
+        double percentageValue = probability.value(); //Doesn't need to be scaled
 
         //Apply lucky modifier
         if (isLucky) {
@@ -60,13 +60,13 @@ public class ProbabilityUtil {
      * Return a chance of success as a double representing a "percentage".
      *
      * @param probability the probability of success
-     * @param isLucky whether to apply luck modifiers
+     * @param isLucky     whether to apply luck modifiers
      * @return a double as a "percentage" representation of success
      */
-    public static double chanceOfSuccessPercentage(@NotNull Probability probability,
-            boolean isLucky) {
+    public static double chanceOfSuccessPercentage(@NotNull final Probability probability,
+                                                   final boolean isLucky) {
         //Probability values are on a 0-1 scale and need to be "transformed" into a 1-100 scale
-        double percentageValue = probability.getValue();
+        double percentageValue = probability.value();
 
         //Apply lucky modifier
         if (isLucky) {
@@ -77,20 +77,17 @@ public class ProbabilityUtil {
     }
 
     @VisibleForTesting
-    static Probability getStaticRandomChance(@NotNull SubSkillType subSkillType)
+    static Probability getStaticRandomChance(@NotNull final SubSkillType subSkillType)
             throws InvalidStaticChance {
         return switch (subSkillType) {
-            case AXES_ARMOR_IMPACT ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getImpactChance());
-            case AXES_GREATER_IMPACT ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getGreaterImpactChance());
-            case TAMING_FAST_FOOD_SERVICE ->
-                    Probability.ofPercent(mcMMO.p.getAdvancedConfig().getFastFoodChance());
+            case AXES_ARMOR_IMPACT -> Probability.ofPercent(mcMMO.p.getAdvancedConfig().getImpactChance());
+            case AXES_GREATER_IMPACT -> Probability.ofPercent(mcMMO.p.getAdvancedConfig().getGreaterImpactChance());
+            case TAMING_FAST_FOOD_SERVICE -> Probability.ofPercent(mcMMO.p.getAdvancedConfig().getFastFoodChance());
             default -> throw new InvalidStaticChance();
         };
     }
 
-    static SkillProbabilityType getProbabilityType(@NotNull SubSkillType subSkillType) {
+    static SkillProbabilityType getProbabilityType(@NotNull final SubSkillType subSkillType) {
         SkillProbabilityType skillProbabilityType = SkillProbabilityType.DYNAMIC_CONFIGURABLE;
 
         if (subSkillType == SubSkillType.TAMING_FAST_FOOD_SERVICE
@@ -103,19 +100,19 @@ public class ProbabilityUtil {
     }
 
     @Deprecated(forRemoval = true, since = "2.2.010")
-    private static @NotNull Probability ofSubSkill(@Nullable Player player,
-            @NotNull SubSkillType subSkillType) {
+    private static @NotNull Probability ofSubSkill(@Nullable final Player player,
+                                                   @NotNull final SubSkillType subSkillType) {
         // no null check needed here
         return ofSubSkill(UserManager.getPlayer(player), subSkillType);
     }
 
-    private static @NotNull Probability ofSubSkill(@Nullable McMMOPlayer mmoPlayer,
-            @NotNull SubSkillType subSkillType) {
+    private static @NotNull Probability ofSubSkill(@Nullable final McMMOPlayer mmoPlayer,
+                                                   @NotNull final SubSkillType subSkillType) {
         switch (getProbabilityType(subSkillType)) {
             case DYNAMIC_CONFIGURABLE:
-                double probabilityCeiling;
-                double skillLevel;
-                double maxBonusLevel; // If a skill level is equal to the cap, it has the full probability
+                final double probabilityCeiling;
+                final double skillLevel;
+                final double maxBonusLevel; // If a skill level is equal to the cap, it has the full probability
 
                 if (mmoPlayer != null) {
                     skillLevel = mmoPlayer.getSkillLevel(subSkillType.getParentSkill());
@@ -133,7 +130,7 @@ public class ProbabilityUtil {
             case STATIC_CONFIGURABLE:
                 try {
                     return getStaticRandomChance(subSkillType);
-                } catch (InvalidStaticChance invalidStaticChance) {
+                } catch (final InvalidStaticChance invalidStaticChance) {
                     throw new RuntimeException(invalidStaticChance);
                 }
             default:
@@ -161,14 +158,14 @@ public class ProbabilityUtil {
      * called
      *
      * @param subSkillType target subskill
-     * @param player target player can be null (null players are given odds equivalent to a player
-     * with no levels or luck)
+     * @param player       target player can be null (null players are given odds equivalent to a player
+     *                     with no levels or luck)
      * @return true if the Skill RNG succeeds, false if it fails
      * @deprecated use {@link #isSkillRNGSuccessful(SubSkillType, McMMOPlayer)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static boolean isSkillRNGSuccessful(@NotNull SubSkillType subSkillType,
-            @Nullable Player player) {
+    public static boolean isSkillRNGSuccessful(@NotNull final SubSkillType subSkillType,
+                                               @Nullable final Player player) {
         return isSkillRNGSuccessful(subSkillType, UserManager.getPlayer(player));
     }
 
@@ -191,16 +188,16 @@ public class ProbabilityUtil {
      * called
      *
      * @param subSkillType target subskill
-     * @param mmoPlayer target player can be null (null players are given odds equivalent to a
-     * player with no levels or luck)
+     * @param mmoPlayer    target player can be null (null players are given odds equivalent to a
+     *                     player with no levels or luck)
      * @return true if the Skill RNG succeeds, false if it fails
      */
-    public static boolean isSkillRNGSuccessful(@NotNull SubSkillType subSkillType,
-            @Nullable McMMOPlayer mmoPlayer) {
+    public static boolean isSkillRNGSuccessful(@NotNull final SubSkillType subSkillType,
+                                               @Nullable final McMMOPlayer mmoPlayer) {
         final Probability probability = getSkillProbability(subSkillType, mmoPlayer);
 
         //Luck
-        boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(),
+        final boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(),
                 subSkillType.getParentSkill());
 
         if (isLucky) {
@@ -232,17 +229,17 @@ public class ProbabilityUtil {
      * called
      *
      * @param subSkillType target subskill
-     * @param mmoPlayer target player can be null (null players are given odds equivalent to a
-     * player with no levels or luck)
+     * @param mmoPlayer    target player can be null (null players are given odds equivalent to a
+     *                     player with no levels or luck)
      * @return true if the Skill RNG succeeds, false if it fails
      */
-    public static boolean isSkillRNGSuccessful(@NotNull SubSkillType subSkillType,
-            @Nullable McMMOPlayer mmoPlayer,
-            double probabilityMultiplier) {
+    public static boolean isSkillRNGSuccessful(@NotNull final SubSkillType subSkillType,
+                                               @Nullable final McMMOPlayer mmoPlayer,
+                                               final double probabilityMultiplier) {
         final Probability probability = getSkillProbability(subSkillType, mmoPlayer);
 
         //Luck
-        boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(),
+        final boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(),
                 subSkillType.getParentSkill());
 
         if (isLucky) {
@@ -259,13 +256,13 @@ public class ProbabilityUtil {
      * it. Null players will be treated as zero skill players.
      *
      * @param subSkillType the target subskill
-     * @param player the target player can be null (null players have the worst odds)
+     * @param player       the target player can be null (null players have the worst odds)
      * @return the probability for this skill
      * @deprecated use {@link #getSkillProbability(SubSkillType, McMMOPlayer)} instead
      */
     @Deprecated(forRemoval = true)
-    public static Probability getSkillProbability(@NotNull SubSkillType subSkillType,
-            @Nullable Player player) {
+    public static Probability getSkillProbability(@NotNull final SubSkillType subSkillType,
+                                                  @Nullable final Player player) {
         return getSkillProbability(subSkillType, UserManager.getPlayer(player));
     }
 
@@ -276,28 +273,28 @@ public class ProbabilityUtil {
      * it. Null players will be treated as zero skill players.
      *
      * @param subSkillType the target subskill
-     * @param mmoPlayer the target player can be null (null players have the worst odds)
+     * @param mmoPlayer    the target player can be null (null players have the worst odds)
      * @return the probability for this skill
      */
-    public static Probability getSkillProbability(@NotNull SubSkillType subSkillType,
-            @Nullable McMMOPlayer mmoPlayer) {
+    public static Probability getSkillProbability(@NotNull final SubSkillType subSkillType,
+                                                  @Nullable final McMMOPlayer mmoPlayer) {
         // Process probability
         Probability probability = getSubSkillProbability(subSkillType, mmoPlayer);
 
         // Send out event
         if (mmoPlayer != null) {
-            SubSkillEvent subSkillEvent = EventUtils.callSubSkillEvent(mmoPlayer, subSkillType);
+            final SubSkillEvent subSkillEvent = EventUtils.callSubSkillEvent(mmoPlayer, subSkillType);
 
             if (subSkillEvent.isCancelled()) {
                 return Probability.ALWAYS_FAILS;
             }
 
             // Result modifier
-            double resultModifier = subSkillEvent.getResultModifier();
+            final double resultModifier = subSkillEvent.getResultModifier();
 
             // Mutate probability
             if (resultModifier != 1.0D) {
-                probability = Probability.ofPercent(probability.getValue() * resultModifier);
+                probability = Probability.ofPercent(probability.value() * resultModifier);
             }
         }
 
@@ -308,17 +305,17 @@ public class ProbabilityUtil {
      * This is one of several Skill RNG check methods This helper method is specific to static value
      * RNG, which can be influenced by a player's Luck
      *
-     * @param primarySkillType the related primary skill
-     * @param player the target player can be null (null players have the worst odds)
+     * @param primarySkillType      the related primary skill
+     * @param player                the target player can be null (null players have the worst odds)
      * @param probabilityPercentage the probability of this player succeeding in "percentage" format
-     * (0-100 inclusive)
+     *                              (0-100 inclusive)
      * @return true if the RNG succeeds, false if it fails
      * @deprecated use {@link #isStaticSkillRNGSuccessful(PrimarySkillType, McMMOPlayer, double)}
      * instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static boolean isStaticSkillRNGSuccessful(@NotNull PrimarySkillType primarySkillType,
-            @Nullable Player player, double probabilityPercentage) {
+    public static boolean isStaticSkillRNGSuccessful(@NotNull final PrimarySkillType primarySkillType,
+                                                     @Nullable final Player player, final double probabilityPercentage) {
         return isStaticSkillRNGSuccessful(primarySkillType, player,
                 Probability.ofPercent(probabilityPercentage));
     }
@@ -327,14 +324,14 @@ public class ProbabilityUtil {
      * This is one of several Skill RNG check methods This helper method is specific to static value
      * RNG, which can be influenced by a player's Luck
      *
-     * @param primarySkillType the related primary skill
-     * @param mmoPlayer the target player can be null (null players have the worst odds)
+     * @param primarySkillType      the related primary skill
+     * @param mmoPlayer             the target player can be null (null players have the worst odds)
      * @param probabilityPercentage the probability of this player succeeding in "percentage" format
-     * (0-100 inclusive)
+     *                              (0-100 inclusive)
      * @return true if the RNG succeeds, false if it fails
      */
-    public static boolean isStaticSkillRNGSuccessful(@NotNull PrimarySkillType primarySkillType,
-            @Nullable McMMOPlayer mmoPlayer, double probabilityPercentage) {
+    public static boolean isStaticSkillRNGSuccessful(@NotNull final PrimarySkillType primarySkillType,
+                                                     @Nullable final McMMOPlayer mmoPlayer, final double probabilityPercentage) {
         //Grab a probability converted from a "percentage" value
         final Probability probability = Probability.ofPercent(probabilityPercentage);
 
@@ -346,16 +343,16 @@ public class ProbabilityUtil {
      * RNG, which can be influenced by a player's Luck
      *
      * @param primarySkillType the related primary skill
-     * @param player the target player can be null (null players have the worst odds)
-     * @param probability the probability of this player succeeding
+     * @param player           the target player can be null (null players have the worst odds)
+     * @param probability      the probability of this player succeeding
      * @return true if the RNG succeeds, false if it fails
      * @deprecated use
      * {@link #isStaticSkillRNGSuccessful(PrimarySkillType, McMMOPlayer, Probability)} instead, this
      * method is redundant and will be removed.
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static boolean isStaticSkillRNGSuccessful(@NotNull PrimarySkillType primarySkillType,
-            @Nullable Player player, @NotNull Probability probability) {
+    public static boolean isStaticSkillRNGSuccessful(@NotNull final PrimarySkillType primarySkillType,
+                                                     @Nullable final Player player, @NotNull final Probability probability) {
         return isStaticSkillRNGSuccessful(primarySkillType, UserManager.getPlayer(player),
                 probability);
     }
@@ -365,14 +362,14 @@ public class ProbabilityUtil {
      * RNG, which can be influenced by a mmoPlayer's Luck
      *
      * @param primarySkillType the related primary skill
-     * @param mmoPlayer the target mmoPlayer can be null (null players have the worst odds)
-     * @param probability the probability of this mmoPlayer succeeding
+     * @param mmoPlayer        the target mmoPlayer can be null (null players have the worst odds)
+     * @param probability      the probability of this mmoPlayer succeeding
      * @return true if the RNG succeeds, false if it fails
      */
-    public static boolean isStaticSkillRNGSuccessful(@NotNull PrimarySkillType primarySkillType,
-            @Nullable McMMOPlayer mmoPlayer, @NotNull Probability probability) {
-        boolean isLucky =
-                mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(), primarySkillType);
+    public static boolean isStaticSkillRNGSuccessful(@NotNull final PrimarySkillType primarySkillType,
+                                                     @Nullable final McMMOPlayer mmoPlayer,
+                                                     @NotNull final Probability probability) {
+        final boolean isLucky = mmoPlayer != null && Permissions.lucky(mmoPlayer.getPlayer(), primarySkillType);
 
         if (isLucky) {
             return probability.evaluate(LUCKY_MODIFIER);
@@ -385,13 +382,13 @@ public class ProbabilityUtil {
      * Skills activate without RNG, this allows other plugins to prevent that activation
      *
      * @param subSkillType target subskill
-     * @param player target player
+     * @param player       target player
      * @return true if the skill succeeds (wasn't cancelled by any other plugin)
      * @deprecated use {@link #isNonRNGSkillActivationSuccessful(SubSkillType, McMMOPlayer)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static boolean isNonRNGSkillActivationSuccessful(@NotNull SubSkillType subSkillType,
-            @NotNull Player player) {
+    public static boolean isNonRNGSkillActivationSuccessful(@NotNull final SubSkillType subSkillType,
+                                                            @NotNull final Player player) {
         return isNonRNGSkillActivationSuccessful(subSkillType,
                 requireNonNull(UserManager.getPlayer(player)));
     }
@@ -400,11 +397,11 @@ public class ProbabilityUtil {
      * Skills activate without RNG, this allows other plugins to prevent that activation
      *
      * @param subSkillType target subskill
-     * @param mmoPlayer target player
+     * @param mmoPlayer    target player
      * @return true if the skill succeeds (wasn't cancelled by any other plugin)
      */
-    public static boolean isNonRNGSkillActivationSuccessful(@NotNull SubSkillType subSkillType,
-            @NotNull McMMOPlayer mmoPlayer) {
+    public static boolean isNonRNGSkillActivationSuccessful(@NotNull final SubSkillType subSkillType,
+                                                            @NotNull final McMMOPlayer mmoPlayer) {
         return !EventUtils.callSubSkillEvent(mmoPlayer, subSkillType).isCancelled();
     }
 
@@ -413,14 +410,14 @@ public class ProbabilityUtil {
      * {@link Player}.
      *
      * @param subSkillType The targeted subskill.
-     * @param player The player in question. If null, the method treats it as a player with no
-     * levels or luck and calculates the probability accordingly.
+     * @param player       The player in question. If null, the method treats it as a player with no
+     *                     levels or luck and calculates the probability accordingly.
      * @return The probability that the specified skill will succeed.
      * @deprecated use {@link #getSubSkillProbability(SubSkillType, McMMOPlayer)} instead
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public static @NotNull Probability getSubSkillProbability(@NotNull SubSkillType subSkillType,
-            @Nullable Player player) {
+    public static @NotNull Probability getSubSkillProbability(@NotNull final SubSkillType subSkillType,
+                                                              @Nullable final Player player) {
         return ProbabilityUtil.ofSubSkill(player, subSkillType);
     }
 
@@ -429,26 +426,26 @@ public class ProbabilityUtil {
      * {@link Player}.
      *
      * @param subSkillType The targeted subskill.
-     * @param mmoPlayer The player in question. If null, the method treats it as a player with no
-     * levels or luck and calculates the probability accordingly.
+     * @param mmoPlayer    The player in question. If null, the method treats it as a player with no
+     *                     levels or luck and calculates the probability accordingly.
      * @return The probability that the specified skill will succeed.
      */
-    public static @NotNull Probability getSubSkillProbability(@NotNull SubSkillType subSkillType,
-            @Nullable McMMOPlayer mmoPlayer) {
+    public static @NotNull Probability getSubSkillProbability(@NotNull final SubSkillType subSkillType,
+                                                              @Nullable final McMMOPlayer mmoPlayer) {
         return ProbabilityUtil.ofSubSkill(mmoPlayer, subSkillType);
     }
 
-    public static @NotNull String[] getRNGDisplayValues(@Nullable McMMOPlayer mmoPlayer,
-            @NotNull SubSkillType subSkill) {
-        double firstValue = chanceOfSuccessPercentage(mmoPlayer, subSkill, false);
-        double secondValue = chanceOfSuccessPercentage(mmoPlayer, subSkill, true);
+    public static @NotNull String[] getRNGDisplayValues(@Nullable final McMMOPlayer mmoPlayer,
+                                                        @NotNull final SubSkillType subSkill) {
+        final double firstValue = chanceOfSuccessPercentage(mmoPlayer, subSkill, false);
+        final double secondValue = chanceOfSuccessPercentage(mmoPlayer, subSkill, true);
 
         return new String[]{percent.format(firstValue), percent.format(secondValue)};
     }
 
-    public static @NotNull String[] getRNGDisplayValues(@NotNull Probability probability) {
-        double firstValue = chanceOfSuccessPercentage(probability, false);
-        double secondValue = chanceOfSuccessPercentage(probability, true);
+    public static @NotNull String[] getRNGDisplayValues(@NotNull final Probability probability) {
+        final double firstValue = chanceOfSuccessPercentage(probability, false);
+        final double secondValue = chanceOfSuccessPercentage(probability, true);
 
         return new String[]{percent.format(firstValue), percent.format(secondValue)};
     }
@@ -456,15 +453,15 @@ public class ProbabilityUtil {
     /**
      * Helper function to calculate what probability a given skill has at a certain level
      *
-     * @param skillLevel the skill level currently between the floor and the ceiling
-     * @param floor the minimum odds this skill can have
-     * @param ceiling the maximum odds this skill can have
+     * @param skillLevel    the skill level currently between the floor and the ceiling
+     * @param floor         the minimum odds this skill can have
+     * @param ceiling       the maximum odds this skill can have
      * @param maxBonusLevel the maximum level this skill can have to reach the ceiling
      * @return the probability of success for this skill at this level
      */
-    public static Probability calculateCurrentSkillProbability(double skillLevel, double floor,
-            double ceiling,
-            double maxBonusLevel) {
+    public static Probability calculateCurrentSkillProbability(final double skillLevel, final double floor,
+                                                               final double ceiling,
+                                                               final double maxBonusLevel) {
         // The odds of success are between the value of the floor and the value of the ceiling.
         // If the skill has a maxBonusLevel of 500 on this skill, then at skill level 500 you would have the full odds,
         // at skill level 250 it would be half odds.
@@ -475,7 +472,7 @@ public class ProbabilityUtil {
             return Probability.ofPercent(ceiling);
         }
 
-        double odds = ((skillLevel / maxBonusLevel) * ceiling);
+        final double odds = ((skillLevel / maxBonusLevel) * ceiling);
 
         // make sure the odds aren't lower or higher than the floor or ceiling
         return Probability.ofPercent(Math.min(Math.max(floor, odds), ceiling));

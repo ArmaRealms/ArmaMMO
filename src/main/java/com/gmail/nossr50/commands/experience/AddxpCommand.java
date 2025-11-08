@@ -24,7 +24,7 @@ public class AddxpCommand extends ExperienceCommand {
 
     @Override
     protected void handleCommand(Player player, PlayerProfile profile, PrimarySkillType skill,
-            int value) {
+                                 int value) {
         if (player != null) {
             //Check if player profile is loaded
             if (UserManager.getPlayer(player) == null) {
@@ -50,7 +50,7 @@ public class AddxpCommand extends ExperienceCommand {
 
     @Override
     protected void handlePlayerMessageSkill(Player player, int value, PrimarySkillType skill,
-            boolean isSilent) {
+                                            boolean isSilent) {
         if (isSilent) {
             return;
         }

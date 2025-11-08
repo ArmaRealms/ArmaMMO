@@ -1,5 +1,8 @@
 package com.gmail.nossr50.util.adapter;
 
+import org.bukkit.block.Biome;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -9,8 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import org.bukkit.block.Biome;
-import org.jetbrains.annotations.NotNull;
 
 public class BiomeAdapter {
     public static final Set<Biome> ICE_BIOMES;

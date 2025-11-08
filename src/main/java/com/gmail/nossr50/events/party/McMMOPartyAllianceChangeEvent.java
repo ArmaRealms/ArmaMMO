@@ -7,13 +7,17 @@ import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancellable {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final HandlerList handlers = new HandlerList();
     private final String oldAlly;
     private final String newAlly;
     private final EventReason reason;
     private boolean cancelled;
 
     public McMMOPartyAllianceChangeEvent(Player player, String oldAlly, String newAlly,
-            EventReason reason) {
+                                         EventReason reason) {
         super(player);
 
         if (newAlly != null) {
@@ -24,6 +28,10 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
         this.newAlly = newAlly;
         this.reason = reason;
         this.cancelled = false;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -48,6 +56,24 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
     }
 
     /**
+     * Following are required for Cancellable
+     **/
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void setCancelled(boolean cancelled) {
+        this.cancelled = cancelled;
+    }
+
+    @Override
+    public @NotNull HandlerList getHandlers() {
+        return handlers;
+    }
+
+    /**
      * A list of reasons why the event may have been fired
      */
     public enum EventReason {
@@ -65,32 +91,5 @@ public class McMMOPartyAllianceChangeEvent extends PlayerEvent implements Cancel
          * Any reason that doesn't fit elsewhere.
          */
         CUSTOM
-    }
-
-    /**
-     * Following are required for Cancellable
-     **/
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
-    }
-
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final HandlerList handlers = new HandlerList();
-
-    @Override
-    public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 }

@@ -11,42 +11,42 @@ public final class AbilityAPI {
     private AbilityAPI() {
     }
 
-    public static boolean berserkEnabled(Player player) {
+    public static boolean berserkEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.BERSERK);
     }
 
-    public static boolean gigaDrillBreakerEnabled(Player player) {
+    public static boolean gigaDrillBreakerEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.GIGA_DRILL_BREAKER);
     }
 
-    public static boolean greenTerraEnabled(Player player) {
+    public static boolean greenTerraEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.GREEN_TERRA);
     }
 
-    public static boolean serratedStrikesEnabled(Player player) {
+    public static boolean serratedStrikesEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.SERRATED_STRIKES);
     }
 
-    public static boolean skullSplitterEnabled(Player player) {
+    public static boolean skullSplitterEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.SKULL_SPLITTER);
     }
 
-    public static boolean superBreakerEnabled(Player player) {
+    public static boolean superBreakerEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.SUPER_BREAKER);
     }
 
-    public static boolean treeFellerEnabled(Player player) {
+    public static boolean treeFellerEnabled(final Player player) {
         return hasAbilityEnabled(player, SuperAbilityType.TREE_FELLER);
     }
 
-    public static boolean isAnyAbilityEnabled(Player player) {
+    public static boolean isAnyAbilityEnabled(final Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if(mmoPlayer == null) {
+        if (mmoPlayer == null) {
             return false;
         }
 
-        for (SuperAbilityType ability : SuperAbilityType.values()) {
+        for (final SuperAbilityType ability : SuperAbilityType.values()) {
             if (mmoPlayer.getAbilityMode(ability)) {
                 return true;
             }
@@ -55,60 +55,60 @@ public final class AbilityAPI {
         return false;
     }
 
-    private static boolean hasAbilityEnabled(Player player, SuperAbilityType ability) {
-        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+    private static boolean hasAbilityEnabled(final Player player, final SuperAbilityType ability) {
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         return mmoPlayer != null && mmoPlayer.getAbilityMode(ability);
     }
 
-    public static void resetCooldowns(Player player) {
-        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+    public static void resetCooldowns(final Player player) {
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if(mmoPlayer == null) {
+        if (mmoPlayer == null) {
             return;
         }
 
         mmoPlayer.resetCooldowns();
     }
 
-    public static void setBerserkCooldown(Player player, long cooldown) {
+    public static void setBerserkCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.BERSERK, cooldown);
     }
 
-    public static void setGigaDrillBreakerCooldown(Player player, long cooldown) {
+    public static void setGigaDrillBreakerCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.GIGA_DRILL_BREAKER, cooldown);
     }
 
-    public static void setGreenTerraCooldown(Player player, long cooldown) {
+    public static void setGreenTerraCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.GREEN_TERRA, cooldown);
     }
 
-    public static void setSerratedStrikesCooldown(Player player, long cooldown) {
+    public static void setSerratedStrikesCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.SERRATED_STRIKES, cooldown);
     }
 
-    public static void setSkullSplitterCooldown(Player player, long cooldown) {
+    public static void setSkullSplitterCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.SKULL_SPLITTER, cooldown);
     }
 
-    public static void setSuperBreakerCooldown(Player player, long cooldown) {
+    public static void setSuperBreakerCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.SUPER_BREAKER, cooldown);
     }
 
-    public static void setTreeFellerCooldown(Player player, long cooldown) {
+    public static void setTreeFellerCooldown(final Player player, final long cooldown) {
         setAbilityCooldown(player, SuperAbilityType.TREE_FELLER, cooldown);
     }
 
-    private static void setAbilityCooldown(Player player, SuperAbilityType ability, long cooldown) {
-        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+    private static void setAbilityCooldown(final Player player, final SuperAbilityType ability, final long cooldown) {
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if(mmoPlayer == null) {
+        if (mmoPlayer == null) {
             return;
         }
 
         mmoPlayer.setAbilityDATS(ability, cooldown);
     }
 
-    public static boolean isBleeding(LivingEntity entity) {
+    public static boolean isBleeding(final LivingEntity entity) {
         if (entity.isValid()) {
             return entity.hasMetadata(MetadataConstants.METADATA_KEY_RUPTURE);
         }

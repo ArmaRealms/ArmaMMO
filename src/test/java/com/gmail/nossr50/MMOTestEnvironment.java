@@ -6,7 +6,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.AdvancedConfig;
 import com.gmail.nossr50.config.ChatConfig;
@@ -31,8 +30,6 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.sounds.SoundManager;
-import java.util.UUID;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -48,6 +45,9 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.UUID;
+import java.util.logging.Logger;
 
 public abstract class MMOTestEnvironment {
     protected MockedStatic<Bukkit> mockedBukkit;
@@ -87,7 +87,7 @@ public abstract class MMOTestEnvironment {
 
     protected CompatibilityManager compatibilityManager;
 
-    protected void mockBaseEnvironment(Logger logger) throws InvalidSkillException {
+    protected void mockBaseEnvironment(final Logger logger) throws InvalidSkillException {
         compatibilityManager = mock(CompatibilityManager.class);
         final MinecraftGameVersion minecraftGameVersion = mock(MinecraftGameVersion.class);
         when(compatibilityManager.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
@@ -152,7 +152,7 @@ public abstract class MMOTestEnvironment {
         when(Bukkit.getPluginManager()).thenReturn(pluginManager);
         // return the argument provided when call event is invoked on plugin manager mock
         doAnswer(invocation -> {
-            Object[] args = invocation.getArguments();
+            final Object[] args = invocation.getArguments();
             return args[0];
         }).when(pluginManager).callEvent(any(Event.class));
 
@@ -175,8 +175,8 @@ public abstract class MMOTestEnvironment {
         this.playerInventory = mock(PlayerInventory.class);
         when(player.getInventory()).thenReturn(playerInventory);
         // player location
-        Location playerLocation = mock(Location.class);
-        Block playerLocationBlock = mock(Block.class);
+        final Location playerLocation = mock(Location.class);
+        final Block playerLocationBlock = mock(Block.class);
         when(player.getLocation()).thenReturn(playerLocation);
         when(playerLocation.getBlock()).thenReturn(playerLocationBlock);
         // when(playerLocationBlock.getType()).thenReturn(Material.AIR);

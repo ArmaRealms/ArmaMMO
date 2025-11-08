@@ -1,7 +1,6 @@
 package com.gmail.nossr50.runnables.items;
 
 import static com.gmail.nossr50.util.ChimaeraWing.expendChimaeraWing;
-
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
@@ -23,7 +22,7 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
     private final McMMOPlayer mmoPlayer;
     private final Location location;
 
-    public ChimaeraWingWarmup(McMMOPlayer mmoPlayer, Location location) {
+    public ChimaeraWingWarmup(final McMMOPlayer mmoPlayer, final Location location) {
         this.mmoPlayer = mmoPlayer;
         this.location = location;
     }
@@ -53,11 +52,11 @@ public class ChimaeraWingWarmup extends CancellableRunnable {
             return;
         }
 
-        long recentlyHurt = mmoPlayer.getRecentlyHurt();
-        int hurtCooldown = mcMMO.p.getGeneralConfig().getChimaeraRecentlyHurtCooldown();
+        final long recentlyHurt = mmoPlayer.getRecentlyHurt();
+        final int hurtCooldown = mcMMO.p.getGeneralConfig().getChimaeraRecentlyHurtCooldown();
 
         if (hurtCooldown > 0) {
-            int timeRemaining = SkillUtils.calculateTimeLeft(
+            final int timeRemaining = SkillUtils.calculateTimeLeft(
                     recentlyHurt * Misc.TIME_CONVERSION_FACTOR, hurtCooldown, player);
 
             if (timeRemaining > 0) {

@@ -1,49 +1,88 @@
 package com.gmail.nossr50.commands.party;
 
-public enum PartySubcommandType {
-    JOIN,
-    ACCEPT,
-    CREATE,
-    HELP,
-    INFO,
-    QUIT,
-    XPSHARE,
-    ITEMSHARE,
-    INVITE,
-    KICK,
-    DISBAND,
-    OWNER,
-    LOCK,
-    UNLOCK,
-    PASSWORD,
-    RENAME,
-    TELEPORT,
-    CHAT,
-    ALLIANCE;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-    public static PartySubcommandType getSubcommand(String commandName) {
+import java.util.ArrayList;
+import java.util.List;
+
+public enum PartySubcommandType {
+    JOIN("entrar"),
+    ACCEPT("aceitar"),
+    CREATE("criar"),
+    HELP("ajuda"),
+    INFO("info"),
+    QUIT("sair"),
+    XPSHARE("xpshare"),
+    ITEMSHARE("itemshare"),
+    INVITE("convidar"),
+    KICK("expulsar"),
+    DISBAND("debandar"),
+    OWNER("dono"),
+    LOCK("travar"),
+    UNLOCK("destravar"),
+    PASSWORD("senha"),
+    RENAME("renomear"),
+    TELEPORT("teleportar"),
+    CHAT("chat"),
+    ALLIANCE("alianca");
+
+    private static final List<String> HELP_ALIAS = List.of("?", "ajuda");
+    private static final List<String> QUIT_ALIAS = List.of("q", "leave", "sair");
+    private static final List<String> OWNER_ALIAS = List.of("leader", "lider");
+    private static final List<String> XPSHARE_ALIAS = List.of("xpshare", "shareexp", "sharexp");
+    private static final List<String> ITEMSHARE_ALIAS = List.of("shareitem", "shareitems");
+    private static final List<String> ALLIANCE_ALIAS = List.of("ally", "aliado");
+    private final String commandName;
+
+    PartySubcommandType(String commandName) {
+        this.commandName = commandName;
+    }
+
+    public static @NotNull List<String> getSubcommands() {
+        List<String> subcommands = new ArrayList<>();
+        for (PartySubcommandType subcommand : PartySubcommandType.values()) {
+            subcommands.add(subcommand.string());
+        }
+
+        return subcommands;
+    }
+
+    public static @Nullable PartySubcommandType getSubcommand(String commandName) {
         for (PartySubcommandType command : values()) {
-            if (command.name().equalsIgnoreCase(commandName)) {
+            if (command.string().equalsIgnoreCase(commandName)) {
                 return command;
             }
         }
 
-        if (commandName.equalsIgnoreCase("?")) {
+        if (HELP_ALIAS.contains(commandName)) {
             return HELP;
-        } else if (commandName.equalsIgnoreCase("q") || commandName.equalsIgnoreCase("leave")) {
+        }
+
+        if (QUIT_ALIAS.contains(commandName)) {
             return QUIT;
-        } else if (commandName.equalsIgnoreCase("leader")) {
+        }
+
+        if (OWNER_ALIAS.contains(commandName)) {
             return OWNER;
-        } else if (commandName.equalsIgnoreCase("xpshare") || commandName.equalsIgnoreCase(
-                "shareexp") || commandName.equalsIgnoreCase("sharexp")) {
+        }
+
+        if (XPSHARE_ALIAS.contains(commandName)) {
             return XPSHARE;
-        } else if (commandName.equalsIgnoreCase("shareitem") || commandName.equalsIgnoreCase(
-                "shareitems")) {
+        }
+
+        if (ITEMSHARE_ALIAS.contains(commandName)) {
             return ITEMSHARE;
-        } else if (commandName.equalsIgnoreCase("ally")) {
+        }
+
+        if (ALLIANCE_ALIAS.contains(commandName)) {
             return ALLIANCE;
         }
 
         return null;
+    }
+
+    public String string() {
+        return commandName;
     }
 }

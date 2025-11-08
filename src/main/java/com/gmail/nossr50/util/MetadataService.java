@@ -17,10 +17,6 @@ public final class MetadataService {
     static final @NotNull NamespacedKey NSK_CONTAINER_UUID_MOST_SIG;
     static final @NotNull NamespacedKey NSK_CONTAINER_UUID_LEAST_SIG;
 
-    private MetadataService() {
-        // private ctor
-    }
-
     static {
         NSK_SUPER_ABILITY_BOOSTED_ITEM = getNamespacedKey(
                 MetadataConstants.METADATA_KEY_SUPER_ABILITY_BOOSTED_ITEM);
@@ -40,13 +36,17 @@ public final class MetadataService {
                 MetadataConstants.METADATA_KEY_CONTAINER_UUID_LEAST_SIG);
     }
 
+    private MetadataService() {
+        // private ctor
+    }
+
     /**
      * Helper method to simplify generating namespaced keys
      *
      * @param key the {@link String} value of the key
      * @return the generated {@link NamespacedKey}
      */
-    public static @NotNull NamespacedKey getNamespacedKey(@NotNull String key) {
+    public static @NotNull NamespacedKey getNamespacedKey(@NotNull final String key) {
         return new NamespacedKey(mcMMO.p, key);
     }
 }

@@ -2,39 +2,40 @@ package com.gmail.nossr50.util.sounds;
 
 import com.gmail.nossr50.config.SoundConfig;
 import com.gmail.nossr50.util.Misc;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class SoundManager {
 
     private static final Map<SoundType, Sound> soundCache = new ConcurrentHashMap<>();
     private static final String NULL_FALLBACK_ID = null;
-    private static Sound CRIPPLE_SOUND;
     private static final String ITEM_MACE_SMASH_GROUND = "ITEM_MACE_SMASH_GROUND";
     private static final String VALUE_OF = "valueOf";
     private static final String ORG_BUKKIT_SOUND = "org.bukkit.Sound";
+    private static Sound CRIPPLE_SOUND;
 
     /**
      * Sends a sound to the player
      *
      * @param soundType the type of sound
      */
-    public static void sendSound(Player player, Location location, SoundType soundType) {
+    public static void sendSound(final Player player, final Location location, final SoundType soundType) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             player.playSound(location, getSound(soundType),
                     SoundCategory.MASTER, getVolume(soundType), getPitch(soundType));
         }
     }
 
-    public static void sendCategorizedSound(Location location, SoundType soundType,
-            SoundCategory soundCategory) {
+    public static void sendCategorizedSound(final Location location, final SoundType soundType,
+                                            final SoundCategory soundCategory) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             final World world = location.getWorld();
             if (world != null) {
@@ -44,30 +45,30 @@ public class SoundManager {
         }
     }
 
-    public static void sendCategorizedSound(Location location, SoundType soundType,
-            SoundCategory soundCategory,
-            float pitchModifier) {
+    public static void sendCategorizedSound(final Location location, final SoundType soundType,
+                                            final SoundCategory soundCategory,
+                                            final float pitchModifier) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             final World world = location.getWorld();
             if (world != null) {
-                float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
+                final float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
                 world.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
                         totalPitch);
             }
         }
     }
 
-    public static void sendCategorizedSound(Player player, Location location,
-            SoundType soundType, SoundCategory soundCategory) {
+    public static void sendCategorizedSound(final Player player, final Location location,
+                                            final SoundType soundType, final SoundCategory soundCategory) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
                     getPitch(soundType));
         }
     }
 
-    public static void sendCategorizedSound(Player player, Location location,
-            SoundType soundType, SoundCategory soundCategory, float pitchModifier) {
-        float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
+    public static void sendCategorizedSound(final Player player, final Location location,
+                                            final SoundType soundType, final SoundCategory soundCategory, final float pitchModifier) {
+        final float totalPitch = Math.min(2.0F, (getPitch(soundType) + pitchModifier));
 
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             player.playSound(location, getSound(soundType), soundCategory, getVolume(soundType),
@@ -75,14 +76,14 @@ public class SoundManager {
         }
     }
 
-    public static void worldSendSound(World world, Location location, SoundType soundType) {
+    public static void worldSendSound(final World world, final Location location, final SoundType soundType) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             world.playSound(location, getSound(soundType), getVolume(soundType),
                     getPitch(soundType));
         }
     }
 
-    public static void worldSendSoundMaxPitch(World world, Location location, SoundType soundType) {
+    public static void worldSendSoundMaxPitch(final World world, final Location location, final SoundType soundType) {
         if (SoundConfig.getInstance().getIsEnabled(soundType)) {
             world.playSound(location, getSound(soundType), getVolume(soundType), 2.0F);
         }
@@ -94,21 +95,20 @@ public class SoundManager {
      * @param soundType target soundtype
      * @return the volume for this soundtype
      */
-    private static float getVolume(SoundType soundType) {
+    private static float getVolume(final SoundType soundType) {
         return SoundConfig.getInstance().getVolume(soundType) * SoundConfig.getInstance()
                 .getMasterVolume();
     }
 
-    private static float getPitch(SoundType soundType) {
-        return switch (soundType)
-        {
+    private static float getPitch(final SoundType soundType) {
+        return switch (soundType) {
             case FIZZ -> getFizzPitch();
             case POP -> getPopPitch();
             default -> SoundConfig.getInstance().getPitch(soundType);
         };
     }
 
-    private static Sound getSound(SoundType soundType) {
+    private static Sound getSound(final SoundType soundType) {
         final String soundId = SoundConfig.getInstance().getSound(soundType);
 
         // Legacy versions use a different lookup method
@@ -120,7 +120,7 @@ public class SoundManager {
             return soundCache.get(soundType);
         }
 
-        Sound sound;
+        final Sound sound;
         if (soundId != null && !soundId.isEmpty()) {
             sound = SoundRegistryUtils.getSound(soundId, soundType.id());
         } else {
@@ -135,20 +135,20 @@ public class SoundManager {
         throw new RuntimeException("Could not find Sound for SoundType: " + soundType);
     }
 
-    private static Sound getSoundLegacyCustom(String id, SoundType soundType) {
+    private static Sound getSoundLegacyCustom(final String id, final SoundType soundType) {
         if (soundCache.containsKey(soundType)) {
             return soundCache.get(soundType);
         }
 
         // Try to look up a custom legacy sound
         if (id != null && !id.isEmpty()) {
-            Sound sound;
+            final Sound sound;
             if (Sound.class.isEnum()) {
                 // Sound is only an ENUM in legacy versions
                 // Use reflection to loop through the values, finding the first enum matching our ID
                 try {
-                    Method method = Sound.class.getMethod("getKey");
-                    for (Object legacyEnumEntry : Sound.class.getEnumConstants()) {
+                    final Method method = Sound.class.getMethod("getKey");
+                    for (final Object legacyEnumEntry : Sound.class.getEnumConstants()) {
                         // This enum extends Keyed which adds the getKey() method
                         // we need to invoke this method to get the NamespacedKey and compare to our ID
                         if (method.invoke(legacyEnumEntry).toString().equals(id)) {
@@ -157,8 +157,8 @@ public class SoundManager {
                             return sound;
                         }
                     }
-                } catch (NoSuchMethodException | InvocationTargetException |
-                         IllegalAccessException e) {
+                } catch (final NoSuchMethodException | InvocationTargetException |
+                               IllegalAccessException e) {
                     // Ignore
                 }
             }
@@ -171,7 +171,7 @@ public class SoundManager {
         return sound;
     }
 
-    private static Sound getSoundLegacyFallBack(SoundType soundType) {
+    private static Sound getSoundLegacyFallBack(final SoundType soundType) {
         return switch (soundType) {
             case ANVIL -> Sound.BLOCK_ANVIL_PLACE;
             case ITEM_BREAK -> Sound.ENTITY_ITEM_BREAK;
@@ -201,9 +201,9 @@ public class SoundManager {
             final Class<?> clazz = Class.forName(ORG_BUKKIT_SOUND);
             final Method valueOf = clazz.getMethod(VALUE_OF);
             CRIPPLE_SOUND = (Sound) valueOf.invoke(null, ITEM_MACE_SMASH_GROUND);
-        } catch (IllegalArgumentException | ClassNotFoundException | NoSuchMethodException |
-                 InvocationTargetException
-                 | IllegalAccessException e) {
+        } catch (final IllegalArgumentException | ClassNotFoundException | NoSuchMethodException |
+                       InvocationTargetException
+                       | IllegalAccessException e) {
             CRIPPLE_SOUND = Sound.BLOCK_ANVIL_PLACE;
         }
 

@@ -11,22 +11,23 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.SkillUnlockNotificationTask;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import java.util.HashMap;
 
 public class RankUtils {
     private static HashMap<String, HashMap<Integer, Integer>> subSkillRanks;
     private static int count = 0;
 
     /**
-     * @param plugin plugin instance ref
-     * @param mmoPlayer target player
+     * @param plugin           plugin instance ref
+     * @param mmoPlayer        target player
      * @param primarySkillType the skill to check
-     * @param newLevel the new level of this skill
+     * @param newLevel         the new level of this skill
      */
     public static void executeSkillUnlockNotifications(Plugin plugin, McMMOPlayer mmoPlayer,
-            PrimarySkillType primarySkillType, int newLevel) {
+                                                       PrimarySkillType primarySkillType, int newLevel) {
         for (SubSkillType subSkillType : mcMMO.p.getSkillTools().getSubSkills(primarySkillType)) {
             int playerRankInSkill = getRank(mmoPlayer.getPlayer(), subSkillType);
 
@@ -102,7 +103,7 @@ public class RankUtils {
     /**
      * Returns whether the player has unlocked the first rank in target subskill
      *
-     * @param player the player
+     * @param player       the player
      * @param subSkillType the target subskill
      * @return true if the player has at least one rank in the skill
      */
@@ -116,7 +117,7 @@ public class RankUtils {
     /**
      * Returns whether the player has unlocked the first rank in target subskill
      *
-     * @param player the player
+     * @param player           the player
      * @param abstractSubSkill the target subskill
      * @return true if the player has at least one rank in the skill
      */
@@ -130,8 +131,8 @@ public class RankUtils {
     /**
      * Returns whether the player has reached the specified rank in target subskill
      *
-     * @param rank the target rank
-     * @param player the player
+     * @param rank         the target rank
+     * @param player       the player
      * @param subSkillType the target subskill
      * @return true if the player is at least that rank in this subskill
      */
@@ -142,20 +143,20 @@ public class RankUtils {
     /**
      * Returns whether the player has reached the specified rank in target subskill
      *
-     * @param rank the target rank
-     * @param player the player
+     * @param rank             the target rank
+     * @param player           the player
      * @param abstractSubSkill the target subskill
      * @return true if the player is at least that rank in this subskill
      */
     public static boolean hasReachedRank(int rank, Player player,
-            AbstractSubSkill abstractSubSkill) {
+                                         AbstractSubSkill abstractSubSkill) {
         return getRank(player, abstractSubSkill) >= rank;
     }
 
     /**
      * Gets the current rank of the subskill for the player
      *
-     * @param mmoPlayer The player in question
+     * @param mmoPlayer    The player in question
      * @param subSkillType Target subskill
      * @return The rank the player currently has achieved in this skill. -1 for skills without
      * ranks.
@@ -167,7 +168,7 @@ public class RankUtils {
     /**
      * Gets the current rank of the subskill for the player
      *
-     * @param player The player in question
+     * @param player       The player in question
      * @param subSkillType Target subskill
      * @return The rank the player currently has achieved in this skill. -1 for skills without
      * ranks.
@@ -221,7 +222,7 @@ public class RankUtils {
     /**
      * Gets the current rank of the subskill for the player
      *
-     * @param player The player in question
+     * @param player           The player in question
      * @param abstractSubSkill Target subskill
      * @return The rank the player currently has achieved in this skill. -1 for skills without
      * ranks.
@@ -276,7 +277,7 @@ public class RankUtils {
      * Adds ranks to our map
      *
      * @param abstractSubSkill The subskill to add ranks for
-     * @param rank The rank to add
+     * @param rank             The rank to add
      */
     private static void addRank(AbstractSubSkill abstractSubSkill, int rank) {
         initMaps(abstractSubSkill.getConfigKeyName());
@@ -307,7 +308,7 @@ public class RankUtils {
      * Gets the unlock level for a specific rank in a subskill
      *
      * @param subSkillType The target subskill
-     * @param rank The target rank
+     * @param rank         The target rank
      * @return The level at which this rank unlocks
      */
     public static int getRankUnlockLevel(SubSkillType subSkillType, int rank) {

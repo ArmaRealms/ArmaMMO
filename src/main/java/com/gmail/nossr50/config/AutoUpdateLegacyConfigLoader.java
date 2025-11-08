@@ -2,13 +2,14 @@ package com.gmail.nossr50.config;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class AutoUpdateLegacyConfigLoader extends LegacyConfigLoader {
     public AutoUpdateLegacyConfigLoader(String relativePath, String fileName, File dataFolder) {

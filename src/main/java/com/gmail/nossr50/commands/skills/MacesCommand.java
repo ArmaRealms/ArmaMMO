@@ -2,7 +2,6 @@ package com.gmail.nossr50.commands.skills;
 
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_CRIPPLE;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_MACES_LIMIT_BREAK;
-
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
@@ -12,23 +11,24 @@ import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MacesCommand extends SkillCommand {
+
+    String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers, crippleLengthAgainstMobs;
 
     public MacesCommand() {
         super(PrimarySkillType.MACES);
     }
 
-    String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers, crippleLengthAgainstMobs;
-
     @Override
-    protected void dataCalculations(Player player, float skillValue) {
+    protected void dataCalculations(final Player player, final float skillValue) {
         if (SkillUtils.canUseSubskill(player, MACES_CRIPPLE)) {
-            int crippleRank = RankUtils.getRank(player, MACES_CRIPPLE);
+            final int crippleRank = RankUtils.getRank(player, MACES_CRIPPLE);
             crippleLengthAgainstPlayers = String.valueOf(
                     MacesManager.getCrippleTickDuration(true) / 20.0D);
             crippleLengthAgainstMobs = String.valueOf(
@@ -42,12 +42,12 @@ public class MacesCommand extends SkillCommand {
     }
 
     @Override
-    protected void permissionsCheck(Player player) {
+    protected void permissionsCheck(final Player player) {
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
+    protected List<String> statsDisplay(final Player player, final float skillValue, final boolean hasEndurance,
+                                        final boolean isLucky) {
         final List<String> messages = new ArrayList<>();
 
         if (SkillUtils.canUseSubskill(player, MACES_MACES_LIMIT_BREAK)) {
@@ -74,8 +74,8 @@ public class MacesCommand extends SkillCommand {
     }
 
     @Override
-    protected List<Component> getTextComponents(Player player) {
-        List<Component> textComponents = new ArrayList<>();
+    protected List<Component> getTextComponents(final Player player) {
+        final List<Component> textComponents = new ArrayList<>();
 
         TextComponentFactory.getSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.MACES);

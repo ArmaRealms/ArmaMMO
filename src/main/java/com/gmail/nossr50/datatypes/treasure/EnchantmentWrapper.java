@@ -4,22 +4,7 @@ import com.google.common.base.Objects;
 import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.NotNull;
 
-public class EnchantmentWrapper {
-    private final @NotNull Enchantment enchantment;
-    private final int enchantmentLevel;
-
-    public EnchantmentWrapper(@NotNull Enchantment enchantment, int enchantmentLevel) {
-        this.enchantment = enchantment;
-        this.enchantmentLevel = enchantmentLevel;
-    }
-
-    public @NotNull Enchantment getEnchantment() {
-        return enchantment;
-    }
-
-    public int getEnchantmentLevel() {
-        return enchantmentLevel;
-    }
+public record EnchantmentWrapper(@NotNull Enchantment enchantment, int enchantmentLevel) {
 
     @Override
     public String toString() {
@@ -30,14 +15,14 @@ public class EnchantmentWrapper {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        EnchantmentWrapper that = (EnchantmentWrapper) o;
+        final EnchantmentWrapper that = (EnchantmentWrapper) o;
         return enchantmentLevel == that.enchantmentLevel && Objects.equal(enchantment,
                 that.enchantment);
     }

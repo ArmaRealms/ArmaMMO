@@ -7,15 +7,12 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.treasure.ExcavationTreasure;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -25,6 +22,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class ExcavationTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(
@@ -68,11 +68,11 @@ class ExcavationTest extends MMOTestEnvironment {
         mmoPlayer.modifySkill(PrimarySkillType.EXCAVATION, 1000);
 
         // Wire block
-        Block block = Mockito.mock(Block.class);
+        final Block block = Mockito.mock(Block.class);
         when(block.getType()).thenReturn(Material.SAND);
         when(block.getDrops(any())).thenReturn(null);
 
-        ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
+        final ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
         doReturn(getGuaranteedTreasureDrops()).when(excavationManager).getTreasures(block);
         excavationManager.excavationBlockCheck(block);
 
@@ -86,11 +86,11 @@ class ExcavationTest extends MMOTestEnvironment {
         mmoPlayer.modifySkill(PrimarySkillType.EXCAVATION, 1000);
 
         // Wire block
-        Block block = Mockito.mock(Block.class);
+        final Block block = Mockito.mock(Block.class);
         when(block.getType()).thenReturn(Material.SAND);
         when(block.getDrops(any())).thenReturn(null);
 
-        ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
+        final ExcavationManager excavationManager = Mockito.spy(new ExcavationManager(mmoPlayer));
         doReturn(getImpossibleTreasureDrops()).when(excavationManager).getTreasures(block);
         excavationManager.excavationBlockCheck(block);
 
@@ -101,13 +101,13 @@ class ExcavationTest extends MMOTestEnvironment {
     }
 
     private List<ExcavationTreasure> getGuaranteedTreasureDrops() {
-        List<ExcavationTreasure> treasures = new ArrayList<>();
+        final List<ExcavationTreasure> treasures = new ArrayList<>();
         treasures.add(new ExcavationTreasure(new ItemStack(Material.CAKE), 1, 100, 1));
         return treasures;
     }
 
     private List<ExcavationTreasure> getImpossibleTreasureDrops() {
-        List<ExcavationTreasure> treasures = new ArrayList<>();
+        final List<ExcavationTreasure> treasures = new ArrayList<>();
         treasures.add(new ExcavationTreasure(new ItemStack(Material.CAKE), 1, 0, 1));
         return treasures;
     }

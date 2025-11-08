@@ -17,7 +17,7 @@ public class NMSConstants {
      * @return the fully qualified path of a CB class
      */
     protected static String getFullyQualifiedCraftBukkitPath(String cbVersionPackage,
-            String targetClass) {
+                                                             String targetClass) {
         return CRAFT_BUKKIT_PACKAGE_PATH + "." + cbVersionPackage + "." + targetClass;
     }
 
@@ -26,7 +26,7 @@ public class NMSConstants {
     }
 
     protected static String getFullyQualifiedNMSPath(String cbVersionPackage,
-            String fromSourceRoot) {
+                                                     String fromSourceRoot) {
         return NET_MINECRAFT_SERVER + "." + cbVersionPackage + "." + fromSourceRoot;
     }
 

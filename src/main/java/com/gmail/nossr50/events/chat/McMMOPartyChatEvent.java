@@ -13,7 +13,7 @@ public class McMMOPartyChatEvent extends McMMOChatEvent {
     private final @NotNull Party targetParty;
 
     public McMMOPartyChatEvent(@NotNull Plugin pluginRef, @NotNull PartyChatMessage chatMessage,
-            @NotNull Party party, boolean isAsync) {
+                               @NotNull Party party, boolean isAsync) {
         super(pluginRef, chatMessage, isAsync);
         this.party = party.getName();
         this.targetParty = party;

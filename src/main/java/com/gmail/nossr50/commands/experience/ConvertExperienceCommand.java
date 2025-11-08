@@ -6,17 +6,18 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.database.FormulaConversionTask;
 import com.gmail.nossr50.runnables.player.PlayerProfileLoadingTask;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.Locale;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Locale;
+
 public class ConvertExperienceCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (args.length == 2) {
             FormulaType previousType = mcMMO.getFormulaManager().getPreviousFormulaType();
             FormulaType newType = FormulaType.getFormulaType(args[1].toUpperCase(Locale.ENGLISH));
