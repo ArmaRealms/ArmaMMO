@@ -82,7 +82,11 @@ public final class XPBoostAmount {
     }
 
     public static XPBoostAmount valueOf(String name) {
-        return VALUES.get(name);
+        XPBoostAmount value = VALUES.get(name);
+        if (value == null) {
+            throw new IllegalArgumentException("No enum constant XPBoostAmount." + name);
+        }
+        return value;
     }
 
     public static List<XPBoostAmount> values() {

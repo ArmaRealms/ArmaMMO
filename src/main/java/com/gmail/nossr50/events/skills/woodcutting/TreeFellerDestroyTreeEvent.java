@@ -24,7 +24,7 @@ public class TreeFellerDestroyTreeEvent extends Event implements Cancellable {
     }
 
     /**
-     * The players involved in this event
+     * The player involved in this event
      * @return The player who is felling the tree
      */
     @NotNull
