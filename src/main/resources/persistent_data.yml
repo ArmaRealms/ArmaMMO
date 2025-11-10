@@ -35,3 +35,5 @@ Persistent_Data:
 # We use our own file system for this outside of NBT which has been programmed to be lightning fast
 mcMMO_Region_System:
     Enabled: true
+    # Hook into PlayerBlockTracker plugin if it is installed to use its data instead of mcMMO's built in system
+    Use_PlayerBlockTracker_Hook: false
