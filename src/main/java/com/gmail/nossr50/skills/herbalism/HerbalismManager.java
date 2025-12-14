@@ -148,34 +148,6 @@ public class HerbalismManager extends SkillManager {
         }
     }
 
-    private class CheckBushAge extends CancellableRunnable {
-
-        @NotNull Block block;
-        @NotNull McMMOPlayer mmoPlayer;
-        int xpReward;
-
-        public CheckBushAge(@NotNull Block block, @NotNull McMMOPlayer mmoPlayer, int xpReward) {
-            this.block = block;
-            this.mmoPlayer = mmoPlayer;
-            this.xpReward = xpReward;
-        }
-
-        @Override
-        public void run() {
-            BlockState blockState = block.getState();
-
-            if (blockState.getType().toString().equalsIgnoreCase(SWEET_BERRY_BUSH_ID)) {
-                if (blockState.getBlockData() instanceof Ageable ageable) {
-
-                    if (ageable.getAge() <= 1) {
-                        applyXpGain(xpReward, XPGainReason.PVE, XPGainSource.SELF);
-                    }
-                }
-            }
-        }
-    }
-
-
     public boolean canUseHylianLuck() {
         if (!hasUnlockedSubskill(getPlayer(), SubSkillType.HERBALISM_HYLIAN_LUCK)) return false;
         return isSubSkillEnabled(getPlayer(), SubSkillType.HERBALISM_HYLIAN_LUCK);

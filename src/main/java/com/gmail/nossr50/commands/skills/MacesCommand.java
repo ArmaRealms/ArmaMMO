@@ -19,14 +19,12 @@ import java.util.List;
 
 public class MacesCommand extends SkillCommand {
 
-    String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers, crippleLengthAgainstMobs;
+    private String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers,
+            crippleLengthAgainstMobs;
 
     public MacesCommand() {
         super(PrimarySkillType.MACES);
     }
-
-    String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers,
-            crippleLengthAgainstMobs;
 
     @Override
     protected void dataCalculations(final Player player, final float skillValue) {
