@@ -124,7 +124,7 @@ public class WoodcuttingCommand extends SkillCommand {
     protected List<Component> getTextComponents(final Player player) {
         final List<Component> textComponents = new ArrayList<>();
 
-        TextComponentFactory.getSubSkillTextComponents(player, textComponents,
+        TextComponentFactory.appendSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.WOODCUTTING);
 
         return textComponents;

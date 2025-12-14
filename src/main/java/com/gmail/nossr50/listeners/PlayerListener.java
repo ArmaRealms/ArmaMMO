@@ -160,6 +160,8 @@ public class PlayerListener implements Listener {
         // world blacklist check
         if (WorldBlacklist.isWorldBlacklisted(event.getEntity().getWorld()))
             return;
+        }
+
         // world guard main flag check
         if (WorldGuardUtils.isWorldGuardLoaded() && !WorldGuardManager.getInstance().hasMainFlag((Player) event.getEntity()))
             return;
@@ -325,8 +327,8 @@ public class PlayerListener implements Listener {
         final FishingManager fishingManager = UserManager.getPlayer(player).getFishingManager();
 
         switch (event.getState()) {
+            // CAUGHT_FISH happens for any item caught (including junk and treasure)
             case CAUGHT_FISH:
-                //TODO Update to new API once available! Waiting for case CAUGHT_TREASURE
                 if (event.getCaught() != null) {
                     final Item fishingCatch = (Item) event.getCaught();
 
@@ -641,6 +643,9 @@ public class PlayerListener implements Listener {
      */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPlayerInteractLowest(final PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) {
+            return;
+        }
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getPlayer().getWorld()))
             return;
@@ -696,7 +701,6 @@ public class PlayerListener implements Listener {
                         // Make sure the player knows what he's doing when trying to repair an enchanted item
                         if (repairManager.checkConfirmation(true)) {
                             repairManager.handleRepair(heldItem);
-                            player.updateInventory();
                         }
                     }
                     /* SALVAGE CHECKS */
@@ -712,7 +716,6 @@ public class PlayerListener implements Listener {
                         if (salvageManager.checkConfirmation(true)) {
                             SkillUtils.removeAbilityBoostsFromInventory(player);
                             salvageManager.handleSalvage(clickedBlock.getLocation(), heldItem);
-                            player.updateInventory();
                         }
                     }
 
@@ -768,6 +771,9 @@ public class PlayerListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerInteractMonitor(final PlayerInteractEvent event) {
+        if (event.getAction() == Action.PHYSICAL) {
+            return;
+        }
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getPlayer().getWorld()))
             return;
@@ -864,7 +870,6 @@ public class PlayerListener implements Listener {
                         if (!EventUtils.callSubSkillBlockEvent(player, SubSkillType.HERBALISM_GREEN_THUMB, block).isCancelled()) {
                             // Bukkit.getPluginManager().callEvent(fakeSwing);
                             player.getInventory().getItemInMainHand().setAmount(heldItem.getAmount() - 1);
-                            player.updateInventory();
                             if (herbalismManager.processGreenThumbBlocks(blockState) && EventUtils.simulateBlockBreak(block, player)) {
                                 blockState.update(true);
                             }

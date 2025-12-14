@@ -25,6 +25,9 @@ public class MacesCommand extends SkillCommand {
         super(PrimarySkillType.MACES);
     }
 
+    String crippleChanceToApply, crippleChanceToApplyLucky, crippleLengthAgainstPlayers,
+            crippleLengthAgainstMobs;
+
     @Override
     protected void dataCalculations(final Player player, final float skillValue) {
         if (SkillUtils.canUseSubskill(player, MACES_CRIPPLE)) {
@@ -33,7 +36,6 @@ public class MacesCommand extends SkillCommand {
                     MacesManager.getCrippleTickDuration(true) / 20.0D);
             crippleLengthAgainstMobs = String.valueOf(
                     MacesManager.getCrippleTickDuration(false) / 20.0D);
-
             crippleChanceToApply =
                     mcMMO.p.getAdvancedConfig().getCrippleChanceToApplyOnHit(crippleRank) + "%";
             crippleChanceToApplyLucky = String.valueOf(
@@ -77,7 +79,7 @@ public class MacesCommand extends SkillCommand {
     protected List<Component> getTextComponents(final Player player) {
         final List<Component> textComponents = new ArrayList<>();
 
-        TextComponentFactory.getSubSkillTextComponents(player, textComponents,
+        TextComponentFactory.appendSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.MACES);
 
         return textComponents;

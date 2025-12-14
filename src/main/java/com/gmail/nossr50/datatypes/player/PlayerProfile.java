@@ -84,7 +84,7 @@ public class PlayerProfile {
         this.loaded = isLoaded;
     }
 
-    public PlayerProfile(@NotNull final String playerName, final UUID uuid, final boolean isLoaded, final int startingLvl) {
+    public PlayerProfile(@NotNull final String playerName, @Nullable final UUID uuid, final boolean isLoaded, final int startingLvl) {
         this(playerName, uuid, startingLvl);
         this.loaded = isLoaded;
     }

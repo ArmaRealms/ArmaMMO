@@ -182,7 +182,5 @@ public final class ShareHandler {
         if (!winningPlayer.getInventory().addItem(drop).isEmpty()) {
             winningPlayer.getWorld().dropItem(winningPlayer.getLocation(), drop);
         }
-
-        winningPlayer.updateInventory();
     }
 }
