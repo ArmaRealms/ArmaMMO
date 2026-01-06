@@ -544,6 +544,12 @@
             <version>0.5.1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.Flo0</groupId>
+            <artifactId>PlayerBlockTracker</artifactId>
+            <version>1.0.2</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
