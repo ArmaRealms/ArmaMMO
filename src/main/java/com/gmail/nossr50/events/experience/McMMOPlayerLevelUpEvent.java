@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when a user levels up in a skill
  */
 public class McMMOPlayerLevelUpEvent extends McMMOPlayerLevelChangeEvent {
+    private static final HandlerList handlers = new HandlerList();
     private int levelsGained;
 
     @Deprecated
@@ -25,22 +26,19 @@ public class McMMOPlayerLevelUpEvent extends McMMOPlayerLevelChangeEvent {
     }
 
     public McMMOPlayerLevelUpEvent(Player player, PrimarySkillType skill,
-            XPGainReason xpGainReason) {
+                                   XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
         this.levelsGained = 1;
     }
 
     public McMMOPlayerLevelUpEvent(Player player, PrimarySkillType skill, int levelsGained,
-            XPGainReason xpGainReason) {
+                                   XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
         this.levelsGained = levelsGained;
     }
 
-    /**
-     * @param levelsGained Set the number of levels gained in this event
-     */
-    public void setLevelsGained(int levelsGained) {
-        this.levelsGained = levelsGained;
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -50,14 +48,15 @@ public class McMMOPlayerLevelUpEvent extends McMMOPlayerLevelChangeEvent {
         return levelsGained;
     }
 
-    private static final HandlerList handlers = new HandlerList();
+    /**
+     * @param levelsGained Set the number of levels gained in this event
+     */
+    public void setLevelsGained(int levelsGained) {
+        this.levelsGained = levelsGained;
+    }
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

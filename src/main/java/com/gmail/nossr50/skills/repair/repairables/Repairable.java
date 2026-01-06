@@ -5,7 +5,6 @@ import com.gmail.nossr50.datatypes.skills.MaterialType;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-
 public interface Repairable {
     /**
      * Gets the type of this repairable item

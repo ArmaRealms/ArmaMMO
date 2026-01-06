@@ -3,11 +3,12 @@ package com.gmail.nossr50.skills.alchemy;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.AlchemyBrewTask;
 import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.Location;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Location;
 
 public final class Alchemy {
     public static final int INGREDIENT_SLOT = 3;

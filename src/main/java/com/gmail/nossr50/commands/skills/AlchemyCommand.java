@@ -7,10 +7,11 @@ import com.gmail.nossr50.skills.alchemy.AlchemyManager;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlchemyCommand extends SkillCommand {
     private String brewSpeed;
@@ -66,7 +67,7 @@ public class AlchemyCommand extends SkillCommand {
 
     @Override
     protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
 
         if (canCatalysis) {

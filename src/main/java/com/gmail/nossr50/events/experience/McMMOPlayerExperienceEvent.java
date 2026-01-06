@@ -1,6 +1,7 @@
 package com.gmail.nossr50.events.experience;
 
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.entity.Player;
@@ -13,10 +14,11 @@ import org.jetbrains.annotations.NotNull;
  * Generic event for mcMMO experience events.
  */
 public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements Cancellable {
-    private boolean cancelled;
+    private static final HandlerList handlers = new HandlerList();
     protected PrimarySkillType skill;
     protected int skillLevel;
     protected XPGainReason xpGainReason;
+    private boolean cancelled;
 
     @Deprecated
     protected McMMOPlayerExperienceEvent(Player player, PrimarySkillType skill) {
@@ -27,17 +29,22 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
     }
 
     protected McMMOPlayerExperienceEvent(Player player, PrimarySkillType skill,
-            XPGainReason xpGainReason) {
+                                         XPGainReason xpGainReason) {
         super(player);
         this.skill = skill;
 
-        if (UserManager.getPlayer(player) != null) {
-            this.skillLevel = UserManager.getPlayer(player).getSkillLevel(skill);
+        McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        if (mmoPlayer != null) {
+            this.skillLevel = mmoPlayer.getSkillLevel(skill);
         } else {
             this.skillLevel = 0;
         }
 
         this.xpGainReason = xpGainReason;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -74,14 +81,8 @@ public abstract class McMMOPlayerExperienceEvent extends PlayerEvent implements 
         this.cancelled = cancelled;
     }
 
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

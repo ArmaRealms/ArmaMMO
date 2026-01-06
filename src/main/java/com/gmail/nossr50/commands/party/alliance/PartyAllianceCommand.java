@@ -7,33 +7,28 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class PartyAllianceCommand implements TabExecutor {
+    public static final List<String> ALLIANCE_SUBCOMMANDS = List.of("convidar", "aceitar", "debandar");
+    private final CommandExecutor partyAllianceInviteCommand = new PartyAllianceInviteCommand();
+    private final CommandExecutor partyAllianceAcceptCommand = new PartyAllianceAcceptCommand();
+    private final CommandExecutor partyAllianceDisbandCommand = new PartyAllianceDisbandCommand();
     private Player player;
     private Party playerParty;
     private Party targetParty;
 
-    public static final List<String> ALLIANCE_SUBCOMMANDS = ImmutableList.of("invite", "accept",
-            "disband");
-
-    private final CommandExecutor partyAllianceInviteCommand = new PartyAllianceInviteCommand();
-    private final CommandExecutor partyAllianceAcceptCommand = new PartyAllianceAcceptCommand();
-    private final CommandExecutor partyAllianceDisbandCommand = new PartyAllianceDisbandCommand();
-
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (CommandUtils.noConsoleUsage(sender)) {
             return true;
         }
@@ -75,15 +70,15 @@ public class PartyAllianceCommand implements TabExecutor {
                     return true;
                 }
 
-                if (args[1].equalsIgnoreCase("invite")) {
+                if (args[1].equalsIgnoreCase("convidar")) {
                     return partyAllianceInviteCommand.onCommand(sender, command, label, args);
                 }
 
-                if (args[1].equalsIgnoreCase("accept")) {
+                if (args[1].equalsIgnoreCase("aceitar")) {
                     return partyAllianceAcceptCommand.onCommand(sender, command, label, args);
                 }
 
-                if (args[1].equalsIgnoreCase("disband")) {
+                if (args[1].equalsIgnoreCase("debandar")) {
                     return partyAllianceDisbandCommand.onCommand(sender, command, label, args);
                 }
 
@@ -111,20 +106,17 @@ public class PartyAllianceCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender commandSender,
-            @NotNull Command command, @NotNull String label, String[] args) {
+                                      @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 1) {
-            List<String> matches = StringUtil.copyPartialMatches(args[0], ALLIANCE_SUBCOMMANDS,
-                    new ArrayList<>(ALLIANCE_SUBCOMMANDS.size()));
+            List<String> matches = ALLIANCE_SUBCOMMANDS.stream().filter(s -> s.startsWith(args[0])).toList();
 
-            if (matches.size() == 0) {
-                List<String> playerNames = CommandUtils.getOnlinePlayerNames(commandSender);
-                return StringUtil.copyPartialMatches(args[0], playerNames,
-                        new ArrayList<>(playerNames.size()));
+            if (matches.isEmpty()) {
+                return CommandUtils.getOnlinePlayerNames(commandSender).stream().filter(s -> s.startsWith(args[0])).toList();
             }
 
             return matches;
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private void displayPartyHeader() {

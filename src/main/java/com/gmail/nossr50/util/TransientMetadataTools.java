@@ -1,7 +1,6 @@
 package com.gmail.nossr50.util;
 
 import static com.gmail.nossr50.util.MobMetadataUtils.removeMobFlags;
-
 import com.gmail.nossr50.mcMMO;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
@@ -9,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 public class TransientMetadataTools {
     private final mcMMO pluginRef;
 
-    public TransientMetadataTools(@NotNull mcMMO pluginRef) {
+    public TransientMetadataTools(@NotNull final mcMMO pluginRef) {
         this.pluginRef = pluginRef;
     }
 
-    public void cleanLivingEntityMetadata(@NotNull LivingEntity entity) {
+    public void cleanLivingEntityMetadata(@NotNull final LivingEntity entity) {
         //Since it's not written anywhere, apparently the GC won't touch objects with metadata still present on them
         if (entity.hasMetadata(MetadataConstants.METADATA_KEY_CUSTOM_NAME)) {
             entity.setCustomName(
@@ -39,7 +38,7 @@ public class TransientMetadataTools {
         removeMobFlags(entity);
 
         //TODO: This loop has some redundancy, this whole method needs to be rewritten
-        for (String key : MetadataConstants.MOB_METADATA_KEYS) {
+        for (final String key : MetadataConstants.MOB_METADATA_KEYS) {
             if (entity.hasMetadata(key)) {
                 entity.removeMetadata(key, pluginRef);
             }

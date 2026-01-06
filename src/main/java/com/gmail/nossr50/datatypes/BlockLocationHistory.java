@@ -1,8 +1,9 @@
 package com.gmail.nossr50.datatypes;
 
 import com.google.common.collect.HashMultiset;
-import java.util.LinkedList;
 import org.bukkit.Location;
+
+import java.util.LinkedList;
 
 /**
  * This class works with the assumption that you only pass in Block Locations.  If locations have

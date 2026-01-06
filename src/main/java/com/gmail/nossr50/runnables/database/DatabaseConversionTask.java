@@ -12,7 +12,7 @@ public class DatabaseConversionTask extends CancellableRunnable {
     private final String message;
 
     public DatabaseConversionTask(DatabaseManager sourceDatabase, CommandSender sender,
-            String oldType, String newType) {
+                                  String oldType, String newType) {
         this.sourceDatabase = sourceDatabase;
         this.sender = sender;
         message = LocaleLoader.getString("Commands.mcconvert.Database.Finish", oldType, newType);

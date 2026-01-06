@@ -7,11 +7,12 @@ import com.gmail.nossr50.skills.taming.Taming;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TamingCommand extends SkillCommand {
     private String goreChance;
@@ -60,7 +61,7 @@ public class TamingCommand extends SkillCommand {
 
     @Override
     protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
 
         if (canEnvironmentallyAware) {

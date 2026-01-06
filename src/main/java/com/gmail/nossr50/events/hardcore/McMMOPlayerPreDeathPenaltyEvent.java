@@ -7,11 +7,19 @@ import org.bukkit.event.player.PlayerEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class McMMOPlayerPreDeathPenaltyEvent extends PlayerEvent implements Cancellable {
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
 
     public McMMOPlayerPreDeathPenaltyEvent(Player player) {
         super(player);
         this.cancelled = false;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -27,17 +35,8 @@ public class McMMOPlayerPreDeathPenaltyEvent extends PlayerEvent implements Canc
         this.cancelled = cancelled;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

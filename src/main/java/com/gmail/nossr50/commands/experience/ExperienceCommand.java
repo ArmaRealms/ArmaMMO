@@ -8,20 +8,28 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public abstract class ExperienceCommand implements TabExecutor {
+    protected static void handleSenderMessage(CommandSender sender, String playerName,
+                                              PrimarySkillType skill) {
+        if (skill == null) {
+            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardAll.2", playerName));
+        } else {
+            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardSkill.2",
+                    mcMMO.p.getSkillTools().getLocalizedSkillName(skill), playerName));
+        }
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         PrimarySkillType skill;
 
         if (args.length < 2) {
@@ -131,21 +139,19 @@ public abstract class ExperienceCommand implements TabExecutor {
         return args[length - 1].equalsIgnoreCase("-s");
     }
 
-
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+                                      @NotNull String alias, String[] args) {
         switch (args.length) {
-            case 1:
-                List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-                return StringUtil.copyPartialMatches(args[0], playerNames,
-                        new ArrayList<>(playerNames.size()));
-            case 2:
-                return StringUtil.copyPartialMatches(args[1],
-                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES,
-                        new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
-            default:
-                return ImmutableList.of();
+            case 1 -> {
+                return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
+            }
+            case 2 -> {
+                return mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.stream().filter(s -> s.startsWith(args[1])).toList();
+            }
+            default -> {
+                return List.of();
+            }
         }
     }
 
@@ -154,30 +160,20 @@ public abstract class ExperienceCommand implements TabExecutor {
     protected abstract boolean permissionsCheckOthers(CommandSender sender);
 
     protected abstract void handleCommand(Player player, PlayerProfile profile,
-            PrimarySkillType skill, int value);
+                                          PrimarySkillType skill, int value);
 
     protected abstract void handlePlayerMessageAll(Player player, int value, boolean isSilent);
 
     protected abstract void handlePlayerMessageSkill(Player player, int value,
-            PrimarySkillType skill, boolean isSilent);
+                                                     PrimarySkillType skill, boolean isSilent);
 
     private boolean validateArguments(CommandSender sender, String skillName, String value) {
         return !(CommandUtils.isInvalidInteger(sender, value) || (!skillName.equalsIgnoreCase("all")
                 && CommandUtils.isInvalidSkill(sender, skillName)));
     }
 
-    protected static void handleSenderMessage(CommandSender sender, String playerName,
-            PrimarySkillType skill) {
-        if (skill == null) {
-            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardAll.2", playerName));
-        } else {
-            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardSkill.2",
-                    mcMMO.p.getSkillTools().getLocalizedSkillName(skill), playerName));
-        }
-    }
-
     protected void editValues(Player player, PlayerProfile profile, PrimarySkillType skill,
-            int value, boolean isSilent) {
+                              int value, boolean isSilent) {
         if (skill == null) {
             for (PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
                 handleCommand(player, profile, primarySkillType, value);

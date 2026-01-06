@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -28,21 +27,21 @@ class StringUtilsTest {
      */
     private void clearCaches() {
         try {
-            java.lang.reflect.Field entityCache = StringUtils.class.getDeclaredField(
+            final java.lang.reflect.Field entityCache = StringUtils.class.getDeclaredField(
                     "formattedEntityStrings");
             entityCache.setAccessible(true);
             ((java.util.Map<?, ?>) entityCache.get(null)).clear();
 
-            java.lang.reflect.Field superAbilityCache = StringUtils.class.getDeclaredField(
+            final java.lang.reflect.Field superAbilityCache = StringUtils.class.getDeclaredField(
                     "formattedSuperAbilityStrings");
             superAbilityCache.setAccessible(true);
             ((java.util.Map<?, ?>) superAbilityCache.get(null)).clear();
 
-            java.lang.reflect.Field materialCache = StringUtils.class.getDeclaredField(
+            final java.lang.reflect.Field materialCache = StringUtils.class.getDeclaredField(
                     "formattedMaterialStrings");
             materialCache.setAccessible(true);
             ((java.util.Map<?, ?>) materialCache.get(null)).clear();
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (final NoSuchFieldException | IllegalAccessException e) {
             fail("Failed to clear caches: " + e.getMessage());
         }
     }
@@ -87,25 +86,25 @@ class StringUtilsTest {
     // Tests for ticksToSeconds(double ticks)
     @Test
     void testTicksToSeconds_PositiveTicks() {
-        assertEquals("1.5", StringUtils.ticksToSeconds(30));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30));
     }
 
     @Test
     void testTicksToSeconds_ZeroTicks() {
-        assertEquals("0.0", StringUtils.ticksToSeconds(0));
+        assertEquals("0,0", StringUtils.ticksToSeconds(0));
     }
 
     @Test
     void testTicksToSeconds_FractionalTicks() {
-        assertEquals("1.5", StringUtils.ticksToSeconds(30.0));
-        assertEquals("1.5", StringUtils.ticksToSeconds(30.0));
-        assertEquals("1.0", StringUtils.ticksToSeconds(20.0));
-        assertEquals("0.1", StringUtils.ticksToSeconds(2.0));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30.0));
+        assertEquals("1,5", StringUtils.ticksToSeconds(30.0));
+        assertEquals("1,0", StringUtils.ticksToSeconds(20.0));
+        assertEquals("0,1", StringUtils.ticksToSeconds(2.0));
     }
 
     @Test
     void testTicksToSeconds_NegativeTicks() {
-        assertEquals("-1.0", StringUtils.ticksToSeconds(-20));
+        assertEquals("-1,0", StringUtils.ticksToSeconds(-20));
     }
 
     // Tests for getPrettySuperAbilityString(SuperAbilityType superAbilityType)
@@ -118,131 +117,131 @@ class StringUtilsTest {
 
     @Test
     void testGetPrettySuperAbilityString_ValidInput() {
-        SuperAbilityType superAbilityType = SuperAbilityType.SUPER_BREAKER;
-        String expected = "Super Breaker";
-        String actual = StringUtils.getPrettySuperAbilityString(superAbilityType);
+        final SuperAbilityType superAbilityType = SuperAbilityType.SUPER_BREAKER;
+        final String expected = "Super Breaker";
+        final String actual = StringUtils.getPrettySuperAbilityString(superAbilityType);
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetPrettySuperAbilityString_Caching() {
-        SuperAbilityType superAbilityType = SuperAbilityType.SUPER_BREAKER;
+        final SuperAbilityType superAbilityType = SuperAbilityType.SUPER_BREAKER;
 
         // First call should compute and cache
-        String firstCall = StringUtils.getPrettySuperAbilityString(superAbilityType);
+        final String firstCall = StringUtils.getPrettySuperAbilityString(superAbilityType);
 
         // Second call should retrieve from cache
-        String secondCall = StringUtils.getPrettySuperAbilityString(superAbilityType);
+        final String secondCall = StringUtils.getPrettySuperAbilityString(superAbilityType);
 
-        assertSame(firstCall, secondCall, "Cached value should be the same instance");
+        assertSame(firstCall, secondCall, "Cached statVal should be the same instance");
     }
 
     // Tests for getPrettyEntityTypeString(EntityType entityType)
     @Test
     void testGetPrettyEntityTypeString_ValidInput() {
-        EntityType zombie = EntityType.ZOMBIE;
-        String expected = "Zombie";
-        String actual = StringUtils.getPrettyEntityTypeString(zombie);
+        final EntityType zombie = EntityType.ZOMBIE;
+        final String expected = "Zombie";
+        final String actual = StringUtils.getPrettyEntityTypeString(zombie);
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetPrettyEntityTypeString_WithUnderscores() {
-        EntityType entity = EntityType.SKELETON_HORSE;
-        String expected = "Skeleton Horse";
-        String actual = StringUtils.getPrettyEntityTypeString(entity);
+        final EntityType entity = EntityType.SKELETON_HORSE;
+        final String expected = "Skeleton Horse";
+        final String actual = StringUtils.getPrettyEntityTypeString(entity);
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetPrettyEntityTypeString_Caching() {
-        EntityType skeleton = EntityType.SKELETON;
+        final EntityType skeleton = EntityType.SKELETON;
 
         // First call should compute and cache
-        String firstCall = StringUtils.getPrettyEntityTypeString(skeleton);
+        final String firstCall = StringUtils.getPrettyEntityTypeString(skeleton);
 
         // Second call should retrieve from cache
-        String secondCall = StringUtils.getPrettyEntityTypeString(skeleton);
+        final String secondCall = StringUtils.getPrettyEntityTypeString(skeleton);
 
-        assertSame(firstCall, secondCall, "Cached value should be the same instance");
+        assertSame(firstCall, secondCall, "Cached statVal should be the same instance");
     }
 
     // Tests for getFormattedMaterialString(Material material)
     @Test
     void testGetPrettyMaterialString_ValidInput() {
-        Material diamondSword = Material.DIAMOND_SWORD;
-        String expected = "Diamond Sword";
-        String actual = StringUtils.getPrettyMaterialString(diamondSword);
+        final Material diamondSword = Material.DIAMOND_SWORD;
+        final String expected = "Diamond Sword";
+        final String actual = StringUtils.getPrettyMaterialString(diamondSword);
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetPrettyMaterialString_WithUnderscores() {
-        Material goldenApple = Material.GOLDEN_APPLE;
-        String expected = "Golden Apple";
-        String actual = StringUtils.getPrettyMaterialString(goldenApple);
+        final Material goldenApple = Material.GOLDEN_APPLE;
+        final String expected = "Golden Apple";
+        final String actual = StringUtils.getPrettyMaterialString(goldenApple);
         assertEquals(expected, actual);
     }
 
     @Test
     void testGetPrettyMaterialString_Caching() {
-        Material ironPickaxe = Material.IRON_PICKAXE;
+        final Material ironPickaxe = Material.IRON_PICKAXE;
 
         // First call should compute and cache
-        String firstCall = StringUtils.getPrettyMaterialString(ironPickaxe);
+        final String firstCall = StringUtils.getPrettyMaterialString(ironPickaxe);
 
         // Second call should retrieve from cache
-        String secondCall = StringUtils.getPrettyMaterialString(ironPickaxe);
+        final String secondCall = StringUtils.getPrettyMaterialString(ironPickaxe);
 
-        assertSame(firstCall, secondCall, "Cached value should be the same instance");
+        assertSame(firstCall, secondCall, "Cached statVal should be the same instance");
     }
 
     // Tests for buildStringAfterNthElement(String[] args, int index)
     @Test
     void testBuildStringAfterNthElement_IndexZero() {
-        String[] args = {"Hello", "World", "Test"};
-        String expected = "Hello World Test";
-        String actual = StringUtils.buildStringAfterNthElement(args, 0);
+        final String[] args = {"Hello", "World", "Test"};
+        final String expected = "Hello World Test";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 0);
         assertEquals(expected, actual);
     }
 
     @Test
     void testBuildStringAfterNthElement_IndexMiddle() {
-        String[] args = {"This", "is", "a", "test"};
-        String expected = "a test";
-        String actual = StringUtils.buildStringAfterNthElement(args, 2);
+        final String[] args = {"This", "is", "a", "test"};
+        final String expected = "a test";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 2);
         assertEquals(expected, actual);
     }
 
     @Test
     void testBuildStringAfterNthElement_IndexLast() {
-        String[] args = {"Only", "One"};
-        String expected = "One";
-        String actual = StringUtils.buildStringAfterNthElement(args, 1);
+        final String[] args = {"Only", "One"};
+        final String expected = "One";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 1);
         assertEquals(expected, actual);
     }
 
     @Test
     void testBuildStringAfterNthElement_IndexOutOfBounds() {
-        String[] args = {"Too", "Short"};
-        String expected = "";
-        String actual = StringUtils.buildStringAfterNthElement(args, 5);
+        final String[] args = {"Too", "Short"};
+        final String expected = "";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 5);
         assertEquals(expected, actual);
     }
 
     @Test
     void testBuildStringAfterNthElement_EmptyArray() {
-        String[] args = {};
-        String expected = "";
-        String actual = StringUtils.buildStringAfterNthElement(args, 0);
+        final String[] args = {};
+        final String expected = "";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 0);
         assertEquals(expected, actual);
     }
 
     @Test
     void testBuildStringAfterNthElement_ArgsWithSpaces() {
-        String[] args = {"Multiple", " ", "Spaces"};
-        String expected = "  Spaces";
-        String actual = StringUtils.buildStringAfterNthElement(args, 1);
+        final String[] args = {"Multiple", " ", "Spaces"};
+        final String expected = "  Spaces";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 1);
         assertEquals(expected, actual);
     }
 
@@ -289,20 +288,20 @@ class StringUtilsTest {
 
     @Test
     void testCachingMechanism_EntityType() {
-        EntityType zombie = EntityType.ZOMBIE;
+        final EntityType zombie = EntityType.ZOMBIE;
 
-        String firstCall = StringUtils.getPrettyEntityTypeString(zombie);
-        String secondCall = StringUtils.getPrettyEntityTypeString(zombie);
+        final String firstCall = StringUtils.getPrettyEntityTypeString(zombie);
+        final String secondCall = StringUtils.getPrettyEntityTypeString(zombie);
 
         assertSame(firstCall, secondCall, "EntityType caching failed");
     }
 
     @Test
     void testCachingMechanism_Material() {
-        Material diamondSword = Material.DIAMOND_SWORD;
+        final Material diamondSword = Material.DIAMOND_SWORD;
 
-        String firstCall = StringUtils.getPrettyMaterialString(diamondSword);
-        String secondCall = StringUtils.getPrettyMaterialString(diamondSword);
+        final String firstCall = StringUtils.getPrettyMaterialString(diamondSword);
+        final String secondCall = StringUtils.getPrettyMaterialString(diamondSword);
 
         assertSame(firstCall, secondCall, "Material caching failed");
     }
@@ -310,17 +309,17 @@ class StringUtilsTest {
     // Tests for createPrettyString via public methods
     @Test
     void testCreatePrettyString_Spaces() {
-        String[] args = {"hello", "world"};
-        String expected = "hello world";
-        String actual = StringUtils.buildStringAfterNthElement(args, 0);
+        final String[] args = {"hello", "world"};
+        final String expected = "hello world";
+        final String actual = StringUtils.buildStringAfterNthElement(args, 0);
         assertEquals(expected, actual);
     }
 
     @Test
     void testPrettify_Substrings() {
-        Material goldenApple = Material.GOLDEN_APPLE;
-        String expected = "Golden Apple";
-        String actual = StringUtils.getPrettyMaterialString(goldenApple);
+        final Material goldenApple = Material.GOLDEN_APPLE;
+        final String expected = "Golden Apple";
+        final String actual = StringUtils.getPrettyMaterialString(goldenApple);
         assertEquals(expected, actual);
     }
 }

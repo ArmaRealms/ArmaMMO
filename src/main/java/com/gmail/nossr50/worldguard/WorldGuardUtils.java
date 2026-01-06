@@ -1,20 +1,20 @@
 package com.gmail.nossr50.worldguard;
 
 import static org.bukkit.Bukkit.getServer;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.registry.SimpleFlagRegistry;
-import java.util.ArrayList;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
+
 public class WorldGuardUtils {
+    private static final ArrayList<String> WGClassList;
     private static WorldGuardPlugin worldGuardPluginRef;
     private static boolean isLoaded = false;
     private static boolean detectedIncompatibleWG = false;
-    private static final ArrayList<String> WGClassList;
 
     static {
         /*
@@ -62,7 +62,7 @@ public class WorldGuardUtils {
         }
 
         //Grab WG if it exists
-        Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+        final Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
 
         if (plugin == null) {
             //WG is not present
@@ -91,7 +91,7 @@ public class WorldGuardUtils {
      *
      * @return true if the version of WG appears to be compatible
      */
-    private static boolean isCompatibleVersion(Plugin plugin) {
+    private static boolean isCompatibleVersion(final Plugin plugin) {
         //Check that the version of WG is at least version 7.xx
         boolean allClassesFound = true;
         if (detectedIncompatibleWG) {
@@ -102,10 +102,10 @@ public class WorldGuardUtils {
             markWGIncompatible();
         } else {
             //Use Reflection to check for a class not present in all versions of WG7
-            for (String classString : WGClassList) {
+            for (final String classString : WGClassList) {
                 try {
-                    Class<?> checkForClass = Class.forName(classString);
-                } catch (ClassNotFoundException | NoClassDefFoundError e) {
+                    final Class<?> checkForClass = Class.forName(classString);
+                } catch (final ClassNotFoundException | NoClassDefFoundError e) {
                     allClassesFound = false;
                     mcMMO.p.getLogger().severe("Missing WorldGuard class - " + classString);
                     markWGIncompatible();
@@ -124,7 +124,7 @@ public class WorldGuardUtils {
                                 .severe("WG did not initialize properly, this can cause errors with mcMMO so mcMMO is disabling certain features.");
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 markWGIncompatible();
                 e.printStackTrace();
             }

@@ -1,6 +1,7 @@
 package com.gmail.nossr50.util;
 
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+
 import java.util.function.Consumer;
 
 public abstract class CancellableRunnable implements Consumer<WrappedTask> {

@@ -8,7 +8,6 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -17,7 +16,6 @@ import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
 import com.gmail.nossr50.datatypes.skills.subskills.acrobatics.Roll;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +23,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.logging.Logger;
 
 class AcrobaticsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(AcrobaticsTest.class.getName());
@@ -95,7 +95,7 @@ class AcrobaticsTest extends MMOTestEnvironment {
         verify(mockEvent, Mockito.never()).setDamage(any(Double.class));
     }
 
-    private @NotNull EntityDamageEvent mockEntityDamageEvent(double damage) {
+    private @NotNull EntityDamageEvent mockEntityDamageEvent(final double damage) {
         final EntityDamageEvent mockEvent = mock(EntityDamageEvent.class);
         when(mockEvent.isApplicable(any(EntityDamageEvent.DamageModifier.class))).thenReturn(true);
         when(mockEvent.getCause()).thenReturn(EntityDamageEvent.DamageCause.FALL);

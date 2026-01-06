@@ -64,7 +64,7 @@ import org.jetbrains.annotations.Nullable;
 public class FlatFileDataUtil {
 
     public static @Nullable String[] getPreparedSaveDataLine(
-            @NotNull FlatFileDataContainer dataContainer) {
+            @NotNull final FlatFileDataContainer dataContainer) {
         if (dataContainer.getDataFlags() == null) {
             return dataContainer.getSplitData();
         }
@@ -81,12 +81,12 @@ public class FlatFileDataUtil {
             return null;
         }
 
-        String[] splitData;
+        final String[] splitData;
 
         /*
          * First fix the bad data values if they exist
          */
-        if (dataContainer instanceof BadCategorizedFlatFileData badData) {
+        if (dataContainer instanceof final BadCategorizedFlatFileData badData) {
             splitData = repairBadData(dataContainer.getSplitData(), badData.getBadDataIndexes());
         } else {
             splitData = dataContainer.getSplitData();
@@ -97,8 +97,8 @@ public class FlatFileDataUtil {
         return splitData;
     }
 
-    public static @NotNull String[] repairBadData(@NotNull String[] splitData,
-            boolean[] badDataValues) {
+    public static @NotNull String[] repairBadData(@NotNull final String[] splitData,
+                                                  final boolean[] badDataValues) {
         for (int i = 0; i < FlatFileDatabaseManager.DATA_ENTRY_COUNT; i++) {
             if (badDataValues[i]) {
                 //This data value was marked as bad so we zero initialize it
@@ -113,7 +113,7 @@ public class FlatFileDataUtil {
      * @param index "zero" Initialization will depend on what the index is for
      * @return the "zero" initialized data corresponding to the index
      */
-    public static @NotNull String getZeroInitialisedData(int index, int startingLevel)
+    public static @NotNull String getZeroInitialisedData(final int index, final int startingLevel)
             throws IndexOutOfBoundsException {
         //TODO: Add UUID recovery? Might not even be worth it.
         return switch (index) {
@@ -126,8 +126,7 @@ public class FlatFileDataUtil {
                  SKILLS_ARCHERY,
                  SKILLS_SWORDS, SKILLS_AXES, SKILLS_WOODCUTTING, SKILLS_ACROBATICS, SKILLS_TAMING,
                  SKILLS_FISHING,
-                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS ->
-                    String.valueOf(startingLevel);
+                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS -> String.valueOf(startingLevel);
             case OVERHAUL_LAST_LOGIN -> String.valueOf(-1L);
             case COOLDOWN_BERSERK, COOLDOWN_GIGA_DRILL_BREAKER, COOLDOWN_TREE_FELLER,
                  COOLDOWN_GREEN_TERRA,

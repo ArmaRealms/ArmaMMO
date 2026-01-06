@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class FakeBlockDamageEvent extends BlockDamageEvent implements FakeEvent {
     public FakeBlockDamageEvent(Player player, Block block, ItemStack itemInHand,
-            boolean instaBreak) {
+                                boolean instaBreak) {
         super(player, block, itemInHand, instaBreak);
     }
 }

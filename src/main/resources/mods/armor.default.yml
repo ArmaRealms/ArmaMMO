@@ -15,7 +15,7 @@
 ## This is required to be set if you want to be able to repair the item.
 #
 # Repair_Material_Data_Value: This is the metadata of the item used to repair this armor.
-## A value of -1 means to ignore all metadata when repairing.
+## A statVal of -1 means to ignore all metadata when repairing.
 ## This defaults to -1
 #
 # Repair_Material_Quantity: This is the minimum number of items needed to repair this item ignoring all other repair bonuses.

@@ -1,7 +1,8 @@
 package com.gmail.nossr50.api.exceptions;
 
-import java.io.Serial;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.Serial;
 
 public class IncompleteNamespacedKeyRegister extends RuntimeException {
     @Serial

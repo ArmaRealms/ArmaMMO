@@ -1,13 +1,14 @@
 package com.gmail.nossr50.events.hardcore;
 
-import java.util.HashMap;
 import org.bukkit.entity.Player;
+
+import java.util.HashMap;
 
 public class McMMOPlayerVampirismEvent extends McMMOPlayerDeathPenaltyEvent {
     private final boolean isVictim;
 
     public McMMOPlayerVampirismEvent(Player player, boolean isVictim,
-            HashMap<String, Integer> levelChanged, HashMap<String, Float> experienceChanged) {
+                                     HashMap<String, Integer> levelChanged, HashMap<String, Float> experienceChanged) {
         super(player, levelChanged, experienceChanged);
         this.isVictim = isVictim;
     }

@@ -41,24 +41,24 @@ public class ChatManager {
     /**
      * Handles player messaging when they are either in party chat or admin chat modes
      *
-     * @param mmoPlayer target player
+     * @param mmoPlayer  target player
      * @param rawMessage the raw message from the player as it was typed
-     * @param isAsync whether this is getting processed via async
+     * @param isAsync    whether this is getting processed via async
      */
     public void processPlayerMessage(@NotNull McMMOPlayer mmoPlayer, @NotNull String rawMessage,
-            boolean isAsync) {
+                                     boolean isAsync) {
         processPlayerMessage(mmoPlayer, mmoPlayer.getChatChannel(), rawMessage, isAsync);
     }
 
     /**
      * Handles player messaging for a specific chat channel
      *
-     * @param mmoPlayer target player
-     * @param args the raw command arguments from the player
+     * @param mmoPlayer   target player
+     * @param args        the raw command arguments from the player
      * @param chatChannel target channel
      */
     public void processPlayerMessage(@NotNull McMMOPlayer mmoPlayer, @NotNull String[] args,
-            @NotNull ChatChannel chatChannel) {
+                                     @NotNull ChatChannel chatChannel) {
         String chatMessageWithoutCommand = buildChatMessage(args);
 
         //Commands are never async
@@ -68,14 +68,14 @@ public class ChatManager {
     /**
      * Handles player messaging for a specific chat channel
      *
-     * @param mmoPlayer target player
+     * @param mmoPlayer   target player
      * @param chatChannel target chat channel
-     * @param rawMessage raw chat message as it was typed
-     * @param isAsync whether this is getting processed via async
+     * @param rawMessage  raw chat message as it was typed
+     * @param isAsync     whether this is getting processed via async
      */
     private void processPlayerMessage(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull ChatChannel chatChannel,
-            @NotNull String rawMessage, boolean isAsync) {
+                                      @NotNull ChatChannel chatChannel,
+                                      @NotNull String rawMessage, boolean isAsync) {
         switch (chatChannel) {
             case ADMIN:
                 adminChatMailer.processChatMessage(
@@ -116,7 +116,7 @@ public class ChatManager {
      * Handles console messaging to a specific party
      *
      * @param rawMessage raw message from the console
-     * @param party target party
+     * @param party      target party
      */
     public void processConsoleMessage(@NotNull String rawMessage, @NotNull Party party) {
         partyChatMailer.processChatMessage(getConsoleAuthor(), rawMessage, party, false, true,
@@ -136,11 +136,11 @@ public class ChatManager {
      * Change the chat channel of a {@link McMMOPlayer} Targeting the channel a player is already in
      * will remove that player from the chat channel
      *
-     * @param mmoPlayer target player
+     * @param mmoPlayer         target player
      * @param targetChatChannel target chat channel
      */
     public void setOrToggleChatChannel(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull ChatChannel targetChatChannel) {
+                                       @NotNull ChatChannel targetChatChannel) {
         if (targetChatChannel == mmoPlayer.getChatChannel()) {
             //Disabled message
             mmoPlayer.getPlayer().sendMessage(LocaleLoader.getString(
@@ -204,7 +204,7 @@ public class ChatManager {
     /**
      * Sends just the console a message
      *
-     * @param author author of the message
+     * @param author  author of the message
      * @param message message contents in component form
      */
     public void sendConsoleMessage(@NotNull Author author, @NotNull TextComponent message) {
@@ -234,8 +234,7 @@ public class ChatManager {
             return false;
         } else {
             return switch (chatChannel) {
-                case ADMIN, PARTY, PARTY_OFFICER ->
-                        ChatConfig.getInstance().isChatChannelEnabled(chatChannel);
+                case ADMIN, PARTY, PARTY_OFFICER -> ChatConfig.getInstance().isChatChannelEnabled(chatChannel);
                 case NONE -> true;
             };
         }

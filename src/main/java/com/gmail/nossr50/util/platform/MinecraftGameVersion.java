@@ -10,13 +10,13 @@ import org.jetbrains.annotations.Nullable;
  */
 public class MinecraftGameVersion extends MajorMinorPatchVersion {
     public MinecraftGameVersion(@NotNull SimpleNumericVersion majorVersion,
-            @NotNull SimpleNumericVersion minorVersion) {
+                                @NotNull SimpleNumericVersion minorVersion) {
         super(majorVersion, minorVersion);
     }
 
     public MinecraftGameVersion(@NotNull SimpleNumericVersion majorVersion,
-            @NotNull SimpleNumericVersion minorVersion,
-            @Nullable SimpleNumericVersion patchVersion) {
+                                @NotNull SimpleNumericVersion minorVersion,
+                                @Nullable SimpleNumericVersion patchVersion) {
         super(majorVersion, minorVersion, patchVersion);
     }
 
@@ -32,11 +32,11 @@ public class MinecraftGameVersion extends MajorMinorPatchVersion {
      * Returns whether the Minecraft version is at least equal to or higher than a target version
      *
      * @param majorVerNumber target major version number - for example 1.16.5 , the 1 is the major
-     * version
+     *                       version
      * @param minorVerNumber target minor version number - for example 1.16.5, the 16 is the minor
-     * version
+     *                       version
      * @param patchVerNumber target patch version number - for example 1.16.5, the 5 is the patch
-     * version number
+     *                       version number
      * @return returns true if Minecraft is at least a certain version
      */
     public boolean isAtLeast(int majorVerNumber, int minorVerNumber, int patchVerNumber) {

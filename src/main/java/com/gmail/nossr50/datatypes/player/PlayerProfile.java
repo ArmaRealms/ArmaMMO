@@ -11,26 +11,17 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.DelayQueue;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class PlayerProfile {
     private final String playerName;
-    private @Nullable UUID uuid;
-    private boolean loaded;
-    private volatile boolean changed;
-
-    /* HUDs */
-    private int scoreboardTipsShown;
-    private int saveAttempts = 0;
-
-    private @Nullable Long lastLogin;
-
     /* Skill Data */
     private final Map<PrimarySkillType, Integer> skills = new EnumMap<>(
             PrimarySkillType.class);   // Skill & Level
@@ -40,38 +31,44 @@ public class PlayerProfile {
             SuperAbilityType.class); // Ability & Cooldown
     private final Map<UniqueDataType, Integer> uniquePlayerData = new EnumMap<>(
             UniqueDataType.class); //Misc data that doesn't fit into other categories (chimaera wing, etc..)
-
     // Store previous XP gains for diminished returns
     private final DelayQueue<SkillXpGain> gainedSkillsXp = new DelayQueue<>();
     private final Map<PrimarySkillType, Float> rollingSkillsXp = new EnumMap<>(
             PrimarySkillType.class);
+    private @Nullable UUID uuid;
+    private boolean loaded;
+    private volatile boolean changed;
+    /* HUDs */
+    private int scoreboardTipsShown;
+    private int saveAttempts = 0;
+    private @Nullable Long lastLogin;
 
     @Deprecated
-    public PlayerProfile(String playerName) {
+    public PlayerProfile(final String playerName) {
         this(playerName, null, 0);
     }
 
     @Deprecated
-    public PlayerProfile(String playerName, UUID uuid) {
+    public PlayerProfile(final String playerName, final UUID uuid) {
         this(playerName, uuid, 0);
     }
 
     @Deprecated
-    public PlayerProfile(String playerName, int startingLevel) {
+    public PlayerProfile(final String playerName, final int startingLevel) {
         this(playerName, null, startingLevel);
     }
 
-    public PlayerProfile(String playerName, @Nullable UUID uuid, int startingLevel) {
+    public PlayerProfile(final String playerName, @Nullable final UUID uuid, final int startingLevel) {
         this.uuid = uuid;
         this.playerName = playerName;
 
         scoreboardTipsShown = 0;
 
-        for (SuperAbilityType superAbilityType : SuperAbilityType.values()) {
+        for (final SuperAbilityType superAbilityType : SuperAbilityType.values()) {
             abilityDATS.put(superAbilityType, 0);
         }
 
-        for (PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
+        for (final PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
             skills.put(primarySkillType, startingLevel);
             skillsXp.put(primarySkillType, 0F);
         }
@@ -82,20 +79,20 @@ public class PlayerProfile {
     }
 
     @Deprecated
-    public PlayerProfile(@NotNull String playerName, boolean isLoaded, int startingLvl) {
+    public PlayerProfile(@NotNull final String playerName, final boolean isLoaded, final int startingLvl) {
         this(playerName, startingLvl);
         this.loaded = isLoaded;
     }
 
-    public PlayerProfile(@NotNull String playerName, @Nullable UUID uuid, boolean isLoaded, int startingLvl) {
+    public PlayerProfile(@NotNull final String playerName, @Nullable final UUID uuid, final boolean isLoaded, final int startingLvl) {
         this(playerName, uuid, startingLvl);
         this.loaded = isLoaded;
     }
 
-    public PlayerProfile(@NotNull String playerName, @Nullable UUID uuid,
-            Map<PrimarySkillType, Integer> levelData, Map<PrimarySkillType, Float> xpData,
-            Map<SuperAbilityType, Integer> cooldownData, int scoreboardTipsShown,
-            Map<UniqueDataType, Integer> uniqueProfileData, @Nullable Long lastLogin) {
+    public PlayerProfile(@NotNull final String playerName, @Nullable final UUID uuid,
+                         final Map<PrimarySkillType, Integer> levelData, final Map<PrimarySkillType, Float> xpData,
+                         final Map<SuperAbilityType, Integer> cooldownData, final int scoreboardTipsShown,
+                         final Map<UniqueDataType, Integer> uniqueProfileData, @Nullable final Long lastLogin) {
         this.playerName = playerName;
         this.uuid = uuid;
         this.scoreboardTipsShown = scoreboardTipsShown;
@@ -126,14 +123,14 @@ public class PlayerProfile {
         mcMMO.p.getFoliaLib().getScheduler().runLater(new PlayerProfileSaveTask(this, true), 20);
     }
 
-    public void save(boolean useSync) {
+    public void save(final boolean useSync) {
         if (!changed || !loaded) {
             saveAttempts = 0;
             return;
         }
 
         // TODO should this part be synchronized?
-        PlayerProfile profileCopy = new PlayerProfile(playerName, uuid, ImmutableMap.copyOf(skills),
+        final PlayerProfile profileCopy = new PlayerProfile(playerName, uuid, ImmutableMap.copyOf(skills),
                 ImmutableMap.copyOf(skillsXp), ImmutableMap.copyOf(abilityDATS),
                 scoreboardTipsShown, ImmutableMap.copyOf(uniquePlayerData), lastLogin);
         changed = !mcMMO.getDatabaseManager().saveUser(profileCopy);
@@ -194,7 +191,7 @@ public class PlayerProfile {
         return uuid;
     }
 
-    public void setUniqueId(UUID uuid) {
+    public void setUniqueId(final UUID uuid) {
         markProfileDirty();
 
         this.uuid = uuid;
@@ -215,7 +212,7 @@ public class PlayerProfile {
         return scoreboardTipsShown;
     }
 
-    public void setScoreboardTipsShown(int scoreboardTipsShown) {
+    public void setScoreboardTipsShown(final int scoreboardTipsShown) {
         markProfileDirty();
 
         this.scoreboardTipsShown = scoreboardTipsShown;
@@ -233,17 +230,17 @@ public class PlayerProfile {
         return uniquePlayerData.get(UniqueDataType.CHIMAERA_WING_DATS);
     }
 
-    protected void setChimaeraWingDATS(int DATS) {
+    protected void setChimaeraWingDATS(final int DATS) {
         markProfileDirty();
         uniquePlayerData.put(UniqueDataType.CHIMAERA_WING_DATS, DATS);
     }
 
-    public void setUniqueData(UniqueDataType uniqueDataType, int newData) {
+    public void setUniqueData(final UniqueDataType uniqueDataType, final int newData) {
         markProfileDirty();
         uniquePlayerData.put(uniqueDataType, newData);
     }
 
-    public long getUniqueData(UniqueDataType uniqueDataType) {
+    public long getUniqueData(final UniqueDataType uniqueDataType) {
         return uniquePlayerData.get(uniqueDataType);
     }
 
@@ -253,7 +250,7 @@ public class PlayerProfile {
      * @param ability The {@link SuperAbilityType} to get the DATS for
      * @return the deactivation timestamp for the ability
      */
-    public long getAbilityDATS(SuperAbilityType ability) {
+    public long getAbilityDATS(final SuperAbilityType ability) {
         return abilityDATS.get(ability);
     }
 
@@ -261,9 +258,9 @@ public class PlayerProfile {
      * Set the current deactivation timestamp of an ability.
      *
      * @param ability The {@link SuperAbilityType} to set the DATS for
-     * @param DATS the DATS of the ability
+     * @param DATS    the DATS of the ability
      */
-    protected void setAbilityDATS(SuperAbilityType ability, long DATS) {
+    protected void setAbilityDATS(final SuperAbilityType ability, final long DATS) {
         markProfileDirty();
 
         abilityDATS.put(ability, (int) (DATS * .001D));
@@ -282,15 +279,15 @@ public class PlayerProfile {
      * Xp Functions
      */
 
-    public int getSkillLevel(PrimarySkillType skill) {
+    public int getSkillLevel(final PrimarySkillType skill) {
         return SkillTools.isChildSkill(skill) ? getChildSkillLevel(skill) : skills.get(skill);
     }
 
-    public float getSkillXpLevelRaw(PrimarySkillType skill) {
+    public float getSkillXpLevelRaw(final PrimarySkillType skill) {
         return skillsXp.get(skill);
     }
 
-    public int getSkillXpLevel(PrimarySkillType skill) {
+    public int getSkillXpLevel(final PrimarySkillType skill) {
         if (SkillTools.isChildSkill(skill)) {
             return 0;
         }
@@ -298,7 +295,7 @@ public class PlayerProfile {
         return (int) Math.floor(getSkillXpLevelRaw(skill));
     }
 
-    public void setSkillXpLevel(PrimarySkillType skill, float xpLevel) {
+    public void setSkillXpLevel(final PrimarySkillType skill, final float xpLevel) {
         if (SkillTools.isChildSkill(skill)) {
             return;
         }
@@ -308,8 +305,8 @@ public class PlayerProfile {
         skillsXp.put(skill, xpLevel);
     }
 
-    protected float levelUp(PrimarySkillType skill) {
-        float xpRemoved = getXpToLevel(skill);
+    protected float levelUp(final PrimarySkillType skill) {
+        final float xpRemoved = getXpToLevel(skill);
 
         markProfileDirty();
 
@@ -323,9 +320,9 @@ public class PlayerProfile {
      * Remove Xp from a skill.
      *
      * @param skill Type of skill to modify
-     * @param xp Amount of xp to remove
+     * @param xp    Amount of xp to remove
      */
-    public void removeXp(PrimarySkillType skill, int xp) {
+    public void removeXp(final PrimarySkillType skill, final int xp) {
         if (SkillTools.isChildSkill(skill)) {
             return;
         }
@@ -335,7 +332,7 @@ public class PlayerProfile {
         skillsXp.put(skill, skillsXp.get(skill) - xp);
     }
 
-    public void removeXp(PrimarySkillType skill, float xp) {
+    public void removeXp(final PrimarySkillType skill, final float xp) {
         if (SkillTools.isChildSkill(skill)) {
             return;
         }
@@ -351,7 +348,7 @@ public class PlayerProfile {
      * @param skill Type of skill to modify
      * @param level New level value for the skill
      */
-    public void modifySkill(PrimarySkillType skill, int level) {
+    public void modifySkill(final PrimarySkillType skill, int level) {
         if (SkillTools.isChildSkill(skill)) {
             return;
         }
@@ -370,10 +367,10 @@ public class PlayerProfile {
     /**
      * Add levels to a skill.
      *
-     * @param skill Type of skill to add levels to
+     * @param skill  Type of skill to add levels to
      * @param levels Number of levels to add
      */
-    public void addLevels(PrimarySkillType skill, int levels) {
+    public void addLevels(final PrimarySkillType skill, final int levels) {
         modifySkill(skill, skills.get(skill) + levels);
     }
 
@@ -381,16 +378,16 @@ public class PlayerProfile {
      * Add Experience to a skill.
      *
      * @param skill Type of skill to add experience to
-     * @param xp Number of experience to add
+     * @param xp    Number of experience to add
      */
-    public void addXp(PrimarySkillType skill, float xp) {
+    public void addXp(final PrimarySkillType skill, final float xp) {
         markProfileDirty();
 
         if (SkillTools.isChildSkill(skill)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
-            float dividedXP = (xp / parentSkills.size());
+            final var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            final float dividedXP = (xp / parentSkills.size());
 
-            for (PrimarySkillType parentSkill : parentSkills) {
+            for (final PrimarySkillType parentSkill : parentSkills) {
                 skillsXp.put(parentSkill, skillsXp.get(parentSkill) + dividedXP);
             }
         } else {
@@ -403,7 +400,7 @@ public class PlayerProfile {
      *
      * @return xp Experience amount registered
      */
-    public float getRegisteredXpGain(PrimarySkillType primarySkillType) {
+    public float getRegisteredXpGain(final PrimarySkillType primarySkillType) {
         float xp = 0F;
 
         if (rollingSkillsXp.get(primarySkillType) != null) {
@@ -417,9 +414,9 @@ public class PlayerProfile {
      * Register an experience gain This is used for diminished XP returns
      *
      * @param primarySkillType Skill being used
-     * @param xp Experience amount to add
+     * @param xp               Experience amount to add
      */
-    public void registerXpGain(PrimarySkillType primarySkillType, float xp) {
+    public void registerXpGain(final PrimarySkillType primarySkillType, final float xp) {
         gainedSkillsXp.add(new SkillXpGain(primarySkillType, xp));
         rollingSkillsXp.put(primarySkillType, getRegisteredXpGain(primarySkillType) + xp);
     }
@@ -441,29 +438,29 @@ public class PlayerProfile {
      * @param primarySkillType Type of skill to check
      * @return the total amount of Xp until next level
      */
-    public int getXpToLevel(PrimarySkillType primarySkillType) {
+    public int getXpToLevel(final PrimarySkillType primarySkillType) {
         if (SkillTools.isChildSkill(primarySkillType)) {
             return 0;
         }
 
-        int level = (ExperienceConfig.getInstance().getCumulativeCurveEnabled())
+        final int level = (ExperienceConfig.getInstance().getCumulativeCurveEnabled())
                 ? UserManager.getPlayer(playerName).getPowerLevel() : skills.get(primarySkillType);
-        FormulaType formulaType = ExperienceConfig.getInstance().getFormulaType();
+        final FormulaType formulaType = ExperienceConfig.getInstance().getFormulaType();
 
         return mcMMO.getFormulaManager().getXPtoNextLevel(level, formulaType);
     }
 
-    private int getChildSkillLevel(@NotNull PrimarySkillType primarySkillType)
+    private int getChildSkillLevel(@NotNull final PrimarySkillType primarySkillType)
             throws IllegalArgumentException {
         if (!SkillTools.isChildSkill(primarySkillType)) {
             throw new IllegalArgumentException(primarySkillType + " is not a child skill!");
         }
 
-        ImmutableList<PrimarySkillType> parents = mcMMO.p.getSkillTools()
+        final ImmutableList<PrimarySkillType> parents = mcMMO.p.getSkillTools()
                 .getChildSkillParents(primarySkillType);
         int sum = 0;
 
-        for (PrimarySkillType parent : parents) {
+        for (final PrimarySkillType parent : parents) {
             sum += Math.min(getSkillLevel(parent), mcMMO.p.getSkillTools().getLevelCap(parent));
         }
 

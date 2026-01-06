@@ -6,10 +6,11 @@ import com.gmail.nossr50.datatypes.skills.subskills.interfaces.InteractType;
 import com.gmail.nossr50.datatypes.skills.subskills.interfaces.Interaction;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.event.Event;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
-import org.bukkit.event.Event;
 
 public class InteractionManager {
     private static HashMap<InteractType, ArrayList<Interaction>> interactRegister;
@@ -74,8 +75,8 @@ public class InteractionManager {
     /**
      * Processes the associated Interactions for this event
      *
-     * @param event target event
-     * @param plugin instance of mcMMO plugin
+     * @param event           target event
+     * @param plugin          instance of mcMMO plugin
      * @param curInteractType the associated interaction type
      */
     public static void processEvent(Event event, mcMMO plugin, InteractType curInteractType) {

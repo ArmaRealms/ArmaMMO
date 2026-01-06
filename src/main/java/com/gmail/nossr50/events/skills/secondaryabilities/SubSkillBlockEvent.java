@@ -9,7 +9,7 @@ public class SubSkillBlockEvent extends SubSkillEvent {
     private final @NotNull Block block;
 
     public SubSkillBlockEvent(@NotNull Player player, @NotNull SubSkillType subSkillType,
-            @NotNull Block block) {
+                              @NotNull Block block) {
         super(player, subSkillType);
         this.block = block;
     }

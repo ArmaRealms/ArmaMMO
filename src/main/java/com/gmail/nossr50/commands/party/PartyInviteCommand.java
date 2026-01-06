@@ -14,8 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PartyInviteCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 2) {
             String targetName = CommandUtils.getMatchedPlayerName(args[1]);
             McMMOPlayer mcMMOTarget = UserManager.getOfflinePlayer(targetName);
@@ -24,15 +23,22 @@ public class PartyInviteCommand implements CommandExecutor {
                 return false;
             }
 
-            Player target = mcMMOTarget.getPlayer();
+            if (mcMMOTarget == null) {
+                return true;
+            }
 
-            if (UserManager.getPlayer((Player) sender) == null) {
+            Player target = mcMMOTarget.getPlayer();
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                return true;
+            }
+
+            McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+            if (mcMMOPlayer == null) {
                 sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                 return true;
             }
 
-            final Player player = (Player) sender;
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             String playerName = player.getName();
 
             if (player.equals(target)) {
@@ -45,32 +51,29 @@ public class PartyInviteCommand implements CommandExecutor {
                 return true;
             }
 
-            if (!mcMMO.p.getPartyManager().canInvite(mmoPlayer)) {
+            if (!mcMMO.p.getPartyManager().canInvite(mcMMOPlayer)) {
                 player.sendMessage(LocaleLoader.getString("Party.Locked"));
                 return true;
             }
 
-            Party playerParty = mmoPlayer.getParty();
+            Party playerParty = mcMMOPlayer.getParty();
+            if (playerParty == null) {
+                return true;
+            }
 
             if (mcMMO.p.getPartyManager().isPartyFull(target, playerParty)) {
-                player.sendMessage(
-                        LocaleLoader.getString("Commands.Party.PartyFull.Invite", target.getName(),
-                                playerParty.toString(),
-                                mcMMO.p.getGeneralConfig().getPartyMaxSize()));
+                player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull.Invite", target.getName(), playerParty.toString(), mcMMO.p.getGeneralConfig().getPartyMaxSize()));
                 return true;
             }
 
             mcMMOTarget.setPartyInvite(playerParty);
 
             sender.sendMessage(LocaleLoader.getString("Commands.Invite.Success"));
-            target.sendMessage(
-                    LocaleLoader.getString("Commands.Party.Invite.0", playerParty.getName(),
-                            playerName));
+            target.sendMessage(LocaleLoader.getString("Commands.Party.Invite.0", playerParty.getName(), playerName));
             target.sendMessage(LocaleLoader.getString("Commands.Party.Invite.1"));
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "invite",
-                "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.2", "party", "convidar", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">"));
         return true;
     }
 }

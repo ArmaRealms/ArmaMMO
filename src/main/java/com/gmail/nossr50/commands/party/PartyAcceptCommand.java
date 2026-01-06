@@ -13,17 +13,19 @@ import org.jetbrains.annotations.NotNull;
 public class PartyAcceptCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (args.length == 1) {
-            final Player player = (Player) sender;
-
-            //Check if player profile is loaded
-            if (UserManager.getPlayer(player) == null) {
-                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                 return true;
             }
 
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            //Check if player profile is loaded
+            McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+            if (mmoPlayer == null) {
+                sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
+                return true;
+            }
 
             if (!mmoPlayer.hasPartyInvite()) {
                 sender.sendMessage(LocaleLoader.getString("mcMMO.NoInvites"));
@@ -39,7 +41,7 @@ public class PartyAcceptCommand implements CommandExecutor {
             mcMMO.p.getPartyManager().joinInvitedParty(mmoPlayer);
             return true;
         }
-        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "accept"));
+        sender.sendMessage(LocaleLoader.getString("Commands.Usage.1", "party", "aceitar"));
         return true;
     }
 }

@@ -1,13 +1,6 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffectType;
@@ -15,7 +8,18 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 public class PotionUtil {
+    public static final String STRONG = "STRONG";
+    public static final String LONG = "LONG";
+    public static final String WATER_POTION_TYPE_STR = "WATER";
     // Some of the old potion types got renamed, our configs can still contain these old names
     private static final Map<String, String> legacyPotionTypes = new HashMap<>();
     private static final Method methodPotionTypeGetKey;
@@ -29,11 +33,6 @@ public class PotionUtil {
     private static final Method methodPotionMetaGetBasePotionType;
     private static final Method methodPotionMetaSetBasePotionType;
     private static final Class<?> potionDataClass;
-
-    public static final String STRONG = "STRONG";
-    public static final String LONG = "LONG";
-    public static final String WATER_POTION_TYPE_STR = "WATER";
-
     private static final PotionCompatibilityType COMPATIBILITY_MODE;
 
     static {
@@ -70,11 +69,11 @@ public class PotionUtil {
      * Derive a potion from a partial name, and whether it should be upgraded or extended.
      *
      * @param partialName potion type as a string, can be a substring of the potion type but must
-     * match exactly
+     *                    match exactly
      * @return The potion type
      */
     public static PotionType matchPotionType(String partialName, boolean isUpgraded,
-            boolean isExtended) {
+                                             boolean isExtended) {
         if (COMPATIBILITY_MODE == PotionCompatibilityType.PRE_1_20_5) {
             return matchLegacyPotionType(partialName);
         } else {
@@ -106,7 +105,7 @@ public class PotionUtil {
     }
 
     private static String convertUpgradedOrExtended(String potionType, boolean isUpgraded,
-            boolean isExtended) {
+                                                    boolean isExtended) {
         if (isUpgraded) {
             potionType = STRONG + "_" + potionType;
         }
@@ -362,7 +361,7 @@ public class PotionUtil {
     }
 
     public static boolean isPotionTypeWithoutEffects(@NotNull PotionMeta potionMeta,
-            String potionType) {
+                                                     String potionType) {
         return isPotionType(potionMeta, potionType)
                 && !hasBasePotionEffects(potionMeta)
                 && potionMeta.getCustomEffects().isEmpty();
@@ -448,7 +447,7 @@ public class PotionUtil {
     }
 
     private static boolean samePotionEffectsModern(PotionMeta potionMeta,
-            PotionMeta otherPotionMeta) {
+                                                   PotionMeta otherPotionMeta) {
         return potionMeta.getCustomEffects().equals(otherPotionMeta.getCustomEffects());
     }
 
@@ -487,11 +486,11 @@ public class PotionUtil {
      * and later.
      *
      * @param potionMeta the potion meta
-     * @param extended true if the potion is extended
-     * @param upgraded true if the potion is upgraded
+     * @param extended   true if the potion is extended
+     * @param upgraded   true if the potion is upgraded
      */
     public static void setBasePotionType(PotionMeta potionMeta, PotionType potionType,
-            boolean extended, boolean upgraded) {
+                                         boolean extended, boolean upgraded) {
         if (methodPotionMetaSetBasePotionType == null) {
             setBasePotionTypeLegacy(potionMeta, potionType, extended, upgraded);
         } else {
@@ -500,8 +499,8 @@ public class PotionUtil {
     }
 
     public static void setUpgradedAndExtendedProperties(PotionType potionType,
-            PotionMeta potionMeta,
-            boolean isUpgraded, boolean isExtended) {
+                                                        PotionMeta potionMeta,
+                                                        boolean isUpgraded, boolean isExtended) {
         if (potionDataClass == null || mcMMO.getCompatibilityManager().getMinecraftGameVersion()
                 .isAtLeast(1, 20, 5)) {
             return;
@@ -519,8 +518,8 @@ public class PotionUtil {
     }
 
     private static void setBasePotionTypeLegacy(PotionMeta potionMeta, PotionType potionType,
-            boolean extended,
-            boolean upgraded) {
+                                                boolean extended,
+                                                boolean upgraded) {
         try {
             Object potionData = potionDataClass.getConstructor(PotionType.class, boolean.class,
                             boolean.class)

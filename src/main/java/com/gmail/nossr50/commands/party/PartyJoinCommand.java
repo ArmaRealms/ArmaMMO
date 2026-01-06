@@ -14,11 +14,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class PartyJoinCommand implements CommandExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
-            case 2:
-            case 3:
+            case 2, 3 -> {
                 String targetName = CommandUtils.getMatchedPlayerName(args[1]);
                 McMMOPlayer mcMMOTarget = UserManager.getPlayer(targetName);
 
@@ -26,26 +24,35 @@ public class PartyJoinCommand implements CommandExecutor {
                     return true;
                 }
 
-                Player target = mcMMOTarget.getPlayer();
-
-                if (!mcMMOTarget.inParty()) {
-                    sender.sendMessage(
-                            LocaleLoader.getString("Party.PlayerNotInParty", targetName));
+                if (mcMMOTarget == null) {
                     return true;
                 }
 
-                final Player player = (Player) sender;
+                Player target = mcMMOTarget.getPlayer();
+                if (!mcMMOTarget.inParty()) {
+                    sender.sendMessage(LocaleLoader.getString("Party.PlayerNotInParty", targetName));
+                    return true;
+                }
 
-                if (UserManager.getPlayer((Player) sender) == null) {
+                if (!(sender instanceof Player player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+                    return true;
+                }
+
+                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+                if (mcMMOPlayer == null) {
                     sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
                     return true;
                 }
 
-                final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
                 Party targetParty = mcMMOTarget.getParty();
+                if (targetParty == null) {
+                    return true;
+                }
 
-                if (player.equals(target) || (mmoPlayer.inParty() && mmoPlayer.getParty()
-                        .equals(targetParty))) {
+                Party playerParty = mcMMOPlayer.getParty();
+
+                if (player.equals(target) || (mcMMOPlayer.inParty() && playerParty != null && playerParty.equals(targetParty))) {
                     sender.sendMessage(LocaleLoader.getString("Party.Join.Self"));
                     return true;
                 }
@@ -60,25 +67,24 @@ public class PartyJoinCommand implements CommandExecutor {
                 String partyName = targetParty.getName();
 
                 // Changing parties
-                if (!mcMMO.p.getPartyManager().changeOrJoinParty(mmoPlayer, partyName)) {
+                if (!mcMMO.p.getPartyManager().changeOrJoinParty(mcMMOPlayer, partyName)) {
                     return true;
                 }
 
                 if (mcMMO.p.getPartyManager().isPartyFull(player, targetParty)) {
-                    player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull",
-                            targetParty.toString()));
+                    player.sendMessage(LocaleLoader.getString("Commands.Party.PartyFull", targetParty.toString()));
                     return true;
                 }
 
                 player.sendMessage(LocaleLoader.getString("Commands.Party.Join", partyName));
-                mcMMO.p.getPartyManager().addToParty(mmoPlayer, targetParty);
+                mcMMO.p.getPartyManager().addToParty(mcMMOPlayer, targetParty);
                 return true;
+            }
 
-            default:
-                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "join",
-                        "<" + LocaleLoader.getString("Commands.Usage.Player") + ">",
-                        "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
+            default -> {
+                sender.sendMessage(LocaleLoader.getString("Commands.Usage.3", "party", "entrar", "<" + LocaleLoader.getString("Commands.Usage.Player") + ">", "[" + LocaleLoader.getString("Commands.Usage.Password") + "]"));
                 return true;
+            }
         }
     }
 

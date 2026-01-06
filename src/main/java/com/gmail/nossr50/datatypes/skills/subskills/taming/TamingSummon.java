@@ -17,7 +17,7 @@ public class TamingSummon {
     private EntityType entityType;
 
     public TamingSummon(CallOfTheWildType callOfTheWildType, Material itemType,
-            int itemAmountRequired, int entitiesSummoned, int summonLifespan, int summonCap) {
+                        int itemAmountRequired, int entitiesSummoned, int summonLifespan, int summonCap) {
         this.callOfTheWildType = callOfTheWildType;
         this.itemType = itemType;
         this.itemAmountRequired = Math.max(itemAmountRequired, 1);

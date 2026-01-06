@@ -13,7 +13,7 @@ public abstract class AbstractPlatform implements Platform {
     protected final ServerSoftwareType serverSoftwareType;
 
     public AbstractPlatform(MinecraftGameVersion minecraftGameVersion,
-            ServerSoftwareType serverSoftwareType, CompatibilityManager compatibilityManager) {
+                            ServerSoftwareType serverSoftwareType, CompatibilityManager compatibilityManager) {
         this.minecraftGameVersion = minecraftGameVersion;
         this.serverSoftwareType = serverSoftwareType;
         this.compatibilityManager = compatibilityManager;

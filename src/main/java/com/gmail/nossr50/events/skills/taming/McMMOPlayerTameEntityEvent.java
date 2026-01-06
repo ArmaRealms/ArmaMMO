@@ -16,15 +16,19 @@ public class McMMOPlayerTameEntityEvent extends McMMOPlayerExperienceEvent {
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
     private final McMMOPlayer mmoPlayer;
-    private float xpGained;
     private final Entity tamedEntity;
+    private float xpGained;
 
     public McMMOPlayerTameEntityEvent(@NotNull McMMOPlayer mmoPlayer, float xp,
-            @NotNull Entity tamedEntity) {
+                                      @NotNull Entity tamedEntity) {
         super(mmoPlayer.getPlayer(), PrimarySkillType.TAMING, XPGainReason.PVE);
         this.mmoPlayer = mmoPlayer;
         this.xpGained = xp;
         this.tamedEntity = tamedEntity;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
     }
 
     /**
@@ -65,10 +69,6 @@ public class McMMOPlayerTameEntityEvent extends McMMOPlayerExperienceEvent {
     @Override
     public void setCancelled(boolean cancelled) {
         super.setCancelled(cancelled);
-    }
-
-    public static HandlerList getHandlerList() {
-        return HANDLER_LIST;
     }
 
     @Override

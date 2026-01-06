@@ -2,10 +2,8 @@ package com.gmail.nossr50.util;
 
 import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_LEAST_SIG;
 import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_MOST_SIG;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -17,10 +15,12 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class ContainerMetadataUtils {
 
-    public static void changeContainerOwnership(@Nullable BlockState blockState,
-            @Nullable Player player) {
+    public static void changeContainerOwnership(@Nullable final BlockState blockState,
+                                                @Nullable final Player player) {
         // no-op when the blockState is null or player is null
         if (blockState == null || player == null) {
             return;
@@ -36,8 +36,8 @@ public class ContainerMetadataUtils {
         setOwner(blockState, player.getUniqueId());
     }
 
-    public static void printOwnershipGainDebug(@NotNull BlockState blockState,
-            @Nullable McMMOPlayer mmoPlayer) {
+    public static void printOwnershipGainDebug(@NotNull final BlockState blockState,
+                                               @Nullable final McMMOPlayer mmoPlayer) {
         if (mmoPlayer != null && mmoPlayer.isDebugMode()) {
             mmoPlayer.getPlayer().sendMessage("Container ownership " +
                     ChatColor.GREEN + "gained " + ChatColor.RESET +
@@ -45,8 +45,8 @@ public class ContainerMetadataUtils {
         }
     }
 
-    public static void printOwnershipLossDebug(BlockState blockState) {
-        OfflinePlayer containerOwner = getContainerOwner(blockState);
+    public static void printOwnershipLossDebug(final BlockState blockState) {
+        final OfflinePlayer containerOwner = getContainerOwner(blockState);
 
         if (containerOwner != null && containerOwner.isOnline()) {
             final McMMOPlayer mmoContainerOwner = UserManager.getPlayer(containerOwner.getPlayer());
@@ -61,8 +61,8 @@ public class ContainerMetadataUtils {
         }
     }
 
-    public static @Nullable OfflinePlayer getContainerOwner(BlockState container) {
-        if (container instanceof PersistentDataHolder persistentDataHolder) {
+    public static @Nullable OfflinePlayer getContainerOwner(final BlockState container) {
+        if (container instanceof final PersistentDataHolder persistentDataHolder) {
             final UUID uuid = getOwner(persistentDataHolder);
 
             if (uuid != null) {
@@ -73,12 +73,11 @@ public class ContainerMetadataUtils {
         return null;
     }
 
-
-    public static boolean isContainerOwned(BlockState blockState) {
+    public static boolean isContainerOwned(final BlockState blockState) {
         return getContainerOwner(blockState) != null;
     }
 
-    public static void processContainerOwnership(BlockState blockState, Player player) {
+    public static void processContainerOwnership(final BlockState blockState, final Player player) {
         // no-op when the blockState is null or player is null
         if (blockState == null || player == null) {
             return;
@@ -93,7 +92,7 @@ public class ContainerMetadataUtils {
         changeContainerOwnership(blockState, player);
     }
 
-    public static @Nullable UUID getOwner(@NotNull PersistentDataHolder persistentDataHolder) {
+    public static @Nullable UUID getOwner(@NotNull final PersistentDataHolder persistentDataHolder) {
         //Get container from entity
         final PersistentDataContainer dataContainer = persistentDataHolder.getPersistentDataContainer();
 
@@ -110,8 +109,8 @@ public class ContainerMetadataUtils {
         }
     }
 
-    public static void setOwner(@NotNull BlockState blockState, @NotNull UUID uuid) {
-        PersistentDataContainer dataContainer = ((PersistentDataHolder) blockState).getPersistentDataContainer();
+    public static void setOwner(@NotNull final BlockState blockState, @NotNull final UUID uuid) {
+        final PersistentDataContainer dataContainer = ((PersistentDataHolder) blockState).getPersistentDataContainer();
 
         dataContainer.set(NSK_CONTAINER_UUID_MOST_SIG, PersistentDataType.LONG,
                 uuid.getMostSignificantBits());

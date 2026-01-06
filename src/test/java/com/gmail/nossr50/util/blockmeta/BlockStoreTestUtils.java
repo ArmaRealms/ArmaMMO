@@ -1,11 +1,11 @@
 package com.gmail.nossr50.util.blockmeta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import org.jetbrains.annotations.NotNull;
 
 public class BlockStoreTestUtils {
     public static final int LEGACY_WORLD_HEIGHT_MAX = 256;
@@ -15,15 +15,15 @@ public class BlockStoreTestUtils {
      * Asserts that the two ChunkStores are equal.
      *
      * @param expected The expected ChunkStore
-     * @param actual The actual ChunkStore
+     * @param actual   The actual ChunkStore
      */
-    static void assertChunkStoreEquals(ChunkStore expected, ChunkStore actual) {
+    static void assertChunkStoreEquals(final ChunkStore expected, final ChunkStore actual) {
         assertEquals(expected.getChunkMin(), actual.getChunkMin());
         assertEquals(expected.getChunkMax(), actual.getChunkMax());
         assertEqualIgnoreMinMax(expected, actual);
     }
 
-    static byte[] serializeChunkStore(@NotNull ChunkStore chunkStore) throws IOException {
+    static byte[] serializeChunkStore(@NotNull final ChunkStore chunkStore) throws IOException {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         if (chunkStore instanceof BitSetChunkStore) {
             BitSetChunkStore.Serialization.writeChunkStore(
@@ -37,12 +37,12 @@ public class BlockStoreTestUtils {
         return byteArrayOutputStream.toByteArray();
     }
 
-    static void assertEqualIgnoreMinMax(ChunkStore expected, ChunkStore actual) {
+    static void assertEqualIgnoreMinMax(final ChunkStore expected, final ChunkStore actual) {
         assertEquals(expected.getChunkX(), actual.getChunkX());
         assertEquals(expected.getChunkZ(), actual.getChunkZ());
         assertEquals(expected.getWorldId(), actual.getWorldId());
         for (int y = Math.min(actual.getChunkMin(), expected.getChunkMin());
-                y < Math.max(actual.getChunkMax(), expected.getChunkMax()); y++) {
+             y < Math.max(actual.getChunkMax(), expected.getChunkMax()); y++) {
             if (expected.getChunkMin() > y || actual.getChunkMin() > y
                     || expected.getChunkMax() <= y || actual.getChunkMax() <= y) {
                 continue; // Ignore

@@ -94,7 +94,7 @@ public final class PerksUtils {
      * Calculate activation chance for a skill.
      *
      * @param player Player to check the activation chance for
-     * @param skill PrimarySkillType to check the activation chance of
+     * @param skill  PrimarySkillType to check the activation chance of
      * @return the activation chance with "lucky perk" accounted for
      */
     public static int handleLuckyPerks(Player player, PrimarySkillType skill) {
@@ -109,7 +109,7 @@ public final class PerksUtils {
      * Calculate activation chance for a skill.
      *
      * @param mmoPlayer Player to check the activation chance for
-     * @param skill PrimarySkillType to check the activation chance of
+     * @param skill     PrimarySkillType to check the activation chance of
      * @return the activation chance with "lucky perk" accounted for
      */
     public static int handleLuckyPerks(McMMOPlayer mmoPlayer, PrimarySkillType skill) {

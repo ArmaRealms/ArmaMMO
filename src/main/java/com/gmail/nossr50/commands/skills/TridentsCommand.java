@@ -2,35 +2,34 @@ package com.gmail.nossr50.commands.skills;
 
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_IMPALE;
 import static com.gmail.nossr50.datatypes.skills.SubSkillType.TRIDENTS_TRIDENTS_LIMIT_BREAK;
-
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
-public class TridentsCommand extends SkillCommand {
+import java.util.ArrayList;
+import java.util.List;
 
+public class TridentsCommand extends SkillCommand {
 
     public TridentsCommand() {
         super(PrimarySkillType.TRIDENTS);
     }
 
     @Override
-    protected void dataCalculations(Player player, float skillValue) {
+    protected void dataCalculations(final Player player, final float skillValue) {
     }
 
     @Override
-    protected void permissionsCheck(Player player) {
+    protected void permissionsCheck(final Player player) {
     }
 
     @Override
-    protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
-        List<String> messages = new ArrayList<>();
+    protected List<String> statsDisplay(final Player player, final float skillValue, final boolean hasEndurance,
+                                        final boolean isLucky) {
+        final List<String> messages = new ArrayList<>();
 
         if (SkillUtils.canUseSubskill(player, TRIDENTS_TRIDENTS_LIMIT_BREAK)) {
             messages.add(getStatMessage(TRIDENTS_TRIDENTS_LIMIT_BREAK,
@@ -47,8 +46,8 @@ public class TridentsCommand extends SkillCommand {
     }
 
     @Override
-    protected List<Component> getTextComponents(Player player) {
-        List<Component> textComponents = new ArrayList<>();
+    protected List<Component> getTextComponents(final Player player) {
+        final List<Component> textComponents = new ArrayList<>();
 
         TextComponentFactory.appendSubSkillTextComponents(player, textComponents,
                 PrimarySkillType.TRIDENTS);

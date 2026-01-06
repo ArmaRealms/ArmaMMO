@@ -25,7 +25,7 @@ public class AddlevelsCommand extends ExperienceCommand {
 
     @Override
     protected void handleCommand(Player player, PlayerProfile profile, PrimarySkillType skill,
-            int value) {
+                                 int value) {
         float xpRemoved = profile.getSkillXpLevelRaw(skill);
         profile.addLevels(skill, value);
 
@@ -57,7 +57,7 @@ public class AddlevelsCommand extends ExperienceCommand {
 
     @Override
     protected void handlePlayerMessageSkill(Player player, int value, PrimarySkillType skill,
-            boolean isSilent) {
+                                            boolean isSilent) {
         if (isSilent) {
             return;
         }

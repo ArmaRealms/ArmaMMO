@@ -1,40 +1,31 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
+import org.bukkit.attribute.Attribute;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.bukkit.attribute.Attribute;
 
 public class AttributeMapper {
 
     public static final String ATTRIBUTE = "ATTRIBUTE";
     public static final String ORG_BUKKIT_REGISTRY = "org.bukkit.Registry";
-
-    // Prevent instantiation
-    private AttributeMapper() {
-    }
-
+    public static final Attribute MAPPED_MAX_HEALTH;
+    public static final Attribute MAPPED_JUMP_STRENGTH;
+    public static final Attribute MAPPED_MOVEMENT_SPEED;
     // Define constants for attribute keys and their legacy counterparts
     private static final String MAX_HEALTH_1_21_3_STR = "max_health";
     private static final String MAX_HEALTH_1_18_2_STR = "generic.max_health";
-    public static final Attribute MAPPED_MAX_HEALTH;
-
     private static final String JUMP_STRENGTH_1_23_1 = "jump_strength";
     private static final String JUMP_STRENGTH_1_21_1 = "generic.jump_strength";
     private static final String JUMP_STR_1_18_2 = "horse.jump_strength";
-    public static final Attribute MAPPED_JUMP_STRENGTH;
-
-    public static final Attribute MAPPED_MOVEMENT_SPEED;
     private static final String MOVEMENT_SPEED_1_18_2 = "generic.movement_speed";
     private static final String MOVEMENT_SPEED_1_21_1 = "generic.movement_speed";
     private static final String MOVEMENT_SPEED_1_21_3 = "movement_speed";
-
-    // Add other attributes similarly...
-    // For brevity, only key attributes are shown
 
     static {
         MAPPED_MAX_HEALTH = findAttribute(MAX_HEALTH_1_21_3_STR, MAX_HEALTH_1_18_2_STR);
@@ -42,6 +33,13 @@ public class AttributeMapper {
                 JUMP_STR_1_18_2);
         MAPPED_MOVEMENT_SPEED = findAttribute(MOVEMENT_SPEED_1_18_2, MOVEMENT_SPEED_1_21_1,
                 MOVEMENT_SPEED_1_21_3);
+    }
+
+    // Add other attributes similarly...
+    // For brevity, only key attributes are shown
+
+    // Prevent instantiation
+    private AttributeMapper() {
     }
 
     private static Attribute findAttribute(String... keys) {

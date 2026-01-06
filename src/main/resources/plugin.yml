@@ -25,9 +25,11 @@ commands:
         description: Change XP bar settings
     mmocompat:
         description: Information about the server and whether its considered fully compatible or running in compatibility mode
+        permission: mcmmo.commands.mcmmo
     mmodebug:
         aliases: [ mcmmodebugmode ]
         description: Toggles a debug mode which will print useful information to chat
+        permission: mcmmo.commands.mcmmo
     mmoinfo:
         aliases: [ mcinfo ]
         description: Info pages for mcMMO
@@ -40,6 +42,7 @@ commands:
         description: Shows a brief mod description
         permission: mcmmo.commands.mcmmo
     mctop:
+        aliases: [topmcmmo]
         description: Show mcMMO leader boards
         permission: mcmmo.commands.mctop
     mcrank:
@@ -81,6 +84,7 @@ commands:
         description: Teleport to a party member
         permission: mcmmo.commands.ptp
     party:
+        aliases: [equipe]
         description: Create/join a party
         permission: mcmmo.commands.party
     inspect:
@@ -101,70 +105,88 @@ commands:
         description: Reset the level of one or all of your skills
         permission: mcmmo.commands.skillreset
     excavation:
+        aliases: [escavacao]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.excavation
     herbalism:
+        aliases: [herbalismo]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.herbalism
     mining:
+        aliases: [mineracao]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.mining
     woodcutting:
+        aliases: [lenhador]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.woodcutting
     axes:
+        aliases: [machado]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.axes
     archery:
+        aliases: [arquearia]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.archery
     crossbows:
+        aliases: [besta]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.crossbows
     swords:
+        aliases: [espada]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.swords
     taming:
+        aliases: [domesticacao]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.taming
     tridents:
+        aliases: [tridente]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.tridents
     unarmed:
+        aliases: [desarmado]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.unarmed
     acrobatics:
+        aliases: [acrobacia]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.acrobatics
     repair:
+        aliases: [reparo]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.repair
     fishing:
+        aliases: [pescaria]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.fishing
     smelting:
+        aliases: [fundicao]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.smelting
     spears:
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.spears
     alchemy:
+        aliases: [alquimia]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.alchemy
     salvage:
+        aliases: [recuperacao]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.salvage
     maces:
+        aliases: [clava]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.maces
     mmopower:
         description: Shows skill mastery and power level info
         permission: mcmmo.commands.mmopower
         aliases: [ mmopowerlevel, powerlevel ]
-    adminchat:
-        aliases: [ ac, a ]
-        description: Toggle Admin chat or send admin chat messages
-        permission: mcmmo.chat.adminchat
+    # adminchat:
+    #     aliases: [ ac, a ]
+    #     description: Toggle Admin chat or send admin chat messages
+    #     permission: mcmmo.chat.adminchat
     mcpurge:
         description: Purge users with 0 powerlevel and/or who haven't connected in several months from the server DB.
         permission: mcmmo.commands.mcpurge

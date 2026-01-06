@@ -16,7 +16,7 @@ public class McMMOPlayerRepairCheckEvent extends McMMOPlayerSkillEvent implement
     private boolean cancelled;
 
     public McMMOPlayerRepairCheckEvent(Player player, short repairAmount, ItemStack repairMaterial,
-            ItemStack repairedObject) {
+                                       ItemStack repairedObject) {
         super(player, PrimarySkillType.REPAIR);
         this.repairAmount = repairAmount;
         this.repairMaterial = repairMaterial;

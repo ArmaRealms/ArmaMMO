@@ -3,10 +3,11 @@ package com.gmail.nossr50.chat;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.function.Predicate;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.function.Predicate;
 
 public class SamePartyPredicate<T extends CommandSender> implements Predicate<T> {
 

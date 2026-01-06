@@ -4,9 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 public record PlayerStat(String playerName, int value) implements Comparable<PlayerStat> {
     @Override
-    public int compareTo(@NotNull PlayerStat o) {
+    public int compareTo(@NotNull final PlayerStat o) {
         // Descending order
-        int cmp = Integer.compare(o.value, this.value);
+        final int cmp = Integer.compare(o.value, this.value);
         if (cmp != 0) return cmp;
         // Tie-breaker
         return this.playerName.compareTo(o.playerName);

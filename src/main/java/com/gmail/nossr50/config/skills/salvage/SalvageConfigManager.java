@@ -2,6 +2,7 @@ package com.gmail.nossr50.config.skills.salvage;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.salvage.salvageables.Salvageable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,15 +12,14 @@ public class SalvageConfigManager {
     public static final String SALVAGE_VANILLA_YML = "salvage.vanilla.yml";
     private final List<Salvageable> salvageables = new ArrayList<>(); //TODO: Collision checking, make the list a set
 
+    public SalvageConfigManager(final mcMMO plugin) {
+        final Pattern pattern = Pattern.compile("salvage\\.(?:.+)\\.yml");
+        final File dataFolder = plugin.getDataFolder();
 
-    public SalvageConfigManager(mcMMO plugin) {
-        Pattern pattern = Pattern.compile("salvage\\.(?:.+)\\.yml");
-        File dataFolder = plugin.getDataFolder();
-
-        SalvageConfig mainSalvageConfig = new SalvageConfig(SALVAGE_VANILLA_YML);
+        final SalvageConfig mainSalvageConfig = new SalvageConfig(SALVAGE_VANILLA_YML);
         salvageables.addAll(mainSalvageConfig.getLoadedSalvageables());
 
-        for (String fileName : dataFolder.list()) {
+        for (final String fileName : dataFolder.list()) {
             if (fileName.equals(SALVAGE_VANILLA_YML)) {
                 continue;
             }
@@ -28,13 +28,13 @@ public class SalvageConfigManager {
                 continue;
             }
 
-            File file = new File(dataFolder, fileName);
+            final File file = new File(dataFolder, fileName);
 
             if (file.isDirectory()) {
                 continue;
             }
 
-            SalvageConfig salvageConfig = new SalvageConfig(fileName);
+            final SalvageConfig salvageConfig = new SalvageConfig(fileName);
             salvageables.addAll(salvageConfig.getLoadedSalvageables());
         }
     }

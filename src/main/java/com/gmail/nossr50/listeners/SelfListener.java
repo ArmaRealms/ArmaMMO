@@ -24,14 +24,14 @@ public class SelfListener implements Listener {
     //Used in task scheduling and other things
     private final mcMMO plugin;
 
-    public SelfListener(mcMMO plugin) {
+    public SelfListener(final mcMMO plugin) {
         this.plugin = plugin;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerLevelUp(McMMOPlayerLevelUpEvent event) {
-        Player player = event.getPlayer();
-        PrimarySkillType skill = event.getSkill();
+    public void onPlayerLevelUp(final McMMOPlayerLevelUpEvent event) {
+        final Player player = event.getPlayer();
+        final PrimarySkillType skill = event.getSkill();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
@@ -43,7 +43,7 @@ public class SelfListener implements Listener {
         if (player.isOnline()) {
             //Players can gain multiple levels especially during xprate events
             for (int i = 0; i < event.getLevelsGained(); i++) {
-                int previousLevelGained = event.getSkillLevel() - i;
+                final int previousLevelGained = event.getSkillLevel() - i;
                 //Send player skill unlock notifications
                 UserManager.getPlayer(player)
                         .processUnlockNotifications(plugin, event.getSkill(), previousLevelGained);
@@ -59,8 +59,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerXp(McMMOPlayerXpGainEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerXp(final McMMOPlayerXpGainEvent event) {
+        final Player player = event.getPlayer();
 
         if (player.isOnline()) {
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
@@ -70,8 +70,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onAbility(McMMOPlayerAbilityActivateEvent event) {
-        Player player = event.getPlayer();
+    public void onAbility(final McMMOPlayerAbilityActivateEvent event) {
+        final Player player = event.getPlayer();
         if (player.isOnline()) {
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                 ScoreboardManager.cooldownUpdate(event.getPlayer(), event.getSkill());
@@ -80,8 +80,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerXpGain(McMMOPlayerXpGainEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerXpGain(final McMMOPlayerXpGainEvent event) {
+        final Player player = event.getPlayer();
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //TODO: Handle proper validation at the event level
@@ -89,7 +89,7 @@ public class SelfListener implements Listener {
             return;
         }
 
-        PrimarySkillType primarySkillType = event.getSkill();
+        final PrimarySkillType primarySkillType = event.getSkill();
 
         if (mmoPlayer.isDebugMode()) {
             mmoPlayer.getPlayer().sendMessage(event.getSkill().toString() + " XP Gained");
@@ -129,7 +129,7 @@ public class SelfListener implements Listener {
             }
         }
 
-        int threshold = ExperienceConfig.getInstance()
+        final int threshold = ExperienceConfig.getInstance()
                 .getDiminishedReturnsThreshold(primarySkillType);
 
         if (threshold <= 0 || !ExperienceConfig.getInstance().getDiminishedReturnsEnabled()) {
@@ -151,12 +151,12 @@ public class SelfListener implements Listener {
 
         final float rawXp = event.getRawXpGained();
 
-        float guaranteedMinimum = ExperienceConfig.getInstance().getDiminishedReturnsCap() * rawXp;
+        final float guaranteedMinimum = ExperienceConfig.getInstance().getDiminishedReturnsCap() * rawXp;
 
-        float modifiedThreshold = (float) (
+        final float modifiedThreshold = (float) (
                 threshold / ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType)
                         * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
-        float difference =
+        final float difference =
                 (mmoPlayer.getProfile().getRegisteredXpGain(primarySkillType) - modifiedThreshold)
                         / modifiedThreshold;
 
@@ -165,7 +165,7 @@ public class SelfListener implements Listener {
 //            System.out.println(difference * 100 + "% over the threshold!");
 //            System.out.println("Previous: " + event.getRawXpGained());
 //            System.out.println("Adjusted XP " + (event.getRawXpGained() - (event.getRawXpGained() * difference)));
-            float newValue = rawXp - (rawXp * difference);
+            final float newValue = rawXp - (rawXp * difference);
 
             /*
              * Make sure players get a guaranteed minimum of XP
@@ -187,6 +187,5 @@ public class SelfListener implements Listener {
             mmoPlayer.getPlayer().sendMessage("Final Raw XP: " + event.getRawXpGained());
         }
     }
-
 
 }

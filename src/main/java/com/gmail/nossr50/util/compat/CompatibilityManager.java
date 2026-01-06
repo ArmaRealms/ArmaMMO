@@ -11,21 +11,21 @@ import com.gmail.nossr50.util.compat.layers.skills.MasterAnglerCompatibilityLaye
 import com.gmail.nossr50.util.nms.NMSVersion;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.HashMap;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
 
 /**
  * These classes are a band-aid solution for adding NMS support into 2.1.XXX In 2.2 we are switching
  * to modules and that will clean things up significantly
  */
 public class CompatibilityManager {
-    private @NotNull HashMap<CompatibilityType, Boolean> supportedLayers;
-    private boolean isFullyCompatibleServerSoftware = true; //true if all compatibility layers load successfully
     private final @NotNull MinecraftGameVersion minecraftGameVersion;
     private final @NotNull NMSVersion nmsVersion;
-
+    private @NotNull HashMap<CompatibilityType, Boolean> supportedLayers;
+    private boolean isFullyCompatibleServerSoftware = true; //true if all compatibility layers load successfully
     /* Compatibility Layers */
     private AbstractBungeeSerializerCompatibilityLayer bungeeSerializerCompatibilityLayer;
     private AbstractMasterAnglerCompatibility masterAnglerCompatibility;

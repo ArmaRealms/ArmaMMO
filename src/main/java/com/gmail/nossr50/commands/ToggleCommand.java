@@ -1,29 +1,32 @@
 package com.gmail.nossr50.commands;
 
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
+import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.util.StringUtil;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public abstract class ToggleCommand implements TabExecutor {
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         switch (args.length) {
             case 0:
-                if (CommandUtils.noConsoleUsage(sender)) {
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
                     return true;
                 }
 
                 if (!hasSelfPermission(sender)) {
-                    sender.sendMessage(command.getPermissionMessage());
+                    String commandPermissionMessage = command.getPermissionMessage();
+                    if (commandPermissionMessage != null) {
+                        sender.sendMessage(commandPermissionMessage);
+                    }
                     return true;
                 }
 
@@ -36,22 +39,25 @@ public abstract class ToggleCommand implements TabExecutor {
 
             case 1:
                 if (!hasOtherPermission(sender)) {
-                    sender.sendMessage(command.getPermissionMessage());
+                    String commandPermissionMessage = command.getPermissionMessage();
+                    if (commandPermissionMessage != null) {
+                        sender.sendMessage(commandPermissionMessage);
+                    }
                     return true;
                 }
 
                 String playerName = CommandUtils.getMatchedPlayerName(args[0]);
-                final McMMOPlayer mmoPlayer = UserManager.getPlayer(playerName);
+                McMMOPlayer mcMMOPlayer = UserManager.getPlayer(playerName);
 
-                if (!CommandUtils.checkPlayerExistence(sender, playerName, mmoPlayer)) {
+                if (!CommandUtils.checkPlayerExistence(sender, playerName, mcMMOPlayer)) {
                     return true;
                 }
 
-                if (CommandUtils.isOffline(sender, mmoPlayer.getPlayer())) {
+                if (CommandUtils.isOffline(sender, mcMMOPlayer.getPlayer())) {
                     return true;
                 }
 
-                applyCommandAction(mmoPlayer);
+                applyCommandAction(mcMMOPlayer);
                 sendSuccessMessage(sender, playerName);
                 return true;
 
@@ -61,21 +67,18 @@ public abstract class ToggleCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-            return StringUtil.copyPartialMatches(args[0], playerNames,
-                    new ArrayList<>(playerNames.size()));
+            return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     protected abstract boolean hasOtherPermission(CommandSender sender);
 
     protected abstract boolean hasSelfPermission(CommandSender sender);
 
-    protected abstract void applyCommandAction(McMMOPlayer mmoPlayer);
+    protected abstract void applyCommandAction(McMMOPlayer mcMMOPlayer);
 
     protected abstract void sendSuccessMessage(CommandSender sender, String playerName);
 }

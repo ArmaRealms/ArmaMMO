@@ -3,12 +3,13 @@ package com.gmail.nossr50.util.platform;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.compat.CompatibilityManager;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * These classes are a band-aid solution for adding NMS support into 2.1.XXX In 2.2 we are switching

@@ -1,7 +1,6 @@
 package com.gmail.nossr50.events.skills.fishing;
 
 import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.entity.Player;
@@ -14,12 +13,12 @@ public class McMMOPlayerFishingTreasureEvent extends McMMOPlayerFishingEvent {
     private int xp;
 
     @Deprecated(forRemoval = true, since = "2.2.010")
-    public McMMOPlayerFishingTreasureEvent(Player player, ItemStack treasure, int xp) {
+    public McMMOPlayerFishingTreasureEvent(final Player player, final ItemStack treasure, final int xp) {
         this(requireNonNull(UserManager.getPlayer(player)), treasure, xp);
     }
 
-    public McMMOPlayerFishingTreasureEvent(@NotNull McMMOPlayer mmoPlayer,
-            @Nullable ItemStack treasure, int xp) {
+    public McMMOPlayerFishingTreasureEvent(@NotNull final McMMOPlayer mmoPlayer,
+                                           @Nullable final ItemStack treasure, final int xp) {
         super(mmoPlayer);
         this.treasure = treasure;
         this.xp = xp;
@@ -29,7 +28,7 @@ public class McMMOPlayerFishingTreasureEvent extends McMMOPlayerFishingEvent {
         return treasure;
     }
 
-    public void setTreasure(@Nullable ItemStack item) {
+    public void setTreasure(@Nullable final ItemStack item) {
         this.treasure = item;
     }
 
@@ -37,7 +36,7 @@ public class McMMOPlayerFishingTreasureEvent extends McMMOPlayerFishingEvent {
         return xp;
     }
 
-    public void setXp(int xp) {
+    public void setXp(final int xp) {
         this.xp = xp;
     }
 }

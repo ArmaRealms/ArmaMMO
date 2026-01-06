@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Called when a player gains XP in a skill
  */
 public class McMMOPlayerPreXpGainEvent extends McMMOPlayerExperienceEvent {
+    private static final HandlerList handlers = new HandlerList();
     private float xpGained;
 
     @Deprecated
@@ -19,9 +20,13 @@ public class McMMOPlayerPreXpGainEvent extends McMMOPlayerExperienceEvent {
     }
 
     public McMMOPlayerPreXpGainEvent(Player player, PrimarySkillType skill, float xpGained,
-            XPGainReason xpGainReason) {
+                                     XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
         this.xpGained = xpGained;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -38,14 +43,8 @@ public class McMMOPlayerPreXpGainEvent extends McMMOPlayerExperienceEvent {
         this.xpGained = xpGained;
     }
 
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

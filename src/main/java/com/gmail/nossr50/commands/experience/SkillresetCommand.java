@@ -11,26 +11,34 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * This class mirrors the structure of ExperienceCommand, except the value/quantity argument is
  * removed.
  */
 public class SkillresetCommand implements TabExecutor {
+    protected static void handleSenderMessage(final CommandSender sender, final String playerName,
+                                              final PrimarySkillType skill) {
+        if (skill == null) {
+            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardAll.2", playerName));
+        } else {
+            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardSkill.2",
+                    mcMMO.p.getSkillTools().getLocalizedSkillName(skill), playerName));
+        }
+    }
+
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
-        PrimarySkillType skill;
+    public boolean onCommand(@NotNull final CommandSender sender, @NotNull final Command command,
+                             @NotNull final String label, final String[] args) {
+        final PrimarySkillType skill;
         switch (args.length) {
             case 1:
                 if (CommandUtils.noConsoleUsage(sender)) {
@@ -72,12 +80,12 @@ public class SkillresetCommand implements TabExecutor {
                     skill = mcMMO.p.getSkillTools().matchSkill(args[1]);
                 }
 
-                String playerName = CommandUtils.getMatchedPlayerName(args[0]);
+                final String playerName = CommandUtils.getMatchedPlayerName(args[0]);
                 final McMMOPlayer mmoPlayer = UserManager.getOfflinePlayer(playerName);
 
                 // If the mmoPlayer doesn't exist, create a temporary profile and check if it's present in the database. If it's not, abort the process.
                 if (mmoPlayer == null) {
-                    OfflinePlayer offlinePlayer = mcMMO.p.getServer().getOfflinePlayer(playerName);
+                    final OfflinePlayer offlinePlayer = mcMMO.p.getServer().getOfflinePlayer(playerName);
                     PlayerProfile profile = mcMMO.getDatabaseManager()
                             .loadPlayerProfile(offlinePlayer);
 
@@ -106,25 +114,21 @@ public class SkillresetCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull final CommandSender sender, @NotNull final Command command,
+                                      @NotNull final String alias, final String[] args) {
         switch (args.length) {
             case 1:
-                List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
-                return StringUtil.copyPartialMatches(args[0], playerNames,
-                        new ArrayList<>(playerNames.size()));
+                return CommandUtils.getOnlinePlayerNames(sender).stream().filter(s -> s.startsWith(args[0])).toList();
             case 2:
-                return StringUtil.copyPartialMatches(args[1],
-                        mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES,
-                        new ArrayList<>(mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.size()));
+                return mcMMO.p.getSkillTools().LOCALIZED_SKILL_NAMES.stream().filter(s -> s.startsWith(args[1])).toList();
             default:
-                return ImmutableList.of();
+                return List.of();
         }
     }
 
-    protected void handleCommand(Player player, PlayerProfile profile, PrimarySkillType skill) {
-        int levelsRemoved = profile.getSkillLevel(skill);
-        float xpRemoved = profile.getSkillXpLevelRaw(skill);
+    protected void handleCommand(final Player player, final PlayerProfile profile, final PrimarySkillType skill) {
+        final int levelsRemoved = profile.getSkillLevel(skill);
+        final float xpRemoved = profile.getSkillXpLevelRaw(skill);
 
         profile.modifySkill(skill, 0);
 
@@ -137,40 +141,30 @@ public class SkillresetCommand implements TabExecutor {
                 XPGainReason.COMMAND);
     }
 
-    protected boolean permissionsCheckSelf(CommandSender sender) {
+    protected boolean permissionsCheckSelf(final CommandSender sender) {
         return Permissions.skillreset(sender);
     }
 
-    protected boolean permissionsCheckOthers(CommandSender sender) {
+    protected boolean permissionsCheckOthers(final CommandSender sender) {
         return Permissions.skillresetOthers(sender);
     }
 
-    protected void handlePlayerMessageAll(Player player) {
+    protected void handlePlayerMessageAll(final Player player) {
         player.sendMessage(LocaleLoader.getString("Commands.Reset.All"));
     }
 
-    protected void handlePlayerMessageSkill(Player player, PrimarySkillType skill) {
+    protected void handlePlayerMessageSkill(final Player player, final PrimarySkillType skill) {
         player.sendMessage(LocaleLoader.getString("Commands.Reset.Single",
                 mcMMO.p.getSkillTools().getLocalizedSkillName(skill)));
     }
 
-    private boolean validateArguments(CommandSender sender, String skillName) {
+    private boolean validateArguments(final CommandSender sender, final String skillName) {
         return skillName.equalsIgnoreCase("all") || !CommandUtils.isInvalidSkill(sender, skillName);
     }
 
-    protected static void handleSenderMessage(CommandSender sender, String playerName,
-            PrimarySkillType skill) {
+    protected void editValues(final Player player, final PlayerProfile profile, final PrimarySkillType skill) {
         if (skill == null) {
-            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardAll.2", playerName));
-        } else {
-            sender.sendMessage(LocaleLoader.getString("Commands.addlevels.AwardSkill.2",
-                    mcMMO.p.getSkillTools().getLocalizedSkillName(skill), playerName));
-        }
-    }
-
-    protected void editValues(Player player, PlayerProfile profile, PrimarySkillType skill) {
-        if (skill == null) {
-            for (PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
+            for (final PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
                 handleCommand(player, profile, primarySkillType);
             }
 

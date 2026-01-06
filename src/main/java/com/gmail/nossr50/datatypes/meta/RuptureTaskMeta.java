@@ -13,9 +13,9 @@ public class RuptureTaskMeta extends FixedMetadataValue {
      * Initializes a FixedMetadataValue with an Object
      *
      * @param owningPlugin the {@link Plugin} that created this metadata value
-     * @param ruptureTask the value assigned to this metadata value
+     * @param ruptureTask  the value assigned to this metadata value
      */
-    public RuptureTaskMeta(@NotNull Plugin owningPlugin, @NotNull RuptureTask ruptureTask) {
+    public RuptureTaskMeta(@NotNull final Plugin owningPlugin, @NotNull final RuptureTask ruptureTask) {
         super(owningPlugin, ruptureTask);
         this.ruptureTask = ruptureTask;
     }

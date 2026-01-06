@@ -11,7 +11,6 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.Locale;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.entity.LivingEntity;
@@ -19,6 +18,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Locale;
 
 public class MacesManager extends SkillManager {
     private static @Nullable PotionEffectType slowEffectType;
@@ -32,6 +33,20 @@ public class MacesManager extends SkillManager {
         final String filtered = input.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_");
         final NamespacedKey namespacedKey = NamespacedKey.fromString(filtered);
         return (namespacedKey != null) ? Registry.EFFECT.get(namespacedKey) : null;
+    }
+
+    public static int getCrippleTickDuration(boolean isPlayerTarget) {
+        // TODO: Make configurable
+        if (isPlayerTarget) {
+            return 20;
+        } else {
+            return 30;
+        }
+    }
+
+    public static int getCrippleStrength(boolean isPlayerTarget) {
+        // TODO: Make configurable
+        return isPlayerTarget ? 1 : 2;
     }
 
     /**
@@ -97,19 +112,5 @@ public class MacesManager extends SkillManager {
                     getCrippleStrength(isPlayerTarget)));
             ParticleEffectUtils.playCrippleEffect(target);
         }
-    }
-
-    public static int getCrippleTickDuration(boolean isPlayerTarget) {
-        // TODO: Make configurable
-        if (isPlayerTarget) {
-            return 20;
-        } else {
-            return 30;
-        }
-    }
-
-    public static int getCrippleStrength(boolean isPlayerTarget) {
-        // TODO: Make configurable
-        return isPlayerTarget ? 1 : 2;
     }
 }

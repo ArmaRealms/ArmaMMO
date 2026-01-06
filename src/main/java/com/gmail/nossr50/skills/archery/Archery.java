@@ -6,25 +6,23 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class Archery {
-    private static final List<TrackedEntity> trackedEntities = new ArrayList<>();
-
-    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
-            .getSkillShotDamageMax();
-
-    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
-
     public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
             .getArcheryDistanceMultiplier();
+    private static final List<TrackedEntity> trackedEntities = new ArrayList<>();
+    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
+            .getSkillShotDamageMax();
+    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
 
     protected static void incrementTrackerValue(LivingEntity livingEntity) {
         for (TrackedEntity trackedEntity : trackedEntities) {
@@ -55,7 +53,7 @@ public class Archery {
      */
     public static void arrowRetrievalCheck(@NotNull LivingEntity livingEntity) {
         for (Iterator<TrackedEntity> entityIterator = trackedEntities.iterator();
-                entityIterator.hasNext(); ) {
+             entityIterator.hasNext(); ) {
             TrackedEntity trackedEntity = entityIterator.next();
 
             if (trackedEntity.getID() == livingEntity.getUniqueId()) {

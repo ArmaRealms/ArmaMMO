@@ -1,12 +1,13 @@
 package com.gmail.nossr50.listeners;
 
 import com.gmail.nossr50.mcMMO;
-import java.util.Arrays;
 import org.bukkit.Chunk;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
+
+import java.util.Arrays;
 
 public class ChunkListener implements Listener {
 

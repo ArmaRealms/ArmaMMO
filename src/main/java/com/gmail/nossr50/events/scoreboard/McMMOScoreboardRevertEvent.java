@@ -11,7 +11,7 @@ import org.bukkit.scoreboard.Scoreboard;
  */
 public class McMMOScoreboardRevertEvent extends McMMOScoreboardEvent {
     public McMMOScoreboardRevertEvent(Scoreboard targetBoard, Scoreboard currentBoard,
-            Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
+                                      Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
         super(targetBoard, currentBoard, targetPlayer, scoreboardEventReason);
     }
 }

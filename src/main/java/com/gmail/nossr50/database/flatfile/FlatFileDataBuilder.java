@@ -1,13 +1,14 @@
 package com.gmail.nossr50.database.flatfile;
 
 import com.gmail.nossr50.database.FlatFileDataFlag;
-import java.util.HashSet;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
 
 public class FlatFileDataBuilder {
     private final @NotNull HashSet<FlatFileDataFlag> dataFlags;
-    private @NotNull String[] splitStringData;
     private final int uniqueProcessingId;
+    private @NotNull String[] splitStringData;
     private boolean[] badDataValues;
 
     public FlatFileDataBuilder(@NotNull String[] splitStringData, int uniqueProcessingId) {

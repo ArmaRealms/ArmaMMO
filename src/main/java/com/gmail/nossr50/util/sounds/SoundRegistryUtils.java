@@ -1,44 +1,43 @@
 package com.gmail.nossr50.util.sounds;
 
 import static java.lang.String.format;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.AttributeMapper;
 import com.gmail.nossr50.util.LogUtils;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.Nullable;
 
-public final class SoundRegistryUtils {
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
-    private static Method registryLookup;
-    private static Object soundReg;
+public final class SoundRegistryUtils {
 
     public static final String PAPER_SOUND_REGISTRY_FIELD = "SOUND_EVENT";
     public static final String SPIGOT_SOUND_REGISTRY_FIELD = "SOUNDS";
     public static final String METHOD_GET_OR_THROW_NAME = "getOrThrow";
     public static final String METHOD_GET_NAME = "get";
+    private static Method registryLookup;
+    private static Object soundReg;
 
     static {
         boolean foundRegistry = false;
-        Class<?> registry;
+        final Class<?> registry;
         try {
             registry = Class.forName(AttributeMapper.ORG_BUKKIT_REGISTRY);
             try {
                 // First check for Paper's sound registry, held by field SOUND_EVENT
                 soundReg = registry.getField(PAPER_SOUND_REGISTRY_FIELD).get(null);
                 foundRegistry = true;
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+            } catch (final NoSuchFieldException | IllegalAccessException e) {
                 try {
                     soundReg = registry.getField(SPIGOT_SOUND_REGISTRY_FIELD);
                     foundRegistry = true;
-                } catch (NoSuchFieldException ex) {
+                } catch (final NoSuchFieldException ex) {
                     // ignored
                 }
             }
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             // ignored
         }
 
@@ -47,11 +46,11 @@ public final class SoundRegistryUtils {
                 // getOrThrow isn't in all API versions, but we use it if it exists
                 registryLookup = soundReg.getClass().getMethod(METHOD_GET_OR_THROW_NAME,
                         NamespacedKey.class);
-            } catch (NoSuchMethodException e) {
+            } catch (final NoSuchMethodException e) {
                 try {
                     registryLookup = soundReg.getClass().getMethod(METHOD_GET_NAME,
                             NamespacedKey.class);
-                } catch (NoSuchMethodException ex) {
+                } catch (final NoSuchMethodException ex) {
                     // ignored exception
                     registryLookup = null;
                 }
@@ -63,12 +62,12 @@ public final class SoundRegistryUtils {
         return registryLookup == null;
     }
 
-    public static @Nullable Sound getSound(String id, String fallBackId) {
+    public static @Nullable Sound getSound(final String id, final String fallBackId) {
         if (registryLookup != null) {
             try {
                 return (Sound) registryLookup.invoke(soundReg, NamespacedKey.fromString(id));
-            } catch(InvocationTargetException | IllegalAccessException
-                    | IllegalArgumentException e) {
+            } catch (final InvocationTargetException | IllegalAccessException
+                           | IllegalArgumentException e) {
                 if (fallBackId != null) {
                     LogUtils.debug(mcMMO.p.getLogger(),
                             format("Could not find sound with ID '%s', trying fallback ID '%s'", id,
@@ -76,7 +75,7 @@ public final class SoundRegistryUtils {
                     try {
                         return (Sound) registryLookup.invoke(soundReg,
                                 NamespacedKey.fromString(fallBackId));
-                    } catch (IllegalAccessException | InvocationTargetException ex) {
+                    } catch (final IllegalAccessException | InvocationTargetException ex) {
                         mcMMO.p.getLogger().severe(format("Could not find sound with ID %s,"
                                 + " fallback ID of %s also failed.", id, fallBackId));
                     }

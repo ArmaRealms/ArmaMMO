@@ -1,13 +1,14 @@
 package com.gmail.nossr50.config;
 
 import com.gmail.nossr50.mcMMO;
+import org.bukkit.World;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import org.bukkit.World;
 
 /**
  * Blacklist certain features in certain worlds
@@ -18,15 +19,15 @@ public class WorldBlacklist {
 
     private final String blackListFileName = "world_blacklist.txt";
 
-    public WorldBlacklist(mcMMO plugin) {
+    public WorldBlacklist(final mcMMO plugin) {
         this.plugin = plugin;
         blacklist = new ArrayList<>();
         init();
     }
 
-    public static boolean isWorldBlacklisted(World world) {
+    public static boolean isWorldBlacklisted(final World world) {
 
-        for (String s : blacklist) {
+        for (final String s : blacklist) {
             if (world.getName().equalsIgnoreCase(s)) {
                 return true;
             }
@@ -37,13 +38,13 @@ public class WorldBlacklist {
 
     public void init() {
         //Make the blacklist file if it doesn't exist
-        File blackListFile = new File(plugin.getDataFolder() + File.separator + blackListFileName);
+        final File blackListFile = new File(plugin.getDataFolder() + File.separator + blackListFileName);
 
         try {
             if (!blackListFile.exists()) {
                 blackListFile.createNewFile();
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
 
@@ -52,7 +53,7 @@ public class WorldBlacklist {
         //registerFlags();
     }
 
-    private void loadBlacklist(File blackListFile) {
+    private void loadBlacklist(final File blackListFile) {
         FileReader fileReader = null;
         BufferedReader bufferedReader = null;
         try {
@@ -71,8 +72,7 @@ public class WorldBlacklist {
                 }
             }
 
-
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         } finally {
             //Close readers
@@ -85,11 +85,11 @@ public class WorldBlacklist {
         }
     }
 
-    private void closeRead(Reader reader) {
+    private void closeRead(final Reader reader) {
         if (reader != null) {
             try {
                 reader.close();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
             }
         }

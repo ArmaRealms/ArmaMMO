@@ -16,7 +16,7 @@ public class McMMOPlayerSalvageCheckEvent extends McMMOPlayerSkillEvent implemen
     private boolean cancelled;
 
     public McMMOPlayerSalvageCheckEvent(Player player, ItemStack salvageItem,
-            ItemStack salvageResults, ItemStack enchantedBook) {
+                                        ItemStack salvageResults, ItemStack enchantedBook) {
         super(player, PrimarySkillType.SALVAGE);
         this.salvageItem = salvageItem;
         this.salvageResults = salvageResults;

@@ -1,8 +1,9 @@
 package com.gmail.nossr50.config;
 
 import com.gmail.nossr50.mcMMO;
-import java.io.InputStreamReader;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.InputStreamReader;
 
 public class HiddenConfig {
     private static HiddenConfig instance;
@@ -11,7 +12,7 @@ public class HiddenConfig {
     private int conversionRate;
     private boolean useEnchantmentBuffs;
 
-    public HiddenConfig(String fileName) {
+    public HiddenConfig(final String fileName) {
         this.fileName = fileName;
         load();
     }
@@ -25,14 +26,13 @@ public class HiddenConfig {
     }
 
     public void load() {
-        InputStreamReader reader = mcMMO.p.getResourceAsReader(fileName);
+        final InputStreamReader reader = mcMMO.p.getResourceAsReader(fileName);
         if (reader != null) {
             config = YamlConfiguration.loadConfiguration(reader);
             conversionRate = config.getInt("Options.ConversionRate", 1);
             useEnchantmentBuffs = config.getBoolean("Options.EnchantmentBuffs", true);
         }
     }
-
 
     public int getConversionRate() {
         return conversionRate;
