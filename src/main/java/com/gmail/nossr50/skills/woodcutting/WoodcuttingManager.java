@@ -13,6 +13,7 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
+import com.gmail.nossr50.events.skills.woodcutting.TreeFellerDestroyTreeEvent;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.SkillManager;
 import com.gmail.nossr50.util.BlockUtils;
@@ -259,6 +260,12 @@ public class WoodcuttingManager extends SkillManager {
 
         processTree(startingBlock, treeFellerBlocks);
 
+        TreeFellerDestroyTreeEvent event = new TreeFellerDestroyTreeEvent(player, treeFellerBlocks);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled() || !EventUtils.simulateBlockBreak(startingBlock, player, FakeBlockBreakEventType.TREE_FELLER)) {
+            return;
+        }
+
         // If the tool can't sustain the durability loss
         if (!handleDurabilityLoss(treeFellerBlocks, player.getInventory().getItemInMainHand(),
                 player)) {
@@ -275,6 +282,7 @@ public class WoodcuttingManager extends SkillManager {
 
             return;
         }
+
 
         dropTreeFellerLootFromBlocks(treeFellerBlocks);
         treeFellerReachedThreshold = false; // Reset the value after we're done with Tree Feller each time.
@@ -389,11 +397,6 @@ public class WoodcuttingManager extends SkillManager {
 
         for (final Block block : treeFellerBlocks) {
             final int beforeXP = xp;
-
-            if (!EventUtils.simulateBlockBreak(block, player,
-                    FakeBlockBreakEventType.TREE_FELLER)) {
-                continue;
-            }
 
             /*
              * Handle Drops & XP

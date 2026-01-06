@@ -9,9 +9,11 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
+import com.gmail.nossr50.util.skills.XPBoostAmount;
 import com.gmail.nossr50.util.text.StringUtils;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -134,22 +136,13 @@ public class PapiExpansion extends PlaceholderExpansion {
             }
         } else if (params.startsWith(SKILL_EXP_RATE)) {
             final PrimarySkillType skill = PrimarySkillType.valueOf(params.substring(SKILL_EXP_RATE.length()).toUpperCase());
-            if (skill == null) return null;
-            double modifier = 1.0F;
-            if (Permissions.customXpBoost(player, skill))
-                modifier = experienceConfig.getCustomXpPerkBoost();
-            else if (Permissions.quadrupleXp(player, skill))
-                modifier = 4;
-            else if (Permissions.tripleXp(player, skill))
-                modifier = 3;
-            else if (Permissions.doubleAndOneHalfXp(player, skill))
-                modifier = 2.5;
-            else if (Permissions.doubleXp(player, skill))
-                modifier = 2;
-            else if (Permissions.oneAndOneHalfXp(player, skill))
-                modifier = 1.5;
-            else if (Permissions.oneAndOneTenthXp(player, skill))
-                modifier = 1.1;
+            double modifier = XPBoostAmount.NONE;
+            for (XPBoostAmount xpBoostAmount : XPBoostAmount.getByHighestMultiplier()) {
+                if (xpBoostAmount.hasBoostPermission(player, skill)) {
+                    modifier = xpBoostAmount.getMultiplier();
+                    break;
+                }
+            }
             return String.valueOf(modifier);
         } else if (params.equalsIgnoreCase(POWER_LEVEL)) {
             return StringUtils.formatNumber(user.getPowerLevel());
