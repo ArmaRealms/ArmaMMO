@@ -38,4 +38,7 @@ public class PersistentDataConfig extends BukkitConfig {
         return config.getBoolean("mcMMO_Region_System.Enabled", true);
     }
 
+    public boolean usePlayerBlockTrackerHook() {
+        return config.getBoolean("mcMMO_Region_System.Use_PlayerBlockTracker_Hook", false);
+    }
 }

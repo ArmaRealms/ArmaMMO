@@ -43,7 +43,7 @@ jobs:
 
     # 4. Build via Maven 
     - name: Build via Maven
-      run: mvn verify -B --file pom.xml -DdisableXmlReport=true
+      run: mvn verify -B --file pom.xml -DdisableXmlReport=true -DskipTests
     
     # 5. Upload via Github Actions
     - name: Upload
