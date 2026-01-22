@@ -83,6 +83,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class McMMOPlayer implements Identified {
+    private static final long NO_SWING = 0L;
     private final @NotNull Identity identity;
 
     //Hacky fix for now, redesign later
@@ -105,6 +106,8 @@ public class McMMOPlayer implements Identified {
     private Party invite;
     private Party allianceInvite;
     private int itemShareModifier;
+    private long lastSwingTimestamp = NO_SWING;
+
     private PartyTeleportRecord ptpRecord;
     private boolean displaySkillNotifications = true;
     private boolean debugMode;
@@ -1268,5 +1271,13 @@ public class McMMOPlayer implements Identified {
      */
     public void setChatMode(@NotNull final ChatChannel chatChannel) {
         this.chatChannel = chatChannel;
+    }
+
+    public long getLastSwingTimestamp() {
+        return lastSwingTimestamp;
+    }
+
+    public void setLastSwingTimestamp(long lastSwingTimestamp) {
+        this.lastSwingTimestamp = lastSwingTimestamp;
     }
 }
