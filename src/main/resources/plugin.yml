@@ -165,6 +165,7 @@ commands:
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.smelting
     spears:
+        aliases: [lanca]
         description: Detailed mcMMO skill info
         permission: mcmmo.commands.spears
     alchemy:
