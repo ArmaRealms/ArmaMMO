@@ -1,11 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
-import static com.gmail.nossr50.util.ItemUtils.isSpear;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
-import static com.gmail.nossr50.util.skills.ProjectileUtils.isCrossbowProjectile;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -58,6 +52,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+
+import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
+import static com.gmail.nossr50.util.ItemUtils.isSpear;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
+import static com.gmail.nossr50.util.skills.ProjectileUtils.isCrossbowProjectile;
 
 public final class CombatUtils {
 
@@ -124,15 +125,15 @@ public final class CombatUtils {
             return;
         }
 
-        // TODO: Temporary hack to avoid unintended spear interactions
-        if (isSpear(player.getInventory().getItemInOffHand())) {
-            return;
-        }
-
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
         if (mmoPlayer == null) {
+            return;
+        }
+
+        // Hack to avoid other combat abilities applying to off-hand spear attacks
+        if (isSpear(player.getInventory().getItemInOffHand()) && isNotSwinging(mmoPlayer)) {
             return;
         }
 
@@ -193,17 +194,17 @@ public final class CombatUtils {
             return;
         }
 
-        // TODO: Temporary hack to avoid unintended spear interactions
-        if (isSpear(player.getInventory().getItemInOffHand())) {
-            return;
-        }
-
         double boostedDamage = event.getDamage();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
         if (mmoPlayer == null) {
+            return;
+        }
+
+        // Hack to avoid other combat abilities applying to off-hand spear attacks
+        if (isSpear(player.getInventory().getItemInOffHand()) && isNotSwinging(mmoPlayer)) {
             return;
         }
 
@@ -311,17 +312,17 @@ public final class CombatUtils {
             return;
         }
 
-        // TODO: Temporary hack to avoid unintended spear interactions
-        if (isSpear(player.getInventory().getItemInOffHand())) {
-            return;
-        }
-
         double boostedDamage = event.getDamage();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
         if (mmoPlayer == null) {
+            return;
+        }
+
+        // Hack to avoid other combat abilities applying to off-hand spear attacks
+        if (isSpear(player.getInventory().getItemInOffHand()) && isNotSwinging(mmoPlayer)) {
             return;
         }
 
@@ -349,8 +350,8 @@ public final class CombatUtils {
     }
 
     private static void processSpearsCombat(@NotNull LivingEntity target,
-            @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event) {
+                                            @NotNull Player player,
+                                            @NotNull EntityDamageByEntityEvent event) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -378,7 +379,6 @@ public final class CombatUtils {
                     * mmoPlayer.getAttackStrength());
         }
 
-
         event.setDamage(boostedDamage);
 
         // Apply any non-damage effects here
@@ -394,17 +394,17 @@ public final class CombatUtils {
             return;
         }
 
-        // TODO: Temporary hack to avoid unintended spear interactions
-        if (isSpear(player.getInventory().getItemInOffHand())) {
-            return;
-        }
-
         double boostedDamage = event.getDamage();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
         if (mmoPlayer == null) {
+            return;
+        }
+
+        // Hack to avoid other combat abilities applying to off-hand spear attacks
+        if (isSpear(player.getInventory().getItemInOffHand()) && isNotSwinging(mmoPlayer)) {
             return;
         }
 
@@ -453,15 +453,15 @@ public final class CombatUtils {
 
         double boostedDamage = event.getDamage();
 
-        // TODO: Temporary hack to avoid unintended spear interactions
-        if (isSpear(player.getInventory().getItemInOffHand())) {
-            return;
-        }
-
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //Make sure the profiles been loaded
         if (mmoPlayer == null) {
+            return;
+        }
+
+        // Hack to avoid other combat abilities applying to off-hand spear attacks
+        if (isSpear(player.getInventory().getItemInOffHand()) && isNotSwinging(mmoPlayer)) {
             return;
         }
 
@@ -1202,5 +1202,11 @@ public final class CombatUtils {
     public static void delayArrowMetaCleanup(@NotNull final AbstractArrow arrow) {
         mcMMO.p.getFoliaLib().getScheduler()
                 .runLater(() -> ProjectileUtils.cleanupProjectileMetadata(arrow), 20 * 120);
+    }
+
+    public static boolean isNotSwinging(McMMOPlayer mmoPlayer) {
+        // If player has swung in the last second, it's extremely unlikely the damage originates
+        // from an off-hand spear charge attack
+        return mmoPlayer.getLastSwingTimestamp() + 500L < System.currentTimeMillis();
     }
 }

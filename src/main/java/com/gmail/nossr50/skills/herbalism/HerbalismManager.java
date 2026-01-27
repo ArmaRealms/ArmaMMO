@@ -1,13 +1,5 @@
 package com.gmail.nossr50.skills.herbalism;
 
-import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
-import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
-import static com.gmail.nossr50.util.Misc.TICK_CONVERSION_FACTOR;
-import static com.gmail.nossr50.util.Misc.getBlockCenter;
-import static com.gmail.nossr50.util.Permissions.isSubSkillEnabled;
-import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.treasure.TreasureConfig;
@@ -59,6 +51,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+
+import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
+import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
+import static com.gmail.nossr50.util.Misc.TICK_CONVERSION_FACTOR;
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+import static com.gmail.nossr50.util.Permissions.isSubSkillEnabled;
+import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
+import static java.util.Objects.requireNonNull;
 
 public class HerbalismManager extends SkillManager {
     private static final HashMap<String, Integer> plantBreakLimits;
@@ -453,6 +454,10 @@ public class HerbalismManager extends SkillManager {
     }
 
     public boolean isAgeableMature(final Ageable ageable) {
+        // Sweet berry bush is harvestable at age 2 and 3 (max is 3)
+        if (ageable.getMaterial() == Material.SWEET_BERRY_BUSH) {
+            return ageable.getAge() >= 2;
+        }
         return ageable.getAge() == ageable.getMaximumAge() && ageable.getAge() != 0;
     }
 
@@ -741,6 +746,7 @@ public class HerbalismManager extends SkillManager {
             case "beetroots" -> replantMaterial = Material.matchMaterial("BEETROOT_SEEDS");
             case "cocoa" -> replantMaterial = Material.matchMaterial("COCOA_BEANS");
             case "torchflower" -> replantMaterial = Material.matchMaterial("TORCHFLOWER_SEEDS");
+            case "sweet_berry_bush" -> replantMaterial = Material.matchMaterial("SWEET_BERRIES");
             default -> {
                 return false;
             }
@@ -801,6 +807,17 @@ public class HerbalismManager extends SkillManager {
             }
             case "cocoa" -> {
                 if (getGreenThumbStage(greenTerra) >= 2) {
+                    finalAge = 1;
+                } else {
+                    finalAge = 0;
+                }
+            }
+
+            case "sweet_berry_bush" -> {
+
+                // Sweet berry bush has ages 0-3, where 2+ has berries
+                // Cap at age 1 to prevent instant re-harvest exploit with enough herbalism levels
+                if (greenTerra || greenThumbStage >= 2) {
                     finalAge = 1;
                 } else {
                     finalAge = 0;
