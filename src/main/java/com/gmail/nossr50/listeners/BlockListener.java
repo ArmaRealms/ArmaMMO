@@ -269,6 +269,10 @@ public class BlockListener implements Listener {
 
         if (ExperienceConfig.getInstance().preventStoneLavaFarming()) {
             final BlockState newState = event.getNewState();
+            if (!newState.isPlaced()) {
+                // not backed by a real block
+                return;
+            }
 
             if (newState.getType() != Material.OBSIDIAN
                     && ExperienceConfig.getInstance().doesBlockGiveSkillXP(
