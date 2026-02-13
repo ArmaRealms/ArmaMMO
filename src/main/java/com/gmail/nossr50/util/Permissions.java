@@ -251,48 +251,50 @@ public final class Permissions {
     }
 
     /* XP PERKS */
+    @Deprecated
     public static boolean quadrupleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.quadruple.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.quadruple." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.quadruple." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean tripleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.triple.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.triple." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.triple." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean doubleAndOneHalfXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.150percentboost.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.150percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.150percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean doubleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.double.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.double." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.double." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean oneAndOneHalfXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.50percentboost.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.50percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.50percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean oneAndAQuarterXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.25percentboost.all")
                 || permissible.hasPermission(
                 "mcmmo.perks.xp.25percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean oneAndOneTenthXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.10percentboost.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.10percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+            || permissible.hasPermission("mcmmo.perks.xp.10percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
     }
 
+    @Deprecated
     public static boolean customXpBoost(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.customboost.all")
                 || permissible.hasPermission(
