@@ -3,7 +3,6 @@ package com.gmail.nossr50.config.skills.alchemy;
 import static com.gmail.nossr50.util.ItemUtils.customName;
 import static com.gmail.nossr50.util.PotionUtil.matchPotionType;
 import static com.gmail.nossr50.util.PotionUtil.setBasePotionType;
-import static com.gmail.nossr50.util.PotionUtil.setUpgradedAndExtendedProperties;
 import com.gmail.nossr50.config.LegacyConfigLoader;
 import com.gmail.nossr50.datatypes.skills.alchemy.AlchemyPotion;
 import com.gmail.nossr50.mcMMO;
@@ -49,9 +48,6 @@ public class PotionConfig extends LegacyConfigLoader {
     private final List<ItemStack> concoctionsIngredientsTierSix = new ArrayList<>();
     private final List<ItemStack> concoctionsIngredientsTierSeven = new ArrayList<>();
     private final List<ItemStack> concoctionsIngredientsTierEight = new ArrayList<>();
-    private final AlchemyPotionConfigResult INCOMPATIBLE_POTION_RESULT = new AlchemyPotionConfigResult(
-            null,
-            AlchemyPotionConfigResultType.INCOMPATIBLE);
     private final AlchemyPotionConfigResult ERROR_POTION_RESULT = new AlchemyPotionConfigResult(
             null,
             AlchemyPotionConfigResultType.ERROR);
@@ -261,15 +257,15 @@ public class PotionConfig extends LegacyConfigLoader {
             if (potion_section.contains("Effects")) {
                 for (final String effect : potion_section.getStringList("Effects")) {
                     final String[] parts = effect.split(" ");
-                    if (isTrickyTrialsPotionEffect(parts[0]) && !mcMMO.getCompatibilityManager()
-                            .getMinecraftGameVersion()
-                            .isAtLeast(1, 21, 0)) {
-                        LogUtils.debug(
-                                mcMMO.p.getLogger(),
-                                "Skipping potion effect " + effect + " because it is not"
-                                        + " compatible with the current Minecraft game version.");
-                        return INCOMPATIBLE_POTION_RESULT;
-                    }
+//                    if (isTrickyTrialsPotionEffect(parts[0]) && !mcMMO.getCompatibilityManager()
+//                            .minecraftGameVersion()
+//                            .isAtLeast(1, 21, 0)) {
+//                        LogUtils.debug(
+//                                mcMMO.p.getLogger(),
+//                                "Skipping potion effect " + effect + " because it is not"
+//                                        + " compatible with the current Minecraft game version.");
+//                        return INCOMPATIBLE_POTION_RESULT;
+//                    }
 
                     final PotionEffectType type =
                             parts.length > 0 ? PotionEffectType.getByName(parts[0]) : null;
@@ -301,9 +297,7 @@ public class PotionConfig extends LegacyConfigLoader {
                         .getKeys(false)) {
                     // Breeze Rod was only for potions after 1.21.0
                     if (isTrickyTrialsIngredient(childIngredient)
-                            && !mcMMO.getCompatibilityManager()
-                            .getMinecraftGameVersion()
-                            .isAtLeast(1, 21, 0)) {
+                            && !mcMMO.getMinecraftGameVersion().isAtLeast(1, 21, 0)) {
                         continue;
                     }
                     final ItemStack ingredient = loadIngredient(childIngredient);
@@ -348,8 +342,6 @@ public class PotionConfig extends LegacyConfigLoader {
         // set base
         setBasePotionType(potionMeta, potionType, extended, upgraded);
 
-        // Legacy only
-        setUpgradedAndExtendedProperties(potionType, potionMeta, upgraded, extended);
         return true;
     }
 

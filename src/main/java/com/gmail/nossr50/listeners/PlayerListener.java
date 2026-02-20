@@ -62,8 +62,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -496,8 +494,7 @@ public class PlayerListener implements Listener {
 
                         fishingManager.processExploiting(event.getHook().getLocation().toVector());
 
-                        if (fishingManager.isExploitingFishing(
-                                event.getHook().getLocation().toVector())) {
+                        if (fishingManager.isExploitingFishing()) {
                             player.sendMessage(LocaleLoader.getString("Fishing.ScarcityTip",
                                     ExperienceConfig.getInstance()
                                             .getFishingExploitingOptionMoveRange()));
@@ -1128,24 +1125,5 @@ public class PlayerListener implements Listener {
     public void onPlayerSwapHandItems(final PlayerSwapHandItemsEvent event) {
         SkillUtils.removeAbilityBuff(event.getMainHandItem());
         SkillUtils.removeAbilityBuff(event.getOffHandItem());
-    }
-
-    @EventHandler(ignoreCancelled = false, priority = EventPriority.MONITOR)
-    public void onPlayerAnimation(PlayerAnimationEvent event) {
-        if (event.getAnimationType() != PlayerAnimationType.ARM_SWING) {
-            return;
-        }
-
-        final Player player = event.getPlayer();
-
-        if (!UserManager.hasPlayerDataKey(player)) {
-            return;
-        }
-
-        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-
-        if (mmoPlayer != null) {
-            mmoPlayer.setLastSwingTimestamp(System.currentTimeMillis());
-        }
     }
 }

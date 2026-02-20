@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.compat.CompatibilityManager;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import org.bukkit.potion.PotionEffectType;
 import org.junit.jupiter.api.AfterEach;
@@ -26,11 +25,9 @@ class PotionEffectUtilTest {
         mockedStaticMcMMO = mockStatic(mcMMO.class);
         mcMMO.p = mock(mcMMO.class);
         when(mcMMO.p.getLogger()).thenReturn(logger);
-        final CompatibilityManager compatibilityManager = mock(CompatibilityManager.class);
-        final MinecraftGameVersion minecraftGameVersion = mock(MinecraftGameVersion.class);
-        when(compatibilityManager.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
+        MinecraftGameVersion minecraftGameVersion = mock(MinecraftGameVersion.class);
         when(minecraftGameVersion.isAtLeast(1, 20, 5)).thenReturn(false);
-        when(mcMMO.getCompatibilityManager()).thenReturn(compatibilityManager);
+        when(mcMMO.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
     }
 
     @AfterEach

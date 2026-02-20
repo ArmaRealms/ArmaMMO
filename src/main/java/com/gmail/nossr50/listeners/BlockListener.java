@@ -243,11 +243,16 @@ public class BlockListener implements Listener {
             return;
         }
 
-        final BlockState blockState = event.getNewState();
+        final BlockState newState = event.getNewState();
+
+        if (!newState.isPlaced()) {
+            // not backed by a real block
+            return;
+        }
 
         if (ExperienceConfig.getInstance().isSnowExploitPrevented() && BlockUtils.shouldBeWatched(
-                blockState)) {
-            final Block block = blockState.getBlock();
+                newState)) {
+            final Block block = newState.getBlock();
 
             if (BlockUtils.isWithinWorldBounds(block)) {
                 BlockUtils.setUnnaturalBlock(block);

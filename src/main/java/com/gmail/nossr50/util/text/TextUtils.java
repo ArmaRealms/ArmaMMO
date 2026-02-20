@@ -9,7 +9,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,20 +104,6 @@ public class TextUtils {
     static void addNewHoverComponentToTextComponent(@NotNull TextComponent.Builder textComponent,
                                                     @NotNull Component baseComponent) {
         textComponent.hoverEvent(HoverEvent.showText(baseComponent));
-    }
-
-    public static BaseComponent[] convertToBungeeComponent(@NotNull String displayName) {
-        return net.md_5.bungee.api.chat.TextComponent.fromLegacyText(displayName);
-    }
-
-    public static @NotNull TextComponent ofBungeeComponents(@NotNull BaseComponent[] bungeeName) {
-        return Component.textOfChildren(
-                mcMMO.getCompatibilityManager().getBungeeSerializerCompatibilityLayer()
-                        .deserialize(bungeeName));
-    }
-
-    public static @NotNull TextComponent ofBungeeRawStrings(@NotNull String bungeeRawString) {
-        return ofBungeeComponents(convertToBungeeComponent(bungeeRawString));
     }
 
     public static @NotNull TextComponent ofLegacyTextRaw(@NotNull String rawString) {

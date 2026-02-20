@@ -12,38 +12,28 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Archery {
-    public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
-            .getArcheryDistanceMultiplier();
-    private static final List<TrackedEntity> trackedEntities = new ArrayList<>();
+    private static final Map<UUID, TrackedEntity> trackedEntities = new ConcurrentHashMap<>();
+
     public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
             .getSkillShotDamageMax();
+
     public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
 
-    protected static void incrementTrackerValue(LivingEntity livingEntity) {
-        for (TrackedEntity trackedEntity : trackedEntities) {
-            if (trackedEntity.getLivingEntity().getEntityId() == livingEntity.getEntityId()) {
-                trackedEntity.incrementArrowCount();
-                return;
-            }
-        }
+    public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
+            .getArcheryDistanceMultiplier();
 
-        addToTracker(livingEntity); // If the entity isn't tracked yet
-    }
-
-    protected static void addToTracker(LivingEntity livingEntity) {
-        TrackedEntity trackedEntity = new TrackedEntity(livingEntity);
-
+    protected static void incrementTrackerValue(final LivingEntity livingEntity) {
+        final TrackedEntity trackedEntity = trackedEntities.computeIfAbsent(livingEntity.getUniqueId(), k -> new TrackedEntity(livingEntity));
         trackedEntity.incrementArrowCount();
-        trackedEntities.add(trackedEntity);
     }
 
-    protected static void removeFromTracker(TrackedEntity trackedEntity) {
-        trackedEntities.remove(trackedEntity);
+    protected static void removeFromTracker(final TrackedEntity trackedEntity) {
+        trackedEntities.remove(trackedEntity.getID());
     }
 
     /**
@@ -51,28 +41,22 @@ public class Archery {
      *
      * @param livingEntity The entity hit by the arrows
      */
-    public static void arrowRetrievalCheck(@NotNull LivingEntity livingEntity) {
-        for (Iterator<TrackedEntity> entityIterator = trackedEntities.iterator();
-             entityIterator.hasNext(); ) {
-            TrackedEntity trackedEntity = entityIterator.next();
-
-            if (trackedEntity.getID() == livingEntity.getUniqueId()) {
-                ItemUtils.spawnItems(null, livingEntity.getLocation(),
-                        new ItemStack(Material.ARROW), trackedEntity.getArrowCount(),
-                        ItemSpawnReason.ARROW_RETRIEVAL_ACTIVATED);
-                entityIterator.remove();
-                return;
-            }
+    public static void arrowRetrievalCheck(@NotNull final LivingEntity livingEntity) {
+        final TrackedEntity trackedEntity = trackedEntities.remove(livingEntity.getUniqueId());
+        if (trackedEntity != null) {
+            ItemUtils.spawnItems(null, livingEntity.getLocation(),
+                    new ItemStack(Material.ARROW), trackedEntity.getArrowCount(),
+                    ItemSpawnReason.ARROW_RETRIEVAL_ACTIVATED);
         }
     }
 
-    public static double getSkillShotBonusDamage(Player player, double oldDamage) {
-        double damageBonusPercent = getDamageBonusPercent(player);
-        double newDamage = oldDamage + (oldDamage * damageBonusPercent);
+    public static double getSkillShotBonusDamage(final Player player, final double oldDamage) {
+        final double damageBonusPercent = getDamageBonusPercent(player);
+        final double newDamage = oldDamage + (oldDamage * damageBonusPercent);
         return Math.min(newDamage, (oldDamage + Archery.skillShotMaxBonusDamage));
     }
 
-    public static double getDamageBonusPercent(Player player) {
+    public static double getDamageBonusPercent(final Player player) {
         return ((RankUtils.getRank(player, SubSkillType.ARCHERY_SKILL_SHOT))
                 * (mcMMO.p.getAdvancedConfig().getSkillShotRankDamageMultiplier()) / 100.0D);
     }

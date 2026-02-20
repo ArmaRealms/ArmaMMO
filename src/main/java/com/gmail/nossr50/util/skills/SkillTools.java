@@ -240,9 +240,7 @@ public class SkillTools {
     @VisibleForTesting
     @NotNull
     ImmutableList<PrimarySkillType> buildCombatSkills() {
-        final var gameVersion = mcMMO.getCompatibilityManager().getMinecraftGameVersion();
-
-        if (gameVersion.isAtLeast(1, 21, 11)) {
+        if (mcMMO.getMinecraftGameVersion().isAtLeast(1, 21, 11)) {
             // We are in a game version with Spears and Maces
             return ImmutableList.of(
                     PrimarySkillType.ARCHERY,
@@ -255,7 +253,7 @@ public class SkillTools {
                     PrimarySkillType.TRIDENTS,
                     PrimarySkillType.UNARMED
             );
-        } else if (gameVersion.isAtLeast(1, 21, 0)) {
+        } else if (mcMMO.getMinecraftGameVersion().isAtLeast(1, 21, 0)) {
             // We are in a game version with Maces
             return ImmutableList.of(
                     PrimarySkillType.ARCHERY,
