@@ -440,12 +440,7 @@ public class PlayerListener implements Listener {
         final Entity caught = event.getCaught();
         final FishingManager fishingManager = mcMMOPlayer.getFishingManager();
 
-        //Track the hook
         if (ExperienceConfig.getInstance().isFishingExploitingPrevented()) {
-            if (event.getHook().getMetadata(MetadataConstants.METADATA_KEY_FISH_HOOK_REF).isEmpty()) {
-                fishingManager.setFishHookReference(event.getHook());
-            }
-
             //Spam Fishing
             if (event.getState() == PlayerFishEvent.State.CAUGHT_FISH
                     && fishingManager.isFishingTooOften()) {
