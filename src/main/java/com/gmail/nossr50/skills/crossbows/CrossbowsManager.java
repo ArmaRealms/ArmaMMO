@@ -15,9 +15,11 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.ProjectileUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.projectiles.ProjectileSource;
@@ -78,7 +80,12 @@ public class CrossbowsManager extends SkillManager {
         spawnedArrow.setPickupStatus(originalArrow.getPickupStatus());
         spawnedArrow.setKnockbackStrength(originalArrow.getKnockbackStrength());
 
+        // Copy tipped-arrow state: set the item type to TIPPED_ARROW before applying
+        // potion data so the pickup item has the correct POTION_DURATION_SCALE (0.125).
+        // Without this, spawnArrow() creates an Items.ARROW pickup item, defaulting
+        // the scale to 1.0 and making effects last 8× longer than intended.
         if (originalArrow.getBasePotionType() != null) {
+            spawnedArrow.setItem(new ItemStack(Material.TIPPED_ARROW));
             spawnedArrow.setBasePotionType(originalArrow.getBasePotionType());
         }
 
