@@ -450,7 +450,7 @@ public final class EventUtils {
         final boolean isCancelled = event.isCancelled();
 
         if (isCancelled) {
-            party.setLevel(party.getLevel() + levelsChanged);
+            party.setLevel(party.getLevel() - levelsChanged);
             party.addXp(xpRemoved);
         }
 
