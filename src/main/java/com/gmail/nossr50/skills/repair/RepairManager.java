@@ -12,6 +12,7 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.SkillManager;
 import com.gmail.nossr50.skills.repair.repairables.Repairable;
 import com.gmail.nossr50.util.EventUtils;
+import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
@@ -114,7 +115,7 @@ public class RepairManager extends SkillManager {
         Material repairMaterial = repairable.getRepairMaterial();
         ItemStack toRemove = new ItemStack(repairMaterial);
 
-        short startDurability = item.getDurability();
+        short startDurability = (short) ItemUtils.getItemDamage(item);
 
         // Do not repair if at full durability
         if (startDurability <= 0) {
@@ -162,7 +163,7 @@ public class RepairManager extends SkillManager {
         if (!mcMMO.p.getAdvancedConfig().getAllowEnchantedRepairMaterials()) {
 
             // See if our proposed item is even enchanted in the first place.
-            if (toRemove.getEnchantments().size() > 0) {
+            if (!toRemove.getEnchantments().isEmpty()) {
 
                 // Lots of array sorting to find a potential non-enchanted candidate item.
                 Optional<ItemStack> possibleMaterial = Arrays.stream(inventory.getContents())
@@ -197,7 +198,8 @@ public class RepairManager extends SkillManager {
         }
 
         // Handle the enchants
-        if (ArcaneForging.arcaneForgingEnchantLoss && !Permissions.hasRepairEnchantBypassPerk(
+        if (mcMMO.p.getAdvancedConfig()
+                .getArcaneForgingEnchantLossEnabled() && !Permissions.hasRepairEnchantBypassPerk(
                 player)) {
             addEnchants(item);
         }
@@ -224,7 +226,7 @@ public class RepairManager extends SkillManager {
         }
 
         // Repair the item!
-        item.setDurability(newDurability);
+        ItemUtils.setItemDamage(item, newDurability);
     }
 
     private float getPercentageRepaired(short startDurability, short newDurability,
@@ -285,39 +287,13 @@ public class RepairManager extends SkillManager {
         return mcMMO.p.getAdvancedConfig().getArcaneForgingDowngradeChance(getArcaneForgingRank());
     }
 
-    /*
-      Gets chance of keeping enchantment during repair.
-
-      @return The chance of keeping the enchantment
-     */
-    /*public double getKeepEnchantChance() {
-        int skillLevel = getSkillLevel();
-
-        for (Tier tier : Tier.values()) {
-            if (skillLevel >= tier.getLevel()) {
-                return tier.getKeepEnchantChance();
-            }
+    int getArcaneForgingEnchantLevel(int enchantLevel) {
+        if (ExperienceConfig.getInstance().allowUnsafeEnchantments()) {
+            return enchantLevel;
         }
 
-        return 0;
-    }*/
-
-    /*
-      Gets chance of enchantment being downgraded during repair.
-
-      @return The chance of the enchantment being downgraded
-     */
-    /*public double getDowngradeEnchantChance() {
-        int skillLevel = getSkillLevel();
-
-        for (Tier tier : Tier.values()) {
-            if (skillLevel >= tier.getLevel()) {
-                return tier.getDowngradeEnchantChance();
-            }
-        }
-
-        return 100;
-    }*/
+        return Math.min(enchantLevel, mcMMO.p.getAdvancedConfig().getArcaneForgingMaxEnchantLevel());
+    }
 
     /**
      * Computes repair bonuses.
@@ -332,9 +308,12 @@ public class RepairManager extends SkillManager {
         if (Permissions.isSubSkillEnabled(player, SubSkillType.REPAIR_REPAIR_MASTERY)
                 && RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.REPAIR_REPAIR_MASTERY)) {
 
-            double maxBonusCalc = Repair.repairMasteryMaxBonus / 100.0D;
+            double maxBonusCalc = mcMMO.p.getAdvancedConfig()
+                    .getRepairMasteryMaxBonus() / 100.0D;
             double skillLevelBonusCalc =
-                    (Repair.repairMasteryMaxBonus / Repair.repairMasteryMaxBonusLevel) * (
+                    (mcMMO.p.getAdvancedConfig()
+                            .getRepairMasteryMaxBonus() / mcMMO.p.getAdvancedConfig()
+                            .getMaxBonusLevel(SubSkillType.REPAIR_REPAIR_MASTERY)) * (
                             getSkillLevel() / 100.0D);
             double bonus = repairAmount * Math.min(skillLevelBonusCalc, maxBonusCalc);
 
@@ -406,14 +385,11 @@ public class RepairManager extends SkillManager {
         boolean downgraded = false;
 
         for (Entry<Enchantment, Integer> enchant : enchants.entrySet()) {
-            int enchantLevel = enchant.getValue();
+            int enchantLevel = getArcaneForgingEnchantLevel(enchant.getValue());
 
-            if (!ExperienceConfig.getInstance().allowUnsafeEnchantments()) {
-                if (enchantLevel > enchant.getKey().getMaxLevel()) {
-                    enchantLevel = enchant.getKey().getMaxLevel();
-
-                    item.addUnsafeEnchantment(enchant.getKey(), enchantLevel);
-                }
+            if (!ExperienceConfig.getInstance().allowUnsafeEnchantments()
+                && enchantLevel > enchant.getKey().getMaxLevel()) {
+                item.addUnsafeEnchantment(enchant.getKey(), enchantLevel);
             }
 
             Enchantment enchantment = enchant.getKey();
@@ -421,7 +397,8 @@ public class RepairManager extends SkillManager {
             if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR, mmoPlayer,
                     getKeepEnchantChance())) {
 
-                if (ArcaneForging.arcaneForgingDowngrades && enchantLevel > 1
+                if (mcMMO.p.getAdvancedConfig()
+                        .getArcaneForgingDowngradeEnabled() && enchantLevel > 1
                         && (!ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.REPAIR,
                         mmoPlayer, 100 - getDowngradeEnchantChance()))) {
                     item.addUnsafeEnchantment(enchantment, enchantLevel - 1);
