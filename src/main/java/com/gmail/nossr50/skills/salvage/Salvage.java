@@ -5,17 +5,6 @@ import org.bukkit.Material;
 
 public final class Salvage {
 
-    public static Material anvilMaterial = mcMMO.p.getGeneralConfig().getSalvageAnvilMaterial();
-    public static boolean arcaneSalvageDowngrades = mcMMO.p.getAdvancedConfig()
-            .getArcaneSalvageEnchantDowngradeEnabled();
-
-    /*public static int    salvageMaxPercentageLevel = mcMMO.p.getAdvancedConfig().getSalvageMaxPercentageLevel();
-    public static double salvageMaxPercentage      = mcMMO.p.getAdvancedConfig().getSalvageMaxPercentage();
-
-    public static int advancedSalvageUnlockLevel = RankUtils.getRankUnlockLevel(SubSkillType.SALVAGE_SCRAP_COLLECTOR, 1);*/
-    public static boolean arcaneSalvageEnchantLoss = mcMMO.p.getAdvancedConfig()
-            .getArcaneSalvageEnchantLossEnabled();
-
     /**
      * This is a static utility class, therefore we don't want any instances of this class. Making
      * the constructor private prevents accidents like that.
@@ -23,9 +12,32 @@ public final class Salvage {
     private Salvage() {
     }
 
-    static int calculateSalvageableAmount(final int currentDurability, final short maxDurability,
-                                          final int baseAmount) {
-        final double percentDamaged = (maxDurability <= 0) ? 1D
+    /**
+     * No longer used by mcMMO internally, use the config calls instead.
+     * @see com.gmail.nossr50.config.GeneralConfig
+     */
+    @Deprecated(since = "2.2.052", forRemoval = true)
+    public static Material anvilMaterial = mcMMO.p.getGeneralConfig().getSalvageAnvilMaterial();
+
+    /**
+     * No longer used by mcMMO internally, use the config calls instead.
+     * @see com.gmail.nossr50.config.AdvancedConfig
+     */
+    @Deprecated(since = "2.2.052", forRemoval = true)
+    public static boolean arcaneSalvageDowngrades = mcMMO.p.getAdvancedConfig()
+            .getArcaneSalvageEnchantDowngradeEnabled();
+
+    /**
+     * No longer used by mcMMO internally, use the config calls instead.
+     * @see com.gmail.nossr50.config.AdvancedConfig
+     */
+    @Deprecated(since = "2.2.052", forRemoval = true)
+    public static boolean arcaneSalvageEnchantLoss = mcMMO.p.getAdvancedConfig()
+            .getArcaneSalvageEnchantLossEnabled();
+
+    static int calculateSalvageableAmount(int currentDurability, short maxDurability,
+            int baseAmount) {
+        double percentDamaged = (maxDurability <= 0) ? 1D
                 : (double) (maxDurability - currentDurability) / maxDurability;
 
         return (int) Math.floor(baseAmount * percentDamaged);

@@ -21,15 +21,21 @@ import java.util.Locale;
 import java.util.Set;
 
 public class GeneralConfig extends BukkitConfig {
+    private @Nullable Material repairAnvilMaterial;
+    private @Nullable Material salvageAnvilMaterial;
 
     public GeneralConfig(@NotNull final File dataFolder) {
         super("config.yml", dataFolder);
+        loadKeys();
         validate();
     }
 
     @Override
     protected void loadKeys() {
-
+        repairAnvilMaterial = Material.matchMaterial(
+                config.getString("Skills.Repair.Anvil_Material", "IRON_BLOCK"));
+        salvageAnvilMaterial = Material.matchMaterial(
+                config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
     }
 
     @Override
@@ -245,7 +251,13 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public int getMobHealthbarTime() {
-        return Math.max(1, config.getInt("Mob_Healthbar.Display_Time", 3));
+        final int configured = config.getInt("Mob_Healthbar.Display_Time", 3);
+        // Negative values (previously used as an undocumented "permanent display" mode) are no
+        // longer supported. Clamp them to 20× the default (60 s) so the healthbar still clears.
+        if (configured < 0) {
+            return 60;
+        }
+        return Math.max(1, configured);
     }
 
     /* Scoreboards */
@@ -824,8 +836,7 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public @Nullable Material getRepairAnvilMaterial() {
-        return Material.matchMaterial(
-                config.getString("Skills.Repair.Anvil_Material", "IRON_BLOCK"));
+        return repairAnvilMaterial;
     }
 
     public boolean getRepairConfirmRequired() {
@@ -858,8 +869,7 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public @Nullable Material getSalvageAnvilMaterial() {
-        return Material.matchMaterial(
-                config.getString("Skills.Salvage.Anvil_Material", "GOLD_BLOCK"));
+        return salvageAnvilMaterial;
     }
 
     public boolean getSalvageConfirmRequired() {

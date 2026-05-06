@@ -7,8 +7,6 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.skills.repair.Repair;
-import com.gmail.nossr50.skills.salvage.Salvage;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import org.bukkit.Material;
@@ -232,8 +230,8 @@ public final class BlockUtils {
      */
     public static boolean canActivateTools(final BlockState blockState) {
         return !mcMMO.getMaterialMapStore().isToolActivationBlackListed(blockState.getType())
-                && blockState.getType() != Repair.anvilMaterial
-                && blockState.getType() != Salvage.anvilMaterial;
+                && blockState.getType() != mcMMO.p.getGeneralConfig().getRepairAnvilMaterial()
+                && blockState.getType() != mcMMO.p.getGeneralConfig().getSalvageAnvilMaterial();
     }
 
     /**
@@ -443,7 +441,8 @@ public final class BlockUtils {
     public static boolean isMcMMOAnvil(final BlockState blockState) {
         final Material type = blockState.getType();
 
-        return type == Repair.anvilMaterial || type == Salvage.anvilMaterial;
+        return type == mcMMO.p.getGeneralConfig().getRepairAnvilMaterial()
+                || type == mcMMO.p.getGeneralConfig().getSalvageAnvilMaterial();
     }
 
     public static boolean isPistonPiece(final BlockState blockState) {

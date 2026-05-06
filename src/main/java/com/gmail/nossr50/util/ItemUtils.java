@@ -1,6 +1,7 @@
 package com.gmail.nossr50.util;
 
 import static java.util.Objects.requireNonNull;
+
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.party.ItemWeightConfig;
@@ -10,6 +11,13 @@ import com.gmail.nossr50.events.items.McMMOItemSpawnEvent;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.smelting.Smelting;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Predicate;
 import net.kyori.adventure.text.Component;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -20,20 +28,14 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.Recipe;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Predicate;
 
 public final class ItemUtils {
     // Use custom name if available
@@ -50,7 +52,7 @@ public final class ItemUtils {
     private static Method getCustomNameMethod() {
         try {
             return ItemMeta.class.getMethod("customName", Component.class);
-        } catch (final NoSuchMethodException e) {
+        } catch (NoSuchMethodException e) {
             return null;
         }
     }
@@ -59,9 +61,9 @@ public final class ItemUtils {
      * Sets the item name using the new API if available or falls back to the old API.
      *
      * @param itemMeta The item meta to set the name on
-     * @param name     The name to set
+     * @param name The name to set
      */
-    public static void customName(final ItemMeta itemMeta, final Component name, final String fallbackName) {
+    public static void customName(ItemMeta itemMeta, Component name, String fallbackName) {
         if (customName != null) {
             setItemNameModern(itemMeta, name);
         } else {
@@ -69,10 +71,10 @@ public final class ItemUtils {
         }
     }
 
-    private static void setItemNameModern(final ItemMeta itemMeta, final Component name) {
+    private static void setItemNameModern(ItemMeta itemMeta, Component name) {
         try {
             customName.invoke(itemMeta, name);
-        } catch (final IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             mcMMO.p.getLogger().severe("Failed to set item name: " + e.getMessage());
             throw new RuntimeException(e);
         }
@@ -85,7 +87,7 @@ public final class ItemUtils {
      * @return true if the item is a bow, false otherwise
      */
     // TODO: Unit tests
-    public static boolean isBow(@NotNull final ItemStack item) {
+    public static boolean isBow(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isBow(item.getType().getKey().getKey());
     }
 
@@ -98,7 +100,7 @@ public final class ItemUtils {
      * @param materialName The name of the material to lookup
      * @return The Material if found, or null if not found
      */
-    public static @Nullable Material exhaustiveMaterialLookup(@NotNull final String materialName) {
+    public static @Nullable Material exhaustiveMaterialLookup(@NotNull String materialName) {
         requireNonNull(materialName, "materialName cannot be null");
 
         // First try a normal lookup
@@ -124,13 +126,13 @@ public final class ItemUtils {
     /**
      * Checks if a player has an item in their inventory or offhand.
      *
-     * @param player   Player to check
+     * @param player Player to check
      * @param material Material to check for
      * @return true if the player has the item in their inventory or offhand, false otherwise
      */
-    public static boolean hasItemIncludingOffHand(final Player player, final Material material) {
+    public static boolean hasItemIncludingOffHand(Player player, Material material) {
         // Checks main inventory / item bar
-        final boolean containsInMain = player.getInventory().contains(material);
+        boolean containsInMain = player.getInventory().contains(material);
 
         if (containsInMain) {
             return true;
@@ -142,28 +144,62 @@ public final class ItemUtils {
     /**
      * Removes an item from a player's inventory, including their offhand.
      *
-     * @param player   Player to remove the item from
+     * @param player Player to remove the item from
      * @param material Material to remove
-     * @param amount   Amount of the material to remove
+     * @param amount Amount of the material to remove
      */
-    public static void removeItemIncludingOffHand(@NotNull final Player player,
-                                                  @NotNull final Material material, final int amount) {
-        // Checks main inventory / item bar
-        if (player.getInventory().contains(material)) {
-            player.getInventory().removeItem(new ItemStack(material, amount));
+    public static void removeItemIncludingOffHand(@NotNull Player player,
+            @NotNull Material material, int amount) {
+        final PlayerInventory playerInventory = player.getInventory();
+        int remainingAmount = removeItemFromStorageByMaterial(playerInventory, material, amount);
+
+        if (remainingAmount <= 0) {
             return;
         }
 
         // Check off-hand
-        final ItemStack offHandItem = player.getInventory().getItemInOffHand();
+        final ItemStack offHandItem = playerInventory.getItemInOffHand();
         if (offHandItem.getType() == material) {
-            final int newAmount = offHandItem.getAmount() - amount;
+            int newAmount = offHandItem.getAmount() - remainingAmount;
             if (newAmount > 0) {
                 offHandItem.setAmount(newAmount);
             } else {
-                player.getInventory().setItemInOffHand(new ItemStack(Material.AIR));
+                playerInventory.setItemInOffHand(new ItemStack(Material.AIR));
             }
         }
+    }
+
+    private static int removeItemFromStorageByMaterial(@NotNull PlayerInventory playerInventory,
+            @NotNull Material material, int amount) {
+        final ItemStack[] storageContents = playerInventory.getStorageContents();
+        int remainingAmount = amount;
+        boolean updatedStorage = false;
+
+        for (int i = 0; i < storageContents.length && remainingAmount > 0; i++) {
+            final ItemStack storedItem = storageContents[i];
+
+            if (storedItem == null || storedItem.getType() != material) {
+                continue;
+            }
+
+            final int storedAmount = storedItem.getAmount();
+
+            if (storedAmount <= remainingAmount) {
+                storageContents[i] = null;
+                remainingAmount -= storedAmount;
+            } else {
+                storedItem.setAmount(storedAmount - remainingAmount);
+                remainingAmount = 0;
+            }
+
+            updatedStorage = true;
+        }
+
+        if (updatedStorage) {
+            playerInventory.setStorageContents(storageContents);
+        }
+
+        return remainingAmount;
     }
 
     public static boolean hasItemInEitherHand(@NotNull Player player, Material material) {
@@ -171,9 +207,9 @@ public final class ItemUtils {
                 || player.getInventory().getItemInOffHand().getType() == material;
     }
 
-    public static boolean doesPlayerHaveEnchantmentOnArmor(@NotNull final Player player,
-                                                           @NotNull final String enchantmentByName) {
-        final Enchantment enchantment = getEnchantment(enchantmentByName);
+    public static boolean doesPlayerHaveEnchantmentOnArmor(@NotNull Player player,
+            @NotNull String enchantmentByName) {
+        Enchantment enchantment = getEnchantment(enchantmentByName);
 
         if (enchantment == null) {
             return false;
@@ -182,9 +218,9 @@ public final class ItemUtils {
         return doesPlayerHaveEnchantmentOnArmor(player, enchantment);
     }
 
-    public static boolean doesPlayerHaveEnchantmentOnArmor(@NotNull final Player player,
-                                                           @NotNull final Enchantment enchantment) {
-        for (final ItemStack itemStack : player.getInventory().getArmorContents()) {
+    public static boolean doesPlayerHaveEnchantmentOnArmor(@NotNull Player player,
+            @NotNull Enchantment enchantment) {
+        for (ItemStack itemStack : player.getInventory().getArmorContents()) {
             if (itemStack != null) {
                 if (hasEnchantment(itemStack, enchantment)) {
                     return true;
@@ -195,9 +231,9 @@ public final class ItemUtils {
         return false;
     }
 
-    public static boolean doesPlayerHaveEnchantmentOnArmorOrHands(@NotNull final Player player,
-                                                                  @NotNull final String enchantmentName) {
-        final Enchantment enchantment = getEnchantment(enchantmentName);
+    public static boolean doesPlayerHaveEnchantmentOnArmorOrHands(@NotNull Player player,
+            @NotNull String enchantmentName) {
+        Enchantment enchantment = getEnchantment(enchantmentName);
 
         if (enchantment == null) {
             return false;
@@ -206,8 +242,8 @@ public final class ItemUtils {
         return doesPlayerHaveEnchantmentOnArmorOrHands(player, enchantment);
     }
 
-    public static boolean doesPlayerHaveEnchantmentOnArmorOrHands(@NotNull final Player player,
-                                                                  @NotNull final Enchantment enchantment) {
+    public static boolean doesPlayerHaveEnchantmentOnArmorOrHands(@NotNull Player player,
+            @NotNull Enchantment enchantment) {
         if (doesPlayerHaveEnchantmentOnArmor(player, enchantment)) {
             return true;
         }
@@ -215,9 +251,9 @@ public final class ItemUtils {
         return doesPlayerHaveEnchantmentInHands(player, enchantment);
     }
 
-    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull final Player player,
-                                                           @NotNull final NamespacedKey enchantmentNameKey) {
-        final Enchantment enchantment = Enchantment.getByKey(enchantmentNameKey);
+    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull Player player,
+            @NotNull NamespacedKey enchantmentNameKey) {
+        Enchantment enchantment = Enchantment.getByKey(enchantmentNameKey);
 
         if (enchantment == null) {
             return false;
@@ -226,9 +262,9 @@ public final class ItemUtils {
         return doesPlayerHaveEnchantmentInHands(player, enchantment);
     }
 
-    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull final Player player,
-                                                           @NotNull final String enchantmentName) {
-        final Enchantment enchantment = getEnchantment(enchantmentName);
+    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull Player player,
+            @NotNull String enchantmentName) {
+        Enchantment enchantment = getEnchantment(enchantmentName);
 
         if (enchantment == null) {
             return false;
@@ -237,14 +273,14 @@ public final class ItemUtils {
         return doesPlayerHaveEnchantmentInHands(player, enchantment);
     }
 
-    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull final Player player,
-                                                           @NotNull final Enchantment enchantment) {
+    public static boolean doesPlayerHaveEnchantmentInHands(@NotNull Player player,
+            @NotNull Enchantment enchantment) {
         return hasEnchantment(player.getInventory().getItemInMainHand(), enchantment) ||
                 hasEnchantment(player.getInventory().getItemInOffHand(), enchantment);
     }
 
-    public static boolean hasEnchantment(@NotNull final ItemStack itemStack,
-                                         @NotNull final Enchantment enchantment) {
+    public static boolean hasEnchantment(@NotNull ItemStack itemStack,
+            @NotNull Enchantment enchantment) {
         if (itemStack.getItemMeta() != null) {
             return itemStack.getItemMeta().hasEnchant(enchantment);
         }
@@ -252,8 +288,8 @@ public final class ItemUtils {
         return false;
     }
 
-    public static @Nullable Enchantment getEnchantment(@NotNull final String enchantmentName) {
-        for (final Enchantment enchantment : Enchantment.values()) {
+    public static @Nullable Enchantment getEnchantment(@NotNull String enchantmentName) {
+        for (Enchantment enchantment : Enchantment.values()) {
             if (enchantment.getKey().getKey().equalsIgnoreCase(enchantmentName)) {
                 return enchantment;
             }
@@ -308,7 +344,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a sword, false otherwise
      */
-    public static boolean isSword(@NotNull final ItemStack item) {
+    public static boolean isSword(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isSword(item.getType().getKey().getKey());
     }
 
@@ -318,7 +354,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a hoe, false otherwise
      */
-    public static boolean isHoe(@NotNull final ItemStack item) {
+    public static boolean isHoe(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isHoe(item.getType().getKey().getKey());
     }
 
@@ -328,7 +364,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a shovel, false otherwise
      */
-    public static boolean isShovel(@NotNull final ItemStack item) {
+    public static boolean isShovel(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isShovel(item.getType().getKey().getKey());
     }
 
@@ -338,7 +374,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is an axe, false otherwise
      */
-    public static boolean isAxe(@NotNull final ItemStack item) {
+    public static boolean isAxe(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isAxe(item.getType().getKey().getKey());
     }
 
@@ -348,7 +384,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a pickaxe, false otherwise
      */
-    public static boolean isPickaxe(@NotNull final ItemStack item) {
+    public static boolean isPickaxe(@NotNull ItemStack item) {
         return mcMMO.getMaterialMapStore().isPickAxe(item.getType().getKey().getKey());
     }
 
@@ -358,7 +394,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item counts as unarmed, false otherwise
      */
-    public static boolean isUnarmed(final ItemStack item) {
+    public static boolean isUnarmed(ItemStack item) {
         if (mcMMO.p.getGeneralConfig().getUnarmedItemsAsUnarmed()) {
             return !isMinecraftTool(item);
         }
@@ -372,8 +408,55 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is armor, false otherwise
      */
-    public static boolean isArmor(final ItemStack item) {
+    public static boolean isArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isArmor(item.getType());
+    }
+
+    /**
+     * Gets current damage from ItemMeta-backed durability.
+     *
+     * @param item Item to inspect
+     * @return current damage value, or 0 when the item does not support durability
+     */
+    public static int getItemDamage(@NotNull ItemStack item) {
+        final ItemMeta meta = item.getItemMeta();
+
+        if (meta instanceof Damageable damageable) {
+            return damageable.getDamage();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Sets current damage through ItemMeta-backed durability.
+     *
+     * @param item target item
+     * @param damage target damage
+     */
+    public static void setItemDamage(@NotNull ItemStack item, int damage) {
+        final ItemMeta meta = item.getItemMeta();
+
+        if (meta instanceof Damageable damageable) {
+            damageable.setDamage(Math.max(0, damage));
+            item.setItemMeta(meta);
+        }
+    }
+
+    /**
+     * Gets the effective max damage for an item.
+     *
+     * @param item target item
+     * @return max damage from ItemMeta when present, otherwise Material max durability
+     */
+    public static int getItemMaxDamage(@NotNull ItemStack item) {
+        final ItemMeta meta = item.getItemMeta();
+
+        if (meta instanceof Damageable damageable && damageable.hasMaxDamage()) {
+            return damageable.getMaxDamage();
+        }
+
+        return item.getType().getMaxDurability();
     }
 
     /**
@@ -382,7 +465,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is leather armor, false otherwise
      */
-    public static boolean isLeatherArmor(final ItemStack item) {
+    public static boolean isLeatherArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isLeatherArmor(item.getType());
     }
 
@@ -392,7 +475,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is gold armor, false otherwise
      */
-    public static boolean isGoldArmor(final ItemStack item) {
+    public static boolean isGoldArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isGoldArmor(item.getType().getKey().getKey());
     }
 
@@ -402,11 +485,11 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is iron armor, false otherwise
      */
-    public static boolean isIronArmor(final ItemStack item) {
+    public static boolean isIronArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isIronArmor(item.getType().getKey().getKey());
     }
 
-    public static boolean isCopperArmor(final ItemStack item) {
+    public static boolean isCopperArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isCopperArmor(item.getType().getKey().getKey());
     }
 
@@ -416,15 +499,15 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is diamond armor, false otherwise
      */
-    public static boolean isDiamondArmor(final ItemStack item) {
+    public static boolean isDiamondArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isDiamondArmor(item.getType().getKey().getKey());
     }
 
-    public static boolean isNetheriteArmor(final ItemStack itemStack) {
+    public static boolean isNetheriteArmor(ItemStack itemStack) {
         return mcMMO.getMaterialMapStore().isNetheriteArmor(itemStack.getType().getKey().getKey());
     }
 
-    public static boolean isNetheriteTool(final ItemStack itemStack) {
+    public static boolean isNetheriteTool(ItemStack itemStack) {
         return mcMMO.getMaterialMapStore().isNetheriteTool(itemStack.getType().getKey().getKey());
     }
 
@@ -434,7 +517,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is chainmail armor, false otherwise
      */
-    public static boolean isChainmailArmor(final ItemStack item) {
+    public static boolean isChainmailArmor(ItemStack item) {
         return mcMMO.getMaterialMapStore().isChainmailArmor(item.getType().getKey().getKey());
     }
 
@@ -444,7 +527,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a tool, false otherwise
      */
-    public static boolean isMinecraftTool(final ItemStack item) {
+    public static boolean isMinecraftTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isTool(item.getType().getKey().getKey());
     }
 
@@ -454,7 +537,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a stone tool, false otherwise
      */
-    public static boolean isStoneTool(final ItemStack item) {
+    public static boolean isStoneTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isStoneTool(item.getType().getKey().getKey());
     }
 
@@ -464,7 +547,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a wooden tool, false otherwise
      */
-    public static boolean isWoodTool(final ItemStack item) {
+    public static boolean isWoodTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isWoodTool(item.getType().getKey().getKey());
     }
 
@@ -474,15 +557,15 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a string tool, false otherwise
      */
-    public static boolean isStringTool(final ItemStack item) {
+    public static boolean isStringTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isStringTool(item.getType().getKey().getKey());
     }
 
-    public static boolean isPrismarineTool(final ItemStack item) {
+    public static boolean isPrismarineTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isPrismarineTool(item.getType().getKey().getKey());
     }
 
-    public static boolean isCopperTool(final ItemStack item) {
+    public static boolean isCopperTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isCopperTool(item.getType().getKey().getKey());
     }
 
@@ -492,7 +575,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a stone tool, false otherwise
      */
-    public static boolean isGoldTool(final ItemStack item) {
+    public static boolean isGoldTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isGoldTool(item.getType().getKey().getKey());
     }
 
@@ -502,7 +585,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is an iron tool, false otherwise
      */
-    public static boolean isIronTool(final ItemStack item) {
+    public static boolean isIronTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isIronTool(item.getType().getKey().getKey());
     }
 
@@ -512,7 +595,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a diamond tool, false otherwise
      */
-    public static boolean isDiamondTool(final ItemStack item) {
+    public static boolean isDiamondTool(ItemStack item) {
         return mcMMO.getMaterialMapStore().isDiamondTool(item.getType().getKey().getKey());
     }
 
@@ -522,20 +605,20 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is enchantable, false otherwise
      */
-    public static boolean isEnchantable(final ItemStack item) {
+    public static boolean isEnchantable(ItemStack item) {
         return mcMMO.getMaterialMapStore().isEnchantable(item.getType().getKey().getKey());
     }
 
-    public static boolean isSmeltable(final ItemStack item) {
+    public static boolean isSmeltable(ItemStack item) {
         return item != null && Smelting.getSmeltXP(item) >= 1;
     }
 
-    public static boolean isSmelted(final ItemStack item) {
+    public static boolean isSmelted(ItemStack item) {
         if (item == null) {
             return false;
         }
 
-        for (final Recipe recipe : mcMMO.p.getServer().getRecipesFor(item)) {
+        for (Recipe recipe : mcMMO.p.getServer().getRecipesFor(item)) {
             if (recipe instanceof FurnaceRecipe
                     && ((FurnaceRecipe) recipe).getInput().getType().isBlock()
                     && MaterialUtils.isOre(((FurnaceRecipe) recipe).getInput().getType())) {
@@ -552,7 +635,7 @@ public final class ItemUtils {
      * @param item Item that will get shared
      * @return True if the item can be shared.
      */
-    public static boolean isSharable(final ItemStack item) {
+    public static boolean isSharable(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) {
             return false;
         }
@@ -570,13 +653,14 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a mining drop, false otherwise
      */
-    public static boolean isMiningDrop(final ItemStack item) {
+    public static boolean isMiningDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
         return switch (item.getType()) { // Should we also have Glowing Redstone Ore here?
             // Should we also have Glowstone here?
             case COAL, COAL_ORE, DIAMOND, DIAMOND_ORE, EMERALD, EMERALD_ORE, GOLD_ORE, IRON_ORE,
                  LAPIS_ORE,
-                 REDSTONE_ORE, REDSTONE, GLOWSTONE_DUST, QUARTZ, NETHER_QUARTZ_ORE, LAPIS_LAZULI -> true;
+                 REDSTONE_ORE, REDSTONE, GLOWSTONE_DUST, QUARTZ, NETHER_QUARTZ_ORE, LAPIS_LAZULI ->
+                    true;
             default -> false;
         };
     }
@@ -587,7 +671,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a herbalism drop, false otherwise
      */
-    public static boolean isHerbalismDrop(final ItemStack item) {
+    public static boolean isHerbalismDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
         return switch (item.getType().getKey().getKey().toLowerCase()) {
             case "wheat", "wheat_seeds", "carrot", "chorus_fruit", "chorus_flower", "potato",
@@ -601,13 +685,14 @@ public final class ItemUtils {
         };
     }
 
+
     /**
      * Checks to see if an item is a mob drop.
      *
      * @param item Item to check
      * @return true if the item is a mob drop, false otherwise
      */
-    public static boolean isMobDrop(final ItemStack item) {
+    public static boolean isMobDrop(ItemStack item) {
         //TODO: 1.14 This needs to be updated
         return switch (item.getType()) {
             case STRING, FEATHER, CHICKEN, COOKED_CHICKEN, LEATHER, BEEF, COOKED_BEEF, PORKCHOP,
@@ -618,7 +703,8 @@ public final class ItemUtils {
                  RED_WOOL, YELLOW_WOOL,
                  IRON_INGOT, SNOWBALL, BLAZE_ROD, SPIDER_EYE, GUNPOWDER, ENDER_PEARL, GHAST_TEAR,
                  MAGMA_CREAM, BONE,
-                 ARROW, SLIME_BALL, NETHER_STAR, ROTTEN_FLESH, GOLD_NUGGET, EGG, ROSE_BUSH, COAL -> true;
+                 ARROW, SLIME_BALL, NETHER_STAR, ROTTEN_FLESH, GOLD_NUGGET, EGG, ROSE_BUSH, COAL ->
+                    true;
             default -> false;
         };
     }
@@ -629,7 +715,7 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a woodcutting drop, false otherwise
      */
-    public static boolean isWoodcuttingDrop(final ItemStack item) {
+    public static boolean isWoodcuttingDrop(ItemStack item) {
         return switch (item.getType().toString()) {
             case "ACACIA_LOG", "BIRCH_LOG", "DARK_OAK_LOG", "PALE_OAK_LOG", "JUNGLE_LOG", "OAK_LOG",
                  "SPRUCE_LOG",
@@ -652,17 +738,17 @@ public final class ItemUtils {
      * @param item Item to check
      * @return true if the item is a miscellaneous drop, false otherwise
      */
-    public static boolean isMiscDrop(final ItemStack item) {
+    public static boolean isMiscDrop(ItemStack item) {
         return ItemWeightConfig.getInstance().getMiscItems().contains(item.getType());
     }
 
     // TODO: This is used exclusively for Chimaera Wing... should revisit this sometime
-    public static boolean isMcMMOItem(final ItemStack item) {
+    public static boolean isMcMMOItem(ItemStack item) {
         if (!item.hasItemMeta()) {
             return false;
         }
 
-        final ItemMeta itemMeta = item.getItemMeta();
+        ItemMeta itemMeta = item.getItemMeta();
 
         if (itemMeta == null) {
             return false;
@@ -672,12 +758,12 @@ public final class ItemUtils {
                 && itemMeta.getLore().contains("mcMMO Item");
     }
 
-    public static boolean isChimaeraWing(final ItemStack item) {
+    public static boolean isChimaeraWing(ItemStack item) {
         if (!isMcMMOItem(item)) {
             return false;
         }
 
-        final ItemMeta itemMeta = item.getItemMeta();
+        ItemMeta itemMeta = item.getItemMeta();
 
         if (itemMeta == null) {
             return false;
@@ -687,15 +773,15 @@ public final class ItemUtils {
                 .equals(ChatColor.GOLD + LocaleLoader.getString("Item.ChimaeraWing.Name"));
     }
 
-    public static void removeAbilityLore(@NotNull final ItemStack itemStack) {
-        final ItemMeta itemMeta = itemStack.getItemMeta();
+    public static void removeAbilityLore(@NotNull ItemStack itemStack) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta == null) {
             return;
         }
 
         if (itemMeta.hasLore()) {
-            final List<String> itemLore = itemMeta.getLore();
+            List<String> itemLore = itemMeta.getLore();
 
             if (itemLore == null) {
                 return;
@@ -708,9 +794,9 @@ public final class ItemUtils {
         }
     }
 
-    public static void addDigSpeedToItem(@NotNull final ItemStack itemStack,
-                                         final int existingEnchantLevel) {
-        final ItemMeta itemMeta = itemStack.getItemMeta();
+    public static void addDigSpeedToItem(@NotNull ItemStack itemStack,
+            int existingEnchantLevel) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta == null) {
             return;
@@ -721,22 +807,22 @@ public final class ItemUtils {
         itemStack.setItemMeta(itemMeta);
     }
 
-    public static boolean canBeSuperAbilityDigBoosted(@NotNull final ItemStack itemStack) {
+    public static boolean canBeSuperAbilityDigBoosted(@NotNull ItemStack itemStack) {
         return isShovel(itemStack) || isPickaxe(itemStack);
     }
 
     public static @NotNull ItemStack createEnchantBook(
-            @NotNull final FishingTreasureBook fishingTreasureBook) {
-        final ItemStack itemStack = fishingTreasureBook.getDrop();
-        final EnchantmentWrapper enchantmentWrapper = getRandomEnchantment(
+            @NotNull FishingTreasureBook fishingTreasureBook) {
+        ItemStack itemStack = fishingTreasureBook.getDrop().clone();
+        EnchantmentWrapper enchantmentWrapper = getRandomEnchantment(
                 fishingTreasureBook.getLegalEnchantments());
-        final ItemMeta itemMeta = itemStack.getItemMeta();
+        ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta == null) {
             return itemStack;
         }
 
-        final EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
+        EnchantmentStorageMeta enchantmentStorageMeta = (EnchantmentStorageMeta) itemMeta;
         enchantmentStorageMeta.addStoredEnchant(
                 enchantmentWrapper.enchantment(),
                 enchantmentWrapper.enchantmentLevel(),
@@ -746,24 +832,24 @@ public final class ItemUtils {
     }
 
     public static @NotNull EnchantmentWrapper getRandomEnchantment(
-            @NotNull final List<EnchantmentWrapper> enchantmentWrappers) {
+            @NotNull List<EnchantmentWrapper> enchantmentWrappers) {
         Collections.shuffle(enchantmentWrappers, Misc.getRandom());
 
-        final int randomIndex = Misc.getRandom().nextInt(enchantmentWrappers.size());
+        int randomIndex = Misc.getRandom().nextInt(enchantmentWrappers.size());
         return enchantmentWrappers.get(randomIndex);
     }
 
     /**
      * Drop items at a given location.
      *
-     * @param location   The location to drop the items at
+     * @param location The location to drop the items at
      * @param itemStacks The items to drop
      */
-    public static void spawnItems(@Nullable final Player player,
-                                  @NotNull final Location location,
-                                  @NotNull final Collection<ItemStack> itemStacks,
-                                  @NotNull final ItemSpawnReason itemSpawnReason) {
-        for (final ItemStack is : itemStacks) {
+    public static void spawnItems(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull Collection<ItemStack> itemStacks,
+            @NotNull ItemSpawnReason itemSpawnReason) {
+        for (ItemStack is : itemStacks) {
             spawnItem(player, location, is, itemSpawnReason);
         }
     }
@@ -771,18 +857,18 @@ public final class ItemUtils {
     /**
      * Drop items at a given location.
      *
-     * @param player          player to drop the items for
-     * @param location        The location to drop the items at
-     * @param itemStacks      The items to drop
-     * @param blackList       The items to skip
+     * @param player player to drop the items for
+     * @param location The location to drop the items at
+     * @param itemStacks The items to drop
+     * @param blackList The items to skip
      * @param itemSpawnReason the reason for the item drop
      */
-    public static void spawnItems(@Nullable final Player player,
-                                  @NotNull final Location location,
-                                  @NotNull final Collection<ItemStack> itemStacks,
-                                  @NotNull final Collection<Material> blackList,
-                                  @NotNull final ItemSpawnReason itemSpawnReason) {
-        for (final ItemStack is : itemStacks) {
+    public static void spawnItems(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull Collection<ItemStack> itemStacks,
+            @NotNull Collection<Material> blackList,
+            @NotNull ItemSpawnReason itemSpawnReason) {
+        for (ItemStack is : itemStacks) {
             // Skip blacklisted items
             if (blackList.contains(is.getType())) {
                 continue;
@@ -795,14 +881,14 @@ public final class ItemUtils {
      * Drop items at a given location.
      *
      * @param location The location to drop the items at
-     * @param is       The items to drop
+     * @param is The items to drop
      * @param quantity The amount of items to drop
      */
-    public static void spawnItems(@Nullable final Player player,
-                                  @NotNull final Location location,
-                                  @NotNull final ItemStack is,
-                                  final int quantity,
-                                  @NotNull final ItemSpawnReason itemSpawnReason) {
+    public static void spawnItems(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull ItemStack is,
+            int quantity,
+            @NotNull ItemSpawnReason itemSpawnReason) {
         for (int i = 0; i < quantity; i++) {
             spawnItem(player, location, is, itemSpawnReason);
         }
@@ -811,15 +897,15 @@ public final class ItemUtils {
     /**
      * Drop an item at a given location.
      *
-     * @param location        The location to drop the item at
-     * @param itemStack       The item to drop
+     * @param location The location to drop the item at
+     * @param itemStack The item to drop
      * @param itemSpawnReason the reason for the item drop
      * @return Dropped Item entity or null if invalid or cancelled
      */
-    public static @Nullable Item spawnItem(@Nullable final Player player,
-                                           @NotNull final Location location,
-                                           @NotNull final ItemStack itemStack,
-                                           @NotNull final ItemSpawnReason itemSpawnReason) {
+    public static @Nullable Item spawnItem(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull ItemStack itemStack,
+            @NotNull ItemSpawnReason itemSpawnReason) {
         if (itemStack.getType() == Material.AIR || location.getWorld() == null) {
             return null;
         }
@@ -837,36 +923,84 @@ public final class ItemUtils {
     }
 
     /**
+     * Drop an item at a given location.
+     *
+     * @param location The location to drop the item at
+     * @param itemStack The item to drop
+     * @param itemSpawnReason the reason for the item drop
+     * @return Dropped Item entity or null if invalid or cancelled
+     */
+    public static @Nullable Item spawnItemNaturally(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull ItemStack itemStack,
+            @NotNull ItemSpawnReason itemSpawnReason) {
+        if (itemStack.getType() == Material.AIR || location.getWorld() == null) {
+            return null;
+        }
+
+        // We can't get the item until we spawn it and we want to make it cancellable, so we have a custom event.
+        final McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(location, itemStack,
+                itemSpawnReason, player);
+        mcMMO.p.getServer().getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return null;
+        }
+
+        return location.getWorld().dropItemNaturally(location, event.getItemStack());
+    }
+
+    /**
+     * Drop items at a given location.
+     *
+     * @param fromLocation The location to drop the items at
+     * @param is The items to drop
+     * @param speed the speed that the item should travel
+     * @param quantity The amount of items to drop
+     */
+    public static void spawnItemsTowardsLocation(@Nullable Player player,
+            @NotNull Location fromLocation,
+            @NotNull Location toLocation,
+            @NotNull ItemStack is,
+            int quantity,
+            double speed,
+            @NotNull ItemSpawnReason itemSpawnReason) {
+        for (int i = 0; i < quantity; i++) {
+            spawnItemTowardsLocation(player, fromLocation, toLocation, is, speed, itemSpawnReason);
+        }
+    }
+
+    /**
      * Drop an item at a given location. This method is fairly expensive as it creates clones of
      * everything passed to itself since they are mutable objects
      *
      * @param fromLocation The location to drop the item at
-     * @param toLocation   The location the item will travel towards
-     * @param itemToSpawn  The item to spawn
-     * @param speed        the speed that the item should travel
+     * @param toLocation The location the item will travel towards
+     * @param itemToSpawn The item to spawn
+     * @param speed the speed that the item should travel
      * @return Dropped Item entity or null if invalid or cancelled
      */
-    public static @Nullable Item spawnItemTowardsLocation(@Nullable final Player player,
-                                                          @NotNull final Location fromLocation,
-                                                          @NotNull final Location toLocation,
-                                                          @NotNull final ItemStack itemToSpawn,
-                                                          final double speed,
-                                                          @NotNull final ItemSpawnReason itemSpawnReason) {
+    public static @Nullable Item spawnItemTowardsLocation(@Nullable Player player,
+            @NotNull Location fromLocation,
+            @NotNull Location toLocation,
+            @NotNull ItemStack itemToSpawn,
+            double speed,
+            @NotNull ItemSpawnReason itemSpawnReason) {
         if (itemToSpawn.getType() == Material.AIR) {
             return null;
         }
 
         //Work with fresh copies of everything
         ItemStack clonedItem = itemToSpawn.clone();
-        final Location spawnLocation = fromLocation.clone();
-        final Location targetLocation = toLocation.clone();
+        Location spawnLocation = fromLocation.clone();
+        Location targetLocation = toLocation.clone();
 
         if (spawnLocation.getWorld() == null) {
             return null;
         }
 
         // We can't get the item until we spawn it and we want to make it cancellable, so we have a custom event.
-        final McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(spawnLocation, clonedItem,
+        McMMOItemSpawnEvent event = new McMMOItemSpawnEvent(spawnLocation, clonedItem,
                 itemSpawnReason, player);
         mcMMO.p.getServer().getPluginManager().callEvent(event);
         clonedItem = event.getItemStack();
@@ -877,9 +1011,9 @@ public final class ItemUtils {
         }
 
         //Use the item from the event
-        final Item spawnedItem = spawnLocation.getWorld().dropItem(spawnLocation, clonedItem);
-        final Vector vecFrom = spawnLocation.clone().toVector().clone();
-        final Vector vecTo = targetLocation.clone().toVector().clone();
+        Item spawnedItem = spawnLocation.getWorld().dropItem(spawnLocation, clonedItem);
+        Vector vecFrom = spawnLocation.clone().toVector().clone();
+        Vector vecTo = targetLocation.clone().toVector().clone();
 
         //Vector which is pointing towards out target location
         Vector direction = vecTo.subtract(vecFrom).normalize();
@@ -890,12 +1024,12 @@ public final class ItemUtils {
         return spawnedItem;
     }
 
-    public static void spawnItemsFromCollection(@NotNull final Player player,
-                                                @NotNull final Location location,
-                                                @NotNull final Collection<ItemStack> drops,
-                                                @NotNull final ItemSpawnReason itemSpawnReason) {
+    public static void spawnItemsFromCollection(@NotNull Player player,
+            @NotNull Location location,
+            @NotNull Collection<ItemStack> drops,
+            @NotNull ItemSpawnReason itemSpawnReason) {
         requireNonNull(drops, "drops cannot be null");
-        for (final ItemStack drop : drops) {
+        for (ItemStack drop : drops) {
             spawnItem(player, location, drop, itemSpawnReason);
         }
     }
@@ -904,15 +1038,15 @@ public final class ItemUtils {
      * Drops only the first n items in a collection Size should always be a positive integer above
      * 0
      *
-     * @param location  target drop location
-     * @param drops     collection to iterate over
+     * @param location target drop location
+     * @param drops collection to iterate over
      * @param sizeLimit the number of drops to process
      */
-    public static void spawnItemsFromCollection(@Nullable final Player player,
-                                                @NotNull final Location location,
-                                                @NotNull final Collection<ItemStack> drops,
-                                                @NotNull final ItemSpawnReason itemSpawnReason,
-                                                final int sizeLimit) {
+    public static void spawnItemsFromCollection(@Nullable Player player,
+            @NotNull Location location,
+            @NotNull Collection<ItemStack> drops,
+            @NotNull ItemSpawnReason itemSpawnReason,
+            int sizeLimit) {
         // TODO: This doesn't make much sense, unit test time?
         final ItemStack[] arrayDrops = drops.toArray(new ItemStack[0]);
 
@@ -926,17 +1060,17 @@ public final class ItemUtils {
      * condition and spawned if it passes.
      *
      * @param potentialItemDrops The collection of items to iterate over, each one is tested and
-     *                           spawned if the predicate is true
-     * @param predicate          The predicate to test the item against
-     * @param itemSpawnReason    The reason for the item drop
-     * @param spawnLocation      The location to spawn the item at
-     * @param player             The player to spawn the item for
+     * spawned if the predicate is true
+     * @param predicate The predicate to test the item against
+     * @param itemSpawnReason The reason for the item drop
+     * @param spawnLocation The location to spawn the item at
+     * @param player The player to spawn the item for
      */
-    public static void spawnItemsConditionally(@NotNull final Collection<ItemStack> potentialItemDrops,
-                                               @NotNull final Predicate<ItemStack> predicate,
-                                               @NotNull final ItemSpawnReason itemSpawnReason,
-                                               @NotNull final Location spawnLocation,
-                                               @NotNull final Player player) {
+    public static void spawnItemsConditionally(@NotNull Collection<ItemStack> potentialItemDrops,
+            @NotNull Predicate<ItemStack> predicate,
+            @NotNull ItemSpawnReason itemSpawnReason,
+            @NotNull Location spawnLocation,
+            @NotNull Player player) {
         potentialItemDrops.stream()
                 .filter(predicate)
                 .forEach(itemStack -> spawnItem(player, spawnLocation, itemStack, itemSpawnReason));
