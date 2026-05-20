@@ -4,6 +4,8 @@ import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import com.gmail.nossr50.datatypes.skills.alchemy.AlchemyPotion;
+import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
 import com.gmail.nossr50.events.fake.FakeBrewEvent;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.alchemy.Alchemy;
@@ -245,9 +247,7 @@ public class InventoryListener implements Listener {
                 || (cursor != null && (cursor.getType() == Material.POTION
                 || cursor.getType() == Material.SPLASH_POTION
                 || cursor.getType() == Material.LINGERING_POTION))) {
-            if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
-                AlchemyPotionBrewer.applyPendingAlchemyXp(mmoPlayer);
-            }
+            awardAlchemyXpOnPotionRemovalIfNeeded(event, mmoPlayer);
             AlchemyPotionBrewer.scheduleCheck(stand);
             return;
         }
@@ -317,6 +317,62 @@ public class InventoryListener implements Listener {
 
     public boolean isOutsideWindowClick(InventoryClickEvent event) {
         return event.getHotbarButton() == -1;
+    }
+
+    /**
+     * Awards Alchemy XP only when potions are removed from a brewing stand while
+     * {@code Skills.Alchemy.Require_Potion_Removal_For_XP} is enabled.
+     *
+     * @param event the inventory click event
+     * @param mmoPlayer the online mcMMO player
+     */
+    private void awardAlchemyXpOnPotionRemovalIfNeeded(InventoryClickEvent event, McMMOPlayer mmoPlayer) {
+        if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+            return;
+        }
+
+        if (!(event.getClickedInventory() instanceof BrewerInventory)
+                || event.getSlot() < 0
+                || event.getSlot() > 2) {
+            return;
+        }
+
+        final ItemStack clickedItem = event.getCurrentItem();
+        if (clickedItem == null) {
+            return;
+        }
+
+        final int removedAmount = getRemovedPotionAmount(event, clickedItem);
+        if (removedAmount <= 0) {
+            return;
+        }
+
+        final AlchemyPotion removedPotion = mcMMO.p.getPotionConfig().getPotion(clickedItem);
+        if (removedPotion == null) {
+            return;
+        }
+
+        final PotionStage potionStage = PotionStage.getPotionStage(removedPotion);
+        mmoPlayer.getAlchemyManager().handlePotionBrewSuccesses(potionStage, removedAmount);
+    }
+
+    /**
+     * Calculates how many potions are removed from a brewing stand result slot for a click action.
+     *
+     * @param event the click event
+     * @param clickedItem the potion stack currently in the clicked slot
+     * @return the amount removed from the brewing stand
+     */
+    private int getRemovedPotionAmount(InventoryClickEvent event, ItemStack clickedItem) {
+        return switch (event.getAction()) {
+            case PICKUP_ALL, MOVE_TO_OTHER_INVENTORY, HOTBAR_SWAP, HOTBAR_MOVE_AND_READD ->
+                    clickedItem.getAmount();
+            case PICKUP_HALF -> Math.max(1, clickedItem.getAmount() / 2);
+            case PICKUP_ONE -> 1;
+            case PICKUP_SOME -> Math.min(clickedItem.getAmount(),
+                    clickedItem.getType().getMaxStackSize());
+            default -> 0;
+        };
     }
 
 

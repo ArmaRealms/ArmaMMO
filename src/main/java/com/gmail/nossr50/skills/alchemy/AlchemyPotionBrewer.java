@@ -14,9 +14,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BrewingStand;
@@ -30,11 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 // TODO: Update to use McMMOPlayer
 public final class AlchemyPotionBrewer {
-    private record PendingAlchemyXp(PotionStage potionStage, int count) {
-    }
-
-    private static final Map<UUID, PendingAlchemyXp> pendingAlchemyXpByPlayer =
-            new ConcurrentHashMap<>();
     /*
      * Compatibility with older versions where InventoryView used to be an abstract class and became an interface.
      * This was introduced in Minecraft 1.21 if we drop support for versions older than 1.21 this can be removed.
@@ -256,37 +248,13 @@ public final class AlchemyPotionBrewer {
 
                 // Update player alchemy skills or effects based on brewing success
                 if (UserManager.getPlayer(player) != null) {
-                    if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
-                        addPendingAlchemyXp(player.getUniqueId(), potionStage);
-                    } else {
+                    if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
                         UserManager.getPlayer(player).getAlchemyManager()
                                 .handlePotionBrewSuccesses(potionStage, 1);
                     }
                 }
             }
         }
-    }
-
-    private static void addPendingAlchemyXp(@NotNull UUID playerUuid, @NotNull PotionStage potionStage) {
-        pendingAlchemyXpByPlayer.compute(playerUuid, (uuid, existing) -> {
-            if (existing == null || existing.potionStage() != potionStage) {
-                return new PendingAlchemyXp(potionStage, 1);
-            }
-
-            return new PendingAlchemyXp(potionStage, existing.count() + 1);
-        });
-    }
-
-    public static void applyPendingAlchemyXp(@NotNull McMMOPlayer mmoPlayer) {
-        final PendingAlchemyXp pending = pendingAlchemyXpByPlayer.remove(
-                mmoPlayer.getPlayer().getUniqueId());
-
-        if (pending == null) {
-            return;
-        }
-
-        mmoPlayer.getAlchemyManager()
-                .handlePotionBrewSuccesses(pending.potionStage(), pending.count());
     }
 
     public static boolean transferItems(InventoryView view, int fromSlot, ClickType click) {
