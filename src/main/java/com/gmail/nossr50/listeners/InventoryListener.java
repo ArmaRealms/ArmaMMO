@@ -248,7 +248,9 @@ public class InventoryListener implements Listener {
                 || cursor.getType() == Material.SPLASH_POTION
                 || cursor.getType() == Material.LINGERING_POTION))) {
             awardAlchemyXpOnPotionRemovalIfNeeded(event, mmoPlayer);
-            AlchemyPotionBrewer.scheduleCheck(stand);
+            if (shouldScheduleAlchemyCheckAfterPotionInteraction(event)) {
+                AlchemyPotionBrewer.scheduleCheck(stand);
+            }
             return;
         }
 
@@ -375,6 +377,21 @@ public class InventoryListener implements Listener {
         };
     }
 
+    /**
+     * Returns whether the brewing system should re-check brewing progression after a potion interaction.
+     * When XP is configured to require potion removal, pure removal interactions should not force a brew check.
+     *
+     * @param event the inventory click event
+     * @return {@code true} when a brew re-check is needed
+     */
+    private boolean shouldScheduleAlchemyCheckAfterPotionInteraction(InventoryClickEvent event) {
+        if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+            return true;
+        }
+
+        return event.getSlot() < 0 || event.getSlot() > 2;
+    }
+
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryDragEvent(InventoryDragEvent event) {
@@ -488,6 +505,11 @@ public class InventoryListener implements Listener {
             return;
         }
 
+        if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp() && isPotionItem(item)) {
+            event.setCancelled(true);
+            return;
+        }
+
         if (!mcMMO.p.getGeneralConfig().getEnabledForHoppers()) {
             return;
         }
@@ -509,6 +531,18 @@ public class InventoryListener implements Listener {
                 AlchemyPotionBrewer.scheduleCheck(brewingStand);
             }
         }
+    }
+
+    /**
+     * Checks whether an item is any supported potion container type.
+     *
+     * @param item the item to inspect
+     * @return {@code true} when the item is potion, splash potion, or lingering potion
+     */
+    private boolean isPotionItem(ItemStack item) {
+        return item.getType() == Material.POTION
+                || item.getType() == Material.SPLASH_POTION
+                || item.getType() == Material.LINGERING_POTION;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
