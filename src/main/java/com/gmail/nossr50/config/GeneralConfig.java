@@ -795,6 +795,10 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Skills.Alchemy.Prevent_Hopper_Transfer_Bottles", false);
     }
 
+    public boolean getRequirePotionRemovalForAlchemyXp() {
+        return config.getBoolean("Skills.Alchemy.Require_Potion_Removal_For_XP", false);
+    }
+
     /* Fishing */
     public boolean getFishingDropsEnabled() {
         return config.getBoolean("Skills.Fishing.Drops_Enabled", true);

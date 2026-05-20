@@ -370,6 +370,9 @@ Skills:
         Prevent_Hopper_Transfer_Ingredients: false
         # Prevent Hoppers from transferring bottles into Brewing Stands
         Prevent_Hopper_Transfer_Bottles: false
+        # Anti-exploit: only grant Alchemy XP after at least one brewed potion is removed
+        # from the brewing stand. When false, XP is granted when brewing finishes.
+        Require_Potion_Removal_For_XP: false
         Level_Cap: 0
     Archery:
         Enabled_For_PVP: true

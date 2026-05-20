@@ -245,6 +245,9 @@ public class InventoryListener implements Listener {
                 || (cursor != null && (cursor.getType() == Material.POTION
                 || cursor.getType() == Material.SPLASH_POTION
                 || cursor.getType() == Material.LINGERING_POTION))) {
+            if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+                AlchemyPotionBrewer.applyPendingAlchemyXp(mmoPlayer);
+            }
             AlchemyPotionBrewer.scheduleCheck(stand);
             return;
         }
