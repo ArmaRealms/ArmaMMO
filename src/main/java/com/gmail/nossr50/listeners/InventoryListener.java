@@ -477,6 +477,10 @@ public class InventoryListener implements Listener {
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
+        if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+            return;
+        }
+
         final Inventory inventory = event.getDestination();
 
         if (!(inventory instanceof BrewerInventory)) {
@@ -505,11 +509,6 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp() && isPotionItem(item)) {
-            event.setCancelled(true);
-            return;
-        }
-
         if (!mcMMO.p.getGeneralConfig().getEnabledForHoppers()) {
             return;
         }
@@ -531,18 +530,6 @@ public class InventoryListener implements Listener {
                 AlchemyPotionBrewer.scheduleCheck(brewingStand);
             }
         }
-    }
-
-    /**
-     * Checks whether an item is any supported potion container type.
-     *
-     * @param item the item to inspect
-     * @return {@code true} when the item is potion, splash potion, or lingering potion
-     */
-    private boolean isPotionItem(ItemStack item) {
-        return item.getType() == Material.POTION
-                || item.getType() == Material.SPLASH_POTION
-                || item.getType() == Material.LINGERING_POTION;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
