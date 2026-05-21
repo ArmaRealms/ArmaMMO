@@ -243,15 +243,13 @@ public final class AlchemyPotionBrewer {
 
             AlchemyPotion output = input.getChild(ingredient);
 
-            if (output != null && player != null) {
+            if (output != null) {
                 PotionStage potionStage = PotionStage.getPotionStage(input, output);
 
                 // Update player alchemy skills or effects based on brewing success
-                if (UserManager.getPlayer(player) != null) {
-                    if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
-                        UserManager.getPlayer(player).getAlchemyManager()
-                                .handlePotionBrewSuccesses(potionStage, 1);
-                    }
+                McMMOPlayer user = UserManager.getPlayer(player);
+                if (user != null) {
+                    user.getAlchemyManager().handlePotionBrewSuccesses(potionStage, 1);
                 }
             }
         }

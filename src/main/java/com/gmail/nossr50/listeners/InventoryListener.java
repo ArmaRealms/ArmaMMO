@@ -50,10 +50,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 public class InventoryListener implements Listener {
-    private final mcMMO plugin;
 
-    public InventoryListener(final mcMMO plugin) {
-        this.plugin = plugin;
+    public InventoryListener() {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -169,12 +167,13 @@ public class InventoryListener implements Listener {
             }
 
             //Profile not loaded
-            if (UserManager.getPlayer(player) == null) {
+            McMMOPlayer user = UserManager.getPlayer(player);
+            if (user == null) {
                 return;
             }
 
             int xpToDrop = event.getExpToDrop();
-            int exp = UserManager.getPlayer(player).getSmeltingManager().vanillaXPBoost(xpToDrop);
+            int exp = user.getSmeltingManager().vanillaXPBoost(xpToDrop);
             event.setExpToDrop(exp);
         }
     }
@@ -247,8 +246,11 @@ public class InventoryListener implements Listener {
                 || (cursor != null && (cursor.getType() == Material.POTION
                 || cursor.getType() == Material.SPLASH_POTION
                 || cursor.getType() == Material.LINGERING_POTION))) {
-            awardAlchemyXpOnPotionRemovalIfNeeded(event, mmoPlayer);
-            if (shouldScheduleAlchemyCheckAfterPotionInteraction(event)) {
+            if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+                awardAlchemyXpOnPotionRemovalIfNeeded(event, mmoPlayer);
+                return;
+            }
+            if (event.getSlot() < 0 || event.getSlot() > 2) {
                 AlchemyPotionBrewer.scheduleCheck(stand);
             }
             return;
@@ -329,10 +331,6 @@ public class InventoryListener implements Listener {
      * @param mmoPlayer the online mcMMO player
      */
     private void awardAlchemyXpOnPotionRemovalIfNeeded(InventoryClickEvent event, McMMOPlayer mmoPlayer) {
-        if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
-            return;
-        }
-
         if (!(event.getClickedInventory() instanceof BrewerInventory)
                 || event.getSlot() < 0
                 || event.getSlot() > 2) {
@@ -377,21 +375,6 @@ public class InventoryListener implements Listener {
         };
     }
 
-    /**
-     * Returns whether the brewing system should re-check brewing progression after a potion interaction.
-     * When XP is configured to require potion removal, pure removal interactions should not force a brew check.
-     *
-     * @param event the inventory click event
-     * @return {@code true} when a brew re-check is needed
-     */
-    private boolean shouldScheduleAlchemyCheckAfterPotionInteraction(InventoryClickEvent event) {
-        if (!mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
-            return true;
-        }
-
-        return event.getSlot() < 0 || event.getSlot() > 2;
-    }
-
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryDragEvent(InventoryDragEvent event) {
@@ -408,7 +391,7 @@ public class InventoryListener implements Listener {
 
         InventoryHolder holder = inventory.getHolder();
 
-        if (!(holder instanceof BrewingStand)) {
+        if (holder == null) {
             return;
         }
 
