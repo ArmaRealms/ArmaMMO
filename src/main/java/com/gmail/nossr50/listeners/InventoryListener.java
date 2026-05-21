@@ -114,8 +114,8 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        BlockState blockState = event.getBlock()
-                .getState(); //Furnaces can only be cast from a BlockState not a Block
+        //Furnaces can only be cast from a BlockState not a Block
+        BlockState blockState = event.getBlock().getState();
         ItemStack smelting = event.getSource();
 
         if (!ItemUtils.isSmeltable(smelting)) {
@@ -185,10 +185,6 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        //We should never care to do processing if the player clicks outside the window
-//        if (isOutsideWindowClick(event))
-//            return;
-
         Inventory inventory = event.getInventory();
 
         Player player = ((Player) event.getWhoClicked()).getPlayer();
@@ -250,9 +246,8 @@ public class InventoryListener implements Listener {
                 awardAlchemyXpOnPotionRemovalIfNeeded(event, mmoPlayer);
                 return;
             }
-            if (event.getSlot() < 0 || event.getSlot() > 2) {
-                AlchemyPotionBrewer.scheduleCheck(stand);
-            }
+
+            AlchemyPotionBrewer.scheduleCheck(stand);
             return;
         }
 
@@ -441,22 +436,16 @@ public class InventoryListener implements Listener {
             return;
         }
 
+        if (mcMMO.p.getGeneralConfig().getRequirePotionRemovalForAlchemyXp()) {
+            return;
+        }
+
         Location location = event.getBlock().getLocation();
         if (Alchemy.brewingStandMap.containsKey(location)) {
             Alchemy.brewingStandMap.get(location).finishImmediately();
             event.setCancelled(true);
         }
     }
-
-//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-//    public void onBrewStart(BrewingStartEvent event) {
-//        /* WORLD BLACKLIST CHECK */
-//        if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld()))
-//            return;
-//
-//        if (event instanceof FakeEvent)
-//            return;
-//    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
