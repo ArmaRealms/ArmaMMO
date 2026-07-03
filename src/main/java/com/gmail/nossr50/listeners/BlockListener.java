@@ -1,6 +1,8 @@
 package com.gmail.nossr50.listeners;
 
 import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_EXCAVATION_TREASURE_ROLL;
+
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -29,6 +31,10 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -56,6 +62,7 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 
@@ -77,6 +84,9 @@ public class BlockListener implements Listener {
         if (event.isCancelled()) {
             if (block.hasMetadata(METADATA_KEY_BONUS_DROPS)) {
                 block.removeMetadata(METADATA_KEY_BONUS_DROPS, plugin);
+            }
+            if (block.hasMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL)) {
+                block.removeMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL, plugin);
             }
             return;
         }
@@ -158,9 +168,37 @@ public class BlockListener implements Listener {
                     }
                 }
             }
+
+            // Excavation treasure injection. METADATA_KEY_EXCAVATION_TREASURE_ROLL is set in
+            // BlockBreakEvent only for blocks that passed the !isIneligible (natural-block) check.
+            // Its presence here is proof that the check already passed. We cannot re-check
+            // isIneligible here: cleanupBlockMetadata runs at the end of BlockBreakEvent and calls
+            // setEligible(), clearing the tracker entry before BlockDropItemEvent fires — so
+            // isIneligible() would always return false regardless of whether the block was placed
+            // by a player. The material is stored in the metadata because block.getType() is AIR
+            // by the time this event fires.
+            if (block.hasMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL)) {
+                final Material excavationBlockMaterial = (Material) block
+                        .getMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL).get(0).value();
+                final McMMOPlayer excavationMmoPlayer = UserManager.getPlayer(event.getPlayer());
+                if (excavationMmoPlayer != null) {
+                    final List<ItemStack> treasureDrops = excavationMmoPlayer.getExcavationManager()
+                            .rollAndCollectTreasureDrops(block, excavationBlockMaterial);
+                    if (!treasureDrops.isEmpty()) {
+                        final World blockWorld = block.getWorld();
+                        final Location dropLocation = block.getLocation().add(0.5, 0.5, 0.5);
+                        for (final ItemStack treasureStack : treasureDrops) {
+                            event.getItems().add(blockWorld.dropItem(dropLocation, treasureStack));
+                        }
+                    }
+                }
+            }
         } finally {
             if (block.hasMetadata(METADATA_KEY_BONUS_DROPS)) {
                 block.removeMetadata(METADATA_KEY_BONUS_DROPS, plugin);
+            }
+            if (block.hasMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL)) {
+                block.removeMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL, plugin);
             }
         }
     }
@@ -492,6 +530,12 @@ public class BlockListener implements Listener {
                 .doesPlayerHaveSkillPermission(player, PrimarySkillType.EXCAVATION)
                 && !mcMMO.getUserBlockTracker().isIneligible(block)) {
             final ExcavationManager excavationManager = mmoPlayer.getExcavationManager();
+            // Stamp the pre-break material on the block so BlockDropItemEvent can roll treasures
+            // for natural blocks only. By the time BlockDropItemEvent fires, cleanupBlockMetadata
+            // will have called setEligible(), making isIneligible() unreliable there — the
+            // presence of this metadata key is the only reliable natural-block proof left.
+            block.setMetadata(METADATA_KEY_EXCAVATION_TREASURE_ROLL,
+                    new FixedMetadataValue(plugin, block.getType()));
             excavationManager.excavationBlockCheck(block);
 
             if (mmoPlayer.getAbilityMode(SuperAbilityType.GIGA_DRILL_BREAKER)) {

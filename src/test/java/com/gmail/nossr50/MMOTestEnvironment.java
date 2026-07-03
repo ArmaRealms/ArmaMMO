@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
+
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.AdvancedConfig;
 import com.gmail.nossr50.config.ChatConfig;
@@ -29,6 +30,10 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.sounds.SoundManager;
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,9 +49,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-
-import java.util.UUID;
-import java.util.logging.Logger;
 
 public abstract class MMOTestEnvironment {
     protected MockedStatic<Bukkit> mockedBukkit;
@@ -85,11 +87,18 @@ public abstract class MMOTestEnvironment {
     protected MaterialMapStore materialMapStore;
 
     protected MinecraftGameVersion minecraftGameVersion;
+    protected File testDataFolder;
 
-    protected void mockBaseEnvironment(final Logger logger) throws InvalidSkillException {
+    protected void mockBaseEnvironment(Logger logger) throws InvalidSkillException {
         mockedMcMMO = mockStatic(mcMMO.class);
         mcMMO.p = mock(mcMMO.class);
         when(mcMMO.p.getLogger()).thenReturn(logger);
+        try {
+            testDataFolder = java.nio.file.Files.createTempDirectory("mcmmo-test-data-").toFile();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create temp test data folder", e);
+        }
+        when(mcMMO.p.getDataFolder()).thenReturn(testDataFolder);
 
         // Game version
         minecraftGameVersion = mock(MinecraftGameVersion.class);
@@ -150,7 +159,7 @@ public abstract class MMOTestEnvironment {
         when(Bukkit.getPluginManager()).thenReturn(pluginManager);
         // return the argument provided when call event is invoked on plugin manager mock
         doAnswer(invocation -> {
-            final Object[] args = invocation.getArguments();
+            Object[] args = invocation.getArguments();
             return args[0];
         }).when(pluginManager).callEvent(any(Event.class));
 
@@ -173,8 +182,8 @@ public abstract class MMOTestEnvironment {
         this.playerInventory = mock(PlayerInventory.class);
         when(player.getInventory()).thenReturn(playerInventory);
         // player location
-        final Location playerLocation = mock(Location.class);
-        final Block playerLocationBlock = mock(Block.class);
+        Location playerLocation = mock(Location.class);
+        Block playerLocationBlock = mock(Block.class);
         when(player.getLocation()).thenReturn(playerLocation);
         when(playerLocation.getBlock()).thenReturn(playerLocationBlock);
         // when(playerLocationBlock.getType()).thenReturn(Material.AIR);
@@ -279,5 +288,21 @@ public abstract class MMOTestEnvironment {
         if (mockedSoundManager != null) {
             mockedSoundManager.close();
         }
+        if (testDataFolder != null) {
+            deleteRecursively(testDataFolder);
+            testDataFolder = null;
+        }
+    }
+
+    private static void deleteRecursively(final File file) {
+        if (file.isDirectory()) {
+            final File[] children = file.listFiles();
+            if (children != null) {
+                for (final File child : children) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+        file.delete();
     }
 }

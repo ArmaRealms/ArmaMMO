@@ -18,17 +18,25 @@ public class SkillXpGain implements Delayed {
         this.type = type;
     }
 
-    private static long getDuration() {
-        return TimeUnit.MINUTES.toMillis(
-                ExperienceConfig.getInstance().getDiminishedReturnsTimeInterval());
-    }
-
     public PrimarySkillType getSkill() {
         return type;
     }
 
     public float getXp() {
         return xp;
+    }
+
+    /**
+     * Returns the absolute epoch-millisecond timestamp at which this entry expires.
+     * Used by {@link DiminishedReturnsState} to track the latest expiry across all entries.
+     */
+    public long getExpiryTimeMillis() {
+        return expiryTime;
+    }
+
+    private static long getDuration() {
+        return TimeUnit.MINUTES.toMillis(
+                ExperienceConfig.getInstance().getDiminishedReturnsTimeInterval());
     }
 
     public int compareTo(SkillXpGain other) {

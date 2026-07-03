@@ -56,10 +56,6 @@ public class Roll extends AcrobaticsSubSkill {
         return Probability.ofValue(gracefulOdds);
     }
 
-    protected static double calculateModifiedRollDamage(final double damage, final double damageThreshold) {
-        return Math.max(damage - damageThreshold, 0.0);
-    }
-
     /**
      * Executes the interaction between this subskill and Minecraft
      *
@@ -351,7 +347,12 @@ public class Roll extends AcrobaticsSubSkill {
         return xp;
     }
 
-    private boolean isFatal(final McMMOPlayer mmoPlayer, final double damage) {
+    @VisibleForTesting
+    public static double calculateModifiedRollDamage(double damage, double damageThreshold) {
+        return Math.max(damage - damageThreshold, 0.0);
+    }
+
+    private boolean isFatal(McMMOPlayer mmoPlayer, double damage) {
         return mmoPlayer.getPlayer().getHealth() - damage <= 0;
     }
 
@@ -365,47 +366,7 @@ public class Roll extends AcrobaticsSubSkill {
         return 0;
     }
 
-    /**
-     * Prints detailed info about this subskill to the player
-     *
-     * @param mmoPlayer the target player
-     */
-    @Override
-    public void printInfo(final McMMOPlayer mmoPlayer) {
-        //Header
-        super.printInfo(mmoPlayer);
-
-        //Start the description string.
-        //player.sendMessage(getDescription());
-        //Player stats
-        mmoPlayer.getPlayer().sendMessage(LocaleLoader.getString("Commands.MmoInfo.Stats",
-                LocaleLoader.getString("Acrobatics.SubSkill.Roll.Stats", getStats(mmoPlayer))));
-
-        //Mechanics
-        mmoPlayer.getPlayer().sendMessage(LocaleLoader.getString("Commands.MmoInfo.Mechanics"));
-        mmoPlayer.getPlayer().sendMessage(getMechanics());
-    }
-
-    @Override
-    public String getMechanics() {
-        return "Under Construction: This will work in a future update.";
-    }
-
-    /**
-     * Get an array of various stats for a player
-     *
-     * @param mmoPlayer target player
-     * @return stat array for target player for this skill
-     */
-    @Override
-    public Double[] getStats(final McMMOPlayer mmoPlayer) {
-        final double playerChanceRoll = getSubSkillProbability(subSkillType, mmoPlayer).value();
-        final double playerChanceGrace = playerChanceRoll * 2;
-
-        return new Double[]{playerChanceRoll, playerChanceGrace};
-    }
-
-    public void addFallLocation(@NotNull final McMMOPlayer mmoPlayer) {
+    public void addFallLocation(@NotNull McMMOPlayer mmoPlayer) {
         mmoPlayer.getAcrobaticsManager().addLocationToFallMap(getBlockLocation(mmoPlayer));
     }
 

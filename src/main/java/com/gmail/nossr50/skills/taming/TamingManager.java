@@ -328,17 +328,20 @@ public class TamingManager extends SkillManager {
         }
     }
 
-    public void attackTarget(final LivingEntity target) {
-        final Player player = getPlayer();
-        if (target instanceof final Tameable tameable && (tameable.getOwner() == player)) return;
-
+    public void attackTarget(LivingEntity target) {
+        if (target instanceof Tameable tameable) {
+            if (tameable.getOwner() == getPlayer()) {
+                return;
+            }
+        }
         final double range = 5;
+        final Player player = getPlayer();
 
         if (!target.getWorld().equals(player.getWorld())) {
             return;
         }
 
-        for (final Entity entity : player.getNearbyEntities(range, range, range)) {
+        for (final Entity entity : target.getNearbyEntities(range, range, range)) {
             if (entity.getType() != EntityType.WOLF) {
                 continue;
             }
