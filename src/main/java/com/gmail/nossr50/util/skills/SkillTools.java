@@ -7,34 +7,63 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.datatypes.skills.ToolType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.text.StringUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Tameable;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 public class SkillTools {
-    public final static @NotNull ImmutableList<PrimarySkillType> NON_CHILD_SKILLS;
-    public final static @NotNull ImmutableList<PrimarySkillType> SALVAGE_PARENTS;
-    public final static @NotNull ImmutableList<PrimarySkillType> SMELTING_PARENTS;
+    private final mcMMO pluginRef;
+
+    // TODO: Java has immutable types now, switch to those
+    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
+    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
+    /**
+     * @deprecated No remaining callers; scheduled for removal.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
+    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
+    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
+    public static final @NotNull ImmutableList<PrimarySkillType> NON_CHILD_SKILLS;
+    public static final @NotNull ImmutableList<PrimarySkillType> SALVAGE_PARENTS;
+    public static final @NotNull ImmutableList<PrimarySkillType> SMELTING_PARENTS;
+    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
+
+    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
+    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
+    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
+
+    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
+    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
+
+    private final ConcurrentHashMap<String, PrimarySkillType> matchSkillCache = new ConcurrentHashMap<>();
+    private volatile int cachedLocaleGeneration = -1;
 
     static {
         // Build NON_CHILD_SKILLS once from the enum values
-        final ArrayList<PrimarySkillType> tempNonChildSkills = new ArrayList<>();
-        for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+        ArrayList<PrimarySkillType> tempNonChildSkills = new ArrayList<>();
+        for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
             if (!isChildSkill(primarySkillType)) {
                 tempNonChildSkills.add(primarySkillType);
             }
@@ -50,24 +79,8 @@ public class SkillTools {
                 PrimarySkillType.REPAIR
         );
     }
-    // TODO: Java has immutable types now, switch to those
-    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
-    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
-    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
-    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
-    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
-    private final mcMMO pluginRef;
-    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
-    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
-    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
 
-    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
-    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
-
-    public SkillTools(@NotNull final mcMMO pluginRef) {
+    public SkillTools(@NotNull mcMMO pluginRef) {
         this.pluginRef = pluginRef;
 
         /*
@@ -89,7 +102,7 @@ public class SkillTools {
          * Setup ability -> primary map
          * Setup primary -> ability map
          */
-        final var abilityMaps = buildSuperAbilityMaps();
+        var abilityMaps = buildSuperAbilityMaps();
         this.superAbilityParentRelationshipMap = abilityMaps.superAbilityParentRelationshipMap();
         this.mainActivatedAbilityChildMap = abilityMaps.mainActivatedAbilityChildMap();
 
@@ -128,18 +141,18 @@ public class SkillTools {
     @VisibleForTesting
     @NotNull
     ImmutableMap<SubSkillType, PrimarySkillType> buildSubSkillParentMap() {
-        final EnumMap<SubSkillType, PrimarySkillType> tempSubParentMap =
+        EnumMap<SubSkillType, PrimarySkillType> tempSubParentMap =
                 new EnumMap<>(SubSkillType.class);
 
         // SubSkillType names use a convention: <PRIMARY>_SOMETHING
-        for (final SubSkillType subSkillType : SubSkillType.values()) {
-            final String enumName = subSkillType.name();
-            final int underscoreIndex = enumName.indexOf('_');
-            final String parentPrefix = underscoreIndex == -1
+        for (SubSkillType subSkillType : SubSkillType.values()) {
+            String enumName = subSkillType.name();
+            int underscoreIndex = enumName.indexOf('_');
+            String parentPrefix = underscoreIndex == -1
                     ? enumName
                     : enumName.substring(0, underscoreIndex);
 
-            for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+            for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
                 if (primarySkillType.name().equalsIgnoreCase(parentPrefix)) {
                     tempSubParentMap.put(subSkillType, primarySkillType);
                     break;
@@ -153,23 +166,26 @@ public class SkillTools {
     @VisibleForTesting
     @NotNull
     ImmutableMap<PrimarySkillType, Set<SubSkillType>> buildPrimarySkillChildrenMap(
-            final ImmutableMap<SubSkillType, PrimarySkillType> subParentMap) {
+            ImmutableMap<SubSkillType, PrimarySkillType> subParentMap) {
 
-        final EnumMap<PrimarySkillType, Set<SubSkillType>> tempPrimaryChildMap =
+        EnumMap<PrimarySkillType, Set<SubSkillType>> tempPrimaryChildMap =
                 new EnumMap<>(PrimarySkillType.class);
 
         // Initialize empty sets
-        for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+        for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
             tempPrimaryChildMap.put(primarySkillType, new HashSet<>());
         }
 
         // Fill sets
-        for (final SubSkillType subSkillType : SubSkillType.values()) {
-            final PrimarySkillType parentSkill = subParentMap.get(subSkillType);
+        for (SubSkillType subSkillType : SubSkillType.values()) {
+            PrimarySkillType parentSkill = subParentMap.get(subSkillType);
             if (parentSkill != null) {
                 tempPrimaryChildMap.get(parentSkill).add(subSkillType);
             }
         }
+
+        // Freeze the sets so getSubSkills never hands out mutable internals
+        tempPrimaryChildMap.replaceAll((skill, subSkills) -> ImmutableSet.copyOf(subSkills));
 
         return ImmutableMap.copyOf(tempPrimaryChildMap);
     }
@@ -177,7 +193,7 @@ public class SkillTools {
     @VisibleForTesting
     @NotNull
     ImmutableMap<PrimarySkillType, ToolType> buildPrimarySkillToolMap() {
-        final EnumMap<PrimarySkillType, ToolType> tempToolMap =
+        EnumMap<PrimarySkillType, ToolType> tempToolMap =
                 new EnumMap<>(PrimarySkillType.class);
 
         tempToolMap.put(PrimarySkillType.AXES, ToolType.AXE);
@@ -208,7 +224,7 @@ public class SkillTools {
         final Map<PrimarySkillType, SuperAbilityType> tempMainActivatedAbilityChildMap =
                 new EnumMap<>(PrimarySkillType.class);
 
-        for (final SuperAbilityType superAbilityType : SuperAbilityType.values()) {
+        for (SuperAbilityType superAbilityType : SuperAbilityType.values()) {
             final PrimarySkillType parent = getSuperAbilityParent(superAbilityType);
             tempAbilityParentRelationshipMap.put(superAbilityType, parent);
 
@@ -228,8 +244,8 @@ public class SkillTools {
     @VisibleForTesting
     @NotNull
     ImmutableList<PrimarySkillType> buildChildSkills() {
-        final List<PrimarySkillType> childSkills = new ArrayList<>();
-        for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+        List<PrimarySkillType> childSkills = new ArrayList<>();
+        for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
             if (isChildSkill(primarySkillType)) {
                 childSkills.add(primarySkillType);
             }
@@ -279,7 +295,7 @@ public class SkillTools {
         }
     }
 
-    private @NotNull PrimarySkillType getSuperAbilityParent(final SuperAbilityType superAbilityType) {
+    private @NotNull PrimarySkillType getSuperAbilityParent(SuperAbilityType superAbilityType) {
         return switch (superAbilityType) {
             case BERSERK -> PrimarySkillType.UNARMED;
             case GREEN_TERRA -> PrimarySkillType.HERBALISM;
@@ -302,9 +318,9 @@ public class SkillTools {
      * @return a list of formatted sub skill names
      */
     private @NotNull ArrayList<String> buildFormattedSubSkillNameList() {
-        final ArrayList<String> subSkillNameList = new ArrayList<>();
+        ArrayList<String> subSkillNameList = new ArrayList<>();
 
-        for (final SubSkillType subSkillType : SubSkillType.values()) {
+        for (SubSkillType subSkillType : SubSkillType.values()) {
             subSkillNameList.add(subSkillType.getNiceNameNoSpaces(subSkillType));
         }
 
@@ -312,9 +328,9 @@ public class SkillTools {
     }
 
     private @NotNull HashSet<String> buildExactSubSkillNameList() {
-        final HashSet<String> subSkillNameExactSet = new HashSet<>();
+        HashSet<String> subSkillNameExactSet = new HashSet<>();
 
-        for (final SubSkillType subSkillType : SubSkillType.values()) {
+        for (SubSkillType subSkillType : SubSkillType.values()) {
             subSkillNameExactSet.add(subSkillType.toString());
         }
 
@@ -328,10 +344,13 @@ public class SkillTools {
      */
     @VisibleForTesting
     private @NotNull ArrayList<String> buildLocalizedPrimarySkillNames() {
-        final ArrayList<String> localizedSkillNameList = new ArrayList<>();
+        ArrayList<String> localizedSkillNameList = new ArrayList<>();
 
-        for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
-            localizedSkillNameList.add(getLocalizedSkillName(primarySkillType));
+        // Lowercased for tab completion, where suggestions read like the other completion
+        // keywords; skill matching is case-insensitive so completed names still resolve
+        for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+            localizedSkillNameList.add(getHeaderBannerSkillName(primarySkillType)
+                    .toLowerCase(Locale.ENGLISH));
         }
 
         Collections.sort(localizedSkillNameList);
@@ -350,29 +369,68 @@ public class SkillTools {
      * @param skillName target skill name
      * @return the matching PrimarySkillType if one is found, otherwise null
      */
-    public PrimarySkillType matchSkill(final String skillName) {
+    @Nullable
+    public PrimarySkillType matchSkill(@NotNull String skillName) {
+        final int currentGen = LocaleLoader.getLocaleGeneration();
+        if (cachedLocaleGeneration != currentGen) {
+            matchSkillCache.clear();
+            cachedLocaleGeneration = currentGen;
+        }
+
+        final String lookupKey = skillName.toLowerCase(Locale.ROOT);
+        final PrimarySkillType cached = matchSkillCache.get(lookupKey);
+        if (cached != null) {
+            return cached;
+        }
+
         if (!pluginRef.getGeneralConfig().getLocale().equalsIgnoreCase("en_US")) {
-            for (final PrimarySkillType type : PrimarySkillType.values()) {
-                final String localized = LocaleLoader.getString(
-                        StringUtils.getCapitalized(type.name()) + ".SkillName");
+            for (PrimarySkillType type : PrimarySkillType.values()) {
+                String localized = getHeaderBannerSkillName(type);
                 if (skillName.equalsIgnoreCase(localized)) {
+                    matchSkillCache.put(lookupKey, type);
                     return type;
                 }
             }
         }
 
-        for (final PrimarySkillType type : PrimarySkillType.values()) {
+        for (PrimarySkillType type : PrimarySkillType.values()) {
             if (type.name().equalsIgnoreCase(skillName)) {
+                matchSkillCache.put(lookupKey, type);
                 return type;
             }
         }
 
         if (!skillName.equalsIgnoreCase("all")) {
-            pluginRef.getLogger()
-                    .warning("Invalid mcMMO skill (" + skillName + ")"); // TODO: Localize
+            // Debug rather than warning: other plugins probe arbitrary names through the API
+            // (ExperienceAPI.isValidSkillType and friends), which must stay quiet on console
+            LogUtils.debug(pluginRef.getLogger(), "Invalid mcMMO skill (" + skillName + ")");
         }
 
         return null;
+    }
+
+    /**
+     * Matches a collection of skill name strings to skills.
+     * This is NOT case-sensitive.
+     * <p>
+     * First it checks the locale file and tries to match by the localized name of the skill.
+     * Then if nothing is found it checks against the hard coded "name" of the skill,
+     * which is just its name in English.
+     *
+     * @param skills target skill names
+     * @return the set of matching PrimarySkillTypes, skipping names that don't match
+     */
+    @NotNull
+    public Set<PrimarySkillType> matchSkills(@NotNull Collection<String> skills) {
+        final Set<PrimarySkillType> matchingSkills = new HashSet<>();
+        for (String skillName : skills) {
+            final PrimarySkillType primarySkillType = matchSkill(skillName);
+            if (primarySkillType != null) {
+                matchingSkills.add(primarySkillType);
+            }
+        }
+
+        return matchingSkills;
     }
 
     /**
@@ -382,7 +440,7 @@ public class SkillTools {
      * @param subSkillType target subskill
      * @return the PrimarySkillType of this SubSkill, null if it doesn't exist
      */
-    public PrimarySkillType getPrimarySkillBySubSkill(final SubSkillType subSkillType) {
+    public PrimarySkillType getPrimarySkillBySubSkill(SubSkillType subSkillType) {
         return subSkillParentRelationshipMap.get(subSkillType);
     }
 
@@ -393,54 +451,53 @@ public class SkillTools {
      * @param superAbilityType target super ability
      * @return the PrimarySkillType of this SuperAbilityType, null if it doesn't exist
      */
-    public PrimarySkillType getPrimarySkillBySuperAbility(final SuperAbilityType superAbilityType) {
+    public PrimarySkillType getPrimarySkillBySuperAbility(SuperAbilityType superAbilityType) {
         return superAbilityParentRelationshipMap.get(superAbilityType);
     }
 
-    public SuperAbilityType getSuperAbility(final PrimarySkillType primarySkillType) {
+    public SuperAbilityType getSuperAbility(PrimarySkillType primarySkillType) {
         return mainActivatedAbilityChildMap.get(primarySkillType);
     }
 
-    public boolean isSuperAbilityUnlocked(final PrimarySkillType primarySkillType, final Player player) {
-        final SuperAbilityType superAbilityType = getSuperAbility(primarySkillType);
+    public boolean isSuperAbilityUnlocked(PrimarySkillType primarySkillType, Player player) {
+        SuperAbilityType superAbilityType = getSuperAbility(primarySkillType);
         if (superAbilityType == null) {
             return false;
         }
 
-        final SubSkillType subSkillType = superAbilityType.getSubSkillTypeDefinition();
+        SubSkillType subSkillType = superAbilityType.getSubSkillTypeDefinition();
         return RankUtils.hasUnlockedSubskill(player, subSkillType);
     }
 
-    public boolean getPVPEnabled(final PrimarySkillType primarySkillType) {
+    public boolean getPVPEnabled(PrimarySkillType primarySkillType) {
         return pluginRef.getGeneralConfig().getPVPEnabled(primarySkillType);
     }
 
-    public boolean getPVEEnabled(final PrimarySkillType primarySkillType) {
+    public boolean getPVEEnabled(PrimarySkillType primarySkillType) {
         return pluginRef.getGeneralConfig().getPVEEnabled(primarySkillType);
     }
 
-    public boolean getHardcoreStatLossEnabled(final PrimarySkillType primarySkillType) {
+    public boolean getHardcoreStatLossEnabled(PrimarySkillType primarySkillType) {
         return pluginRef.getGeneralConfig().getHardcoreStatLossEnabled(primarySkillType);
     }
 
-    public boolean getHardcoreVampirismEnabled(final PrimarySkillType primarySkillType) {
+    public boolean getHardcoreVampirismEnabled(PrimarySkillType primarySkillType) {
         return pluginRef.getGeneralConfig().getHardcoreVampirismEnabled(primarySkillType);
     }
 
-    public ToolType getPrimarySkillToolType(final PrimarySkillType primarySkillType) {
+    public ToolType getPrimarySkillToolType(PrimarySkillType primarySkillType) {
         return primarySkillToolMap.get(primarySkillType);
     }
 
-    public Set<SubSkillType> getSubSkills(final PrimarySkillType primarySkillType) {
+    public Set<SubSkillType> getSubSkills(PrimarySkillType primarySkillType) {
         return primarySkillChildrenMap.get(primarySkillType);
     }
 
-    public double getXpMultiplier(final PrimarySkillType primarySkillType) {
+    public double getXpMultiplier(PrimarySkillType primarySkillType) {
         return ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType);
     }
 
-    // TODO: This is a little "hacky", we probably need to add something to distinguish child skills in the enum, or to use another enum for them
-    public static boolean isChildSkill(final PrimarySkillType primarySkillType) {
+    public static boolean isChildSkill(PrimarySkillType primarySkillType) {
         return switch (primarySkillType) {
             case SALVAGE, SMELTING -> true;
             default -> false;
@@ -448,52 +505,70 @@ public class SkillTools {
     }
 
     /**
-     * Get the localized name for a {@link PrimarySkillType}
+     * The localized skill name meant for messages sent to players, from the locale's
+     * {@code Overhaul.Name} keys. In the English locales this is nicely capitalized (like
+     * "Mining"), but other locales may style it differently. For the stylized headers use
+     * {@link #getHeaderBannerSkillName(PrimarySkillType)} instead.
      *
      * @param primarySkillType target {@link PrimarySkillType}
-     * @return the localized name for a {@link PrimarySkillType}
+     * @return the localized skill name for messages
      */
-    public String getLocalizedSkillName(final PrimarySkillType primarySkillType) {
+    public String getLocalizedSkillName(PrimarySkillType primarySkillType) {
+        return LocaleLoader.getString(
+                "Overhaul.Name." + StringUtils.getCapitalized(primarySkillType.toString()));
+    }
+
+    /**
+     * The localized skill name meant for the stylized headers (skill command screens, guide
+     * headers, scoreboards), from the locale's {@code <Skill>.SkillName} keys. In the English
+     * locales this is FULL CAPS (like "MINING"), but it can differ by locale. This value is
+     * also the matching surface for localized skill commands and tab completion, so renaming a
+     * skill through these keys renames its command too.
+     *
+     * @param primarySkillType target {@link PrimarySkillType}
+     * @return the localized skill name for headers and skill command matching
+     */
+    public String getHeaderBannerSkillName(PrimarySkillType primarySkillType) {
         return LocaleLoader.getString(
                 StringUtils.getCapitalized(primarySkillType.toString()) + ".SkillName");
     }
 
-    public boolean doesPlayerHaveSkillPermission(final Player player, final PrimarySkillType primarySkillType) {
+    public boolean doesPlayerHaveSkillPermission(Player player, PrimarySkillType primarySkillType) {
         return Permissions.skillEnabled(player, primarySkillType);
     }
 
-    public boolean canCombatSkillsTrigger(final PrimarySkillType primarySkillType, final Entity target) {
-        final boolean isPlayerOrTamed = (target instanceof Player)
+    public boolean canCombatSkillsTrigger(PrimarySkillType primarySkillType, Entity target) {
+        boolean isPlayerOrTamed = (target instanceof Player)
                 || (target instanceof Tameable && ((Tameable) target).isTamed());
         return isPlayerOrTamed
                 ? getPVPEnabled(primarySkillType)
                 : getPVEEnabled(primarySkillType);
     }
 
-    public String getCapitalizedPrimarySkillName(final PrimarySkillType primarySkillType) {
+    public String getCapitalizedPrimarySkillName(PrimarySkillType primarySkillType) {
         return StringUtils.getCapitalized(primarySkillType.toString());
     }
 
-    public int getSuperAbilityCooldown(final SuperAbilityType superAbilityType) {
+    public int getSuperAbilityCooldown(SuperAbilityType superAbilityType) {
         return pluginRef.getGeneralConfig().getCooldown(superAbilityType);
     }
 
-    public int getSuperAbilityMaxLength(final SuperAbilityType superAbilityType) {
+    public int getSuperAbilityMaxLength(SuperAbilityType superAbilityType) {
         return pluginRef.getGeneralConfig().getMaxLength(superAbilityType);
     }
 
-    public int getLevelCap(@NotNull final PrimarySkillType primarySkillType) {
+    public int getLevelCap(@NotNull PrimarySkillType primarySkillType) {
         return pluginRef.getGeneralConfig().getLevelCap(primarySkillType);
     }
 
     /**
      * Get the permissions for this ability.
      *
-     * @param player           Player to check permissions for
+     * @param player Player to check permissions for
      * @param superAbilityType target super ability
      * @return true if the player has permissions, false otherwise
      */
-    public boolean superAbilityPermissionCheck(final SuperAbilityType superAbilityType, final Player player) {
+    public boolean superAbilityPermissionCheck(SuperAbilityType superAbilityType, Player player) {
         return superAbilityType.getPermissions(player);
     }
 
@@ -518,7 +593,7 @@ public class SkillTools {
     }
 
     public @NotNull ImmutableList<PrimarySkillType> getChildSkillParents(
-            final PrimarySkillType childSkill) throws IllegalArgumentException {
+            PrimarySkillType childSkill) throws IllegalArgumentException {
         return switch (childSkill) {
             case SALVAGE -> SALVAGE_PARENTS;
             case SMELTING -> SMELTING_PARENTS;

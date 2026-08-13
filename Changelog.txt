@@ -1,9 +1,308 @@
+Version 2.3.001
+    Improved performance of locale message color formatting and skill name matching (Thanks wling-art)
+    Fixed Tridents and Maces Limit Break not applying for players without op (See notes)
+    Fixed endermen flagged by the 'ExploitFix.EndermanEndermiteFarms' countermeasure giving full combat XP (See notes)
+    Fixed Graceful Roll using the normal Roll damage threshold instead of its own (See notes)
+    Fixed a rare error when multiple players logged in at the same time after a server restart (Thanks Warriorrrr)
+    Fixed a rare error when structures grew on Folia servers (Thanks Warriorrrr)
+    Fixed Rupture never playing its bleed sound, the BLEED entry in sounds.yml works again
+    Fixed the 'ItemMaterialCategory' field in repair.vanilla.yml and salvage.vanilla.yml being ignored (See notes)
+    Added 'Experience_Formula.Player_Tamed.Multiplier' to experience.yml (See notes)
+    Renamed 'ItemMaterialCategory' to 'MaterialType' in the default repair.vanilla.yml (See notes)
+    Removed the unused 'Skills.Swords.SerratedStrikes.BleedTicks' and 'Skills.Swords.Rupture.Explosion_Damage' settings from advanced.yml (See notes)
+    Removed the unused 'Skills.Mining.BlastMining.DebrisReduction' and 'Skills.Mining.BlastMining.DropMultiplier' settings from advanced.yml (See notes)
+    Removed the unused 'Options.Chunklets' and 'Options.ConversionRate' settings from hidden.yml
+    Removed the unused firework and Flux entries under 'Particles' in config.yml (See notes)
+    Removed the inert Tree Feller Rank_2 through Rank_5 entries and the unused Fishing Mastery block from skillranks.yml (See notes)
+    Removed the unused DEFLECT_ARROWS, ABILITY_ACTIVATED_BERSERK, and TIRED entries from sounds.yml
+    Removed the unused 'Fishing.Exhausting' locale entry
+    (API) Deprecated the unused Blast Mining getDebrisReduction, getDropMultiplier, and getBlastMiningRankLevel methods in AdvancedConfig and MiningManager
+    (Codebase) Removed the AdvancedConfig getSerratedStrikesTicks and getRuptureExplosionDamage methods along with their settings
+    (Codebase) Removed the TIRED, ABILITY_ACTIVATED_BERSERK, and DEFLECT_ARROWS constants from the SoundType enum
+
+    NOTES:
+    Limit Break for Tridents and Maces was checking permission nodes that were never registered, so in practice only ops had them. The checks now use 'mcmmo.ability.tridents.tridentslimitbreak' and 'mcmmo.ability.maces.maceslimitbreak', which are granted by default like the other Limit Break nodes.
+    Endermen marked by the 'ExploitFix.EndermanEndermiteFarms' countermeasure are meant to give no combat XP, this protection works again. Servers that want enderman and endermite farms to give XP can turn the setting off in experience.yml.
+    Graceful Roll now negates up to 14 damage as set by 'Skills.Acrobatics.GracefulRoll.DamageThreshold' in advanced.yml, it previously used the normal Roll threshold of 7.
+    The default repair.vanilla.yml labeled the material field 'ItemMaterialCategory' while mcMMO reads 'MaterialType', so the value was ignored and guessed from the item instead. Both names load now and the default file uses 'MaterialType', custom repair and salvage configs do not need updating. The material type only decides which per-material repair or salvage permission applies, and the guess was only wrong for SHIELD (now WOOD) and WARPED_FUNGUS_ON_A_STICK (now STRING).
+    Combat XP from mobs tamed by a player is multiplied by 'Experience_Formula.Player_Tamed.Multiplier'. It defaults to 0.0, which matches the old behavior of tamed mobs giving no XP.
+    The settings removed from config.yml, advanced.yml, hidden.yml, skillranks.yml, and sounds.yml had no effect, gameplay is unchanged. Existing config files do not need updating, leftover entries are ignored. Blast Mining bonus drops and debris have not used the removed settings for a long time, and Tree Feller has a single rank, the extra rank entries did nothing. The removed Particles entries are Ability_Activation, Ability_Deactivation, LargeFireworks, Flux, LevelUp_Enabled, and LevelUp_Tier, none of which triggered anything, the working particle toggles are untouched.
+
+Version 2.3.000
+    Added support for running commands when players reach chosen skill levels or power levels (See notes)
+    Added scoreboard support for Folia servers (Thanks albert4719) (See notes)
+    Added PlaceholderAPI leaderboard rank-position placeholders for all skills except child skills (Salvage, Smelting) and for overall power level (See notes)
+    Added PlaceholderAPI skill name placeholders %mcmmo_skillname_<skill>% and %mcmmo_skillname_header_<skill>% (See notes)
+    Improved SQL leaderboard query performance on large databases (See notes)
+    Added automatic per-skill leaderboard indexes for SQL databases (See notes)
+    Changed SQL leaderboard ordering for players with identical levels (See notes)
+    Added /mclevelupsound command for players to toggle the level-up sound (See notes)
+    Added decimal XP rate support to /xprate, rates like 1.5 now work
+    Added per-skill XP rates to /xprate, for example /xprate mining 5.3 (See notes)
+    Added a no-argument /xprate (also usable as /xprate show) that shows the current XP rates and how long each has been active (See notes)
+    Changed /xprate to no longer require the true/false event argument, it defaults to true (See notes)
+    Changed /xprate to reject rates below the configured XP rate (See notes)
+    Added a console warning when a chunk's placed-block data cannot be read, instead of resetting it silently
+    Changed Cripple's default sound to the mace smash ground sound (See notes)
+    Changed XP rate event admin notifications to show the command sender as a hoverable @name with their UUID on hover in chat, and as name (UUID) in the console, instead of appending the UUID to their name
+    Changed skill name tab completion to suggest lowercase names in commands like /mctop, /skillreset, and /mmoxpbar
+    Changed messages that include a skill name to use the nicely capitalized 'Overhaul.Name' locale entries instead of the all-caps 'SkillName' entries (See notes)
+    Changed fishing anti-exploit checks to run before other plugins see the catch (Thanks FireML) (See notes)
+    Changed skill rank unlock notifications to only play the unlock sound once when many unlocks arrive back to back
+    Changed skill rank unlock notifications to show one at a time at a steady pace per player (See notes)
+    Changed salvage anvils to tell players which Salvage requirements they are missing when clicking with a salvageable item before Scrap Collector is unlocked
+    Changed Hylian Luck to no longer send a chat message when a treasure is found
+    Improved performance when gaining XP, rolling skill chances, checking skill ranks, and reading config settings and permissions
+    Improved performance of combat processing, block and placed-block handling, and many other event handlers including furnaces, fishing, inventories, pets, and commands
+    Fixed an exploit where breaking and quickly replacing multi-block plants granted Herbalism XP without the plants breaking (See notes)
+    Fixed cactus and chorus plants only granting Herbalism XP for the block that was hit (See notes)
+    Fixed Berserk reducing damage instead of boosting it on Paper 26.1.2+ (See notes)
+    Fixed Disarm, Rupture, Cripple, Momentum, Critical Strikes, Armor Impact, and Greater Impact activating far less often than intended on Paper 26.1.2+ (See notes)
+    Fixed Skull Splitter dealing far less AoE damage than intended on Paper 26.1.2+ (See notes)
+    Fixed the 'mcmmo.perks.xp.25percentboost' permission and its per-skill child nodes not being registered (See notes)
+    Fixed Maces Cripple playing an extra anvil break sound that could not be disabled in sounds.yml (See notes)
+    Fixed Super Breaker and Tree Feller mishandling durability on items with a custom max_damage component (See notes)
+    Fixed Tree Feller ignoring durability damage changes made by other plugins via PlayerItemDamageEvent
+    Fixed Acrobatics Dodge exploit prevention never limiting Dodge XP from a single mob (See notes)
+    Fixed 'ExploitFix.Combat.XPCeiling.Damage_Limit' in experience.yml being ignored (See notes)
+    Fixed Salvage and Repair confirmations being able to act on a different item than the one prompted (See notes)
+    Fixed armor sometimes being equipped instead of salvaged when right-clicking a salvage anvil
+    Fixed scoreboards for Salvage and Smelting not updating until the skill command was used again
+    Fixed power level tags being able to get stuck showing 0 under player names (See notes)
+    Fixed the stats scoreboard including skills hidden by missing permissions in its power level
+    Fixed localized skill commands being blocked by command whitelist plugins (See notes)
+    Fixed 'Database_Purging.Old_User_Cutoff' never purging inactive users (See notes)
+    Fixed purging powerless users removing comment lines from the flatfile database
+    Fixed inspect scoreboards not refreshing when the inspected player levels up
+    Fixed the Leaf Blower and Catalysis guides in the en_US locale showing wrong unlock levels
+    Fixed placed-block tracking data being lost or corrupted when a world's height limits shrink (See notes)
+    Fixed skill success chances modified by other plugins being 100 times smaller than intended (See notes)
+    Fixed Disarm, Critical Strikes, Armor Impact, and Greater Impact ignoring attack strength for players without the Lucky perk (See notes)
+    Fixed cancelled level change events corrupting skill levels changed with /mmoedit (See notes)
+    Fixed an error when another plugin cancelled a level change for a player whose data was not loaded (See notes)
+    Fixed REGENERATION potion entries in potions.yml, treasures.yml, and fishing_treasures.yml failing to match their potion type (See notes)
+    Fixed riders of spawner, egg, nether portal, and bred mobs not being tagged for reduced combat XP
+    Fixed splash potions not applying saturation when another custom effect is listed before it
+    Fixed splash saturation potions not keeping their particle and icon visibility settings
+    Fixed Alchemy not recognizing potions whose custom effects are stored in a different order than in potions.yml
+    Fixed shift-right-clicking ingredients into brewing stands overstacking a full ingredient slot and refusing transfers from full stacks
+    Fixed the early game XP boost being able to award XP inside WorldGuard regions that deny mcMMO XP
+    Fixed a small memory leak from fishing hand tracking when players log out
+    Fixed an error when another plugin tames an animal with a non-player owner
+    Fixed an error when a pet owned by a non-player deals damage
+    Fixed an error when a non-player entity clicks or drags in a furnace or brewing stand inventory
+    Fixed an error when another plugin fires a fish catch carrying a non-item entity
+    Fixed an error when adding levels to Salvage or Smelting (See notes)
+    Fixed an error when another plugin reads raw skill XP for Salvage or Smelting
+    Fixed the -s flag on /addxp, /addlevels, and /mmoedit not silencing the confirmation sent to the command sender (See notes)
+    Fixed 'Invalid mcMMO skill' console spam when other plugins check skill names through the API (See notes)
+    Fixed an error when reading XP requirements for offline players while 'Experience_Formula.Cumulative_Curve' is enabled
+    Fixed a memory leak from Call of the Wild summons that died before their duration ended
+    Fixed an error when players below 11 HP used a Chimaera Wing underground
+    Fixed custom sound IDs in sounds.yml causing errors on Spigot 1.21.3 and newer (See notes)
+    Fixed the unsupported-version scoreboard warning printing gibberish instead of the Minecraft version
+    Fixed mcMMO command tab-completion never suggesting player names to the console
+    Fixed /mmoedit, /addxp, and /addlevels suggesting skill names for the value argument when a skill or 'all' was already given
+    Fixed Green Terra and Green Thumb not converting dirt paths to grass
+    Fixed Holy Hound activating at Environmentally Aware's unlock level instead of its own
+    Fixed Super Breaker not activating on copper blocks, cut copper, and their slab and stair variants
+    Fixed twisting vines not being handled as multi-block plants by Herbalism
+    Fixed Herbalism double drops not working on beetroots
+    Fixed using bone meal on a placed nether wart block clearing its placed-block tracking
+    Fixed mobs losing their custom names when hit while 'Mob_Healthbar.Display_Type' is DISABLED
+    Fixed player data changes made while a save was in progress sometimes being lost
+    Fixed player data tracking for shutdown saves not being thread-safe on Folia
+    Fixed console messages mentioning '[D] ' mid-message being hidden when Verbose_Logging is off
+    Fixed skill chance and duration display formatting not being thread-safe on Folia
+    Fixed /mmoxpbar disable sending a chat message for every skill instead of just the summary
+    Fixed corrupt placed-block region files being kept locked after a failed load and producing errors that did not name the file
+    Fixed a single unwritable chunk being able to abort the remaining placed-block saves during shutdown and chunk unload
+    Fixed skill name arguments in commands not accepting English skill names on servers using a non-English locale
+    Fixed localized skill commands rewriting command arguments that repeat the skill name
+    Fixed players being fireproof against other players while their mcMMO data was still loading
+    Fixed several event handlers modifying fishing, block damage, interaction, and inventory events at MONITOR priority (See notes)
+    Fixed the Shake ability's McMMOPlayerShakeEvent never being fired to other plugins
+    Fixed /inspect not checking permissions when used on offline players (See notes)
+    Fixed a thread-safety issue that could cause incorrect FlatFile leaderboard results
+    Fixed renamed players' leftover database rows showing up in /mctop and being counted by /mcrank on SQL databases (See notes)
+    Fixed FlatFile leaderboards not retrying a failed rebuild until the next refresh interval
+    Fixed the outdated-server startup warning naming Minecraft 1.20.4 instead of the required 1.20.5
+    Fixed an error when /mmodebug was used before the player's data finished loading (Thanks Warriorrrr)
+    Added 'Feedback.ActionBarNotifications.SubSkillUnlocked.SendToActionBar' to advanced.yml, an opt-in to show skill rank unlock messages on the action bar (See notes)
+    Added new config file level_up_commands.yml to set up level up commands (See notes)
+    Added 'ExploitFix.AcrobaticsDodgeXpFarming' to experience.yml (See notes)
+    Added 'Skills.Mining.BlastMining.RemoteDetonationDistance' to advanced.yml (See notes)
+    Added 'General.PlaceholderAPI.Leaderboards.Max_Tracked_Rank' to config.yml
+    Added 'General.Leaderboards.Refresh_Interval_Seconds.SQL' to config.yml
+    Added 'General.Leaderboards.Refresh_Interval_Seconds.FlatFile' to config.yml
+    Added 'mcmmo.commands.mclevelupsound' permission node
+    Added 'mcmmo.commands.xprate.show' permission node
+    Removed the unused Leaf Blower Rank_2 and Rank_3 entries from skillranks.yml
+    Removed the /mmocompat command, it has been non-functional for years
+    Removed the 'Scoreboard.Types.Skill.LevelUp_Board' and 'LevelUp_Time' settings from config.yml, they had no effect (See notes)
+    Added locale entries 'Commands.xprate.current', 'Commands.xprate.invalid', 'Commands.LevelUpSound.On', 'Commands.LevelUpSound.Off', and 'Commands.Description.mclevelupsound'
+    Added locale entries 'Commands.xprate.none', 'Commands.xprate.current.skill', 'Commands.xprate.tooLow', 'Commands.xprate.duration', 'Commands.xprate.skill.globalApplies', 'Commands.xprate.skill.cleared', 'Commands.Event.XP.Skill', and 'XPRate.Event.Skill' for the /xprate changes
+    Updated locale entries 'Commands.Event.XP' and 'XPRate.Event' to name the global XP rate
+    Added locale entries 'Notifications.Admin.XPRate.Skill.Start.Self' and 'Notifications.Admin.XPRate.Skill.Start.Others'
+    Added locale entries 'Notifications.Admin.Sender.Display', 'Notifications.Admin.Sender.UUID.Hover', and 'Notifications.Admin.Sender.UUID.Console' for the admin notification sender identity
+    Added locale entries 'Salvage.Skills.ScrapCollector.Locked' and 'Salvage.Skills.ScrapCollector.LockedAndItem' for the salvage anvil requirement messages
+    Updated locale entry 'Commands.Description.xprate' for the /xprate changes
+    Removed unused locale entries 'Commands.xprate.proper.0', 'Commands.xprate.proper.1', 'Commands.xprate.proper.2', 'Commands.xprate.modified', 'Commands.xprate.over', 'Commands.xprate.started.0', and 'Commands.xprate.started.1'
+    Removed the now-unused locale entry 'Herbalism.HylianLuck'
+    (API) Added LevelUpCommandAPI so other plugins can register level up commands or their own callbacks and unregister them later (See notes)
+    (API) Deprecated RankUtils.resetUnlockDelayTimer, unlock notification pacing is now handled automatically per player
+    (API) SkillTools.getLocalizedSkillName now returns the message-friendly 'Overhaul.Name' locale value instead of the all-caps 'SkillName' value
+    (API) Added SkillTools.getHeaderBannerSkillName for the all-caps 'SkillName' locale value used by headers and skill command matching
+    (API) Added XPRATE_MODIFY_SKILL to SensitiveCommandType for per-skill XP rate admin notifications
+    (API) McMMOScoreboardObjectiveEvent is only fired on non-Folia servers (See notes)
+    (API) Skill rank unlock notifications now fire McMMOPlayerNotificationEvent like other notification types
+    (API) McMMOPlayerLevelDownEvent fired by /mmoedit now reports the number of levels lost instead of the new absolute level
+    (API) ProbabilityUtil.percent is deprecated and no longer used internally
+    (API) EventUtils.simulateBlockBreak overloads without a FakeBlockBreakEventType are deprecated in favor of the variant that takes one
+    (API) The no-op ScoreboardManager.enablePlayerSkillLevelUpScoreboard is deprecated for removal
+    (API) mcMMO now prevents other plugins from modifying its internal material maps
+    (API) Deprecated the unused NMSConstants, NMSVersion, FixSpellingNetheriteUtil, SkillActivationType, and ObjectiveType classes for removal
+    (API) Deprecated DelayedHerbalismXPCheckTask and HerbalismManager#awardXPForBlockSnapshots for removal
+    (API) Deprecated unused public utility methods and fields
+    (API) Deprecated the misspelled PlayerProfile#getChimaerWingDATS in favor of getChimaeraWingDATS
+    (API) McMMOPlayer#addXp and McMMOPlayer#addLevels now fire the XP and level change events and process level ups instead of writing raw values (See notes)
+    (API) Added DatabaseManager#readLeaderboardSnapshot for reading every leaderboard scope in one call
+    (Codebase) Added scoreboard-library 2.8.0 as a shaded dependency for the packet-based scoreboard implementation
+    (Codebase) Added ViaVersion to plugin.yml softdepend
+    (Codebase) Large internal cleanup and refactor of the listener and utility classes
+
+    NOTES:
+    -- Combat abilities on Paper 26.1.2+ --
+    Paper 26.1.2 changed attack cooldown timing during melee hits, which silently weakened these effects to a fraction of their configured damage and activation rates. Version 2.2.053 fixed most damage bonuses; this build fixes the remaining effects. No config changes required.
+    The activation chance of Disarm, Critical Strikes, Armor Impact, and Greater Impact scales with the vanilla attack cooldown, but that scaling was only being applied to players with the Lucky perk. Weak attacks now lower the odds for everyone; this affects all server software, not just Paper.
+    (API) UnarmedManager#berserkDamage/disarmCheck, AxesManager#criticalHit/impactCheck/greaterImpact/skullSplitterCheck, SwordsManager#processRupture/serratedStrikes, MacesManager#processCripple, SpearsManager#potentiallyApplyMomentum, CombatUtils#applyAbilityAoE, and McMMOPlayer#getAttackStrength are deprecated in favor of overloads that take an attack strength scale.
+
+    -- Skill RNG --
+    Only affects servers running plugins that adjust mcMMO skill success chances through the API; adjusted chances were previously reduced to roughly one hundredth of their intended value, making affected skills almost never succeed.
+
+    -- Level change events --
+    Only matters on servers running plugins that cancel mcMMO level change events. A cancelled /mmoedit change could reset the skill to level 0 or the wrong level instead of restoring the old one, and cancelling a change for a player whose data was not loaded threw an error; mcMMO now logs a warning instead.
+
+    -- Silent flag for XP commands --
+    /addxp, /addlevels, and /mmoedit accept -s as the last argument to run silently; the flag now also silences the confirmation echoed back to the command sender. Plugins that award XP by dispatching these commands from the console should append -s to keep the server log quiet.
+
+    -- Invalid skill name messages --
+    Skill name lookups that do not match any skill (usually other plugins validating names through the API, but also command typos) no longer print an 'Invalid mcMMO skill' warning to the console. The message is now debug output, visible by enabling 'General.Verbose_Logging' in config.yml.
+
+    -- Potions --
+    REGENERATION potion entries and their long/strong variants in potions.yml, treasures.yml, and fishing_treasures.yml could fail to load. Old names like REGEN still convert correctly, no config changes are needed.
+
+    -- Scoreboards and power level tags --
+    Scoreboards on Folia (and Folia forks like Canvas) now use a packet-based implementation, since the Bukkit scoreboard API is not safe to use there. Paper and Spigot servers keep the existing Bukkit scoreboard implementation and are unaffected.
+    If a Folia server runs a newer Minecraft version than this mcMMO build supports for packet scoreboards (currently the 26.2.x line), scoreboards are disabled with a startup warning until mcMMO updates.
+    (API) The packet-based implementation still fires McMMOScoreboardMakeboardEvent and McMMOScoreboardRevertEvent, but there is no Bukkit Objective on Folia so McMMOScoreboardObjectiveEvent is not fired there.
+    Power level tags could get stuck showing 0 for players whose data was still loading, and older builds with 'Power_Level_Tags' enabled could leave stale power level displays saved in world data; leftovers are now cleaned up automatically on startup. On Minecraft 26.1 clients the power level can still render on holograms and pets due to a client bug that Mojang fixed in 26.2.
+
+    -- Salvage and Repair --
+    The Salvage/Repair confirm click now has to be made with the same item that triggered the prompt; if the held item changes during the confirmation window you get a new prompt instead. While a confirmation is pending the prompted item can't be used, which stops vanilla armor quick-swap from equipping or swapping armor mid-confirmation.
+
+    -- XP and exploit fixes --
+    Multi-block plants (bamboo, sugar cane, kelp, cactus, chorus trees, and hanging vines) now grant XP for the rest of the plant only after those blocks have actually broken, so breaking a segment and instantly replacing it no longer pays XP for blocks that never broke. Cactus and chorus trees also now grant XP for the whole plant instead of just the block that was hit. No config changes are needed.
+    The mcmmo.perks.xp.25percentboost permission family now behaves like the 10, 50, and 150 percent variants; previously only mcmmo.perks.xp.25percentboost.all had any effect.
+    Dodge XP farming prevention now has its own 'ExploitFix.AcrobaticsDodgeXpFarming' setting in experience.yml, enabled by default; existing config files do not need updating. A single mob stops handing out Dodge XP after a handful of dodges and recovers after about a minute without being dodged. 'ExploitFix.Acrobatics' continues to control the Roll anti-exploit checks.
+    'ExploitFix.Combat.XPCeiling.Damage_Limit' in experience.yml now works; the combat XP damage ceiling was previously always 100 no matter what the config said. Customized values take effect after updating, no config changes are needed.
+    Fishing's overfishing and spam-fishing checks now run before other plugins process the catch, so fishing plugins (for example EvenMoreFish) can tell when mcMMO denies a catch instead of having their custom catches deleted after the fact. Denied catches still pay no mcMMO rewards. No config changes are needed.
+
+    -- Placed-block tracking --
+    If a world's build height limits were ever reduced (for example after removing a data pack that raised them), loading that world's placed-block data could fail or mark the wrong blocks as player-placed. Markers inside the new limits are kept at their correct positions; only blocks outside the new limits are forgotten.
+
+    -- Commands --
+    Localized skill commands (for example /faustkampf for /unarmed on a German locale) are now visible to command whitelist and command blocking plugins exactly as the player typed them. If you use such a plugin, whitelist the localized command name.
+    Using /inspect on offline players now requires the 'mcmmo.commands.inspect.far' permission, the same node that gates inspecting far away players. Grant that node if non-op players on your server relied on inspecting offline players.
+    The /mclevelupsound toggle (alias /levelupsound) only affects the level-up sound, not level-up messages, and lasts until logout like /mcnotify.
+    /xprate without arguments shows the current XP rate. Players get this through the new 'mcmmo.commands.xprate.show' node, granted by default since the rate is already broadcast at event start and shown on join.
+
+    -- Skill names in messages --
+    Messages that mention a skill name (level up broadcasts, XP command feedback, /mcrank and /mctop, ability cooldown notices, and similar) now use the nicely capitalized names from the 'Overhaul.Name' locale entries (like Mining) instead of the all-caps 'SkillName' entries (like MINING). The stylized headers keep the all-caps names: skill command screens, guide headers, and scoreboards. If your server renames skills by overriding '<Skill>.SkillName' in a locale override file, also override the matching 'Overhaul.Name.<Skill>' entry so messages pick up the rename.
+    New PlaceholderAPI placeholders expose both styles for every skill: %mcmmo_skillname_<skill>% returns the message name (like Mining) and %mcmmo_skillname_header_<skill>% returns the header name (like MINING). Both follow the server locale and any overrides.
+
+    -- XP rate events --
+    /xprate now accepts a skill name: /xprate mining 5.3 boosts only Mining, and 'all' targets the global rate like before. Child skills (Salvage, Smelting) have no XP of their own and are rejected. The true/false event argument is optional and defaults to true.
+    Changes made with false never start or end an event. They are still announced, but without the event banner, and if a higher global event rate keeps applying to that skill the broadcast says so.
+    Per-skill rates and the global /xprate rate do not stack with each other; whichever is higher applies. Multipliers from experience.yml and XP perks still apply on top as usual.
+    Rates below the configured rate in experience.yml are rejected to prevent accidentally lowering XP. /xprate reset restores the configured rates and clears every per-skill rate at once.
+    Setting a global rate also clears any per-skill rates at or below it, since the higher rate always wins; the sender is told which rates were cleared.
+    /xprate with no arguments (or /xprate show) reports when no XP rate event is active, and otherwise lists the global and per-skill rates with how long each has been active.
+    During an event, joining players are told about active per-skill rates alongside the global rate.
+
+    -- Level up commands --
+    Level up commands are configured in the new level_up_commands.yml file; each entry lists the commands to run plus a trigger, either skills with levels or power_levels, and an optional run_as of CONSOLE (default) or PLAYER. The shipped example entries are disabled by default.
+    Level up commands support placeholders: {@player}, {@skill}, {@level}, {@power_level}, and current-level placeholders like {@mining_level}. When PlaceholderAPI is installed, its placeholders are also resolved against the player who leveled up. Commands run once per milestone reached, even when several levels are gained at once.
+    (API) LevelUpCommandAPI registrations return an id that can be used to unregister them later; registrations made by other plugins survive mcMMO config reloads.
+
+    -- Sounds and abilities --
+    Skill rank unlock notifications now stream out one at a time every 0.25 seconds per player instead of batches spaced 5 seconds apart. Every unlock is still notified; a mass change like /mmoedit all delivers all of its notifications within seconds.
+    Cripple now plays a single sound, the mace smash ground sound by default instead of an anvil sound; adjust or disable it with the CRIPPLE entry in sounds.yml. The mace sound only exists on Minecraft 1.21 and newer, the same versions maces exist on.
+    Sounds that can't be resolved (for example a typo in a CustomSoundId) now log a single warning and are skipped; on Spigot 1.21.3 and newer they previously caused an error every time the sound tried to play.
+    Ability durability loss now always uses the item's own maximum durability, so items with a custom max_damage component (from data packs or item plugins) no longer break super abilities or appear to restore durability.
+
+    -- Event handling --
+    The fishing rewards handler, the interaction handler that activates abilities and consumes items, the Berserk insta-break on block damage, and the inventory click and open handlers that strip ability buffs now run at HIGHEST priority instead of MONITOR, so plugins reading these events at MONITOR reliably see mcMMO's changes. If another plugin also modifies these events at HIGHEST priority, its ordering relative to mcMMO may have changed; please report any new conflicts with other plugins after updating.
+
+    -- Config --
+    Skill rank unlock messages can be shown on the action bar by setting 'Feedback.ActionBarNotifications.SubSkillUnlocked.SendToActionBar' to true in advanced.yml, with 'SendCopyOfMessageToChat' deciding whether the chat still gets a copy. Nothing changes unless you enable it. The section uses 'SendToActionBar' instead of 'Enabled' because older configs already contain a leftover 'Enabled: true'; that key is ignored so updating cannot silently change behavior. advanced.yml auto-updates on startup.
+    'Skills.Mining.BlastMining.RemoteDetonationDistance' in advanced.yml controls how far away Blast Mining can remotely detonate TNT. The default of 100 matches the old fixed distance; advanced.yml auto-updates on startup.
+    The removed 'Scoreboard.Types.Skill.LevelUp_Board' and 'LevelUp_Time' settings had been broken for years and did nothing regardless of their values. Leftover keys in existing config files are ignored and can be deleted; nothing visible changes.
+
+    -- Database --
+    'Database_Purging.Old_User_Cutoff' now actually removes inactive users on both FlatFile and SQL databases. If you have purging enabled, expect the first purge after updating to remove old users that should have been purged before. Users whose last login can't be determined are kept.
+
+    -- PlaceholderAPI leaderboard rank-position placeholders --
+    New placeholders request leaderboard positions directly:
+        %mcmmo_mctop_<skill>:<position>%      -> skill level at that rank (e.g. %mcmmo_mctop_mining:1%)
+        %mcmmo_mctop_name_<skill>:<position>% -> player name at that rank (e.g. %mcmmo_mctop_name_mining:34%)
+    For overall power level use 'overall', 'all', or 'powerlevel' as the skill name; all three map to the same data (e.g. %mcmmo_mctop_powerlevel:25%).
+    'General.PlaceholderAPI.Leaderboards.Max_Tracked_Rank' controls the highest supported position. Default is 100, clamped between 10 and 1000 since higher positions cost memory and database reads on every cache refresh.
+    Positions above that value, invalid positions (blank, non-numeric, 0, negative), and positions no player currently holds all return an empty result.
+    'General.Leaderboards.Refresh_Interval_Seconds.FlatFile' (default 600, matching previous behavior) controls how often FlatFile leaderboards are rebuilt and affects /mctop, /mcrank, and the placeholders.
+    'General.Leaderboards.Refresh_Interval_Seconds.SQL' (default 60) only governs the placeholder cache; /mctop and /mcrank on SQL always query live data.
+    Both intervals have a 60 second minimum. Placeholder requests are served from cache between refreshes.
+    Each refresh reads every leaderboard in one pass; on FlatFile that is a single scan of the user file. Refreshes pause while no leaderboard placeholder is in use and resume on the next request, so servers that never use them do no recurring cache work.
+
+    -- SQL leaderboard performance --
+    Leaderboard queries on SQL databases are now much faster on servers with large player tables. mcMMO automatically adds per-skill indexes to the skills table on startup when they are missing; on very large databases the first startup after updating may take longer while they build. This runs once, is safe to re-run, and mcMMO starts normally even if an index cannot be added. Fresh installs include the indexes, skill columns added by future updates get theirs automatically, and an existing idx_<skill> index that covers a different column is assumed deliberate and left alone.
+    Renamed players leave a database row under an internal placeholder name; on SQL these rows could appear in /mctop and the leaderboard placeholders and were counted in /mcrank positions. They are now excluded from all of them.
+    Players with identical levels on SQL databases are now ordered newest-registered-first in /mctop, /mcrank, and the leaderboard placeholders (previously alphabetical by name), and /mctop and /mcrank agree on tie positions. FlatFile databases still order ties alphabetically.
+
+    -- Child skill levels through the API --
+    Adding levels to Salvage or Smelting through the mcMMO API caused an error for online players. Child skills have no levels of their own, so added levels now split evenly across the skill's parent skills, matching how child skill XP and the offline API variants already behaved.
+
+    -- XP and levels added through the API --
+    (API) Only matters on servers running plugins that give out mcMMO XP or levels through McMMOPlayer#addXp or McMMOPlayer#addLevels. These previously wrote raw values without awarding level ups, leaving skills stuck over their XP threshold with no level up message, sound, or scoreboard update. They now behave like any normal gain and fire the usual events, so plugins listening for mcMMO XP and level changes will start seeing these gains too.
+
 Version 2.2.054
-    Fixed party/admin chat allowing player color code tokens without the 'mcmmo.chat.colors' permission
-    Fixed diminished returns resetting in certain situations when players reconnected
+    Added compatibility for new blocks and items from Chaos Cubed (Minecraft 26.2) to mcMMO
+    Fixed party/admin chat allowing players to use color codes without the 'mcmmo.chat.colors' permission
+    Fixed reconnecting sometimes clearing a player's diminished XP returns early
     Fixed Folia thread-check errors when ranged attacks triggered Taming wolf assist targeting
-    Fixed right-click wood stripping triggering Tree Feller tool readying on affected blocks
-    Fixed SuperBreaker activation to treat deepslate bricks and deepslate tiles like other pickaxe-target blocks
+    Fixed right-clicking to strip wood also readying the axe for Tree Feller
+    Fixed Super Breaker not activating on deepslate bricks and deepslate tiles
+    Fixed invalid or malformed treasure entries being able to disable mcMMO on startup (See notes)
+    Fixed potion treasures with Extended or Upgraded potion data giving the wrong potion in treasures.yml and fishing_treasures.yml
+    Fixed fishing treasures with an unrecognized Rarity being silently added to the COMMON reward pool (See notes)
+    Added a Combat XP multiplier for the Sulfur Cube to experience.yml
+    Added a Herbalism XP value for Golden Dandelion to experience.yml
+    Added the 'Bounce' music disc as a very rare Excavation treasure to treasures.yml (See notes)
+    Added Mining XP values for all new Cinnabar block variants to experience.yml (See notes)
+    Added Mining XP values for all new Sulfur block variants to experience.yml (See notes)
+    Added Mining XP values for Potent Sulfur and Sulfur Spike to experience.yml
+    Changed treasure entries using potion types that don't exist in the server's Minecraft version to be skipped quietly like other incompatible treasures
+    Improved misconfigured treasure entry logging to use warnings that name the exact problem and config key
+    (Codebase) Reworked treasure config loading (TreasureConfig, FishingTreasureConfig) to classify each entry as loaded, incompatible, or invalid with a per-section load summary
+    (Codebase) Consolidated duplicated treasure config loading logic from TreasureConfig and FishingTreasureConfig into a shared TreasureEntryLoader helper
+    (Codebase) Added unit tests for treasure entry classification and fishing drop-rate validation
+
+    NOTES:
+    experience.yml auto-updates on startup, so the new Mining, Combat, and Herbalism values are added to existing configs automatically.
+    The new Mining XP values cover the full Cinnabar and Sulfur block sets: the base blocks, their polished, brick, and chiseled versions, and the stairs, slab, and wall variants of each.
+    treasures.yml does not auto-update; to get the 'Bounce' Excavation treasure on an existing server, add the MUSIC_DISC_BOUNCE entry to treasures.yml manually or delete the file to regenerate it (a copy of the default is saved to defaults/treasures.yml).
+    Treasure configs (treasures.yml, fishing_treasures.yml) no longer fail startup on a bad entry. Entries whose material or potion type does not exist in your Minecraft version are skipped quietly. Misconfigured entries are logged with their key so you can find and fix them, and each section reports how many treasures loaded.
+    Fishing treasures with an unrecognized Rarity are now skipped with a warning naming the entry so you can fix it; previously they were silently treated as COMMON. If a custom fishing treasure stops dropping after updating, check your startup log for the warning.
 
 Version 2.2.053
     !! -- This build has important fixes for anyone using Paper (or forks of Paper), please read the notes carefully.
