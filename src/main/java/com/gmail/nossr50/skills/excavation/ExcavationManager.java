@@ -47,7 +47,7 @@ public class ExcavationManager extends SkillManager {
         excavationBlockCheck(blockState.getBlock());
     }
 
-    public void excavationBlockCheck(Block block) {
+    public void excavationBlockCheck(final Block block) {
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
         final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
@@ -65,7 +65,7 @@ public class ExcavationManager extends SkillManager {
         return getTreasures(block.getType());
     }
 
-    public List<ExcavationTreasure> getTreasures(@NotNull Material material) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final Material material) {
         requireNonNull(material, "material cannot be null");
         return Excavation.getTreasures(material);
     }
@@ -90,7 +90,7 @@ public class ExcavationManager extends SkillManager {
      * @return list of treasure {@link ItemStack}s from all successful rolls
      */
     public @NotNull List<ItemStack> rollAndCollectTreasureDrops(
-            @NotNull Block block, @NotNull Material material) {
+            @NotNull final Block block, @NotNull final Material material) {
         requireNonNull(block, "block cannot be null");
         requireNonNull(material, "material cannot be null");
         return doRollAndCollectTreasureDrops(material, Misc.getBlockCenter(block));
@@ -102,13 +102,13 @@ public class ExcavationManager extends SkillManager {
      *     returns AIR, causing treasure lookup to fail silently.
      */
     @Deprecated(forRemoval = true, since = "2.2.053")
-    public @NotNull List<ItemStack> rollAndCollectTreasureDrops(@NotNull Block block) {
+    public @NotNull List<ItemStack> rollAndCollectTreasureDrops(@NotNull final Block block) {
         requireNonNull(block, "block cannot be null");
         return doRollAndCollectTreasureDrops(block.getType(), Misc.getBlockCenter(block));
     }
 
     private @NotNull List<ItemStack> doRollAndCollectTreasureDrops(
-            @NotNull Material material, @NotNull Location centerOfBlock) {
+            @NotNull final Material material, @NotNull final Location centerOfBlock) {
         if (!Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
             return List.of();
         }
@@ -160,7 +160,7 @@ public class ExcavationManager extends SkillManager {
             Misc.spawnExperienceOrb(location, getExperienceOrbsReward());
         }
 
-        int xp = treasure.getXp();
+        final int xp = treasure.getXp();
         ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop(), ItemSpawnReason.EXCAVATION_TREASURE);
         if (xp > 0) {
             applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
@@ -203,7 +203,6 @@ public class ExcavationManager extends SkillManager {
      * @param block The {@link Block} to check ability activation for
      */
     public void gigaDrillBreaker(final Block block) {
-        excavationBlockCheck(block);
         excavationBlockCheck(block);
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
