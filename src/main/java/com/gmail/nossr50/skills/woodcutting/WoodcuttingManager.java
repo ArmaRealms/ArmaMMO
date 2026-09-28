@@ -30,7 +30,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
@@ -70,49 +69,6 @@ public class WoodcuttingManager extends SkillManager {
     public WoodcuttingManager(final McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.WOODCUTTING);
         treeFellerThreshold = mcMMO.p.getGeneralConfig().getTreeFellerThreshold();
-    }
-
-    /**
-     * Handles the durability loss
-     *
-     * @param treeFellerBlocks List of blocks to be removed
-     * @param inHand           tool being used
-     * @param player           the player holding the item
-     * @return True if the tool can sustain the durability loss
-     */
-    private static boolean handleDurabilityLoss(@NotNull final Set<Block> treeFellerBlocks,
-                                                @NotNull final ItemStack inHand, @NotNull final Player player) {
-        //Treat the NBT tag for unbreakable and the durability enchant differently
-        final ItemMeta meta = inHand.getItemMeta();
-
-        if (meta != null && meta.isUnbreakable()) {
-            return true;
-        }
-
-        int durabilityLoss = 0;
-        final Material type = inHand.getType();
-
-        for (final Block block : treeFellerBlocks) {
-            if (BlockUtils.hasWoodcuttingXP(block)) {
-                durabilityLoss += mcMMO.p.getGeneralConfig().getAbilityToolDamage();
-            }
-        }
-
-        // Call PlayerItemDamageEvent first to make sure it's not cancelled
-        //TODO: Put this event stuff in handleDurabilityChange
-        final PlayerItemDamageEvent event = new PlayerItemDamageEvent(player, inHand,
-                durabilityLoss);
-        Bukkit.getPluginManager().callEvent(event);
-
-        if (event.isCancelled()) {
-            return true;
-        }
-
-        SkillUtils.handleDurabilityChange(inHand, durabilityLoss);
-        final int durability = meta instanceof Damageable ? ((Damageable) meta).getDamage() : 0;
-        return (durability < (mcMMO.getRepairableManager().isRepairable(type)
-                ? mcMMO.getRepairableManager().getRepairable(type).getMaximumDurability()
-                : type.getMaxDurability()));
     }
 
     /**
@@ -372,6 +328,46 @@ public class WoodcuttingManager extends SkillManager {
     }
 
     /**
+     * Handles the durability loss
+     *
+     * @param treeFellerBlocks List of blocks to be removed
+     * @param inHand tool being used
+     * @param player the player holding the item
+     * @return True if the tool can sustain the durability loss
+     */
+    private static boolean handleDurabilityLoss(@NotNull Set<Block> treeFellerBlocks,
+            @NotNull ItemStack inHand, @NotNull Player player) {
+        //Treat the NBT tag for unbreakable and the durability enchant differently
+        ItemMeta meta = inHand.getItemMeta();
+
+        if (meta != null && meta.isUnbreakable()) {
+            return true;
+        }
+
+        int durabilityLoss = 0;
+
+        for (Block block : treeFellerBlocks) {
+            if (BlockUtils.hasWoodcuttingXP(block)) {
+                durabilityLoss += mcMMO.p.getGeneralConfig().getAbilityToolDamage();
+            }
+        }
+
+        // Call PlayerItemDamageEvent first to make sure it's not cancelled
+        //TODO: Put this event stuff in handleDurabilityChange
+        final PlayerItemDamageEvent event = new PlayerItemDamageEvent(player, inHand,
+                durabilityLoss);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return true;
+        }
+
+        // Plugins may reduce the damage instead of cancelling (custom durability systems)
+        SkillUtils.handleDurabilityChange(inHand, event.getDamage());
+        return ItemUtils.getItemDamage(inHand) < ItemUtils.getItemMaxDamage(inHand);
+    }
+
+    /**
      * Handle a block addition to the list of blocks to be removed and to the list of blocks used
      * for future recursive calls of 'processTree()'
      *
@@ -437,8 +433,10 @@ public class WoodcuttingManager extends SkillManager {
                 //Bonus Drops / Harvest lumber checks
                 processBonusDropCheck(block);
             } else if (BlockUtils.isNonWoodPartOfTree(block)) {
-                // 75% of the time do not drop leaf blocks
-                if (ThreadLocalRandom.current().nextInt(100) > 75) {
+                // Leaves only drop 25% of the time, but guaranteed-drop parts such as shelf
+                // mushrooms always drop since vanilla pops them when their log breaks
+                if (BlockUtils.isTreeFellerGuaranteedDrop(block)
+                        || ThreadLocalRandom.current().nextInt(100) > 75) {
                     spawnItemsFromCollection(player,
                             getBlockCenter(block),
                             block.getDrops(itemStack),

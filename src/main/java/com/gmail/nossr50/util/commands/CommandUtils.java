@@ -1,5 +1,6 @@
 package com.gmail.nossr50.util.commands;
 
+import com.gmail.nossr50.database.UsernamePlaceholder;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -14,14 +15,16 @@ import com.gmail.nossr50.util.text.StringUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public final class CommandUtils {
-    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off", "sim", "nao");
-    public static final List<String> RESET_OPTIONS = List.of("limpar", "resetar");
+    public static final List<String> TRUE_FALSE_OPTIONS = List.of("on", "off", "true", "false", "sim", "nao");
+    public static final List<String> RESET_OPTIONS = List.of("reset", "clear", "limpar", "resetar");
     public static final List<String> TRUE_OPTIONS = List.of("on", "true", "enabled", "ativar", "sim");
     public static final List<String> FALSE_OPTIONS = List.of("off", "false", "disabled", "desativar", "nao");
 
@@ -98,6 +101,23 @@ public final class CommandUtils {
         return false;
     }
 
+    /**
+     * Players who lost their name to someone else are stored under the placeholder, so a command
+     * given it must not act on whichever of them the database finds first.
+     *
+     * @return true, after telling the sender no such player exists, when the name is the
+     *         placeholder
+     */
+    public static boolean isInvalidOldUsername(@NotNull CommandSender sender,
+            @Nullable String playerName) {
+        if (!UsernamePlaceholder.isInvalidOldUsername(playerName)) {
+            return false;
+        }
+
+        sender.sendMessage(LocaleLoader.getString("Commands.DoesNotExist"));
+        return true;
+    }
+
     public static boolean unloadedProfile(CommandSender sender, PlayerProfile profile) {
         if (profile.isLoaded()) {
             return false;
@@ -145,7 +165,7 @@ public final class CommandUtils {
             return false;
         }
 
-        sender.sendMessage("That is not a valid percentage."); // TODO: Localize
+        sender.sendMessage("That is not a valid number."); // TODO: Localize
         return true;
     }
 
@@ -259,7 +279,8 @@ public final class CommandUtils {
         List<String> onlinePlayerNames = new ArrayList<>();
 
         for (Player onlinePlayer : mcMMO.p.getServer().getOnlinePlayers()) {
-            if (player != null && player.canSee(onlinePlayer)) {
+            // Non-player senders such as the console see everyone
+            if (player == null || player.canSee(onlinePlayer)) {
                 onlinePlayerNames.add(onlinePlayer.getName());
             }
         }
@@ -309,8 +330,8 @@ public final class CommandUtils {
 
             if (playerName
                     == null) { //Do null checking here to detect corrupted data before sending it throuogh .equals
-                System.err.println(
-                        "[McMMO] Player data file with UIID " + offlinePlayer.getUniqueId()
+                mcMMO.p.getLogger().warning(
+                        "Player data file with UUID " + offlinePlayer.getUniqueId()
                                 + " is missing a player name. This may be a legacy file from before bukkit.lastKnownName. This should be okay to ignore.");
                 continue; //Don't let an error here interrupt the loop
             }

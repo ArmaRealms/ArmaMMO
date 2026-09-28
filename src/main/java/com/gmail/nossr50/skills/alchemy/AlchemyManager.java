@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 
 public class AlchemyManager extends SkillManager {
-    private final double LUCKY_MODIFIER = 4.0 / 3.0;
+    private static final double LUCKY_MODIFIER = 4.0 / 3.0;
 
     public AlchemyManager(final McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.ALCHEMY);
@@ -34,27 +34,27 @@ public class AlchemyManager extends SkillManager {
         final StringBuilder list = new StringBuilder();
 
         for (final ItemStack ingredient : getIngredients()) {
-            final String string = getMaterialConfigString(ingredient.getType());
-
-            list.append(", ").append(string);
+            list.append(", ").append(getMaterialConfigString(ingredient.getType()));
         }
 
         return list.substring(2);
     }
 
-    public double calculateBrewSpeed(final boolean isLucky) {
+    public double calculateBrewSpeed(boolean isLucky) {
         final int skillLevel = getSkillLevel();
+        final int unlockLevel = RankUtils.getUnlockLevel(SubSkillType.ALCHEMY_CATALYSIS);
 
-        if (skillLevel < RankUtils.getUnlockLevel(SubSkillType.ALCHEMY_CATALYSIS)) {
+        if (skillLevel < unlockLevel) {
             return Alchemy.catalysisMinSpeed;
         }
 
-        return Math.min(Alchemy.catalysisMaxSpeed, Alchemy.catalysisMinSpeed +
-                (Alchemy.catalysisMaxSpeed - Alchemy.catalysisMinSpeed) * (skillLevel
-                        - RankUtils.getUnlockLevel(SubSkillType.ALCHEMY_CATALYSIS)) / (
-                        Alchemy.catalysisMaxBonusLevel - RankUtils.getUnlockLevel(
-                                SubSkillType.ALCHEMY_CATALYSIS))) * (isLucky ? LUCKY_MODIFIER
-                : 1.0);
+        final double speedRange = Alchemy.catalysisMaxSpeed - Alchemy.catalysisMinSpeed;
+        final double rampProgress = (double) (skillLevel - unlockLevel)
+                / (Alchemy.catalysisMaxBonusLevel - unlockLevel);
+        final double curveSpeed = Math.min(Alchemy.catalysisMaxSpeed,
+                Alchemy.catalysisMinSpeed + speedRange * rampProgress);
+
+        return curveSpeed * (isLucky ? LUCKY_MODIFIER : 1.0);
     }
 
     /**

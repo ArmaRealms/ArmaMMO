@@ -403,6 +403,31 @@ public final class McMMORegionBackupStore {
     }
 
     /**
+     * Cheap side-effect-free pre-check for whether {@link #backupWorld(World, Logger, Path)}
+     * would write a snapshot for this world: the world sits on the legacy shape and has
+     * tracked region data. Lets shutdown announce the backup pass before the first snapshot
+     * is written instead of after.
+     */
+    public static boolean worldNeedsBackup(@NotNull World world, @NotNull Logger logger) {
+        try {
+            final Path container = normalize(org.bukkit.Bukkit.getWorldContainer().toPath());
+            final Path worldFolder = normalize(world.getWorldFolder().toPath());
+            return needsBackup(container, world.getName(), worldFolder, logger);
+        } catch (RuntimeException unexpected) {
+            return false;
+        }
+    }
+
+    /**
+     * Core pre-check implementation. Package-private for unit testing.
+     */
+    static boolean needsBackup(@NotNull Path container, @NotNull String worldName,
+            @NotNull Path worldFolder, @NotNull Logger logger) {
+        return isLegacyShape(container, worldName, worldFolder)
+                && !listRegionFiles(worldFolder.resolve(IN_WORLD_FOLDER_NAME), logger).isEmpty();
+    }
+
+    /**
     * On-startup / on-world-load entry point. Prunes incomplete snapshots and then handles
     * restore for worlds on the new Paper shape:
      * <ul>
@@ -468,7 +493,7 @@ public final class McMMORegionBackupStore {
             return false;
         }
         final Path inWorldFolder = worldFolder.resolve(IN_WORLD_FOLDER_NAME);
-        final List<Path> regionFiles = listRegionFiles(inWorldFolder);
+        final List<Path> regionFiles = listRegionFiles(inWorldFolder, logger);
         if (regionFiles.isEmpty()) {
             // Nothing to back up — world has no tracked block data.
             // Still clean up any crash-interrupted incomplete snapshots so the backup store
@@ -575,6 +600,17 @@ public final class McMMORegionBackupStore {
      */
     static boolean restore(@NotNull Path container, @NotNull Path pluginDataFolder,
             @NotNull String worldName, @NotNull Path worldFolder, @NotNull Logger logger) {
+        return restore(container, pluginDataFolder, worldName, worldFolder, logger,
+                Clock.systemUTC());
+    }
+
+    /**
+     * Same as {@link #restore(Path, Path, String, Path, Logger)} with an injectable clock for
+     * the archive folder timestamps.
+     */
+    static boolean restore(@NotNull Path container, @NotNull Path pluginDataFolder,
+            @NotNull String worldName, @NotNull Path worldFolder, @NotNull Logger logger,
+            @NotNull Clock clock) {
         final Path worldBackupRoot = pluginDataFolder.resolve(BACKUP_ROOT_FOLDER_NAME)
                 .resolve(worldName);
         final Path inWorldFolder = worldFolder.resolve(IN_WORLD_FOLDER_NAME);
@@ -591,16 +627,16 @@ public final class McMMORegionBackupStore {
             return false;
         }
 
-        if (!listRegionFiles(inWorldFolder).isEmpty()) {
+        if (!listRegionFiles(inWorldFolder, logger).isEmpty()) {
             // In-world already has data on the new Paper layout — either mcMMO already
             // completed the restore on a prior startup, or Paper's migration preserved the
             // mcmmo_regions/ folder. If the backup store still contains real snapshots, move
             // that tree aside so an admin can re-use it for another merge pass later.
             int mergedCount;
             if (Files.isDirectory(worldBackupRoot)) {
-                if (hasRestorableContent(worldBackupRoot)) {
+                if (hasRestorableContent(worldBackupRoot, logger)) {
                     archiveRestoredBackupStore(pluginDataFolder.resolve(BACKUP_ROOT_FOLDER_NAME),
-                            worldBackupRoot, worldName, logger);
+                            worldBackupRoot, worldName, logger, clock);
                 } else {
                     deleteRecursivelyQuietly(worldBackupRoot);
                 }
@@ -611,7 +647,7 @@ public final class McMMORegionBackupStore {
         }
 
         final Path newestSnapshot = Files.isDirectory(worldBackupRoot)
-                ? newestCompleteSnapshot(worldBackupRoot)
+                ? newestCompleteSnapshot(worldBackupRoot, logger)
                 : null;
         if (newestSnapshot == null) {
                 final int mergedCount = mergeLegacyRootRegionDataAndDeleteSource(
@@ -637,14 +673,14 @@ public final class McMMORegionBackupStore {
         // The backup store has served its purpose for this world. Move it into an archive so
         // an admin can re-use the same data for another merge pass if needed.
         archiveRestoredBackupStore(pluginDataFolder.resolve(BACKUP_ROOT_FOLDER_NAME),
-                worldBackupRoot, worldName, logger);
+                worldBackupRoot, worldName, logger, clock);
         return restored > 0;
     }
 
     private static void deleteLegacyRootRegionDataAfterSnapshotRestore(
             @NotNull Path legacyRootRegionFolder, @NotNull String worldName,
             @NotNull Logger logger) {
-        final List<Path> legacyRegionFiles = listRegionFiles(legacyRootRegionFolder);
+        final List<Path> legacyRegionFiles = listRegionFiles(legacyRootRegionFolder, logger);
         if (legacyRegionFiles.isEmpty()) {
             return;
         }
@@ -676,7 +712,7 @@ public final class McMMORegionBackupStore {
     private static int mergeLegacyRootRegionDataAndDeleteSource(
             @NotNull Path legacyRootRegionFolder, @NotNull Path inWorldFolder,
             @NotNull String worldName, @NotNull Logger logger) {
-        final List<Path> legacyRegionFiles = listRegionFiles(legacyRootRegionFolder);
+        final List<Path> legacyRegionFiles = listRegionFiles(legacyRootRegionFolder, logger);
         if (legacyRegionFiles.isEmpty()) {
             return 0;
         }
@@ -715,13 +751,15 @@ public final class McMMORegionBackupStore {
         return mergedCount;
     }
 
-    private static boolean hasRestorableContent(@NotNull Path worldBackupRoot) {
-        return newestCompleteSnapshot(worldBackupRoot) != null
-                || !listRegionFiles(worldBackupRoot).isEmpty();
+    private static boolean hasRestorableContent(@NotNull Path worldBackupRoot,
+            @NotNull Logger logger) {
+        return newestCompleteSnapshot(worldBackupRoot, logger) != null
+                || !listRegionFiles(worldBackupRoot, logger).isEmpty();
     }
 
     private static void archiveRestoredBackupStore(@NotNull Path backupStoreRoot,
-            @NotNull Path worldBackupRoot, @NotNull String worldName, @NotNull Logger logger) {
+            @NotNull Path worldBackupRoot, @NotNull String worldName, @NotNull Logger logger,
+            @NotNull Clock clock) {
         final Path archiveRoot = backupStoreRoot
                 .resolve(ARCHIVE_ROOT_FOLDER_NAME)
                 .resolve(worldName);
@@ -732,7 +770,7 @@ public final class McMMORegionBackupStore {
                 + archiveRoot + " for world '" + worldName + "'", ioException);
             return;
         }
-        final String archiveName = SNAPSHOT_TIMESTAMP_FORMAT.format(Instant.now());
+        final String archiveName = SNAPSHOT_TIMESTAMP_FORMAT.format(clock.instant());
         final Path archiveDestination = archiveRoot.resolve(archiveName);
         if (Files.exists(archiveDestination)) {
             logger.fine(MIGRATION_LOG_TAG + " world '" + worldName + "': archive destination "
@@ -838,7 +876,7 @@ public final class McMMORegionBackupStore {
      * snapshots, deleting the oldest extras. Package-private for testing.
      */
     static void pruneOldSnapshots(@NotNull Path worldBackupRoot, @NotNull Logger logger) {
-        final List<Path> complete = listCompleteSnapshots(worldBackupRoot);
+        final List<Path> complete = listCompleteSnapshots(worldBackupRoot, logger);
         if (complete.size() <= MAX_BACKUPS_RETAINED) {
             return;
         }
@@ -858,8 +896,9 @@ public final class McMMORegionBackupStore {
      * {@value #BACKUP_COMPLETE_SENTINEL} file) under {@code worldBackupRoot}, or {@code null} if
      * none exists. Package-private for testing.
      */
-    static @Nullable Path newestCompleteSnapshot(@NotNull Path worldBackupRoot) {
-        final List<Path> complete = listCompleteSnapshots(worldBackupRoot);
+    static @Nullable Path newestCompleteSnapshot(@NotNull Path worldBackupRoot,
+            @NotNull Logger logger) {
+        final List<Path> complete = listCompleteSnapshots(worldBackupRoot, logger);
         if (complete.isEmpty()) {
             return null;
         }
@@ -867,7 +906,8 @@ public final class McMMORegionBackupStore {
         return complete.get(complete.size() - 1);
     }
 
-    private static @NotNull List<Path> listCompleteSnapshots(@NotNull Path worldBackupRoot) {
+    private static @NotNull List<Path> listCompleteSnapshots(@NotNull Path worldBackupRoot,
+            @NotNull Logger logger) {
         if (!Files.isDirectory(worldBackupRoot)) {
             return Collections.emptyList();
         }
@@ -878,11 +918,15 @@ public final class McMMORegionBackupStore {
                     .filter(p -> Files.isRegularFile(p.resolve(BACKUP_COMPLETE_SENTINEL)))
                     .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         } catch (IOException ioException) {
+            // Treat as empty, but say so: a silently skipped listing can hide missing backups
+            logger.log(Level.WARNING, "Could not list backup snapshots in " + worldBackupRoot,
+                    ioException);
             return Collections.emptyList();
         }
     }
 
-    private static @NotNull List<Path> listRegionFiles(@NotNull Path folder) {
+    private static @NotNull List<Path> listRegionFiles(@NotNull Path folder,
+            @NotNull Logger logger) {
         if (!Files.isDirectory(folder)) {
             return Collections.emptyList();
         }
@@ -893,6 +937,8 @@ public final class McMMORegionBackupStore {
                     .sorted()
                     .collect(java.util.stream.Collectors.toCollection(ArrayList::new));
         } catch (IOException ioException) {
+            // Treat as empty, but say so: a silently skipped listing can hide a skipped backup
+            logger.log(Level.WARNING, "Could not list region files in " + folder, ioException);
             return Collections.emptyList();
         }
     }
@@ -1001,59 +1047,52 @@ public final class McMMORegionBackupStore {
     static int mergeRegionFile(@NotNull Path source, @NotNull Path destination,
             int regionX, int regionZ) throws IOException {
         int affected = 0;
-        final McMMOSimpleRegionFile sourceRegion = new McMMOSimpleRegionFile(
+        try (McMMOSimpleRegionFile sourceRegion = new McMMOSimpleRegionFile(
                 source.toFile(), regionX, regionZ);
-        try {
-            final McMMOSimpleRegionFile destinationRegion = new McMMOSimpleRegionFile(
-                    destination.toFile(), regionX, regionZ);
-            try {
-                final int chunkOriginX = regionX << 5;
-                final int chunkOriginZ = regionZ << 5;
-                for (int dx = 0; dx < 32; dx++) {
-                    for (int dz = 0; dz < 32; dz++) {
-                        final int chunkX = chunkOriginX + dx;
-                        final int chunkZ = chunkOriginZ + dz;
-                        final ChunkStore sourceChunk;
-                        try (DataInputStream in = sourceRegion.getInputStream(chunkX, chunkZ)) {
-                            if (in == null) {
-                                continue;
-                            }
-                            sourceChunk = BitSetChunkStore.Serialization.readChunkStore(in);
-                        }
-                        if (sourceChunk == null) {
+                McMMOSimpleRegionFile destinationRegion = new McMMOSimpleRegionFile(
+                        destination.toFile(), regionX, regionZ)) {
+            final int chunkOriginX = regionX << 5;
+            final int chunkOriginZ = regionZ << 5;
+            for (int dx = 0; dx < 32; dx++) {
+                for (int dz = 0; dz < 32; dz++) {
+                    final int chunkX = chunkOriginX + dx;
+                    final int chunkZ = chunkOriginZ + dz;
+                    final ChunkStore sourceChunk;
+                    try (DataInputStream in = sourceRegion.getInputStream(chunkX, chunkZ)) {
+                        if (in == null) {
                             continue;
                         }
-                        final ChunkStore destinationChunk;
-                        try (DataInputStream in = destinationRegion.getInputStream(chunkX, chunkZ)) {
-                            destinationChunk = in == null
-                                    ? null
-                                    : BitSetChunkStore.Serialization.readChunkStore(in);
+                        sourceChunk = BitSetChunkStore.Serialization.readChunkStore(in);
+                    }
+                    if (sourceChunk == null) {
+                        continue;
+                    }
+                    final ChunkStore destinationChunk;
+                    try (DataInputStream in = destinationRegion.getInputStream(chunkX, chunkZ)) {
+                        destinationChunk = in == null
+                                ? null
+                                : BitSetChunkStore.Serialization.readChunkStore(in);
+                    }
+                    if (destinationChunk == null) {
+                        try (DataOutputStream out = destinationRegion.getOutputStream(chunkX,
+                                chunkZ)) {
+                            BitSetChunkStore.Serialization.writeChunkStore(out, sourceChunk);
                         }
-                        if (destinationChunk == null) {
-                            try (DataOutputStream out = destinationRegion.getOutputStream(chunkX,
-                                    chunkZ)) {
-                                BitSetChunkStore.Serialization.writeChunkStore(out, sourceChunk);
+                        affected++;
+                    } else if (destinationChunk instanceof BitSetChunkStore destinationBitSet
+                            && sourceChunk instanceof BitSetChunkStore sourceBitSet) {
+                        destinationBitSet.mergeFrom(sourceBitSet);
+                        if (destinationBitSet.isDirty()) {
+                            try (DataOutputStream out = destinationRegion.getOutputStream(
+                                    chunkX, chunkZ)) {
+                                BitSetChunkStore.Serialization.writeChunkStore(out,
+                                        destinationBitSet);
                             }
                             affected++;
-                        } else if (destinationChunk instanceof BitSetChunkStore destinationBitSet
-                                && sourceChunk instanceof BitSetChunkStore sourceBitSet) {
-                            destinationBitSet.mergeFrom(sourceBitSet);
-                            if (destinationBitSet.isDirty()) {
-                                try (DataOutputStream out = destinationRegion.getOutputStream(
-                                        chunkX, chunkZ)) {
-                                    BitSetChunkStore.Serialization.writeChunkStore(out,
-                                            destinationBitSet);
-                                }
-                                affected++;
-                            }
                         }
                     }
                 }
-            } finally {
-                destinationRegion.close();
             }
-        } finally {
-            sourceRegion.close();
         }
         return affected;
     }

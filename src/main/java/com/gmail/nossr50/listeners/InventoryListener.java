@@ -6,6 +6,7 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.events.fake.FakeBrewEvent;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.runnables.skills.AlchemyBrewTask;
 import com.gmail.nossr50.skills.alchemy.Alchemy;
 import com.gmail.nossr50.skills.alchemy.AlchemyPotionBrewer;
 import com.gmail.nossr50.util.ContainerMetadataUtils;
@@ -23,7 +24,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.block.Furnace;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -61,49 +61,48 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        final Block furnaceBlock = event.getBlock();
-        final BlockState furnaceState = furnaceBlock.getState();
-        final ItemStack smelting =
-                furnaceState instanceof Furnace ? ((Furnace) furnaceState).getInventory()
-                        .getSmelting() : null;
-
-        if (!ItemUtils.isSmeltable(smelting) || event.getBurnTime() <= 0) {
+        if (!(event.getBlock().getState() instanceof Furnace furnace)) {
             return;
         }
 
-        final Furnace furnace = (Furnace) furnaceState;
+        if (!ItemUtils.isSmeltable(furnace.getInventory().getSmelting())
+                || event.getBurnTime() <= 0) {
+            return;
+        }
+
         final OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(furnace);
-        final Player player;
 
-        if (offlinePlayer != null && offlinePlayer.isOnline() && offlinePlayer instanceof Player) {
-            player = (Player) offlinePlayer;
+        // Fuel efficiency only applies while the furnace owner is online
+        if (!(offlinePlayer instanceof Player player) || !player.isOnline()) {
+            return;
+        }
 
-            if (!Permissions.isSubSkillEnabled(player, SubSkillType.SMELTING_FUEL_EFFICIENCY)) {
-                return;
-            }
+        if (!Permissions.isSubSkillEnabled(player, SubSkillType.SMELTING_FUEL_EFFICIENCY)) {
+            return;
+        }
 
-            final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-            if (mmoPlayer != null) {
-                final boolean debugMode = mmoPlayer.isDebugMode();
+        if (mmoPlayer == null) {
+            return;
+        }
 
-                if (debugMode) {
-                    player.sendMessage("FURNACE FUEL EFFICIENCY DEBUG REPORT");
-                    player.sendMessage("Furnace - " + furnace.hashCode());
-                    player.sendMessage("Furnace Type: " + furnaceBlock.getType());
-                    player.sendMessage("Burn Length before Fuel Efficiency is applied - "
-                            + event.getBurnTime());
-                }
+        final boolean debugMode = mmoPlayer.isDebugMode();
 
-                event.setBurnTime(
-                        mmoPlayer.getSmeltingManager().fuelEfficiency(event.getBurnTime()));
+        if (debugMode) {
+            player.sendMessage("FURNACE FUEL EFFICIENCY DEBUG REPORT");
+            player.sendMessage("Furnace - " + furnace.hashCode());
+            player.sendMessage("Furnace Type: " + event.getBlock().getType());
+            player.sendMessage("Burn Length before Fuel Efficiency is applied - "
+                    + event.getBurnTime());
+        }
 
-                if (debugMode) {
-                    player.sendMessage("New Furnace Burn Length (after applying fuel efficiency) "
-                            + event.getBurnTime());
-                    player.sendMessage("");
-                }
-            }
+        event.setBurnTime(mmoPlayer.getSmeltingManager().fuelEfficiency(event.getBurnTime()));
+
+        if (debugMode) {
+            player.sendMessage("New Furnace Burn Length (after applying fuel efficiency) "
+                    + event.getBurnTime());
+            player.sendMessage("");
         }
     }
 
@@ -147,7 +146,7 @@ public class InventoryListener implements Listener {
 
         final BlockState furnaceBlock = event.getBlock().getState();
 
-        if (!ItemUtils.isSmelted(new ItemStack(event.getItemType(), event.getItemAmount()))) {
+        if (!ItemUtils.isSmelted(event.getItemType())) {
             return;
         }
 
@@ -167,11 +166,14 @@ public class InventoryListener implements Listener {
             }
 
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-            //Profile not loaded
-            if (mmoPlayer == null) return;
 
-            final int xpToDrop = event.getExpToDrop();
-            final int exp = mmoPlayer.getSmeltingManager().vanillaXPBoost(xpToDrop);
+            //Profile not loaded
+            if (mmoPlayer == null) {
+                return;
+            }
+
+            int xpToDrop = event.getExpToDrop();
+            int exp = mmoPlayer.getSmeltingManager().vanillaXPBoost(xpToDrop);
             event.setExpToDrop(exp);
         }
     }
@@ -187,42 +189,43 @@ public class InventoryListener implements Listener {
 //        if (isOutsideWindowClick(event))
 //            return;
 
-        final Inventory inventory = event.getInventory();
+        // Plugins can open container inventories for human-shaped entities that aren't players
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
 
-        final Player player = ((Player) event.getWhoClicked()).getPlayer();
-        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
+        Inventory inventory = event.getInventory();
 
-        if (event.getInventory() instanceof final FurnaceInventory furnaceInventory) {
+        if (inventory instanceof FurnaceInventory furnaceInventory) {
             if (!mcMMO.p.getSkillTools()
                     .doesPlayerHaveSkillPermission(player, PrimarySkillType.SMELTING)) {
                 return;
             }
             //Switch owners
             ContainerMetadataUtils.processContainerOwnership(furnaceInventory.getHolder(), player);
-        }
-
-        if (event.getInventory() instanceof final BrewerInventory brewerInventory) {
-            if (!mcMMO.p.getSkillTools()
-                    .doesPlayerHaveSkillPermission(player, PrimarySkillType.ALCHEMY)) {
-                return;
-            }
-            // switch owners
-            ContainerMetadataUtils.processContainerOwnership(brewerInventory.getHolder(), player);
-        }
-
-        if (!(inventory instanceof BrewerInventory)) {
             return;
         }
 
-        final InventoryHolder holder = inventory.getHolder();
+        if (!(inventory instanceof BrewerInventory brewerInventory)) {
+            return;
+        }
+
+        if (!mcMMO.p.getSkillTools()
+                .doesPlayerHaveSkillPermission(player, PrimarySkillType.ALCHEMY)) {
+            return;
+        }
+        // switch owners
+        ContainerMetadataUtils.processContainerOwnership(brewerInventory.getHolder(), player);
+
+        InventoryHolder holder = inventory.getHolder();
 
         if (!(holder instanceof final BrewingStand stand)) {
             return;
         }
 
-        final HumanEntity whoClicked = event.getWhoClicked();
+        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if (mmoPlayer == null || !Permissions.isSubSkillEnabled(whoClicked,
+        if (mmoPlayer == null || !Permissions.isSubSkillEnabled(player,
                 SubSkillType.ALCHEMY_CONCOCTIONS)) {
             return;
         }
@@ -334,10 +337,13 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        final HumanEntity whoClicked = event.getWhoClicked();
+        // Plugins can open container inventories for human-shaped entities that aren't players
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
 
-        if (!UserManager.hasPlayerDataKey(event.getWhoClicked()) || !Permissions.isSubSkillEnabled(
-                whoClicked, SubSkillType.ALCHEMY_CONCOCTIONS)) {
+        if (!UserManager.hasPlayerDataKey(player) || !Permissions.isSubSkillEnabled(
+                player, SubSkillType.ALCHEMY_CONCOCTIONS)) {
             return;
         }
 
@@ -349,8 +355,6 @@ public class InventoryListener implements Listener {
         final ItemStack ingredient = ((BrewerInventory) inventory).getIngredient();
 
         if (AlchemyPotionBrewer.isEmpty(ingredient) || ingredient.isSimilar(cursor)) {
-            final Player player = (Player) whoClicked;
-
             /* WORLD GUARD MAIN FLAG CHECK */
             if (WorldGuardUtils.isWorldGuardLoaded()) {
                 if (!WorldGuardManager.getInstance().hasMainFlag(player)) {
@@ -380,22 +384,13 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        final Location location = event.getBlock().getLocation();
-        if (Alchemy.brewingStandMap.containsKey(location)) {
-            Alchemy.brewingStandMap.get(location).finishImmediately();
+        Location location = event.getBlock().getLocation();
+        final AlchemyBrewTask alchemyBrewTask = Alchemy.brewingStandMap.get(location);
+        if (alchemyBrewTask != null) {
+            alchemyBrewTask.finishImmediately();
             event.setCancelled(true);
         }
     }
-
-//    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-//    public void onBrewStart(BrewingStartEvent event) {
-//        /* WORLD BLACKLIST CHECK */
-//        if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld()))
-//            return;
-//
-//        if (event instanceof FakeEvent)
-//            return;
-//    }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryMoveItemEvent(final InventoryMoveItemEvent event) {
@@ -449,8 +444,10 @@ public class InventoryListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onInventoryClickEvent(final InventoryClickEvent event) {
+    // HIGHEST instead of MONITOR: this handler mutates item state (stripping ability buffs),
+    // which the MONITOR contract forbids
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onInventoryClickEvent(InventoryClickEvent event) {
         if (event.getCurrentItem() == null) {
             return;
         }
@@ -470,39 +467,11 @@ public class InventoryListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onInventoryOpenEvent(final InventoryOpenEvent event) {
+    // HIGHEST instead of MONITOR: this handler mutates item state (stripping ability buffs),
+    // which the MONITOR contract forbids
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onInventoryOpenEvent(InventoryOpenEvent event) {
         SkillUtils.removeAbilityBuff(event.getPlayer().getInventory().getItemInMainHand());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCraftItem(final CraftItemEvent event) {
-        /* WORLD BLACKLIST CHECK */
-        if (WorldBlacklist.isWorldBlacklisted(event.getWhoClicked().getWorld())) {
-            return;
-        }
-
-        final HumanEntity whoClicked = event.getWhoClicked();
-
-        if (!whoClicked.hasMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA)) {
-            return;
-        }
-
-        final ItemStack result = event.getRecipe().getResult();
-
-        //TODO: Used for Chimaera Wing, but not sure it is still necessary
-        if (!ItemUtils.isMcMMOItem(result)) {
-            return;
-        }
-
-        final Player player = (Player) whoClicked;
-
-        /* WORLD GUARD MAIN FLAG CHECK */
-        if (WorldGuardUtils.isWorldGuardLoaded()) {
-            if (!WorldGuardManager.getInstance().hasMainFlag(player)) {
-                return;
-            }
-        }
     }
 
 }

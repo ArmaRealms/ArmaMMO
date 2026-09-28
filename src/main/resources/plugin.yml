@@ -14,7 +14,7 @@ author: nossr50
 authors: [ GJ, NuclearW, bm01, Glitchfinder, TfT_02, t00thpick1, Riking, electronicboy, kashike ]
 website: https://www.mcmmo.org
 main: com.gmail.nossr50.mcMMO
-softdepend: [ WorldGuard, CombatTag, HealthBar, PlaceholderAPI, ProtocolLib , PlayerBlockTracker]
+softdepend: [ WorldGuard, CombatTag, HealthBar, PlaceholderAPI, ProtocolLib, PlayerBlockTracker, ViaVersion ]
 load: POSTWORLD
 folia-supported: true
 api-version: 1.20.5
@@ -23,9 +23,6 @@ commands:
     mmoxpbar:
         aliases: xpbarsettings
         description: Change XP bar settings
-    mmocompat:
-        description: Information about the server and whether its considered fully compatible or running in compatibility mode
-        permission: mcmmo.commands.mcmmo
     mmodebug:
         aliases: [ mcmmodebugmode ]
         description: Toggles a debug mode which will print useful information to chat
@@ -36,7 +33,7 @@ commands:
         permission: mcmmo.commands.mmoinfo
     xprate:
         aliases: [ mcxprate ]
-        description: Modify the xp rate or start an event
+        description: View or modify the xp rate or start an event
         permission: mcmmo.commands.xprate
     mcmmo:
         description: Shows a brief mod description
@@ -184,10 +181,10 @@ commands:
         description: Shows skill mastery and power level info
         permission: mcmmo.commands.mmopower
         aliases: [ mmopowerlevel, powerlevel ]
-    # adminchat:
-    #     aliases: [ ac, a ]
-    #     description: Toggle Admin chat or send admin chat messages
-    #     permission: mcmmo.chat.adminchat
+    adminchat:
+        aliases: [ ac, a ]
+        description: Toggle Admin chat or send admin chat messages
+        permission: mcmmo.chat.adminchat
     mcpurge:
         description: Purge users with 0 powerlevel and/or who haven't connected in several months from the server DB.
         permission: mcmmo.commands.mcpurge
@@ -195,6 +192,10 @@ commands:
         aliases: [ notify ]
         description: Toggle mcMMO abilities chat display notifications on/off
         permission: mcmmo.commands.mcnotify
+    mclevelupsound:
+        aliases: [ levelupsound ]
+        description: Toggle the mcMMO level-up sound on/off
+        permission: mcmmo.commands.mclevelupsound
     mcscoreboard:
         aliases: [ mcsb ]
         description: Manage your mcMMO Scoreboard
@@ -916,6 +917,7 @@ permissions:
             mcmmo.commands.inspect: true
             mcmmo.commands.mcability: true
             mcmmo.commands.mccooldown: true
+            mcmmo.commands.mclevelupsound: true
             mcmmo.commands.mcmmo.all: true
             mcmmo.commands.mcnotify: true
             mcmmo.commands.mcrank: true
@@ -935,6 +937,7 @@ permissions:
             mcmmo.commands.unarmed: true
             mcmmo.commands.woodcutting: true
             mcmmo.commands.mmopower: true
+            mcmmo.commands.xprate.show: true
     mcmmo.commands.defaultsop:
         description: Implies all default op mcmmo.commands permissions.
         children:
@@ -1006,7 +1009,7 @@ permissions:
     mcmmo.commands.inspect:
         description: Allows access to the inspect command
     mcmmo.commands.inspect.far:
-        description: Allows access to the inspect command for far players
+        description: Allows access to the inspect command for far away or offline players
     mcmmo.commands.inspect.hidden:
         description: Allows access to the inspect command for hidden players
     mcmmo.commands.mcability:
@@ -1037,6 +1040,8 @@ permissions:
         description: Allows access to the mcchatspy command
     mcmmo.commands.mcchatspy.others:
         description: Allows access to the mcchatspy command for other players
+    mcmmo.commands.mclevelupsound:
+        description: Allows access to the mclevelupsound command
     mcmmo.commands.mcmmo.*:
         default: false
         description: Implies access to all mcmmo.commands.mcmmo permissions
@@ -1426,12 +1431,15 @@ permissions:
             mcmmo.commands.xprate: true
             mcmmo.commands.xprate.reset: true
             mcmmo.commands.xprate.set: true
+            mcmmo.commands.xprate.show: true
     mcmmo.commands.xprate:
         description: Allows access to the xprate command
     mcmmo.commands.xprate.reset:
         description: Allows access to the xprate reset command
     mcmmo.commands.xprate.set:
         description: Allows access to the xprate command to control xp events
+    mcmmo.commands.xprate.show:
+        description: Allows access to the xprate command to view the current xp rate
     mcmmo.item.*:
         default: true
         description: Implies all mcmmo.item permissions
@@ -1809,87 +1817,87 @@ permissions:
         description: Multiplies incoming XP by 1.25
         children:
             mcmmo.perks.xp.25percentboost.all: true
-        mcmmo.perks.xp.25percentboost:
-            default: false
-            description: Multiplies incoming XP by 1.25
-            children:
-                mcmmo.perks.xp.25percentboost.all: true
-        mcmmo.perks.xp.25percentboost.all:
-            default: false
-            description: Multiplies incoming XP by 1.25
-            children:
-                mcmmo.perks.xp.25percentboost.acrobatics: true
-                mcmmo.perks.xp.25percentboost.alchemy: true
-                mcmmo.perks.xp.25percentboost.archery: true
-                mcmmo.perks.xp.25percentboost.axes: true
-                mcmmo.perks.xp.25percentboost.crossbows: true
-                mcmmo.perks.xp.25percentboost.excavation: true
-                mcmmo.perks.xp.25percentboost.fishing: true
-                mcmmo.perks.xp.25percentboost.herbalism: true
-                mcmmo.perks.xp.25percentboost.maces: true
-                mcmmo.perks.xp.25percentboost.mining: true
-                mcmmo.perks.xp.25percentboost.repair: true
-                mcmmo.perks.xp.25percentboost.smelting: true
-                mcmmo.perks.xp.25percentboost.spears: true
-                mcmmo.perks.xp.25percentboost.swords: true
-                mcmmo.perks.xp.25percentboost.taming: true
-                mcmmo.perks.xp.25percentboost.tridents: true
-                mcmmo.perks.xp.25percentboost.unarmed: true
-                mcmmo.perks.xp.25percentboost.woodcutting: true
-        mcmmo.perks.xp.25percentboost.acrobatics:
-            default: false
-            description: Multiplies incoming Acrobatics XP by 1.25
-        mcmmo.perks.xp.25percentboost.alchemy:
-            default: false
-            description: Multiplies incoming Acrobatics XP by 1.25
-        mcmmo.perks.xp.25percentboost.archery:
-            default: false
-            description: Multiplies incoming Archery XP by 1.25
-        mcmmo.perks.xp.25percentboost.axes:
-            default: false
-            description: Multiplies incoming Axes XP by 1.25
-        mcmmo.perks.xp.25percentboost.crossbows:
-            default: false
-            description: Multiplies incoming Crossbows XP by 1.25
-        mcmmo.perks.xp.25percentboost.excavation:
-            default: false
-            description: Multiplies incoming Excavation XP by 1.25
-        mcmmo.perks.xp.25percentboost.fishing:
-            default: false
-            description: Multiplies incoming Fishing XP by 1.25
-        mcmmo.perks.xp.25percentboost.herbalism:
-            default: false
-            description: Multiplies incoming Herbalism XP by 1.25
-        mcmmo.perks.xp.25percentboost.maces:
-            default: false
-            description: Multiplies incoming Maces XP by 1.25
-        mcmmo.perks.xp.25percentboost.mining:
-            default: false
-            description: Multiplies incoming Mining XP by 1.25
-        mcmmo.perks.xp.25percentboost.repair:
-            default: false
-            description: Multiplies incoming Repair XP by 1.25
-        mcmmo.perks.xp.25percentboost.smelting:
-            default: false
-            description: Multiplies incoming Smelting XP by 1.25
-        mcmmo.perks.xp.25percentboost.spears:
-            default: false
-            description: Multiplies incoming Spears XP by 1.25
-        mcmmo.perks.xp.25percentboost.swords:
-            default: false
-            description: Multiplies incoming Swords XP by 1.25
-        mcmmo.perks.xp.25percentboost.taming:
-            default: false
-            description: Multiplies incoming Taming XP by 1.25
-        mcmmo.perks.xp.25percentboost.tridents:
-            default: false
-            description: Multiplies incoming Tridents XP by 1.25
-        mcmmo.perks.xp.25percentboost.unarmed:
-            default: false
-            description: Multiplies incoming Unarmed XP by 1.5
-        mcmmo.perks.xp.25percentboost.woodcutting:
-            default: false
-            description: Multiplies incoming Woodcutting XP by 1.25
+    mcmmo.perks.xp.25percentboost:
+        default: false
+        description: Multiplies incoming XP by 1.25
+        children:
+            mcmmo.perks.xp.25percentboost.all: true
+    mcmmo.perks.xp.25percentboost.all:
+        default: false
+        description: Multiplies incoming XP by 1.25
+        children:
+            mcmmo.perks.xp.25percentboost.acrobatics: true
+            mcmmo.perks.xp.25percentboost.alchemy: true
+            mcmmo.perks.xp.25percentboost.archery: true
+            mcmmo.perks.xp.25percentboost.axes: true
+            mcmmo.perks.xp.25percentboost.crossbows: true
+            mcmmo.perks.xp.25percentboost.excavation: true
+            mcmmo.perks.xp.25percentboost.fishing: true
+            mcmmo.perks.xp.25percentboost.herbalism: true
+            mcmmo.perks.xp.25percentboost.maces: true
+            mcmmo.perks.xp.25percentboost.mining: true
+            mcmmo.perks.xp.25percentboost.repair: true
+            mcmmo.perks.xp.25percentboost.smelting: true
+            mcmmo.perks.xp.25percentboost.spears: true
+            mcmmo.perks.xp.25percentboost.swords: true
+            mcmmo.perks.xp.25percentboost.taming: true
+            mcmmo.perks.xp.25percentboost.tridents: true
+            mcmmo.perks.xp.25percentboost.unarmed: true
+            mcmmo.perks.xp.25percentboost.woodcutting: true
+    mcmmo.perks.xp.25percentboost.acrobatics:
+        default: false
+        description: Multiplies incoming Acrobatics XP by 1.25
+    mcmmo.perks.xp.25percentboost.alchemy:
+        default: false
+        description: Multiplies incoming Acrobatics XP by 1.25
+    mcmmo.perks.xp.25percentboost.archery:
+        default: false
+        description: Multiplies incoming Archery XP by 1.25
+    mcmmo.perks.xp.25percentboost.axes:
+        default: false
+        description: Multiplies incoming Axes XP by 1.25
+    mcmmo.perks.xp.25percentboost.crossbows:
+        default: false
+        description: Multiplies incoming Crossbows XP by 1.25
+    mcmmo.perks.xp.25percentboost.excavation:
+        default: false
+        description: Multiplies incoming Excavation XP by 1.25
+    mcmmo.perks.xp.25percentboost.fishing:
+        default: false
+        description: Multiplies incoming Fishing XP by 1.25
+    mcmmo.perks.xp.25percentboost.herbalism:
+        default: false
+        description: Multiplies incoming Herbalism XP by 1.25
+    mcmmo.perks.xp.25percentboost.maces:
+        default: false
+        description: Multiplies incoming Maces XP by 1.25
+    mcmmo.perks.xp.25percentboost.mining:
+        default: false
+        description: Multiplies incoming Mining XP by 1.25
+    mcmmo.perks.xp.25percentboost.repair:
+        default: false
+        description: Multiplies incoming Repair XP by 1.25
+    mcmmo.perks.xp.25percentboost.smelting:
+        default: false
+        description: Multiplies incoming Smelting XP by 1.25
+    mcmmo.perks.xp.25percentboost.spears:
+        default: false
+        description: Multiplies incoming Spears XP by 1.25
+    mcmmo.perks.xp.25percentboost.swords:
+        default: false
+        description: Multiplies incoming Swords XP by 1.25
+    mcmmo.perks.xp.25percentboost.taming:
+        default: false
+        description: Multiplies incoming Taming XP by 1.25
+    mcmmo.perks.xp.25percentboost.tridents:
+        default: false
+        description: Multiplies incoming Tridents XP by 1.25
+    mcmmo.perks.xp.25percentboost.unarmed:
+        default: false
+        description: Multiplies incoming Unarmed XP by 1.25
+    mcmmo.perks.xp.25percentboost.woodcutting:
+        default: false
+        description: Multiplies incoming Woodcutting XP by 1.25
     mcmmo.perks.xp.10percentboost.*:
         default: false
         description: Multiplies incoming XP by 1.1

@@ -25,6 +25,8 @@ ExploitFix:
     Fishing: true
     EndermanEndermiteFarms: true
     Acrobatics: true
+    # Stops players from grinding Dodge XP off the same mobs over and over, each mob can only hand out so much Dodge XP at a time
+    AcrobaticsDodgeXpFarming: true
     LavaStoneAndCobbleFarming: true
     TreeFellerReducedXP: true
     PistonCheating: true
@@ -168,6 +170,9 @@ Experience_Formula:
         Multiplier: 0
     Breeding:
         Multiplier: 1.0
+    # Experience gained from mobs tamed by a player will get multiplied by this value. 0 by default.
+    Player_Tamed:
+        Multiplier: 0.0
 
     # Experience gained will get multiplied by these values. 1.0 by default, 0.5 means half XP gained. This happens right before multiplying the XP by the global multiplier.
     Skill_Multiplier:
@@ -303,6 +308,7 @@ Experience_Values:
         Acacia_Log: 90
         Dark_Oak_Log: 90
         Pale_Oak_Log: 130
+        Poplar_Log: 95
         Stripped_Oak_Log: 70
         Stripped_Cherry_Log: 105
         Stripped_Spruce_Log: 80
@@ -311,6 +317,7 @@ Experience_Values:
         Stripped_Acacia_Log: 90
         Stripped_Dark_Oak_Log: 90
         Stripped_Pale_Oak_Log: 130
+        Stripped_Poplar_Log: 95
         Stripped_Oak_Wood: 70
         Stripped_Cherry_Wood: 70
         Stripped_Spruce_Wood: 80
@@ -319,6 +326,7 @@ Experience_Values:
         Stripped_Acacia_Wood: 90
         Stripped_Dark_Oak_Wood: 90
         Stripped_Pale_Oak_Wood: 90
+        Stripped_Poplar_Wood: 85
         Stripped_Mangrove_Log: 110
         Stripped_Crimson_Stem: 50
         Stripped_Warped_Stem: 50
@@ -330,6 +338,7 @@ Experience_Values:
         Acacia_Wood: 70
         Dark_Oak_Wood: 70
         Pale_Oak_Wood: 110
+        Poplar_Wood: 85
         Mangrove_Wood: 80
         Mangrove_Log: 95
         Mangrove_Roots: 10
@@ -337,6 +346,8 @@ Experience_Values:
         Brown_Mushroom_Block: 70
         Mushroom_Stem: 80
     Herbalism:
+        Red_Shrub: 11
+        Shelf_Mushroom: 50
         Bush: 11
         Cactus_Flower: 60
         Firefly_Bush: 15
@@ -353,7 +364,7 @@ Experience_Values:
         Big_Dripleaf: 140
         Cave_Vines: 90
         Cave_Vines_Plant: 90
-        Pale_Hanging_Moss: 150
+        Pale_Hanging_Moss: 1
         Pale_Moss_Block: 10
         Pale_Moss_Carpet: 10
         Glow_Lichen: 1
@@ -441,6 +452,7 @@ Experience_Values:
         Lily_Pad: 100
         White_Tulip: 150
         Dandelion: 100
+        Golden_Dandelion: 150
         Bamboo: 10
         Cornflower: 150
         Lily_Of_The_Valley: 150
@@ -454,8 +466,8 @@ Experience_Values:
         Sculk_Shrieker: 12
         Reinforced_Deepslate: 500
         Tuff: 10
-        Copper_Ore: 1400
-        Deepslate_Copper_Ore: 1900
+        Copper_Ore: 500
+        Deepslate_Copper_Ore: 750
         Deepslate: 30
         Cobbled_Deepslate: 15
         Calcite: 400
@@ -548,6 +560,34 @@ Experience_Values:
         Packed_Mud: 30
         Mud_Bricks: 40
         Dripstone_Block: 35
+        Cinnabar: 40
+        Cinnabar_Stairs: 40
+        Cinnabar_Slab: 40
+        Cinnabar_Wall: 40
+        Polished_Cinnabar: 40
+        Polished_Cinnabar_Stairs: 40
+        Polished_Cinnabar_Slab: 40
+        Polished_Cinnabar_Wall: 40
+        Cinnabar_Bricks: 40
+        Cinnabar_Brick_Stairs: 40
+        Cinnabar_Brick_Slab: 40
+        Cinnabar_Brick_Wall: 40
+        Chiseled_Cinnabar: 40
+        Sulfur: 40
+        Sulfur_Stairs: 40
+        Sulfur_Slab: 40
+        Sulfur_Wall: 40
+        Polished_Sulfur: 40
+        Polished_Sulfur_Stairs: 40
+        Polished_Sulfur_Slab: 40
+        Polished_Sulfur_Wall: 40
+        Sulfur_Bricks: 40
+        Sulfur_Brick_Stairs: 40
+        Sulfur_Brick_Slab: 40
+        Sulfur_Brick_Wall: 40
+        Chiseled_Sulfur: 40
+        Potent_Sulfur: 60
+        Sulfur_Spike: 30
     Repair:
         Base: 1000.0
         Wood: 0.6
@@ -561,17 +601,17 @@ Experience_Values:
         String: 1.8
         Other: 1.5
     Smelting:
-        Copper_Nugget: 85
-        Raw_Copper: 75
+        Copper_Nugget: 15
+        Raw_Copper: 15
         Deepslate_Redstone_Ore: 30
-        Deepslate_Copper_Ore: 100
+        Deepslate_Copper_Ore: 25
         Deepslate_Coal_Ore: 20
         Deepslate_Diamond_Ore: 140
         Deepslate_Emerald_Ore: 110
         Deepslate_Iron_Ore: 40
         Deepslate_Gold_Ore: 50
         Deepslate_Lapis_Lazuli_Ore: 60
-        Copper_Ore: 75
+        Copper_Ore: 15
         Ancient_Debris: 200
         Coal_Ore: 10
         Diamond_Ore: 75
@@ -630,6 +670,7 @@ Experience_Values:
             Silverfish: 3.0
             Blaze: 3.0
             Magma_Cube: 2.0
+            Sulfur_Cube: 2.0
             Ender_Dragon: 1.0
             Wither: 1.0
             Witch: 0.1

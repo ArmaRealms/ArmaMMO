@@ -58,13 +58,12 @@ public class CrossbowsManager extends SkillManager {
 
         final ProjectileSource originalArrowShooter = originalArrow.getShooter();
         final Vector arrowInBlockVector = originalArrow.getVelocity();
-        final Vector reflectedDirection = arrowInBlockVector.subtract(
-                normal.multiply(2 * arrowInBlockVector.dot(normal)));
-        final Vector inverseNormal = normal.multiply(-1);
+        final Vector reflectedDirection = arrowInBlockVector.clone().subtract(
+                normal.clone().multiply(2 * arrowInBlockVector.dot(normal)));
 
-        // check the angle of the arrow against the inverse normal to see if the angle was too shallow
-        // only checks angle on the first bounce
-        if (bounceCount == 0 && arrowInBlockVector.angle(inverseNormal) < Math.PI / 4) {
+        // Only glancing shots ricochet: a reflection within 45 degrees of the surface normal
+        // means the arrow hit too squarely to bounce. Later bounces always ricochet.
+        if (bounceCount == 0 && reflectedDirection.angle(normal) < Math.PI / 4) {
             return;
         }
 
@@ -118,10 +117,10 @@ public class CrossbowsManager extends SkillManager {
     }
 
     public double getPoweredShotBonusDamage(Player player, double oldDamage) {
-        double damageBonusPercent = getDamageBonusPercent(player);
-        double newDamage = oldDamage + (oldDamage * damageBonusPercent);
+        final double damageBonusPercent = getDamageBonusPercent(player);
+        final double newDamage = oldDamage + (oldDamage * damageBonusPercent);
         return Math.min(newDamage,
-                (oldDamage + mcMMO.p.getAdvancedConfig().getPoweredShotDamageMax()));
+                oldDamage + mcMMO.p.getAdvancedConfig().getPoweredShotDamageMax());
     }
 
     public double getDamageBonusPercent(Player player) {

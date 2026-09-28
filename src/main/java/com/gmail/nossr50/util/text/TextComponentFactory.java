@@ -67,10 +67,8 @@ public class TextComponentFactory {
     }
 
     public static Component getNotificationLevelUpTextComponent(
-            @NotNull PrimarySkillType skill,
-                                                                int levelsGained, int currentLevel) {
-        final String skillName = LocaleLoader.getString(
-                "Overhaul.Name." + StringUtils.getCapitalized(skill.toString()));
+            @NotNull PrimarySkillType skill, int levelsGained, int currentLevel) {
+        final String skillName = mcMMO.p.getSkillTools().getLocalizedSkillName(skill);
         return LocaleLoader.getTextComponent("Overhaul.Levelup", skillName, levelsGained,
                 currentLevel);
     }
@@ -296,10 +294,9 @@ public class TextComponentFactory {
                     .clickEvent(ClickEvent.runCommand("/mmoinfo ???"));
         }
 
-        final boolean isMaxRank = subSkillType.getNumRanks() > 1
-                && RankUtils.getHighestRank(subSkillType) == RankUtils.getRank(player,
-                subSkillType);
-        final String localeKey = isMaxRank ? "JSON.Hover.MaxRankSkillName" : "JSON.Hover.SkillName";
+        final String localeKey = isMaxRank(player, subSkillType)
+                ? "JSON.Hover.MaxRankSkillName"
+                : "JSON.Hover.SkillName";
 
         return Component.text()
                 .append(LocaleLoader.getTextComponent(localeKey, skillName))
@@ -400,9 +397,7 @@ public class TextComponentFactory {
         if (!unlocked) {
             localeKey = "JSON.Hover.Mystery";
             nameArg = String.valueOf(RankUtils.getUnlockLevel(subSkillType));
-        } else if (subSkillType.getNumRanks() > 1
-                && RankUtils.getHighestRank(subSkillType) == RankUtils.getRank(player,
-                subSkillType)) {
+        } else if (isMaxRank(player, subSkillType)) {
             localeKey = "JSON.Hover.MaxRankSkillName";
             nameArg = skillName;
         } else {
@@ -413,6 +408,15 @@ public class TextComponentFactory {
         return Component.text()
                 .append(LocaleLoader.getTextComponent(localeKey, nameArg))
                 .append(Component.newline());
+    }
+
+    /**
+     * Whether the player has reached the final rank of a multi-rank sub-skill.
+     */
+    private static boolean isMaxRank(@NotNull Player player, @NotNull SubSkillType subSkillType) {
+        return subSkillType.getNumRanks() > 1
+                && RankUtils.getHighestRank(subSkillType) == RankUtils.getRank(player,
+                subSkillType);
     }
 
     /**

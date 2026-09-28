@@ -15,9 +15,11 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.McMMOMessageType;
 import com.gmail.nossr50.util.text.TextComponentFactory;
+import java.time.LocalDate;
+import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -28,6 +30,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -46,16 +49,13 @@ public class NotificationManager {
      * @param notificationType notifications defined type
      * @param key              the locale key for the notifications defined message
      */
-    public static void sendPlayerInformation(final Player player, final NotificationType notificationType,
-                                             final String key) {
-        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) {
+    public static void sendPlayerInformation(Player player, NotificationType notificationType,
+            String key) {
+        if (!doesPlayerUseNotifications(player)) {
             return;
         }
 
-        final McMMOMessageType destination
-                = mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
-                ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
+        McMMOMessageType destination = getNotificationDestination(notificationType);
 
         final Component message = TextComponentFactory.getNotificationTextComponentFromLocale(key);
         final McMMOPlayerNotificationEvent customEvent = checkNotificationEvent(player, notificationType,
@@ -64,31 +64,32 @@ public class NotificationManager {
         sendNotification(player, customEvent);
     }
 
-    public static boolean doesPlayerUseNotifications(final Player player) {
+
+    public static boolean doesPlayerUseNotifications(Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-        if (mmoPlayer == null) return false;
-        else return mmoPlayer.useChatNotifications();
+        return mmoPlayer != null && mmoPlayer.useChatNotifications();
     }
 
     /**
-     * Sends players notifications from mcMMO This does this by sending out an event so other
-     * plugins can cancel it This event in particular is provided with a source player, and players
-     * near the source player are sent the information
+     * Alias for {@link #sendPlayerInformation(Player, NotificationType, String, String...)};
+     * only the given player receives the notification.
      *
      * @param targetPlayer     the recipient player for this message
      * @param notificationType type of notification
-     * @param key              Locale Key for the string to use with this event
-     * @param values           values to be injected into the locale string
+     * @param key Locale Key for the string to use with this event
+     * @param values values to be injected into the locale string
+     * @deprecated Use {@link #sendPlayerInformation(Player, NotificationType, String,
+     * String...)} directly; despite the name this never messaged nearby players.
      */
-    public static void sendNearbyPlayersInformation(final Player targetPlayer,
-                                                    final NotificationType notificationType, final String key,
-                                                    final String... values) {
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public static void sendNearbyPlayersInformation(Player targetPlayer,
+            NotificationType notificationType, String key,
+            String... values) {
         sendPlayerInformation(targetPlayer, notificationType, key, values);
     }
 
-    public static void sendPlayerInformationChatOnly(final Player player, final String key, final String... values) {
-        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) {
+    public static void sendPlayerInformationChatOnly(Player player, String key, String... values) {
+        if (!doesPlayerUseNotifications(player)) {
             return;
         }
 
@@ -96,10 +97,9 @@ public class NotificationManager {
         player.sendMessage(preColoredString);
     }
 
-    public static void sendPlayerInformationChatOnlyPrefixed(final Player player, final String key,
-                                                             final String... values) {
-        final McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
-        if (mcMMOPlayer == null || !mcMMOPlayer.useChatNotifications()) {
+    public static void sendPlayerInformationChatOnlyPrefixed(Player player, String key,
+            String... values) {
+        if (!doesPlayerUseNotifications(player)) {
             return;
         }
 
@@ -109,17 +109,14 @@ public class NotificationManager {
         player.sendMessage(prefixFormattedMessage);
     }
 
-    public static void sendPlayerInformation(final Player player, final NotificationType notificationType,
-                                             final String key,
-                                             final String... values) {
-        final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
-        if (mmoPlayer == null || !mmoPlayer.useChatNotifications()) {
+    public static void sendPlayerInformation(Player player, NotificationType notificationType,
+            String key,
+            String... values) {
+        if (!doesPlayerUseNotifications(player)) {
             return;
         }
 
-        final McMMOMessageType destination =
-                mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
-                        ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
+        McMMOMessageType destination = getNotificationDestination(notificationType);
 
         final Component message = TextComponentFactory.getNotificationMultipleValues(key, values);
         final McMMOPlayerNotificationEvent customEvent = checkNotificationEvent(player, notificationType,
@@ -149,10 +146,22 @@ public class NotificationManager {
         }
     }
 
-    private static McMMOPlayerNotificationEvent checkNotificationEvent(final Player player,
-                                                                       final NotificationType notificationType,
-                                                                       final McMMOMessageType destination,
-                                                                       final Component message) {
+    /**
+     * Looks up where a notification should be displayed based on the advanced.yml settings
+     *
+     * @param notificationType type of notification
+     * @return the destination for the notification, either the action bar or the chat system
+     */
+    private static McMMOMessageType getNotificationDestination(
+            NotificationType notificationType) {
+        return mcMMO.p.getAdvancedConfig().doesNotificationUseActionBar(notificationType)
+                ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
+    }
+
+    private static McMMOPlayerNotificationEvent checkNotificationEvent(Player player,
+            NotificationType notificationType,
+            McMMOMessageType destination,
+            Component message) {
         //Init event
         final McMMOPlayerNotificationEvent customEvent = new McMMOPlayerNotificationEvent(player,
                 notificationType, message, destination,
@@ -177,10 +186,8 @@ public class NotificationManager {
             return;
         }
 
-        final McMMOMessageType destination
-                = mcMMO.p.getAdvancedConfig()
-                .doesNotificationUseActionBar(NotificationType.LEVEL_UP_MESSAGE)
-                ? McMMOMessageType.ACTION_BAR : McMMOMessageType.SYSTEM;
+        McMMOMessageType destination
+                = getNotificationDestination(NotificationType.LEVEL_UP_MESSAGE);
 
         final Component levelUpTextComponent = TextComponentFactory.getNotificationLevelUpTextComponent(
                 skillName, levelsGained, newLevel);
@@ -200,44 +207,87 @@ public class NotificationManager {
         }
     }
 
-    public static void sendPlayerUnlockNotification(final McMMOPlayer mmoPlayer,
-                                                    final SubSkillType subSkillType) {
+    public static void sendPlayerUnlockNotification(McMMOPlayer mmoPlayer,
+            SubSkillType subSkillType) {
+        sendPlayerUnlockNotification(mmoPlayer, subSkillType, true);
+    }
+
+    /**
+     * Sends the sub-skill unlock notification, optionally with the unlock sound. Batched
+     * unlock notifications only request the sound for the first notification of the batch,
+     * so mass level changes do not play a long stream of unlock sounds.
+     *
+     * @param mmoPlayer target player
+     * @param subSkillType the sub-skill that unlocked
+     * @param playSound whether to play the unlock sound with the message
+     */
+    public static void sendPlayerUnlockNotification(McMMOPlayer mmoPlayer,
+            SubSkillType subSkillType, boolean playSound) {
         if (!mmoPlayer.useChatNotifications()) {
             return;
         }
 
-        //CHAT MESSAGE
-        mcMMO.getAudiences().player(mmoPlayer.getPlayer()).sendMessage(Identity.nil(),
-                TextComponentFactory.getSubSkillUnlockedNotificationComponents(
-                        mmoPlayer.getPlayer(), subSkillType));
+        //Route the unlock message based on the SubSkillUnlocked settings in advanced.yml
+        final McMMOMessageType destination
+                = getNotificationDestination(NotificationType.SUBSKILL_UNLOCKED);
+        final Component message = TextComponentFactory.getSubSkillUnlockedNotificationComponents(
+                mmoPlayer.getPlayer(), subSkillType);
+        final McMMOPlayerNotificationEvent customEvent = checkNotificationEvent(
+                mmoPlayer.getPlayer(), NotificationType.SUBSKILL_UNLOCKED, destination, message);
+
+        sendNotification(mmoPlayer.getPlayer(), customEvent);
 
         //Unlock Sound Effect
-        SoundManager.sendCategorizedSound(mmoPlayer.getPlayer(),
-                mmoPlayer.getPlayer().getLocation(),
-                SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
+        if (playSound) {
+            SoundManager.sendCategorizedSound(mmoPlayer.getPlayer(),
+                    mmoPlayer.getPlayer().getLocation(),
+                    SoundType.SKILL_UNLOCKED, SoundCategory.MASTER);
+        }
     }
 
     /**
      * Sends a message to all admins with the admin notification formatting from the locale Admins
      * are currently players with either Operator status or Admin Chat permission
      *
-     * @param msg message fetched from locale
+     * @param msg message fetched from locale, built with the sender's plain name
+     * @param consoleMsg console variant of msg with the sender's UUID inline, since the console
+     * cannot show the hover
+     * @param senderName plain name of the command sender shown in the message, or null when the
+     * message has no sender to decorate
+     * @param senderUuidHover hover contents identifying the sender, attached to senderName in the
+     * chat message, or null to send the message undecorated
      */
-    private static void sendAdminNotification(final String msg) {
+    private static void sendAdminNotification(String msg, String consoleMsg,
+            @Nullable String senderName, @Nullable Component senderUuidHover) {
         //If its not enabled exit
         if (!mcMMO.p.getGeneralConfig().adminNotifications()) {
             return;
         }
 
-        for (final Player player : Bukkit.getServer().getOnlinePlayers()) {
+        final String formatted = LocaleLoader.getString("Notifications.Admin.Format.Others", msg);
+        Component chatMessage = LegacyComponentSerializer.legacySection().deserialize(formatted);
+
+        if (senderName != null && senderUuidHover != null) {
+            // The @ prefix and accent color mark the name as hoverable, like skill command links
+            final Component senderDisplay = LegacyComponentSerializer.legacySection()
+                    .deserialize(LocaleLoader.getString("Notifications.Admin.Sender.Display",
+                            senderName))
+                    .hoverEvent(HoverEvent.showText(senderUuidHover));
+            chatMessage = chatMessage.replaceText(TextReplacementConfig.builder()
+                    .matchLiteral(senderName)
+                    .replacement(senderDisplay)
+                    .build());
+        }
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers()) {
             if (player.isOp() || Permissions.adminChat(player)) {
-                player.sendMessage(
-                        LocaleLoader.getString("Notifications.Admin.Format.Others", msg));
+                mcMMO.getAudiences().player(player).sendMessage(chatMessage);
             }
         }
 
         //Copy it out to Console too
-        mcMMO.p.getLogger().info(LocaleLoader.getString("Notifications.Admin.Format.Others", msg));
+        mcMMO.p.getLogger()
+                .info(LocaleLoader.getString("Notifications.Admin.Format.Others", consoleMsg));
     }
 
     /**
@@ -260,11 +310,21 @@ public class NotificationManager {
                                                            final SensitiveCommandType sensitiveCommandType, final String... args) {
         /*
          * Determine the 'identity' of the one who executed the command to pass as a parameters
+         * Chat messages show the sender's plain name with the UUID on a hover attached to it;
+         * the console cannot hover so its copy carries the UUID inline
          */
         String senderName = LocaleLoader.getString("Server.ConsoleName");
+        String consoleSenderName = senderName;
+        Component senderUuidHover = null;
 
-        if (commandSender instanceof final Player player) {
-            senderName = player.getDisplayName() + ChatColor.RESET + "-" + player.getUniqueId();
+        if (commandSender instanceof Player) {
+            final Player player = (Player) commandSender;
+            senderName = ChatColor.stripColor(player.getDisplayName());
+            senderUuidHover = LegacyComponentSerializer.legacySection().deserialize(
+                    LocaleLoader.getString("Notifications.Admin.Sender.UUID.Hover", senderName,
+                            player.getUniqueId()));
+            consoleSenderName = LocaleLoader.getString("Notifications.Admin.Sender.UUID.Console",
+                    senderName, player.getUniqueId());
         }
 
         //Send the notification
@@ -272,17 +332,34 @@ public class NotificationManager {
             case XPRATE_MODIFY -> {
                 sendAdminNotification(
                         LocaleLoader.getString("Notifications.Admin.XPRate.Start.Others",
-                                addItemToFirstPositionOfArray(senderName, args)));
+                                addItemToFirstPositionOfArray(senderName, args)),
+                        LocaleLoader.getString("Notifications.Admin.XPRate.Start.Others",
+                                addItemToFirstPositionOfArray(consoleSenderName, args)),
+                        senderName, senderUuidHover);
                 sendAdminCommandConfirmation(
                         commandSender,
                         LocaleLoader.getString("Notifications.Admin.XPRate.Start.Self", args));
             }
-
+            case XPRATE_MODIFY_SKILL -> {
+                sendAdminNotification(
+                        LocaleLoader.getString("Notifications.Admin.XPRate.Skill.Start.Others",
+                                addItemToFirstPositionOfArray(senderName, args)),
+                        LocaleLoader.getString("Notifications.Admin.XPRate.Skill.Start.Others",
+                                addItemToFirstPositionOfArray(consoleSenderName, args)),
+                        senderName, senderUuidHover);
+                sendAdminCommandConfirmation(commandSender,
+                        LocaleLoader.getString("Notifications.Admin.XPRate.Skill.Start.Self",
+                                args));
+            }
             case XPRATE_END -> {
                 sendAdminNotification(
                         LocaleLoader.getString(
                                 "Notifications.Admin.XPRate.End.Others",
-                                addItemToFirstPositionOfArray(senderName, args)));
+                                addItemToFirstPositionOfArray(senderName, args)),
+                        LocaleLoader.getString(
+                                "Notifications.Admin.XPRate.End.Others",
+                                addItemToFirstPositionOfArray(consoleSenderName, args)),
+                        senderName, senderUuidHover);
                 sendAdminCommandConfirmation(commandSender,
                         LocaleLoader.getString("Notifications.Admin.XPRate.End.Self", args));
             }
@@ -310,97 +387,60 @@ public class NotificationManager {
         return newArray;
     }
 
-    public static void processLevelUpBroadcasting(@NotNull final McMMOPlayer mmoPlayer,
-                                                  @NotNull final PrimarySkillType primarySkillType, final int level) {
-        if (level <= 0) {
-            return;
-        }
-
-        //Check if broadcasting is enabled
-        if (mcMMO.p.getGeneralConfig().shouldLevelUpBroadcasts()) {
-            //Permission check
-            if (!Permissions.levelUpBroadcast(mmoPlayer.getPlayer())) {
-                return;
-            }
-
-            final int levelInterval = mcMMO.p.getGeneralConfig().getLevelUpBroadcastInterval();
-            final int remainder = level % levelInterval;
-
-            if (remainder == 0) {
-                //Grab appropriate audience
-                final Audience audience = mcMMO.getAudiences()
-                        .filter(getLevelUpBroadcastPredicate(mmoPlayer.getPlayer()));
-                //TODO: Make prettier
-                final HoverEvent<Component> levelMilestoneHover = Component.text(
-                                mmoPlayer.getPlayer().getName())
-                        .append(Component.newline())
-                        .append(Component.text("Data: " + LocalDate.now().format(DATE_FORMATTER))).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR))
-                        .append(Component.newline())
-                        .append(Component.text(
-                                mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType)
-                                        + " alcançou nível " + level)).color(TextColor.fromHexString(HEX_BEIGE_COLOR))
-                        .asHoverEvent();
-
-                final String localeMessage = LocaleLoader.getString(
-                        "Broadcasts.LevelUpMilestone", mmoPlayer.getPlayer().getDisplayName(),
-                        level,
-                        mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType));
-                final Component component = LegacyComponentSerializer
-                        .legacySection()
-                        .deserialize(localeMessage)
-                        .hoverEvent(levelMilestoneHover);
-
-                // TODO: Update system msg API
-                mcMMO.p.getFoliaLib().getScheduler().runNextTick(
-                        t -> audience.sendMessage(component));
-            }
-        }
-    }
-
-    //TODO: Remove the code duplication, am lazy atm
     //TODO: Fix broadcasts being skipped for situations where a player skips over the milestone like with the addlevels command
-    public static void processPowerLevelUpBroadcasting(@NotNull final McMMOPlayer mmoPlayer,
-                                                       final int powerLevel) {
-        if (powerLevel <= 0) {
+    public static void processLevelUpBroadcasting(@NotNull McMMOPlayer mmoPlayer,
+            @NotNull PrimarySkillType primarySkillType, int level) {
+        if (level <= 0 || !mcMMO.p.getGeneralConfig().shouldLevelUpBroadcasts()
+                || !Permissions.levelUpBroadcast(mmoPlayer.getPlayer())
+                || level % mcMMO.p.getGeneralConfig().getLevelUpBroadcastInterval() != 0) {
             return;
         }
 
-        //Check if broadcasting is enabled
-        if (mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcasts()) {
-            //Permission check
-            if (!Permissions.levelUpBroadcast(mmoPlayer.getPlayer())) {
-                return;
-            }
-
-            final int levelInterval = mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastInterval();
-            final int remainder = powerLevel % levelInterval;
-
-            if (remainder == 0) {
-                //Grab appropriate audience
-                final Audience audience = mcMMO.getAudiences()
-                        .filter(getPowerLevelUpBroadcastPredicate(mmoPlayer.getPlayer()));
-                //TODO: Make prettier
-                final HoverEvent<Component> levelMilestoneHover = Component.text(
-                                mmoPlayer.getPlayer().getName())
-                        .append(Component.newline())
-                        .append(Component.text("Data: " + LocalDate.now().format(DATE_FORMATTER)).color(TextColor.fromHexString(HEX_LIME_GREEN_COLOR)))
-                        .append(Component.newline())
-                        .append(Component.text("Nível de Poder: " + powerLevel))
-                        .color(TextColor.fromHexString(HEX_BEIGE_COLOR))
-                        .asHoverEvent();
-
-                final String localeMessage = LocaleLoader.getString("Broadcasts.PowerLevelUpMilestone",
-                        mmoPlayer.getPlayer().getDisplayName(), powerLevel);
-                final Component message = LegacyComponentSerializer.legacySection()
-                        .deserialize(localeMessage).hoverEvent(levelMilestoneHover);
-
-                mcMMO.p.getFoliaLib().getScheduler()
-                        .runNextTick(t -> audience.sendMessage(message));
-            }
-        }
+        final String skillName = mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType);
+        broadcastMilestone(mmoPlayer, getLevelUpBroadcastPredicate(mmoPlayer.getPlayer()),
+                skillName + " reached level " + level,
+                LocaleLoader.getString("Broadcasts.LevelUpMilestone",
+                        mmoPlayer.getPlayer().getDisplayName(), level, skillName));
     }
 
-    //TODO: Could cache
+    //TODO: Fix broadcasts being skipped for situations where a player skips over the milestone like with the addlevels command
+    public static void processPowerLevelUpBroadcasting(@NotNull McMMOPlayer mmoPlayer,
+            int powerLevel) {
+        if (powerLevel <= 0 || !mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcasts()
+                || !Permissions.levelUpBroadcast(mmoPlayer.getPlayer())
+                || powerLevel % mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastInterval()
+                != 0) {
+            return;
+        }
+
+        broadcastMilestone(mmoPlayer, getPowerLevelUpBroadcastPredicate(mmoPlayer.getPlayer()),
+                "Power level has reached " + powerLevel,
+                LocaleLoader.getString("Broadcasts.PowerLevelUpMilestone",
+                        mmoPlayer.getPlayer().getDisplayName(), powerLevel));
+    }
+
+    private static void broadcastMilestone(@NotNull McMMOPlayer mmoPlayer,
+            @NotNull Predicate<CommandSender> broadcastPredicate, @NotNull String hoverSummary,
+            @NotNull String localeMessage) {
+        //Grab appropriate audience
+        final Audience audience = mcMMO.getAudiences().filter(broadcastPredicate);
+        //TODO: Make prettier
+        final HoverEvent<Component> levelMilestoneHover = Component.text(
+                        mmoPlayer.getPlayer().getName())
+                .append(Component.newline())
+                .append(Component.text(LocalDate.now().toString()))
+                .append(Component.newline())
+                .append(Component.text(hoverSummary))
+                .color(TextColor.fromHexString(HEX_BEIGE_COLOR))
+                .asHoverEvent();
+
+        final Component message = LegacyComponentSerializer.legacySection()
+                .deserialize(localeMessage).hoverEvent(levelMilestoneHover);
+
+        // TODO: Update system msg API
+        mcMMO.p.getFoliaLib().getScheduler().runNextTick(t -> audience.sendMessage(message));
+    }
+
     public static @NotNull LevelUpBroadcastPredicate<CommandSender> getLevelUpBroadcastPredicate(
             @NotNull final CommandSender levelUpPlayer) {
         return new LevelUpBroadcastPredicate<>(levelUpPlayer);

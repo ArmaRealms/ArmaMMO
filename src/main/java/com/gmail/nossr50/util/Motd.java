@@ -12,13 +12,23 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 public final class Motd {
+    /**
+     * @deprecated Captures the locale string at class initialization, so it goes stale after a
+     * locale reload. Scheduled for removal; resolve 'MOTD.PerksPrefix' per call instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
     public static final String PERK_PREFIX = LocaleLoader.getString("MOTD.PerksPrefix") + " ";
-    private static final PluginDescriptionFile pluginDescription = mcMMO.p.getDescription();
 
     private Motd() {
     }
 
+    // Resolved per call so locale reloads take effect immediately
+    private static String perkPrefix() {
+        return LocaleLoader.getString("MOTD.PerksPrefix") + " ";
+    }
+
     public static void displayAll(Player player) {
+        final PluginDescriptionFile pluginDescription = mcMMO.p.getDescription();
         displayVersion(player, pluginDescription.getVersion());
         displayHardcoreSettings(player);
         displayXpPerks(player);
@@ -92,7 +102,7 @@ public final class Motd {
         for (PrimarySkillType skill : PrimarySkillType.values()) {
             //TODO: Wow this is horrifying...
             if (PerksUtils.handleXpPerks(player, 1, skill) > 1) {
-                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                player.sendMessage(perkPrefix() + LocaleLoader.getString("Effects.Template",
                         LocaleLoader.getString("Perks.XP.Name"),
                         LocaleLoader.getString("Perks.XP.Desc")));
                 return;
@@ -111,7 +121,7 @@ public final class Motd {
         if (cooldownReduction > 0.0) {
             DecimalFormat percent = new DecimalFormat("##0.00%",
                     DecimalFormatSymbols.getInstance(Locale.US));
-            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+            player.sendMessage(perkPrefix() + LocaleLoader.getString("Effects.Template",
                     LocaleLoader.getString("Perks.Cooldowns.Name"),
                     LocaleLoader.getString("Perks.Cooldowns.Desc",
                             percent.format(cooldownReduction))));
@@ -127,7 +137,7 @@ public final class Motd {
         int perkAmount = PerksUtils.handleActivationPerks(player, 0, 0);
 
         if (perkAmount > 0) {
-            player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+            player.sendMessage(perkPrefix() + LocaleLoader.getString("Effects.Template",
                     LocaleLoader.getString("Perks.ActivationTime.Name"),
                     LocaleLoader.getString("Perks.ActivationTime.Desc", perkAmount)));
         }
@@ -141,7 +151,7 @@ public final class Motd {
     public static void displayLuckyPerks(Player player) {
         for (PrimarySkillType skill : PrimarySkillType.values()) {
             if (Permissions.lucky(player, skill)) {
-                player.sendMessage(PERK_PREFIX + LocaleLoader.getString("Effects.Template",
+                player.sendMessage(perkPrefix() + LocaleLoader.getString("Effects.Template",
                         LocaleLoader.getString("Perks.Lucky.Name"),
                         LocaleLoader.getString("Perks.Lucky.Desc.Login")));
                 return;

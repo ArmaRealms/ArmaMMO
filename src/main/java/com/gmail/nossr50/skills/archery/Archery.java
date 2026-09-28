@@ -27,8 +27,9 @@ public class Archery {
     public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
             .getArcheryDistanceMultiplier();
 
-    protected static void incrementTrackerValue(final LivingEntity livingEntity) {
-        final TrackedEntity trackedEntity = trackedEntities.computeIfAbsent(livingEntity.getUniqueId(), k -> new TrackedEntity(livingEntity));
+    protected static void incrementTrackerValue(LivingEntity livingEntity) {
+        final TrackedEntity trackedEntity = trackedEntities.computeIfAbsent(
+                livingEntity.getUniqueId(), k -> new TrackedEntity(livingEntity));
         trackedEntity.incrementArrowCount();
     }
 
@@ -50,10 +51,10 @@ public class Archery {
         }
     }
 
-    public static double getSkillShotBonusDamage(final Player player, final double oldDamage) {
+    public static double getSkillShotBonusDamage(Player player, double oldDamage) {
         final double damageBonusPercent = getDamageBonusPercent(player);
         final double newDamage = oldDamage + (oldDamage * damageBonusPercent);
-        return Math.min(newDamage, (oldDamage + Archery.skillShotMaxBonusDamage));
+        return Math.min(newDamage, oldDamage + Archery.skillShotMaxBonusDamage);
     }
 
     public static double getDamageBonusPercent(final Player player) {

@@ -1,5 +1,6 @@
 package com.gmail.nossr50.skills.fishing;
 
+import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.treasure.FishingTreasureConfig;
@@ -64,6 +65,7 @@ public class FishingManager extends SkillManager {
     protected long lastWarned = 0L;
     private BoundingBox lastFishingBoundingBox;
     private boolean sameTarget;
+    private boolean fishingTooOften;
     private int fishCaughtCounter = 1;
     private final int masterAnglerMinWaitLowerBound;
     private final int masterAnglerMaxWaitLowerBound;
@@ -103,8 +105,19 @@ public class FishingManager extends SkillManager {
         }
 
         lastFishCaughtTimestamp = currentTime;
+        fishingTooOften = hasFishedRecently;
 
         return hasFishedRecently;
+    }
+
+    /**
+     * {@return the verdict of the most recent {@link #isFishingTooOften()} check}
+     * Unlike {@link #isFishingTooOften()} this does not update the catch timestamp, so
+     * handlers running later in the same event chain can re-read the verdict without every
+     * catch being treated as a repeat.
+     */
+    public boolean wasFishingTooOften() {
+        return fishingTooOften;
     }
 
     public void processExploiting(Vector centerOfCastVector) {
@@ -192,7 +205,7 @@ public class FishingManager extends SkillManager {
             return false;
         }
 
-        return EventUtils.simulateBlockBreak(block, player);
+        return EventUtils.simulateBlockBreak(block, player, FakeBlockBreakEventType.FAKE);
     }
 
     /**
@@ -569,7 +582,9 @@ public class FishingManager extends SkillManager {
                     break;
             }
 
-            McMMOPlayerShakeEvent shakeEvent = new McMMOPlayerShakeEvent(getPlayer(), drop);
+            final McMMOPlayerShakeEvent shakeEvent =
+                    new McMMOPlayerShakeEvent(getPlayer(), drop);
+            mcMMO.p.getServer().getPluginManager().callEvent(shakeEvent);
 
             drop = shakeEvent.getDrop();
 

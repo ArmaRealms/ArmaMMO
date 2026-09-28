@@ -36,8 +36,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class RepairManager extends SkillManager {
+    private static final int CONFIRMATION_WINDOW_SECONDS = 3;
+
     private boolean placedAnvil;
     private int lastClick;
+    private ItemStack itemAwaitingConfirmation;
 
     public RepairManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.REPAIR);
@@ -146,6 +149,12 @@ public class RepairManager extends SkillManager {
             return;
         }
 
+        // Capture this before the item is modified below; the repair changes the item, so a
+        // matching pending confirmation must be rebound to the item's repaired state. Otherwise
+        // continuing to repair the same item would re-prompt after every repair, since partial
+        // repairs are the norm.
+        final boolean rebindConfirmation = isAwaitingConfirmation(item);
+
         // Clear ability buffs before trying to repair.
         SkillUtils.removeAbilityBuff(item);
 
@@ -228,6 +237,10 @@ public class RepairManager extends SkillManager {
 
         // Repair the item!
         ItemUtils.setItemDamage(item, newDurability);
+
+        if (rebindConfirmation) {
+            itemAwaitingConfirmation = item.clone();
+        }
     }
 
     private float getPercentageRepaired(short startDurability, short newDurability,
@@ -244,8 +257,8 @@ public class RepairManager extends SkillManager {
         Player player = getPlayer();
         long lastUse = getLastAnvilUse();
 
-        if (!SkillUtils.cooldownExpired(lastUse, 3) || !mcMMO.p.getGeneralConfig()
-                .getRepairConfirmRequired()) {
+        if (!SkillUtils.cooldownExpired(lastUse, CONFIRMATION_WINDOW_SECONDS)
+                || !mcMMO.p.getGeneralConfig().getRepairConfirmRequired()) {
             return true;
         }
 
@@ -258,6 +271,50 @@ public class RepairManager extends SkillManager {
                 "Skills.ConfirmOrCancel", LocaleLoader.getString("Repair.Pretty.Name"));
 
         return false;
+    }
+
+    /**
+     * Check if the player has confirmed repairing the given item. A confirmation only applies to
+     * items matching the one the player was prompted for, so a held item that changed since the
+     * prompt (for example through vanilla armor quick-equipping) starts a new confirmation
+     * instead of being repaired.
+     *
+     * @param item the item the player is attempting to repair
+     * @param actualize whether to start a new confirmation when none applies to the item
+     * @return true if the player has confirmed repairing the given item
+     */
+    public boolean checkConfirmation(ItemStack item, boolean actualize) {
+        if (!mcMMO.p.getGeneralConfig().getRepairConfirmRequired()) {
+            return true;
+        }
+
+        if (isAwaitingConfirmation(item)) {
+            return true;
+        }
+
+        if (!actualize) {
+            return false;
+        }
+
+        actualizeLastAnvilUse();
+        itemAwaitingConfirmation = item.clone();
+
+        NotificationManager.sendPlayerInformation(getPlayer(), NotificationType.SUBSKILL_MESSAGE,
+                "Skills.ConfirmOrCancel", LocaleLoader.getString("Repair.Pretty.Name"));
+
+        return false;
+    }
+
+    /**
+     * Check whether a repair confirmation prompt is active for an item matching the given one.
+     *
+     * @param item the item to compare against the prompted item
+     * @return true if the given item matches an active repair confirmation
+     */
+    public boolean isAwaitingConfirmation(ItemStack item) {
+        return itemAwaitingConfirmation != null && item != null
+                && !SkillUtils.cooldownExpired(getLastAnvilUse(), CONFIRMATION_WINDOW_SECONDS)
+                && itemAwaitingConfirmation.isSimilar(item);
     }
 
     /**

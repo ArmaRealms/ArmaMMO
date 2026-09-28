@@ -8,6 +8,12 @@ import com.gmail.nossr50.datatypes.skills.MaterialType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
 import com.gmail.nossr50.util.text.StringUtils;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -24,6 +30,42 @@ import java.util.Map;
 public class ExperienceConfig extends BukkitConfig {
     private static ExperienceConfig instance;
     final private Map<PrimarySkillType, Map<Material, Integer>> blockExperienceMap = new HashMap<>();
+
+    /* Values resolved once and reused on the XP hot path; reset by loadKeys() */
+    private FormulaType formulaType;
+    private Boolean cumulativeCurveEnabled;
+    private Double experienceGainsGlobalMultiplier;
+    // Runtime /xprate per-skill overrides indexed by skill ordinal, NaN = no override; the
+    // array is replaced wholesale on writes so XP gain reads never see a half-updated state
+    private double[] skillXpRateOverrides;
+    // When each /xprate rate was set (epoch millis, 0 = never), read only by /xprate show
+    private long globalXpRateSetMillis;
+    private long[] skillXpRateSetMillis;
+    private Double customXpPerkBoost;
+    private Boolean diminishedReturnsEnabled;
+    private Boolean earlyGameBoostEnabled;
+    private Boolean npcInteractionPrevented;
+    private Boolean armorStandInteractionPrevented;
+    private Boolean mannequinInteractionPrevented;
+    private Boolean snowExploitPrevented;
+    private Boolean endermanEndermiteFarmingPrevented;
+    private Boolean pistonCheatingPrevented;
+    private Boolean pistonExploitPrevented;
+    private Boolean stoneLavaFarmingPrevented;
+    private Boolean tallPlantXPLimited;
+    private Float diminishedReturnsCap;
+    private Integer diminishedReturnsTimeInterval;
+    private Boolean experienceBarsEnabled;
+    private final Map<PrimarySkillType, Double> formulaSkillModifiers =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Integer> diminishedReturnsThresholds =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Boolean> experienceBarEnabled =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarColor> experienceBarColors =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarStyle> experienceBarStyles =
+            new EnumMap<>(PrimarySkillType.class);
 
     private ExperienceConfig() {
         super("experience.yml");
@@ -52,6 +94,32 @@ public class ExperienceConfig extends BukkitConfig {
 
     @Override
     protected void loadKeys() {
+        formulaType = null;
+        cumulativeCurveEnabled = null;
+        experienceGainsGlobalMultiplier = null;
+        skillXpRateOverrides = null;
+        globalXpRateSetMillis = 0;
+        skillXpRateSetMillis = null;
+        customXpPerkBoost = null;
+        diminishedReturnsEnabled = null;
+        earlyGameBoostEnabled = null;
+        npcInteractionPrevented = null;
+        armorStandInteractionPrevented = null;
+        mannequinInteractionPrevented = null;
+        snowExploitPrevented = null;
+        endermanEndermiteFarmingPrevented = null;
+        pistonCheatingPrevented = null;
+        pistonExploitPrevented = null;
+        stoneLavaFarmingPrevented = null;
+        tallPlantXPLimited = null;
+        diminishedReturnsCap = null;
+        diminishedReturnsTimeInterval = null;
+        experienceBarsEnabled = null;
+        formulaSkillModifiers.clear();
+        diminishedReturnsThresholds.clear();
+        experienceBarEnabled.clear();
+        experienceBarColors.clear();
+        experienceBarStyles.clear();
     }
 
     @Override
@@ -161,7 +229,11 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     public boolean isEarlyGameBoostEnabled() {
-        return config.getBoolean("EarlyGameBoost.Enabled", true);
+        if (earlyGameBoostEnabled == null) {
+            earlyGameBoostEnabled = config.getBoolean("EarlyGameBoost.Enabled", true);
+        }
+
+        return earlyGameBoostEnabled;
     }
 
     /*
@@ -170,19 +242,36 @@ public class ExperienceConfig extends BukkitConfig {
 
     /* EXPLOIT TOGGLES */
     public boolean isSnowExploitPrevented() {
-        return config.getBoolean("ExploitFix.SnowGolemExcavation", true);
+        if (snowExploitPrevented == null) {
+            snowExploitPrevented = config.getBoolean("ExploitFix.SnowGolemExcavation", true);
+        }
+
+        return snowExploitPrevented;
     }
 
     public boolean isEndermanEndermiteFarmingPrevented() {
-        return config.getBoolean("ExploitFix.EndermanEndermiteFarms", true);
+        if (endermanEndermiteFarmingPrevented == null) {
+            endermanEndermiteFarmingPrevented = config.getBoolean(
+                    "ExploitFix.EndermanEndermiteFarms", true);
+        }
+
+        return endermanEndermiteFarmingPrevented;
     }
 
     public boolean isPistonCheatingPrevented() {
-        return config.getBoolean("ExploitFix.PistonCheating", true);
+        if (pistonCheatingPrevented == null) {
+            pistonCheatingPrevented = config.getBoolean("ExploitFix.PistonCheating", true);
+        }
+
+        return pistonCheatingPrevented;
     }
 
     public boolean isPistonExploitPrevented() {
-        return config.getBoolean("ExploitFix.Pistons", false);
+        if (pistonExploitPrevented == null) {
+            pistonExploitPrevented = config.getBoolean("ExploitFix.Pistons", false);
+        }
+
+        return pistonExploitPrevented;
     }
 
     public boolean allowUnsafeEnchantments() {
@@ -194,15 +283,30 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     public boolean isNPCInteractionPrevented() {
-        return config.getBoolean("ExploitFix.PreventPluginNPCInteraction", true);
+        if (npcInteractionPrevented == null) {
+            npcInteractionPrevented = config.getBoolean("ExploitFix.PreventPluginNPCInteraction",
+                    true);
+        }
+
+        return npcInteractionPrevented;
     }
 
     public boolean isArmorStandInteractionPrevented() {
-        return config.getBoolean("ExploitFix.PreventArmorStandInteraction", true);
+        if (armorStandInteractionPrevented == null) {
+            armorStandInteractionPrevented = config.getBoolean(
+                    "ExploitFix.PreventArmorStandInteraction", true);
+        }
+
+        return armorStandInteractionPrevented;
     }
 
     public boolean isMannequinInteractionPrevented() {
-        return config.getBoolean("ExploitFix.PreventMannequinInteraction", true);
+        if (mannequinInteractionPrevented == null) {
+            mannequinInteractionPrevented = config.getBoolean(
+                    "ExploitFix.PreventMannequinInteraction", true);
+        }
+
+        return mannequinInteractionPrevented;
     }
 
     public boolean isFishingExploitingPrevented() {
@@ -221,29 +325,45 @@ public class ExperienceConfig extends BukkitConfig {
         return config.getBoolean("ExploitFix.Acrobatics", true);
     }
 
+    public boolean isAcrobaticsDodgeXpFarmingPrevented() {
+        return config.getBoolean("ExploitFix.AcrobaticsDodgeXpFarming", true);
+    }
+
     public boolean isTreeFellerXPReduced() {
         return config.getBoolean("ExploitFix.TreeFellerReducedXP", true);
     }
 
     /* Curve settings */
     public FormulaType getFormulaType() {
-        return FormulaType.getFormulaType(config.getString("Experience_Formula.Curve"));
+        if (formulaType == null) {
+            formulaType = FormulaType.getFormulaType(
+                    config.getString("Experience_Formula.Curve", "LINEAR"));
+        }
+
+        return formulaType;
     }
 
     public boolean getCumulativeCurveEnabled() {
-        return config.getBoolean("Experience_Formula.Cumulative_Curve", false);
+        if (cumulativeCurveEnabled == null) {
+            cumulativeCurveEnabled = config.getBoolean("Experience_Formula.Cumulative_Curve",
+                    false);
+        }
+
+        return cumulativeCurveEnabled;
     }
 
     /* Curve values */
-    public double getMultiplier(final FormulaType type) {
+    public double getMultiplier(FormulaType type) {
+        double def = type == FormulaType.LINEAR ? 20D : 0.1D;
         return config.getDouble(
                 "Experience_Formula." + StringUtils.getCapitalized(type.toString())
-                        + "_Values.multiplier");
+                        + "_Values.multiplier", def);
     }
 
-    public int getBase(final FormulaType type) {
+    public int getBase(FormulaType type) {
+        int def = type == FormulaType.LINEAR ? 1020 : 2000;
         return config.getInt("Experience_Formula." + StringUtils.getCapitalized(type.toString())
-                + "_Values.base");
+                + "_Values.base", def);
     }
 
     public double getExponent(final FormulaType type) {
@@ -254,11 +374,121 @@ public class ExperienceConfig extends BukkitConfig {
 
     /* Global modifier */
     public double getExperienceGainsGlobalMultiplier() {
-        return config.getDouble("Experience_Formula.Multiplier.Global", 1.0);
+        if (experienceGainsGlobalMultiplier == null) {
+            experienceGainsGlobalMultiplier = config.getDouble(
+                    "Experience_Formula.Multiplier.Global", 1.0);
+        }
+
+        return experienceGainsGlobalMultiplier;
     }
 
     public void setExperienceGainsGlobalMultiplier(final double value) {
         config.set("Experience_Formula.Multiplier.Global", value);
+        experienceGainsGlobalMultiplier = value;
+        globalXpRateSetMillis = System.currentTimeMillis();
+    }
+
+    /**
+     * When the global multiplier was last changed at runtime (epoch millis), or 0 if it still
+     * holds the value loaded from experience.yml.
+     */
+    public long getExperienceGainsGlobalMultiplierSetMillis() {
+        return globalXpRateSetMillis;
+    }
+
+    /**
+     * The effective XP rate multiplier for a skill. Per-skill /xprate rates do not stack with
+     * the global multiplier; whichever is higher wins.
+     */
+    public double getExperienceGainsMultiplier(PrimarySkillType skill) {
+        final double global = getExperienceGainsGlobalMultiplier();
+        final double[] overrides = skillXpRateOverrides;
+
+        if (overrides != null) {
+            final double override = overrides[skill.ordinal()];
+            if (!Double.isNaN(override)) {
+                return Math.max(override, global);
+            }
+        }
+
+        return global;
+    }
+
+    /**
+     * Overrides the XP rate multiplier for a single skill until cleared by
+     * {@link #clearExperienceGainsSkillMultipliers()} or a config reload. Runtime state only,
+     * nothing is written to experience.yml.
+     */
+    public void setExperienceGainsSkillMultiplier(PrimarySkillType skill, double value) {
+        final double[] current = skillXpRateOverrides;
+        final double[] updated;
+
+        if (current == null) {
+            updated = new double[PrimarySkillType.values().length];
+            Arrays.fill(updated, Double.NaN);
+        } else {
+            updated = current.clone();
+        }
+
+        updated[skill.ordinal()] = value;
+
+        final long[] currentTimes = skillXpRateSetMillis;
+        final long[] updatedTimes = currentTimes != null ? currentTimes.clone()
+                : new long[PrimarySkillType.values().length];
+        updatedTimes[skill.ordinal()] = System.currentTimeMillis();
+
+        skillXpRateOverrides = updated;
+        skillXpRateSetMillis = updatedTimes;
+    }
+
+    public void clearExperienceGainsSkillMultiplier(PrimarySkillType skill) {
+        final double[] current = skillXpRateOverrides;
+        if (current == null || Double.isNaN(current[skill.ordinal()])) {
+            return;
+        }
+
+        final double[] updated = current.clone();
+        updated[skill.ordinal()] = Double.NaN;
+
+        final long[] currentTimes = skillXpRateSetMillis;
+        final long[] updatedTimes = currentTimes != null ? currentTimes.clone()
+                : new long[PrimarySkillType.values().length];
+        updatedTimes[skill.ordinal()] = 0;
+
+        skillXpRateOverrides = updated;
+        skillXpRateSetMillis = updatedTimes;
+    }
+
+    public void clearExperienceGainsSkillMultipliers() {
+        skillXpRateOverrides = null;
+        skillXpRateSetMillis = null;
+    }
+
+    /**
+     * When a skill's /xprate rate was set (epoch millis), or 0 if the skill has no active rate.
+     */
+    public long getExperienceGainsSkillMultiplierSetMillis(PrimarySkillType skill) {
+        final long[] setTimes = skillXpRateSetMillis;
+        return setTimes != null ? setTimes[skill.ordinal()] : 0;
+    }
+
+    /**
+     * Snapshot of the per-skill XP rate overrides currently in effect, for display.
+     */
+    public Map<PrimarySkillType, Double> getExperienceGainsSkillMultiplierOverrides() {
+        final Map<PrimarySkillType, Double> snapshot = new EnumMap<>(PrimarySkillType.class);
+        final double[] overrides = skillXpRateOverrides;
+
+        if (overrides != null) {
+            for (PrimarySkillType skill : PrimarySkillType.values()) {
+                final double override = overrides[skill.ordinal()];
+                if (!Double.isNaN(override)) {
+                    snapshot.put(skill, override);
+                }
+            }
+        }
+
+        return snapshot;
     }
 
     /* PVP modifier */
@@ -288,35 +518,52 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     /* Skill modifiers */
-    public double getFormulaSkillModifier(final PrimarySkillType skill) {
-        return config.getDouble(
+    public double getFormulaSkillModifier(PrimarySkillType skill) {
+        return formulaSkillModifiers.computeIfAbsent(skill, key -> config.getDouble(
                 "Experience_Formula.Skill_Multiplier." + StringUtils.getCapitalized(
-                        skill.toString()),
-                1);
+                        key.toString()),
+                1D));
     }
 
     /* Custom XP perk */
     public double getCustomXpPerkBoost() {
-        return config.getDouble("Experience_Formula.Custom_XP_Perk.Boost", 1.25);
+        if (customXpPerkBoost == null) {
+            customXpPerkBoost = config.getDouble("Experience_Formula.Custom_XP_Perk.Boost", 1.25);
+        }
+
+        return customXpPerkBoost;
     }
 
     /* Diminished Returns */
     public float getDiminishedReturnsCap() {
-        return (float) config.getDouble("Diminished_Returns.Guaranteed_Minimum_Percentage", 0.05D);
+        if (diminishedReturnsCap == null) {
+            diminishedReturnsCap = (float) config.getDouble(
+                    "Diminished_Returns.Guaranteed_Minimum_Percentage", 0.05D);
+        }
+
+        return diminishedReturnsCap;
     }
 
     public boolean getDiminishedReturnsEnabled() {
-        return config.getBoolean("Diminished_Returns.Enabled", false);
+        if (diminishedReturnsEnabled == null) {
+            diminishedReturnsEnabled = config.getBoolean("Diminished_Returns.Enabled", false);
+        }
+
+        return diminishedReturnsEnabled;
     }
 
-    public int getDiminishedReturnsThreshold(final PrimarySkillType skill) {
-        return config.getInt(
-                "Diminished_Returns.Threshold." + StringUtils.getCapitalized(skill.toString()),
-                20000);
+    public int getDiminishedReturnsThreshold(PrimarySkillType skill) {
+        return diminishedReturnsThresholds.computeIfAbsent(skill, key -> config.getInt(
+                "Diminished_Returns.Threshold." + StringUtils.getCapitalized(key.toString()),
+                20000));
     }
 
     public int getDiminishedReturnsTimeInterval() {
-        return config.getInt("Diminished_Returns.Time_Interval", 10);
+        if (diminishedReturnsTimeInterval == null) {
+            diminishedReturnsTimeInterval = config.getInt("Diminished_Returns.Time_Interval", 10);
+        }
+
+        return diminishedReturnsTimeInterval;
     }
 
     /* Conversion */
@@ -429,21 +676,30 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     public int getCombatHPCeiling() {
-        return config.getInt("ExploitFix.Combat.XPCeiling.HP_Modifier_Limit", 100);
+        return config.getInt("ExploitFix.Combat.XPCeiling.Damage_Limit", 100);
     }
 
     public boolean isExperienceBarsEnabled() {
-        return config.getBoolean("Experience_Bars.Enable", true);
+        if (experienceBarsEnabled == null) {
+            experienceBarsEnabled = config.getBoolean("Experience_Bars.Enable", true);
+        }
+
+        return experienceBarsEnabled;
     }
 
-    public boolean isExperienceBarEnabled(final PrimarySkillType primarySkillType) {
-        return config.getBoolean(
-                "Experience_Bars." + StringUtils.getCapitalized(primarySkillType.toString())
-                        + ".Enable", true);
+    public boolean isExperienceBarEnabled(PrimarySkillType primarySkillType) {
+        return experienceBarEnabled.computeIfAbsent(primarySkillType, key -> config.getBoolean(
+                "Experience_Bars." + StringUtils.getCapitalized(key.toString()) + ".Enable",
+                true));
     }
 
-    public BarColor getExperienceBarColor(final PrimarySkillType primarySkillType) {
-        final String colorValueFromConfig = config.getString(
+    public BarColor getExperienceBarColor(PrimarySkillType primarySkillType) {
+        return experienceBarColors.computeIfAbsent(primarySkillType,
+                this::resolveExperienceBarColor);
+    }
+
+    private BarColor resolveExperienceBarColor(PrimarySkillType primarySkillType) {
+        String colorValueFromConfig = config.getString(
                 "Experience_Bars." + StringUtils.getCapitalized(primarySkillType.toString())
                         + ".Color");
 
@@ -457,8 +713,13 @@ public class ExperienceConfig extends BukkitConfig {
         return BarColor.WHITE;
     }
 
-    public BarStyle getExperienceBarStyle(final PrimarySkillType primarySkillType) {
-        final String colorValueFromConfig = config.getString(
+    public BarStyle getExperienceBarStyle(PrimarySkillType primarySkillType) {
+        return experienceBarStyles.computeIfAbsent(primarySkillType,
+                this::resolveExperienceBarStyle);
+    }
+
+    private BarStyle resolveExperienceBarStyle(PrimarySkillType primarySkillType) {
+        String colorValueFromConfig = config.getString(
                 "Experience_Bars." + StringUtils.getCapitalized(primarySkillType.toString())
                         + ".BarStyle");
 
@@ -522,10 +783,19 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     public boolean preventStoneLavaFarming() {
-        return config.getBoolean("ExploitFix.LavaStoneAndCobbleFarming", true);
+        if (stoneLavaFarmingPrevented == null) {
+            stoneLavaFarmingPrevented = config.getBoolean(
+                    "ExploitFix.LavaStoneAndCobbleFarming", true);
+        }
+
+        return stoneLavaFarmingPrevented;
     }
 
     public boolean limitXPOnTallPlants() {
-        return config.getBoolean("ExploitFix.LimitTallPlantFarming", true);
+        if (tallPlantXPLimited == null) {
+            tallPlantXPLimited = config.getBoolean("ExploitFix.LimitTallPlantFarming", true);
+        }
+
+        return tallPlantXPLimited;
     }
 }

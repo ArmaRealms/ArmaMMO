@@ -1,5 +1,7 @@
 package com.gmail.nossr50.datatypes.player;
 
+import org.bukkit.plugin.Plugin;
+
 import static com.gmail.nossr50.util.EventUtils.callPlayerAbilityActivateEvent;
 import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -11,7 +13,6 @@ import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
-import com.gmail.nossr50.datatypes.meta.RuptureTaskMeta;
 import com.gmail.nossr50.datatypes.party.Party;
 import com.gmail.nossr50.datatypes.party.PartyTeleportRecord;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -47,7 +48,6 @@ import com.gmail.nossr50.skills.unarmed.UnarmedManager;
 import com.gmail.nossr50.skills.woodcutting.WoodcuttingManager;
 import com.gmail.nossr50.util.BlockUtils;
 import com.gmail.nossr50.util.EventUtils;
-import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.experience.ExperienceBarManager;
@@ -108,6 +108,7 @@ public class McMMOPlayer implements Identified {
 
     private PartyTeleportRecord ptpRecord;
     private boolean displaySkillNotifications = true;
+    private boolean playLevelUpSounds = true;
     private boolean debugMode;
     private boolean abilityUse = true;
     private boolean godMode;
@@ -208,6 +209,17 @@ public class McMMOPlayer implements Identified {
         return playerName;
     }
 
+    /**
+     * The player's live attack cooldown as reported by {@link Player#getAttackCooldown()}, or 1.0
+     * when attack cooldown scaling is disabled in advanced.yml.
+     *
+     * @return the live attack cooldown, from 0.0 to 1.0
+     * @deprecated unreliable during damage events — Paper 26.1.2+ resets the attack ticker before
+     * {@link org.bukkit.event.entity.EntityDamageByEntityEvent} fires, so this reads ~0 for the
+     * hit being processed. Combat code must use the attack strength scale that
+     * {@link com.gmail.nossr50.util.skills.CombatUtils} back-derives from the event instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
     public double getAttackStrength() {
         if (mcMMO.p.getAdvancedConfig().useAttackCooldown()) {
             return player.getAttackCooldown();
@@ -224,13 +236,18 @@ public class McMMOPlayer implements Identified {
         this.lastSkillShownScoreboard = primarySkillType;
     }
 
-    public void processPostXpEvent(final PrimarySkillType primarySkillType,
-                                   final XPGainSource xpGainSource) {
+    public void processPostXpEvent(PrimarySkillType primarySkillType, Plugin plugin,
+            XPGainSource xpGainSource) {
+        processPostXpEvent(primarySkillType, plugin, xpGainSource, getPowerLevelUpperBound());
+    }
+
+    private void processPostXpEvent(PrimarySkillType primarySkillType, Plugin plugin,
+            XPGainSource xpGainSource, int powerLevelUpperBound) {
         //Check if they've reached the power level cap just now
-        if (hasReachedPowerLevelCap()) {
+        if (hasReachedPowerLevelCap(powerLevelUpperBound)) {
             NotificationManager.sendPlayerInformationChatOnly(player, "LevelCap.PowerLevel",
                     String.valueOf(mcMMO.p.getGeneralConfig().getPowerLevelCap()));
-        } else if (hasReachedLevelCap(primarySkillType)) {
+        } else if (hasReachedLevelCap(primarySkillType, powerLevelUpperBound)) {
             NotificationManager.sendPlayerInformationChatOnly(player, "LevelCap.Skill",
                     String.valueOf(mcMMO.p.getSkillTools().getLevelCap(primarySkillType)),
                     mcMMO.p.getSkillTools().getLocalizedSkillName(primarySkillType));
@@ -470,7 +487,7 @@ public class McMMOPlayer implements Identified {
      */
 
     public int getChimeraWingLastUse() {
-        return profile.getChimaerWingDATS();
+        return profile.getChimaeraWingDATS();
     }
 
     public void actualizeChimeraWingLastUse() {
@@ -566,6 +583,18 @@ public class McMMOPlayer implements Identified {
         displaySkillNotifications = !displaySkillNotifications;
     }
 
+    /*
+     * Level-up sounds
+     */
+
+    public boolean useLevelUpSounds() {
+        return playLevelUpSounds;
+    }
+
+    public void toggleLevelUpSounds() {
+        playLevelUpSounds = !playLevelUpSounds;
+    }
+
     /**
      * Gets the power level of this player.
      *
@@ -590,8 +619,13 @@ public class McMMOPlayer implements Identified {
      * @param primarySkillType
      * @return
      */
-    public boolean hasReachedLevelCap(final PrimarySkillType primarySkillType) {
-        if (hasReachedPowerLevelCap()) {
+    public boolean hasReachedLevelCap(PrimarySkillType primarySkillType) {
+        return hasReachedLevelCap(primarySkillType, getPowerLevelUpperBound());
+    }
+
+    private boolean hasReachedLevelCap(PrimarySkillType primarySkillType,
+            int powerLevelUpperBound) {
+        if (hasReachedPowerLevelCap(powerLevelUpperBound)) {
             return true;
         }
 
@@ -606,7 +640,31 @@ public class McMMOPlayer implements Identified {
      * @return true if they have reached the power level cap
      */
     public boolean hasReachedPowerLevelCap() {
-        return this.getPowerLevel() >= mcMMO.p.getGeneralConfig().getPowerLevelCap();
+        return hasReachedPowerLevelCap(getPowerLevelUpperBound());
+    }
+
+    private boolean hasReachedPowerLevelCap(int powerLevelUpperBound) {
+        final int powerLevelCap = mcMMO.p.getGeneralConfig().getPowerLevelCap();
+
+        // The bound over-counts skills the player lacks permission for, so the
+        // permission-aware count is only needed once the bound says the cap is in reach
+        return powerLevelUpperBound >= powerLevelCap && getPowerLevel() >= powerLevelCap;
+    }
+
+    /**
+     * Get an upper bound for the power level without any permission checks. Skill levels are
+     * never negative, so the permission-aware power level can never exceed this sum.
+     *
+     * @return the sum of all non-child skill levels, ignoring skill permissions
+     */
+    private int getPowerLevelUpperBound() {
+        int levelSum = 0;
+
+        for (PrimarySkillType primarySkillType : SkillTools.NON_CHILD_SKILLS) {
+            levelSum += getSkillLevel(primarySkillType);
+        }
+
+        return levelSum;
     }
 
     /**
@@ -657,7 +715,10 @@ public class McMMOPlayer implements Identified {
             return;
         }
 
-        applyXpGain(skill, modifyXpGain(skill, xp), xpGainReason, xpGainSource);
+        // The party share deliberately reuses the same modified value: the pre-XP-gain event
+        // fired inside applyXpGain only affects the player's own gain
+        final float modifiedXp = modifyXpGain(skill, xp);
+        applyXpGain(skill, modifiedXp, xpGainReason, xpGainSource);
 
         if (!mcMMO.p.getPartyConfig().isPartyEnabled() || party == null
                 || party.hasReachedLevelCap()) {
@@ -666,7 +727,7 @@ public class McMMOPlayer implements Identified {
 
         if (!mcMMO.p.getGeneralConfig().getPartyXpNearMembersNeeded() || !mcMMO.p.getPartyManager()
                 .getNearMembers(this).isEmpty()) {
-            party.applyXpGain(modifyXpGain(skill, xp));
+            party.applyXpGain(modifiedXp);
         }
     }
 
@@ -710,14 +771,18 @@ public class McMMOPlayer implements Identified {
      *
      * @param primarySkillType The skill to check
      */
-    private void checkXp(final PrimarySkillType primarySkillType, final XPGainReason xpGainReason,
-                         final XPGainSource xpGainSource) {
-        if (hasReachedLevelCap(primarySkillType)) {
+    private void checkXp(PrimarySkillType primarySkillType, XPGainReason xpGainReason,
+            XPGainSource xpGainSource) {
+        // Compute the bound once and track level-ups locally instead of recounting
+        // on every cap check
+        final int powerLevelUpperBound = getPowerLevelUpperBound();
+
+        if (hasReachedLevelCap(primarySkillType, powerLevelUpperBound)) {
             return;
         }
 
         if (getSkillXpLevelRaw(primarySkillType) < getXpToLevel(primarySkillType)) {
-            processPostXpEvent(primarySkillType, xpGainSource);
+            processPostXpEvent(primarySkillType, mcMMO.p, xpGainSource, powerLevelUpperBound);
             return;
         }
 
@@ -725,7 +790,7 @@ public class McMMOPlayer implements Identified {
         float xpRemoved = 0;
 
         while (getSkillXpLevelRaw(primarySkillType) >= getXpToLevel(primarySkillType)) {
-            if (hasReachedLevelCap(primarySkillType)) {
+            if (hasReachedLevelCap(primarySkillType, powerLevelUpperBound + levelsGained)) {
                 setSkillXpLevel(primarySkillType, 0);
                 break;
             }
@@ -739,7 +804,7 @@ public class McMMOPlayer implements Identified {
             return;
         }
 
-        if (mcMMO.p.getGeneralConfig().getLevelUpSoundsEnabled()) {
+        if (mcMMO.p.getGeneralConfig().getLevelUpSoundsEnabled() && useLevelUpSounds()) {
             SoundManager.sendSound(player, player.getLocation(), SoundType.LEVEL_UP);
         }
 
@@ -751,7 +816,8 @@ public class McMMOPlayer implements Identified {
                 profile.getSkillLevel(primarySkillType));
 
         //UPDATE XP BARS
-        processPostXpEvent(primarySkillType, xpGainSource);
+        processPostXpEvent(primarySkillType, mcMMO.p, xpGainSource,
+                powerLevelUpperBound + levelsGained);
     }
 
     /*
@@ -866,13 +932,14 @@ public class McMMOPlayer implements Identified {
         //TODO: A rare situation can occur where the default Power Level cap can prevent a player with one skill edited to something silly like Integer.MAX_VALUE from gaining XP in any skill, we may need to represent power level with another data type
         if ((mcMMO.p.getSkillTools().getLevelCap(primarySkillType) <= getSkillLevel(
                 primarySkillType))
-                || (mcMMO.p.getGeneralConfig().getPowerLevelCap() <= getPowerLevel())) {
+                || hasReachedPowerLevelCap(getPowerLevelUpperBound())) {
             return 0;
         }
 
         xp = (float) (
                 (xp * ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType))
-                        * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
+                        * ExperienceConfig.getInstance()
+                        .getExperienceGainsMultiplier(primarySkillType));
 
         return PerksUtils.handleXpPerks(player, xp, primarySkillType);
     }
@@ -931,7 +998,6 @@ public class McMMOPlayer implements Identified {
                     || primarySkillType == PrimarySkillType.AXES) {
                 NotificationManager.sendPlayerInformation(player, NotificationType.ABILITY_COOLDOWN,
                         "Skills.TooTired", String.valueOf(timeRemaining));
-                //SoundManager.sendSound(player, player.getLocation(), SoundType.TIRED);
             }
 
             return;
@@ -1167,12 +1233,41 @@ public class McMMOPlayer implements Identified {
         profile.modifySkill(skill, level);
     }
 
-    public void addLevels(final PrimarySkillType skill, final int levels) {
+    /**
+     * Adds levels to a skill and fires the level change events, like the /addlevels command.
+     * Levels added to a child skill split evenly across its parent skills.
+     *
+     * @param skill the skill to add levels to
+     * @param levels the number of levels to add
+     */
+    public void addLevels(PrimarySkillType skill, int levels) {
+        if (SkillTools.isChildSkill(skill)) {
+            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            int dividedLevels = levels / parentSkills.size();
+
+            for (PrimarySkillType parentSkill : parentSkills) {
+                addLevels(parentSkill, dividedLevels);
+            }
+
+            return;
+        }
+
+        final float xpRemoved = profile.getSkillXpLevelRaw(skill);
         profile.addLevels(skill, levels);
+        EventUtils.tryLevelChangeEvent(this, skill, levels, xpRemoved, true,
+                XPGainReason.UNKNOWN);
     }
 
-    public void addXp(final PrimarySkillType skill, final float xp) {
-        profile.addXp(skill, xp);
+    /**
+     * Adds XP as a normal gain: fires the XP gain events, awards level ups, and updates the
+     * XP bar. The amount is applied as-is, without the rate and perk modifiers that
+     * {@link #beginXpGain(PrimarySkillType, float, XPGainReason, XPGainSource)} applies.
+     *
+     * @param skill the skill to add XP to
+     * @param xp the amount of XP to add
+     */
+    public void addXp(PrimarySkillType skill, float xp) {
+        applyXpGain(skill, xp, XPGainReason.UNKNOWN, XPGainSource.SELF);
     }
 
     public void setAbilityDATS(final SuperAbilityType ability, final long DATS) {
@@ -1194,18 +1289,9 @@ public class McMMOPlayer implements Identified {
      */
     public void logout(final boolean syncSave) {
         final Player thisPlayer = getPlayer();
-        if (getPlayer() != null && getPlayer().hasMetadata(
-                MetadataConstants.METADATA_KEY_RUPTURE)) {
-            final RuptureTaskMeta ruptureTaskMeta
-                    = (RuptureTaskMeta) getPlayer().getMetadata(
-                    MetadataConstants.METADATA_KEY_RUPTURE).get(0);
-            if (ruptureTaskMeta != null) {
-                final RuptureTask ruptureTimerTask = ruptureTaskMeta.getRuptureTimerTask();
-                if (ruptureTimerTask != null) {
-                    ruptureTimerTask.cancel();
-                }
-                getPlayer().removeMetadata(MetadataConstants.METADATA_KEY_RUPTURE, mcMMO.p);
-            }
+        final RuptureTask ruptureTask = RuptureTask.getActive(thisPlayer);
+        if (ruptureTask != null) {
+            ruptureTask.cancel();
         }
 
         cleanup();

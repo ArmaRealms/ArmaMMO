@@ -5,6 +5,10 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -18,7 +22,9 @@ import java.util.HashSet;
 
 public final class UserManager {
 
-    private static HashSet<McMMOPlayer> playerDataSet; //Used to track players for sync saves on shutdown
+    // Used to track players for sync saves on shutdown; players join and quit on different
+    // region threads on Folia, so this set must be safe for concurrent mutation
+    private static final Set<McMMOPlayer> playerDataSet = ConcurrentHashMap.newKeySet();
 
     private UserManager() {
     }
@@ -32,17 +38,11 @@ public final class UserManager {
         mmoPlayer.getPlayer().setMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA,
                 new FixedMetadataValue(mcMMO.p, mmoPlayer));
 
-        if (playerDataSet == null) {
-            playerDataSet = new HashSet<>();
-        }
-
         playerDataSet.add(mmoPlayer); //for sync saves on shutdown
     }
 
     public static void cleanupPlayer(McMMOPlayer mmoPlayer) {
-        if (playerDataSet != null) {
-            playerDataSet.remove(mmoPlayer);
-        }
+        playerDataSet.remove(mmoPlayer);
     }
 
     /**
@@ -60,9 +60,7 @@ public final class UserManager {
         mmoPlayer.cleanup();
         player.removeMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA, mcMMO.p);
 
-        if (playerDataSet != null) {
-            playerDataSet.remove(mmoPlayer); //Clear sync save tracking
-        }
+        playerDataSet.remove(mmoPlayer); //Clear sync save tracking
     }
 
     /**
@@ -73,19 +71,13 @@ public final class UserManager {
             remove(player);
         }
 
-        if (playerDataSet != null) {
-            playerDataSet.clear(); //Clear sync save tracking
-        }
+        playerDataSet.clear(); //Clear sync save tracking
     }
 
     /**
      * Save all users ON THIS THREAD.
      */
     public static void saveAll() {
-        if (playerDataSet == null) {
-            return;
-        }
-
         ImmutableList<McMMOPlayer> trackedSyncData = ImmutableList.copyOf(playerDataSet);
 
         mcMMO.p.getLogger().info("Saving mmoPlayers... (" + trackedSyncData.size() + ")");

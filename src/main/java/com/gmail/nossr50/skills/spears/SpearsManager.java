@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class SpearsManager extends SkillManager {
     private static @Nullable PotionEffectType swiftnessEffectType;
+
     public SpearsManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.SPEARS);
     }
@@ -34,8 +35,21 @@ public class SpearsManager extends SkillManager {
 
     /**
      * Process Momentum activation.
+     *
+     * @deprecated use {@link #potentiallyApplyMomentum(double)} instead; this overload reads the
+     * live attack cooldown, which is unreliable during damage events on Paper 26.1.2+
      */
+    @Deprecated(forRemoval = true, since = "2.3.000")
     public void potentiallyApplyMomentum() {
+        potentiallyApplyMomentum(mmoPlayer.getAttackStrength());
+    }
+
+    /**
+     * Process Momentum activation.
+     *
+     * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
+     */
+    public void potentiallyApplyMomentum(double attackStrengthScale) {
         // Lazy initialized to avoid some backwards compatibility issues
         if (swiftnessEffectType == null) {
             if (mockSpigotMatch("speed") == null) {
@@ -51,10 +65,11 @@ public class SpearsManager extends SkillManager {
             return;
         }
 
-        int momentumRank = getRank(getPlayer(), SubSkillType.SPEARS_MOMENTUM);
-        // Chance to activate on hit is influence by the CD
-        double momentumOdds = (mcMMO.p.getAdvancedConfig().getMomentumChanceToApplyOnHit(momentumRank)
-                * Math.min(mmoPlayer.getAttackStrength(), 1.0D));
+        final int momentumRank = getRank(getPlayer(), SubSkillType.SPEARS_MOMENTUM);
+        // Weak hits proportionally lower the odds of Momentum activating
+        final double momentumOdds =
+                mcMMO.p.getAdvancedConfig().getMomentumChanceToApplyOnHit(momentumRank)
+                        * Math.min(attackStrengthScale, 1.0D);
 
         if (isStaticSkillRNGSuccessful(PrimarySkillType.SPEARS, mmoPlayer, momentumOdds)) {
             if (mmoPlayer.useChatNotifications()) {

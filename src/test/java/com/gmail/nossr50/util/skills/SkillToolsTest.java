@@ -3,7 +3,10 @@ package com.gmail.nossr50.util.skills;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.gmail.nossr50.config.GeneralConfig;
@@ -13,6 +16,7 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.datatypes.skills.ToolType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -346,5 +350,142 @@ class SkillToolsTest {
         List<String> sorted = new ArrayList<>(names);
         Collections.sort(sorted);
         assertThat(names).isEqualTo(sorted);
+    }
+
+    // ------------------------------------------------------------------------
+    // matchSkill logging behavior
+    // ------------------------------------------------------------------------
+
+    /**
+     * Other plugins validate arbitrary strings through the API (ExperienceAPI.isValidSkillType
+     * and friends), which lands in matchSkill. A non-matching name must not write to the
+     * console at default log levels, otherwise API users spam server logs on every lookup.
+     * Debug-prefixed output is fine; LogFilter hides it unless Verbose_Logging is enabled.
+     */
+    @Test
+    void matchSkillShouldStayQuietOnConsoleWhenNameDoesNotMatch() throws Exception {
+        // Given - a SkillTools and a plugin logger we can observe
+        SkillTools skillTools = newSkillToolsForVersion(1, 21, 11);
+        Logger observedLogger = mock(Logger.class);
+        when(mcMMO.p.getLogger()).thenReturn(observedLogger);
+
+        try {
+            // When - an unknown skill name is looked up, as API validation does
+            PrimarySkillType match = skillTools.matchSkill("notARealSkill");
+
+            // Then - no skill matches and nothing reaches the console at default levels
+            assertThat(match).isNull();
+            verify(observedLogger, never()).warning(anyString());
+            verify(observedLogger, never()).info(argThat((String message) ->
+                    !message.startsWith(LogUtils.DEBUG_STR)));
+        } finally {
+            when(mcMMO.p.getLogger()).thenReturn(logger);
+        }
+    }
+
+    /** Restores the shared static locale stubs this class sets up in {@code setUpAll}. */
+    private void restoreLocaleDefaults() {
+        when(generalConfig.getLocale()).thenReturn("en_US");
+        mockedLocaleLoader.when(LocaleLoader::getLocaleGeneration).thenReturn(0);
+        mockedLocaleLoader.when(() -> LocaleLoader.getString(anyString()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+    }
+
+    /**
+     * matchSkill caches successful lookups per locale generation. Until a locale reload
+     * bumps the generation, repeated lookups are served from the cache even if the
+     * underlying locale strings change, which is what makes the per-skill locale scans a
+     * one-time cost.
+     */
+    @Test
+    void matchSkillShouldServeRepeatedLookupsFromCacheUntilLocaleReload() throws Exception {
+        try {
+            // Given - a non-English locale where Mining is localized as "Bergbau"
+            when(generalConfig.getLocale()).thenReturn("de_DE");
+            mockedLocaleLoader.when(LocaleLoader::getLocaleGeneration).thenReturn(5);
+            mockedLocaleLoader.when(() -> LocaleLoader.getString("Mining.SkillName"))
+                    .thenReturn("Bergbau");
+            final SkillTools skillTools = newSkillToolsForVersion(1, 21, 11);
+
+            // And - the localized name resolved once and is cached
+            assertThat(skillTools.matchSkill("Bergbau")).isEqualTo(PrimarySkillType.MINING);
+
+            // When - the locale string changes without a locale reload
+            mockedLocaleLoader.when(() -> LocaleLoader.getString("Mining.SkillName"))
+                    .thenReturn("Mineracao");
+
+            // Then - the cached match still resolves the previously matched name
+            assertThat(skillTools.matchSkill("Bergbau")).isEqualTo(PrimarySkillType.MINING);
+        } finally {
+            restoreLocaleDefaults();
+        }
+    }
+
+    /**
+     * A locale reload bumps the locale generation; matchSkill must then drop every cached
+     * match and resolve names against the reloaded locale only.
+     */
+    @Test
+    void matchSkillShouldDropCachedMatchesWhenLocaleGenerationChanges() throws Exception {
+        try {
+            // Given - "Bergbau" cached as the Mining match under locale generation 5
+            when(generalConfig.getLocale()).thenReturn("de_DE");
+            mockedLocaleLoader.when(LocaleLoader::getLocaleGeneration).thenReturn(5);
+            mockedLocaleLoader.when(() -> LocaleLoader.getString("Mining.SkillName"))
+                    .thenReturn("Bergbau");
+            final SkillTools skillTools = newSkillToolsForVersion(1, 21, 11);
+            assertThat(skillTools.matchSkill("Bergbau")).isEqualTo(PrimarySkillType.MINING);
+
+            // When - the locale reloads with a new localized name and a new generation
+            mockedLocaleLoader.when(() -> LocaleLoader.getString("Mining.SkillName"))
+                    .thenReturn("Mineracao");
+            mockedLocaleLoader.when(LocaleLoader::getLocaleGeneration).thenReturn(6);
+
+            // Then - the old name no longer matches and the reloaded name resolves
+            assertThat(skillTools.matchSkill("Bergbau")).isNull();
+            assertThat(skillTools.matchSkill("Mineracao")).isEqualTo(PrimarySkillType.MINING);
+        } finally {
+            restoreLocaleDefaults();
+        }
+    }
+
+    /**
+     * Failed lookups must not be cached: other plugins probe arbitrary names through the
+     * API, so caching misses would grow the map without bound, and a name that begins to
+     * match within the same generation must resolve without waiting for a reload.
+     */
+    @Test
+    void matchSkillShouldNotCacheFailedLookups() throws Exception {
+        try {
+            // Given - a non-English locale where "Bergbau" does not resolve to anything
+            when(generalConfig.getLocale()).thenReturn("de_DE");
+            mockedLocaleLoader.when(LocaleLoader::getLocaleGeneration).thenReturn(5);
+            final SkillTools skillTools = newSkillToolsForVersion(1, 21, 11);
+            assertThat(skillTools.matchSkill("Bergbau")).isNull();
+
+            // When - the locale now localizes Mining as "Bergbau", same generation
+            mockedLocaleLoader.when(() -> LocaleLoader.getString("Mining.SkillName"))
+                    .thenReturn("Bergbau");
+
+            // Then - the lookup resolves immediately instead of serving a cached miss
+            assertThat(skillTools.matchSkill("Bergbau")).isEqualTo(PrimarySkillType.MINING);
+        } finally {
+            restoreLocaleDefaults();
+        }
+    }
+
+    /**
+     * The list feeds tab completion across commands, where lowercase suggestions read like
+     * the other completion keywords instead of shouting the en_US all-caps skill names.
+     */
+    @Test
+    void localizedSkillNamesShouldBeLowercase() throws Exception {
+        // Given - a SkillTools built against the current game version
+        SkillTools skillTools = newSkillToolsForVersion(1, 21, 11);
+
+        // When - the localized skill name list is inspected
+        // Then - every entry is fully lowercase
+        assertThat(skillTools.LOCALIZED_SKILL_NAMES).allSatisfy(name ->
+                assertThat(name).isEqualTo(name.toLowerCase(Locale.ENGLISH)));
     }
 }

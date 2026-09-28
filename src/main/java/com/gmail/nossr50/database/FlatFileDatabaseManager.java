@@ -1,8 +1,14 @@
 package com.gmail.nossr50.database;
 
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
+
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.database.flatfile.LeaderboardStatus;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
+import com.gmail.nossr50.datatypes.database.LeaderboardSnapshot;
+import com.gmail.nossr50.datatypes.database.PlayerNameAndUUID;
 import com.gmail.nossr50.datatypes.database.PlayerStat;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.player.UniqueDataType;
@@ -18,6 +24,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -25,8 +32,11 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -35,20 +45,32 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 
 public final class FlatFileDatabaseManager implements DatabaseManager {
 
     static final String IGNORED = "IGNORED";
-    public static final String LEGACY_INVALID_OLD_USERNAME = "_INVALID_OLD_USERNAME_'";
+    /**
+     * @deprecated FlatFile now writes {@link UsernamePlaceholder#INVALID_OLD_USERNAME}, like SQL.
+     *         Rows already under this spelling keep it, so check a name with
+     *         {@link UsernamePlaceholder#isInvalidOldUsername(String)}, which accepts both.
+     */
+    @Deprecated(since = "2.3.002", forRemoval = true)
+    public static final String LEGACY_INVALID_OLD_USERNAME =
+            UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
 
     private static final Object fileWritingLock = new Object();
     private static final String LINE_ENDING = "\r\n";
 
-    private final @NotNull EnumMap<PrimarySkillType, List<PlayerStat>> leaderboardMap =
-            new EnumMap<>(PrimarySkillType.class);
-
-    private @NotNull List<PlayerStat> powerLevels = new ArrayList<>();
-    private long lastUpdate = 0L;
+    // One immutable generation holding every leaderboard scope, swapped atomically so async
+    // readers (PlaceholderAPI cache, /mctop, /mcrank) never observe lists from two different
+    // file scans. Null until the first successful rebuild.
+    private volatile @Nullable LeaderboardSnapshot leaderboards;
+    // Atomic so concurrent callers race the throttle with a CAS instead of both passing a
+    // check-then-act window and performing duplicate full-file scans. Only a successful rebuild
+    // keeps the claimed timestamp; failures roll it back so retries are not throttled.
+    private final @NotNull AtomicLong lastUpdate = new AtomicLong(0L);
+    private final @NotNull Set<UUID> reportedUnloadableRows = ConcurrentHashMap.newKeySet();
 
     private final @NotNull String usersFilePath;
     private final @NotNull File usersFile;
@@ -56,7 +78,12 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     private final long purgeTime;
     private final int startingLevel;
 
-    private static final long UPDATE_WAIT_TIME = 600_000L; // 10 minutes
+    // Minimum spacing between leaderboard rebuilds. Rebuilding scans the whole user file, so
+    // refreshing more than once a minute is pointless overhead on large servers.
+    private static final long MIN_UPDATE_WAIT_TIME =
+            1000L * GeneralConfig.MIN_LEADERBOARD_REFRESH_INTERVAL_SECONDS;
+    private static final long DEFAULT_UPDATE_WAIT_TIME = 600_000L; // 10 minutes
+    private final long updateWaitTimeMillis;
 
     // Flatfile indices
     public static final int USERNAME_INDEX = 0;
@@ -180,13 +207,19 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             new AbilityIndex(SuperAbilityType.SPEARS_SUPER_ABILITY, COOLDOWN_SPEARS)
     );
 
-    FlatFileDatabaseManager(@NotNull final File usersFile, @NotNull final Logger logger, final long purgeTime,
-                            final int startingLevel, final boolean testing) {
+    FlatFileDatabaseManager(@NotNull File usersFile, @NotNull Logger logger, long purgeTime,
+            int startingLevel, boolean testing) {
+        this(usersFile, logger, purgeTime, startingLevel, testing, DEFAULT_UPDATE_WAIT_TIME);
+    }
+
+    FlatFileDatabaseManager(@NotNull File usersFile, @NotNull Logger logger, long purgeTime,
+            int startingLevel, boolean testing, long updateWaitTimeMillis) {
         this.usersFile = usersFile;
         this.usersFilePath = usersFile.getPath();
         this.logger = logger;
         this.purgeTime = purgeTime;
         this.startingLevel = startingLevel;
+        this.updateWaitTimeMillis = Math.max(MIN_UPDATE_WAIT_TIME, updateWaitTimeMillis);
 
         if (!usersFile.exists()) {
             initEmptyDB();
@@ -204,11 +237,14 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         }
     }
 
-    FlatFileDatabaseManager(@NotNull final String usersFilePath,
-                            @NotNull final Logger logger,
-                            final long purgeTime,
-                            final int startingLevel) {
+    FlatFileDatabaseManager(@NotNull String usersFilePath, @NotNull Logger logger, long purgeTime,
+            int startingLevel) {
         this(new File(usersFilePath), logger, purgeTime, startingLevel, false);
+    }
+
+    FlatFileDatabaseManager(@NotNull String usersFilePath, @NotNull Logger logger, long purgeTime,
+            int startingLevel, long updateWaitTimeMillis) {
+        this(new File(usersFilePath), logger, purgeTime, startingLevel, false, updateWaitTimeMillis);
     }
 
     // ------------------------------------------------------------------------
@@ -226,8 +262,14 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             try (final BufferedReader in = newBufferedReader()) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    final String[] character = line.split(":");
-                    final Map<PrimarySkillType, Integer> skills = getSkillMapFromLine(character);
+                    // Comments and empty lines are not users; keep them as-is
+                    if (FlatFileRow.parse(line, logger, usersFilePath) == null) {
+                        writer.append(line).append(LINE_ENDING);
+                        continue;
+                    }
+
+                    String[] character = line.split(":");
+                    Map<PrimarySkillType, Integer> skills = getSkillMapFromLine(character);
 
                     final boolean powerless = skills.values().stream().allMatch(skill -> skill == 0);
 
@@ -240,9 +282,12 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             } catch (final IOException e) {
                 logger.severe("Exception while reading " + usersFilePath
                         + " (Are you sure you formatted it correctly?)" + e);
+                return 0;
             }
 
-            writeStringToFileSafely(writer.toString());
+            if (!writeStringToFileSafely(writer.toString())) {
+                return 0;
+            }
         }
 
         logger.info("Purged " + purgedUsers + " users from the database.");
@@ -255,7 +300,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
         LogUtils.debug(logger, "Purging old users...");
 
-        rewriteUsersFile(line -> {
+        final boolean rewritten = rewriteUsersFile(line -> {
             final FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
             if (row == null) {
                 // Comment / empty / malformed: keep as-is
@@ -271,12 +316,14 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             final String uuidString = data[UUID_INDEX];
             final UUID uuid = parseUuidOrNull(uuidString);
 
-            long lastPlayed = 0L;
+            long lastPlayed = -1L;
             boolean rewrite = false;
 
             try {
                 lastPlayed = Long.parseLong(data[OVERHAUL_LAST_LOGIN]);
-            } catch (final NumberFormatException e) {
+            } catch (NumberFormatException e) {
+                // Treat an unparseable value as an unknown last login (-1) so the user is
+                // kept unless a real timestamp can be recovered below
                 logger.log(Level.SEVERE,
                         "Could not parse last played time for user with UUID " + uuidString
                                 + ", attempting to correct...", e);
@@ -290,7 +337,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
                 }
             }
 
-            if (lastPlayed < 1 && (currentTime - lastPlayed > purgeTime)) {
+            if (lastPlayed != -1 && currentTime - lastPlayed > purgeTime) {
                 removedPlayers[0]++;
                 return null; // drop this user
             }
@@ -303,15 +350,24 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             return line;
         });
 
+        if (!rewritten) {
+            return;
+        }
+
         logger.info("Purged " + removedPlayers[0] + " users from the database.");
     }
 
-    public boolean removeUser(final String playerName, final UUID uuid) {
+    public boolean removeUser(String playerName, UUID uuid) {
+        // Everyone who lost their name shares it, so it would remove whichever comes first
+        if (isInvalidOldUsername(playerName)) {
+            return false;
+        }
+
         // NOTE: UUID is unused for FlatFile for this interface implementation
         final boolean[] worked = {false};
 
-        rewriteUsersFile(line -> {
-            final FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
+        final boolean rewritten = rewriteUsersFile(line -> {
+            FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
             if (row == null) {
                 return line; // comments / malformed stay
             }
@@ -324,6 +380,10 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
             return line;
         });
+
+        if (!rewritten) {
+            return false;
+        }
 
         Misc.profileCleanup(playerName);
         return worked[0];
@@ -338,9 +398,22 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     // Save / load users
     // ------------------------------------------------------------------------
 
-    public boolean saveUser(@NotNull final PlayerProfile profile) {
+    /**
+     * Rows are matched by UUID, since names change hands. A profile also takes its name from
+     * any other row holding it, which keeps its data under
+     * {@link UsernamePlaceholder#INVALID_OLD_USERNAME} until that player logs in again. The
+     * placeholder is nobody's name, so a profile holding it takes no name from anyone.
+     * <p>
+     * mcMMO only saves players with a UUID, and FlatFile drops rows without one when it starts.
+     * A profile without a UUID is not saved, and false is returned.
+     */
+    public boolean saveUser(@NotNull PlayerProfile profile) {
         final String playerName = profile.getPlayerName();
         final UUID uuid = profile.getUniqueId();
+        if (uuid == null) {
+            logger.warning("Not saving " + playerName + ", mcMMO only saves players with a UUID");
+            return false;
+        }
 
         boolean corruptDataFound = false;
 
@@ -370,28 +443,24 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
                         continue;
                     }
 
-                    final boolean uuidMatches = uuid != null
-                            && splitData.length > UUID_INDEX
-                            && splitData[UUID_INDEX].equalsIgnoreCase(uuid.toString());
-                    final boolean nameMatches = splitData.length > USERNAME_INDEX
-                            && splitData[USERNAME_INDEX].equalsIgnoreCase(playerName);
-
-                    if (!uuidMatches && !nameMatches) {
-                        // not the user, keep the line
-                        writer.append(line).append(LINE_ENDING);
-                    } else {
+                    final UUID rowUuid = splitData.length > UUID_INDEX
+                            ? parseUuidOrNull(splitData[UUID_INDEX])
+                            : null;
+                    if (uuid.equals(rowUuid)) {
                         writeUserToLine(profile, writer);
                         wroteUser = true;
+                        continue;
                     }
+
+                    writer.append(takeNameFromRow(line, playerName, uuid)).append(LINE_ENDING);
                 }
 
                 if (!wroteUser) {
                     writeUserToLine(profile, writer);
                 }
 
-                writeStringToFileSafely(writer.toString());
-                return true;
-            } catch (final Exception e) {
+                return writeStringToFileSafely(writer.toString());
+            } catch (Exception e) {
                 logger.log(Level.SEVERE,
                         "Unexpected Exception while reading " + usersFilePath, e);
                 return false;
@@ -399,7 +468,26 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         }
     }
 
-    private boolean logCorruptOnce(final boolean alreadyLogged) {
+    /**
+     * A name belongs to one player at a time, so the row in {@code line}, when it holds
+     * {@code playerName} ignoring case, moves to the placeholder and keeps its data. Any other
+     * line is returned as it is, as is every line when the name is the placeholder, which is
+     * nobody's to take.
+     */
+    private @NotNull String takeNameFromRow(@NotNull String line, @NotNull String playerName,
+            @NotNull UUID uuid) {
+        final int nameEnd = line.indexOf(':');
+        if (nameEnd < 0 || line.startsWith("#") || isInvalidOldUsername(playerName)
+                || !line.substring(0, nameEnd).equalsIgnoreCase(playerName)) {
+            return line;
+        }
+
+        LogUtils.debug(logger, "The name " + playerName + " now belongs to " + uuid
+                + ", the row that held it keeps its data under " + INVALID_OLD_USERNAME);
+        return INVALID_OLD_USERNAME + line.substring(nameEnd);
+    }
+
+    private boolean logCorruptOnce(boolean alreadyLogged) {
         if (!alreadyLogged) {
             logger.severe(
                     "mcMMO found some unexpected or corrupted data in mcmmo.users and is removing it, it is possible some data has been lost.");
@@ -499,12 +587,54 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         out.append(LINE_ENDING);
     }
 
-    public @NotNull PlayerProfile newUser(@NotNull final Player player) {
-        return new PlayerProfile(player.getName(), player.getUniqueId(), true, startingLevel);
+    /**
+     * Called when the player's profile did not load. The profile returned here is saved over
+     * their stored row, so it is only loaded when the file was read and has no row with their
+     * UUID. Otherwise it is unloaded, and the login retries the load.
+     */
+    public @NotNull PlayerProfile newUser(@NotNull Player player) {
+        final UUID uuid = player.getUniqueId();
+        return new PlayerProfile(player.getName(), uuid, isConfirmedNewPlayer(uuid),
+                startingLevel);
     }
 
-    public @NotNull PlayerProfile newUser(@NotNull final String playerName, @NotNull final UUID uuid) {
-        final PlayerProfile playerProfile = new PlayerProfile(playerName, uuid, true, startingLevel);
+    /** True only when the users file was read and has no row for {@code uuid}. */
+    private boolean isConfirmedNewPlayer(@NotNull UUID uuid) {
+        synchronized (fileWritingLock) {
+            try (BufferedReader in = newBufferedReader()) {
+                String line;
+                while ((line = in.readLine()) != null) {
+                    if (isRowFor(line, uuid)) {
+                        return false;
+                    }
+                }
+                return true;
+            } catch (IOException e) {
+                logger.severe("Could not read " + usersFilePath + " to look for " + uuid + ": "
+                        + e);
+                return false;
+            }
+        }
+    }
+
+    /** Whether {@code line} is a row for {@code uuid}, matched the way the load queries match. */
+    private boolean isRowFor(@NotNull String line, @NotNull UUID uuid) {
+        if (line.startsWith("#")) {
+            return false;
+        }
+
+        // Nothing past the UUID is needed, so the rest of the row stays unsplit
+        final String[] fields = line.split(":", UUID_INDEX + 2);
+        return fields.length > UUID_INDEX && uuid.equals(parseUuidOrNull(fields[UUID_INDEX]));
+    }
+
+    public @NotNull PlayerProfile newUser(@NotNull String playerName, @Nullable UUID uuid) {
+        if (uuid == null) {
+            logger.warning("Not adding " + playerName + ", mcMMO only adds players with a UUID");
+            return new PlayerProfile(playerName, null, false, startingLevel);
+        }
+
+        PlayerProfile playerProfile = new PlayerProfile(playerName, uuid, true, startingLevel);
 
         synchronized (fileWritingLock) {
             final StringBuilder stringBuilder = new StringBuilder();
@@ -512,10 +642,19 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             try (final BufferedReader bufferedReader = newBufferedReader()) {
                 String line;
                 while ((line = bufferedReader.readLine()) != null) {
-                    stringBuilder.append(line).append(LINE_ENDING);
+                    // A second row would be loaded instead of a first that fails to parse,
+                    // and the next save would overwrite both
+                    if (isRowFor(line, uuid)) {
+                        logger.warning("Not adding " + playerName + " (" + uuid + ") to "
+                                + usersFilePath + ", it already has a row for that UUID");
+                        return new PlayerProfile(playerName, uuid, false, startingLevel);
+                    }
+                    stringBuilder.append(takeNameFromRow(line, playerName, uuid))
+                            .append(LINE_ENDING);
                 }
             } catch (final IOException e) {
                 logger.log(Level.SEVERE, "Unexpected Exception while reading " + usersFilePath, e);
+                return new PlayerProfile(playerName, uuid, false, startingLevel);
             }
 
             try (final FileWriter fileWriter = new FileWriter(usersFile)) {
@@ -530,16 +669,21 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return playerProfile;
     }
 
-    public @NotNull PlayerProfile loadPlayerProfile(@NotNull final OfflinePlayer offlinePlayer) {
-        return processUserQuery(getUserQuery(offlinePlayer.getUniqueId(), offlinePlayer.getName()));
+    public @NotNull PlayerProfile loadPlayerProfile(@NotNull OfflinePlayer offlinePlayer) {
+        // An offline player's name is the one they last joined with. It may be someone else's by
+        // now, and saving the profile under it would take it from whoever holds it.
+        final UserQuery userQuery = getUserQuery(offlinePlayer.getUniqueId(),
+                offlinePlayer.getName());
+        return processUserQuery(userQuery,
+                offlinePlayer instanceof Player player && player.isOnline());
     }
 
-    public @NotNull PlayerProfile loadPlayerProfile(@NotNull final String playerName) {
-        return processUserQuery(getUserQuery(null, playerName));
+    public @NotNull PlayerProfile loadPlayerProfile(@NotNull String playerName) {
+        return processUserQuery(getUserQuery(null, playerName), false);
     }
 
-    public @NotNull PlayerProfile loadPlayerProfile(@NotNull final UUID uuid) {
-        return processUserQuery(getUserQuery(uuid, null));
+    public @NotNull PlayerProfile loadPlayerProfile(@NotNull UUID uuid) {
+        return processUserQuery(getUserQuery(uuid, null), false);
     }
 
     private @NotNull UserQuery getUserQuery(@Nullable final UUID uuid,
@@ -558,16 +702,25 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         }
     }
 
-    private @NotNull PlayerProfile processUserQuery(@NotNull final UserQuery userQuery) {
+    /**
+     * @param nameIsCurrent whether the player goes by the query's name now, so it replaces the
+     *         name stored for their UUID
+     */
+    private @NotNull PlayerProfile processUserQuery(@NotNull UserQuery userQuery,
+            boolean nameIsCurrent) {
         return switch (userQuery.getType()) {
-            case UUID_AND_NAME -> queryByUUIDAndName((UserQueryFull) userQuery);
+            case UUID_AND_NAME -> queryByUUIDAndName((UserQueryFull) userQuery, nameIsCurrent);
             case UUID -> queryByUUID((UserQueryUUID) userQuery);
             case NAME -> queryByName((UserQueryNameImpl) userQuery);
         };
     }
 
     private @NotNull PlayerProfile queryByName(@NotNull final UserQueryName userQuery) {
-        final String playerName = userQuery.getType().name();
+        final String playerName = userQuery.name();
+
+        if (isInvalidOldUsername(playerName)) {
+            return new PlayerProfile(playerName, new UUID(0L, 0L), startingLevel);
+        }
 
         synchronized (fileWritingLock) {
             try (final BufferedReader in = newBufferedReader()) {
@@ -611,17 +764,15 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
                     final String[] rawSplitData = line.split(":");
 
-                    if (rawSplitData.length < (UUID_INDEX + 1)) {
+                    if (rawSplitData.length < (UUID_INDEX + 1)
+                            || !uuid.equals(parseUuidOrNull(rawSplitData[UUID_INDEX]))) {
                         continue;
                     }
 
                     try {
-                        final UUID fromDataUUID = UUID.fromString(rawSplitData[UUID_INDEX]);
-                        if (fromDataUUID.equals(uuid)) {
-                            return loadFromLine(rawSplitData);
-                        }
-                    } catch (final Exception e) {
-                        // Ignore malformed UUIDs
+                        return loadFromLine(rawSplitData);
+                    } catch (RuntimeException e) {
+                        logUnloadableRow(rawSplitData[USERNAME_INDEX], uuid, e);
                     }
                 }
             } catch (final Exception e) {
@@ -633,9 +784,10 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return grabUnloadedProfile(uuid, "Player-Not-Found=" + uuid);
     }
 
-    private @NotNull PlayerProfile queryByUUIDAndName(@NotNull final UserQueryFull userQuery) {
-        final String playerName = userQuery.getType().name();
-        final UUID uuid = userQuery.getUUID();
+    private @NotNull PlayerProfile queryByUUIDAndName(@NotNull UserQueryFull userQuery,
+            boolean nameIsCurrent) {
+        String playerName = userQuery.name();
+        UUID uuid = userQuery.getUUID();
 
         synchronized (fileWritingLock) {
             try (final BufferedReader in = newBufferedReader()) {
@@ -648,28 +800,35 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
 
                     final String[] rawSplitData = line.split(":");
 
-                    if (rawSplitData.length < (UUID_INDEX + 1)) {
+                    if (rawSplitData.length < (UUID_INDEX + 1)
+                            || !uuid.equals(parseUuidOrNull(rawSplitData[UUID_INDEX]))) {
                         continue;
                     }
 
-                    try {
-                        final UUID fromDataUUID = UUID.fromString(rawSplitData[UUID_INDEX]);
-                        if (fromDataUUID.equals(uuid)) {
-                            final String dbPlayerName = rawSplitData[USERNAME_INDEX];
-                            final boolean matchingName = dbPlayerName.equalsIgnoreCase(playerName);
+                    final String dbPlayerName = rawSplitData[USERNAME_INDEX];
+                    final boolean matchingName = dbPlayerName.equalsIgnoreCase(playerName);
 
-                            if (!matchingName) {
-                                logger.warning(
-                                        "When loading user: " + playerName + " with UUID of ("
-                                                + uuid + ") we found a mismatched name, the name in the DB will be replaced (DB name: "
-                                                + dbPlayerName + ")");
-                                rawSplitData[USERNAME_INDEX] = playerName;
-                            }
-
-                            return loadFromLine(rawSplitData);
+                    final boolean takesName = !matchingName && nameIsCurrent;
+                    if (takesName) {
+                        // The placeholder only means their name went to another player
+                        if (!isInvalidOldUsername(dbPlayerName)) {
+                            logger.warning("When loading user: " + playerName + " with UUID of ("
+                                    + uuid + ") we found a mismatched name, the name in the DB"
+                                    + " will be replaced (DB name: " + dbPlayerName + ")");
                         }
-                    } catch (final Exception e) {
-                        // Ignore malformed UUIDs
+                        rawSplitData[USERNAME_INDEX] = playerName;
+                    }
+
+                    try {
+                        final PlayerProfile profile = loadFromLine(rawSplitData);
+                        if (takesName) {
+                            // Saves skip a profile that has not changed, and the new name has
+                            // to reach the file
+                            profile.markProfileDirty();
+                        }
+                        return profile;
+                    } catch (RuntimeException e) {
+                        logUnloadableRow(playerName, uuid, e);
                     }
                 }
             } catch (final IOException e) {
@@ -681,9 +840,24 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return grabUnloadedProfile(uuid, playerName);
     }
 
-    private @NotNull PlayerProfile grabUnloadedProfile(@NotNull final UUID uuid,
-            @Nullable final String playerName) {
-        final String name = (playerName == null) ? "" : playerName;
+    /**
+     * Logged once per player, since the login retries and API lookups repeat the load. Callers
+     * keep scanning afterwards, as a later row for the same player may still load.
+     */
+    private void logUnloadableRow(@NotNull String playerName, @NotNull UUID uuid,
+            @NotNull RuntimeException cause) {
+        if (!reportedUnloadableRows.add(uuid)) {
+            return;
+        }
+
+        logger.log(Level.SEVERE, "Could not load " + playerName + " (" + uuid + ") from "
+                + usersFilePath + ", their row has data that cannot be read. They will not"
+                + " load until it is fixed, restarting the server repairs it.", cause);
+    }
+
+    private @NotNull PlayerProfile grabUnloadedProfile(@NotNull UUID uuid,
+            @Nullable String playerName) {
+        String name = (playerName == null) ? "" : playerName;
         return new PlayerProfile(name, uuid, 0);
     }
 
@@ -728,7 +902,11 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         }
     }
 
-    public boolean saveUserUUID(final String userName, final UUID uuid) {
+    public boolean saveUserUUID(String userName, UUID uuid) {
+        if (isInvalidOldUsername(userName)) {
+            return false;
+        }
+
         boolean worked = false;
         int entriesWritten = 0;
 
@@ -759,11 +937,15 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             } catch (final Exception e) {
                 logger.severe("Exception while reading " + usersFilePath
                         + " (Are you sure you formatted it correctly?)" + e);
+                return false;
+            }
+
+            if (!writeStringToFileSafely(writer.toString())) {
+                return false;
             }
 
             LogUtils.debug(logger,
                     entriesWritten + " entries written while saving UUID for " + userName);
-            writeStringToFileSafely(writer.toString());
         }
 
         return worked;
@@ -772,8 +954,8 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     public boolean saveUserUUIDs(final Map<String, UUID> fetchedUUIDs) {
         final int[] entriesWritten = {0};
 
-        rewriteUsersFile(line -> {
-            final FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
+        final boolean rewritten = rewriteUsersFile(line -> {
+            FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
             if (row == null) {
                 entriesWritten[0]++;
                 return line; // comments / empty / malformed unchanged
@@ -782,7 +964,8 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             final String[] character = row.fields();
             final String username = row.username();
 
-            if (username != null && fetchedUUIDs.containsKey(username)) {
+            if (username != null && !isInvalidOldUsername(username)
+                    && fetchedUUIDs.containsKey(username)) {
                 if (character.length < 42) {
                     logger.severe("Could not update UUID for " + username + "!");
                     logger.severe("Database entry is invalid.");
@@ -797,6 +980,10 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             entriesWritten[0]++;
             return line;
         });
+
+        if (!rewritten) {
+            return false;
+        }
 
         LogUtils.debug(logger,
                 entriesWritten[0] + " entries written while saving UUID batch");
@@ -816,42 +1003,55 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return users;
     }
 
+    @Override
+    public @NotNull List<PlayerNameAndUUID> getStoredUsersWithUUIDs() {
+        final List<PlayerNameAndUUID> storedUsers = new ArrayList<>();
+
+        withUsersFileLines(line -> {
+            final FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
+            if (row != null) {
+                storedUsers.add(new PlayerNameAndUUID(row.username(), row.uuid()));
+            }
+        });
+
+        return storedUsers;
+    }
+
     // ------------------------------------------------------------------------
     // Leaderboards
     // ------------------------------------------------------------------------
 
     public @NotNull LeaderboardStatus updateLeaderboards() {
         final long now = System.currentTimeMillis();
-        if (now < lastUpdate + UPDATE_WAIT_TIME) {
+        final long last = lastUpdate.get();
+        // Never-populated leaderboards bypass the throttle entirely: serving empty boards for a
+        // full window after a failed cold start is worse than an extra rebuild attempt.
+        // Otherwise the CAS makes the throttle single-winner: when two callers pass the time
+        // check together, only one performs the rebuild and the other returns immediately.
+        if (leaderboards != null
+                && (now < last + updateWaitTimeMillis || !lastUpdate.compareAndSet(last, now))) {
             return LeaderboardStatus.TOO_SOON_TO_UPDATE;
         }
 
-        lastUpdate = now;
+        final LeaderboardStatus status = rebuildLeaderboards();
+        if (status == LeaderboardStatus.FAILED) {
+            // A failed rebuild must not consume the throttle window; undo the claim so the next
+            // caller may retry immediately (unless another rebuild advanced it meanwhile).
+            lastUpdate.compareAndSet(now, last);
+        }
+        return status;
+    }
 
+    private @NotNull LeaderboardStatus rebuildLeaderboards() {
         // Power level leaderboard
         final TreeSet<PlayerStat> powerLevelStats = new TreeSet<>();
 
         // Per-skill leaderboards
         final EnumMap<PrimarySkillType, TreeSet<PlayerStat>> perSkillSets =
                 new EnumMap<>(PrimarySkillType.class);
-
-        perSkillSets.put(PrimarySkillType.MINING,        new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.WOODCUTTING,   new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.REPAIR,        new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.UNARMED,       new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.HERBALISM,     new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.EXCAVATION,    new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.ARCHERY,       new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.SWORDS,        new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.AXES,          new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.ACROBATICS,    new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.TAMING,        new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.FISHING,       new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.ALCHEMY,       new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.CROSSBOWS,     new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.TRIDENTS,      new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.MACES,         new TreeSet<>());
-        perSkillSets.put(PrimarySkillType.SPEARS,        new TreeSet<>());
+        for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
+            perSkillSets.put(skill, new TreeSet<>());
+        }
 
         String playerName = null;
 
@@ -859,9 +1059,9 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             try (final BufferedReader in = newBufferedReader()) {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    final FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
-                    if (row == null) {
-                        continue; // comment / empty / malformed
+                    FlatFileRow row = FlatFileRow.parse(line, logger, usersFilePath);
+                    if (row == null || isInvalidOldUsername(row.username())) {
+                        continue; // comment / empty / malformed / lost their name
                     }
 
                     playerName = row.username();
@@ -876,13 +1076,20 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
                         + playerName + " (Are you sure you formatted it correctly?) " + e);
                 return LeaderboardStatus.FAILED;
             }
-        }
 
-        // Freeze current leaderboards as immutable lists
-        powerLevels = List.copyOf(powerLevelStats);
+            // Publish the whole generation while still holding the lock: rebuilds stay
+            // serialized scan-to-publish, so a slower older scan can never overwrite a newer
+            // one, and readers always observe lists from a single file scan.
+            final Map<PrimarySkillType, List<PlayerStat>> skillLeaderboards =
+                    new EnumMap<>(PrimarySkillType.class);
+            for (Map.Entry<PrimarySkillType, TreeSet<PlayerStat>> entry : perSkillSets.entrySet()) {
+                skillLeaderboards.put(entry.getKey(), List.copyOf(entry.getValue()));
+            }
 
-        for (final Map.Entry<PrimarySkillType, TreeSet<PlayerStat>> entry : perSkillSets.entrySet()) {
-            leaderboardMap.put(entry.getKey(), List.copyOf(entry.getValue()));
+            leaderboards = new LeaderboardSnapshot(skillLeaderboards, List.copyOf(powerLevelStats));
+            // Only successful rebuilds arm the throttle; failures leave it untouched so the
+            // next caller may retry immediately.
+            lastUpdate.set(System.currentTimeMillis());
         }
 
         return LeaderboardStatus.UPDATED;
@@ -904,21 +1111,61 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return powerLevel;
     }
 
-    public @NotNull List<PlayerStat> readLeaderboard(@Nullable final PrimarySkillType primarySkillType,
-                                                     final int pageNumber,
-                                                     final int statsPerPage) throws InvalidSkillException {
+    public @NotNull List<PlayerStat> readLeaderboard(@Nullable PrimarySkillType primarySkillType,
+            int pageNumber,
+            int statsPerPage) throws InvalidSkillException {
+        validateNonChildSkill(primarySkillType);
 
+        updateLeaderboards();
+
+        return readLeaderboardPage(leaderboards, primarySkillType, pageNumber, statsPerPage);
+    }
+
+    /**
+     * Reads the top rows of every leaderboard scope after forcing a single rebuild, bypassing
+     * the wall-clock throttle that spaces out command-triggered rebuilds. One full users-file
+     * scan populates all scopes. Rebuild failures propagate so callers building caches from the
+     * result can keep their last good data.
+     */
+    @Override
+    public @NotNull LeaderboardSnapshot readLeaderboardSnapshot(int perScopeLimit) {
+        if (rebuildLeaderboards() == LeaderboardStatus.FAILED) {
+            throw new RuntimeException(
+                    "Failed to rebuild FlatFile leaderboards from " + usersFilePath);
+        }
+
+        // Slice every scope from one generation so the result cannot mix two file scans.
+        final LeaderboardSnapshot generation = leaderboards;
+        final Map<PrimarySkillType, List<PlayerStat>> skillLeaderboards =
+                new EnumMap<>(PrimarySkillType.class);
+        for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
+            skillLeaderboards.put(skill, readLeaderboardPage(generation, skill, 1, perScopeLimit));
+        }
+
+        return new LeaderboardSnapshot(skillLeaderboards,
+                readLeaderboardPage(generation, null, 1, perScopeLimit));
+    }
+
+    private void validateNonChildSkill(@Nullable PrimarySkillType primarySkillType)
+            throws InvalidSkillException {
         if (primarySkillType != null && SkillTools.isChildSkill(primarySkillType)) {
             logger.severe(
                     "A plugin hooking into mcMMO is being naughty with our database commands, update all plugins that hook into mcMMO and contact their devs!");
             throw new InvalidSkillException(
                     "A plugin hooking into mcMMO that you are using is attempting to read leaderboard skills for child skills, child skills do not have leaderboards! This is NOT an mcMMO error!");
         }
+    }
 
-        updateLeaderboards();
+    private @NotNull List<PlayerStat> readLeaderboardPage(
+            @Nullable LeaderboardSnapshot generation, @Nullable PrimarySkillType primarySkillType,
+            int pageNumber, int statsPerPage) {
+        if (generation == null) {
+            return List.of();
+        }
 
-        final List<PlayerStat> statsList =
-                (primarySkillType == null) ? powerLevels : leaderboardMap.get(primarySkillType);
+        final List<PlayerStat> statsList = (primarySkillType == null)
+                ? generation.powerLevels()
+                : generation.skillLeaderboards().get(primarySkillType);
 
         if (statsList == null) {
             return List.of();
@@ -931,16 +1178,24 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         return statsList.subList(start, end);
     }
 
-    public @NotNull HashMap<PrimarySkillType, Integer> readRank(final String playerName) {
-        updateLeaderboards();
-
-        final HashMap<PrimarySkillType, Integer> skills = new HashMap<>();
-
-        for (final PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
-            skills.put(skill, getPlayerRank(playerName, leaderboardMap.get(skill)));
+    public @NotNull HashMap<PrimarySkillType, Integer> readRank(String playerName) {
+        if (isInvalidOldUsername(playerName)) {
+            return new HashMap<>();
         }
 
-        skills.put(null, getPlayerRank(playerName, powerLevels));
+        updateLeaderboards();
+
+        // One generation reference so every rank comes from the same file scan.
+        final LeaderboardSnapshot generation = leaderboards;
+        final HashMap<PrimarySkillType, Integer> skills = new HashMap<>();
+
+        for (PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
+            skills.put(skill, getPlayerRank(playerName,
+                    generation == null ? null : generation.skillLeaderboards().get(skill)));
+        }
+
+        skills.put(null, getPlayerRank(playerName,
+                generation == null ? null : generation.powerLevels()));
         return skills;
     }
 
@@ -1019,6 +1274,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             } catch (final IOException e) {
                 logger.log(Level.SEVERE,
                         "Unexpected Exception while validating " + usersFilePath, e);
+                return null;
             }
 
             if (!dataProcessor.getFlatFileDataFlags().isEmpty()) {
@@ -1120,7 +1376,9 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         try {
             final float valueFromString = Integer.parseInt(character[index]);
             skillMap.put(primarySkillType, valueFromString);
-        } catch (final NumberFormatException e) {
+        } catch (ArrayIndexOutOfBoundsException e) {
+            skillMap.put(primarySkillType, 0F);
+        } catch (NumberFormatException e) {
             skillMap.put(primarySkillType, 0F);
             logger.severe("Data corruption when trying to load the value for skill "
                     + primarySkillType + " for player named " + userName + " setting value to zero");
@@ -1163,16 +1421,25 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     // Type / IO helpers
     // ------------------------------------------------------------------------
 
-    private @NotNull BufferedReader newBufferedReader() throws IOException {
+    @VisibleForTesting
+    @NotNull BufferedReader newBufferedReader() throws IOException {
         return new BufferedReader(new FileReader(usersFilePath));
     }
 
-    private void writeStringToFileSafely(final String contents) {
-        try (final FileWriter out = new FileWriter(usersFilePath)) {
+    @VisibleForTesting
+    @NotNull Writer newUsersFileWriter() throws IOException {
+        return new FileWriter(usersFilePath);
+    }
+
+    /** Replaces the users file with {@code contents}; false when the write failed. */
+    private boolean writeStringToFileSafely(String contents) {
+        try (Writer out = newUsersFileWriter()) {
             out.write(contents);
-        } catch (final IOException e) {
+            return true;
+        } catch (IOException e) {
             logger.log(Level.SEVERE,
                     "Unexpected Exception while writing " + usersFilePath, e);
+            return false;
         }
     }
 
@@ -1190,7 +1457,13 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
         }
     }
 
-    private void rewriteUsersFile(@NotNull final Function<String, String> lineMapper) {
+    /**
+     * Streams the users file through {@code lineMapper} and writes back the lines it keeps;
+     * a {@code null} from the mapper drops the line.
+     *
+     * @return false when the file could not be read or written
+     */
+    private boolean rewriteUsersFile(@NotNull Function<String, String> lineMapper) {
         synchronized (fileWritingLock) {
             final StringBuilder writer = new StringBuilder();
 
@@ -1205,9 +1478,10 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             } catch (final IOException e) {
                 logger.severe("Exception while reading " + usersFilePath
                         + " (Are you sure you formatted it correctly?)" + e);
+                return false;
             }
 
-            writeStringToFileSafely(writer.toString());
+            return writeStringToFileSafely(writer.toString());
         }
     }
 

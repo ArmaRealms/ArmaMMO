@@ -1,7 +1,6 @@
 package com.gmail.nossr50.skills.swords;
 
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
-import com.gmail.nossr50.datatypes.meta.RuptureTaskMeta;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -10,7 +9,6 @@ import com.gmail.nossr50.datatypes.skills.ToolType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.RuptureTask;
 import com.gmail.nossr50.skills.SkillManager;
-import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
@@ -56,26 +54,42 @@ public class SwordsManager extends SkillManager {
      * Check for Bleed effect.
      *
      * @param target The defending entity
+     * @deprecated use {@link #processRupture(LivingEntity, double)} instead; this overload reads
+     * the live attack cooldown, which is unreliable during damage events on Paper 26.1.2+
      */
-    public void processRupture(@NotNull final LivingEntity target) {
-        if (!canUseRupture())
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public void processRupture(@NotNull LivingEntity target) {
+        processRupture(target, mmoPlayer.getAttackStrength());
+    }
+
+    /**
+     * Check for Bleed effect.
+     *
+     * @param target The defending entity
+     * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
+     */
+    public void processRupture(@NotNull LivingEntity target, double attackStrengthScale) {
+        if (!canUseRupture()) {
             return;
+        }
 
-        if (target.hasMetadata(MetadataConstants.METADATA_KEY_RUPTURE)) {
-            final RuptureTaskMeta ruptureTaskMeta = (RuptureTaskMeta) target.getMetadata(MetadataConstants.METADATA_KEY_RUPTURE).get(0);
-
+        final RuptureTask ongoingRupture = RuptureTask.getActive(target);
+        if (ongoingRupture != null) {
             if (mmoPlayer.isDebugMode()) {
-                mmoPlayer.getPlayer().sendMessage("Rupture task ongoing for target " + target);
-                mmoPlayer.getPlayer().sendMessage(ruptureTaskMeta.getRuptureTimerTask().toString());
+                mmoPlayer.getPlayer()
+                        .sendMessage("Rupture task ongoing for target " + target);
+                mmoPlayer.getPlayer().sendMessage(ongoingRupture.toString());
             }
 
-            ruptureTaskMeta.getRuptureTimerTask().refreshRupture();
+            ongoingRupture.refreshRupture();
             return; //Don't apply bleed
         }
 
-        final double ruptureOdds = mcMMO.p.getAdvancedConfig().getRuptureChanceToApplyOnHit(getRuptureRank())
-                * mmoPlayer.getAttackStrength();
-        if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.SWORDS, mmoPlayer, ruptureOdds)) {
+        double ruptureOdds =
+                mcMMO.p.getAdvancedConfig().getRuptureChanceToApplyOnHit(getRuptureRank())
+                        * attackStrengthScale;
+        if (ProbabilityUtil.isStaticSkillRNGSuccessful(PrimarySkillType.SWORDS, mmoPlayer,
+                ruptureOdds)) {
 
             if (target instanceof final Player defender) {
 
@@ -91,10 +105,7 @@ public class SwordsManager extends SkillManager {
             final RuptureTask ruptureTask = new RuptureTask(mmoPlayer, target,
                     mcMMO.p.getAdvancedConfig().getRuptureTickDamage(target instanceof Player, getRuptureRank()));
 
-            final RuptureTaskMeta ruptureTaskMeta = new RuptureTaskMeta(mcMMO.p, ruptureTask);
-
-            mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(target, ruptureTask, 1, 1);
-            target.setMetadata(MetadataConstants.METADATA_KEY_RUPTURE, ruptureTaskMeta);
+            ruptureTask.schedule();
         }
     }
 
@@ -138,8 +149,25 @@ public class SwordsManager extends SkillManager {
      *
      * @param target The {@link LivingEntity} being affected by the ability
      * @param damage The amount of damage initially dealt by the event
+     * @deprecated use {@link #serratedStrikes(LivingEntity, double, double)} instead; this
+     * overload reads the live attack cooldown, which is unreliable during damage events on Paper
+     * 26.1.2+
      */
-    public void serratedStrikes(@NotNull final LivingEntity target, final double damage) {
-        CombatUtils.applyAbilityAoE(getPlayer(), target, damage / Swords.serratedStrikesModifier, skill);
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public void serratedStrikes(@NotNull LivingEntity target, double damage) {
+        serratedStrikes(target, damage, mmoPlayer.getAttackStrength());
+    }
+
+    /**
+     * Handle the effects of the Serrated Strikes ability
+     *
+     * @param target The {@link LivingEntity} being affected by the ability
+     * @param damage The amount of damage initially dealt by the event
+     * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
+     */
+    public void serratedStrikes(@NotNull LivingEntity target, double damage,
+            double attackStrengthScale) {
+        CombatUtils.applyAbilityAoE(getPlayer(), target, damage / Swords.serratedStrikesModifier,
+                attackStrengthScale, skill);
     }
 }

@@ -75,7 +75,7 @@ public abstract class SkillCommand implements TabExecutor {
             permissionsCheck(player);
             dataCalculations(player, skillValue);
 
-            sendSkillCommandHeader(mcMMO.p.getSkillTools().getLocalizedSkillName(skill),
+            sendSkillCommandHeader(mcMMO.p.getSkillTools().getHeaderBannerSkillName(skill),
                     player, mmoPlayer, (int) skillValue);
 
             //Make JSON text components
@@ -134,7 +134,8 @@ public abstract class SkillCommand implements TabExecutor {
             }
         }
 
-        final String skillName = mcMMO.p.getSkillTools().getLocalizedSkillName(skill);
+        // The SkillName value doubles as the localized command, so the guide hint must use it
+        final String skillName = mcMMO.p.getSkillTools().getHeaderBannerSkillName(skill);
         player.sendMessage(LocaleLoader.getString("Guides.Available",
                 skillName,
                 skillName.toLowerCase(Locale.ENGLISH)));
@@ -165,10 +166,14 @@ public abstract class SkillCommand implements TabExecutor {
 
             for (int i = 0; i < parentList.size(); i++) {
                 if (i + 1 < parentList.size()) {
-                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
+                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList",
+                            mcMMO.p.getSkillTools().getHeaderBannerSkillName(parentList.get(i)),
+                            mmoPlayer.getSkillLevel(parentList.get(i))));
                     parentMessage.append(ChatColor.GRAY).append(", ");
                 } else {
-                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList", mcMMO.p.getSkillTools().getLocalizedSkillName(parentList.get(i)), mcMMOPlayer.getSkillLevel(parentList.get(i))));
+                    parentMessage.append(LocaleLoader.getString("Effects.Child.ParentList",
+                            mcMMO.p.getSkillTools().getHeaderBannerSkillName(parentList.get(i)),
+                            mmoPlayer.getSkillLevel(parentList.get(i))));
                 }
             }
 

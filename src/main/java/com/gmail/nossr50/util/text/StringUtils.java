@@ -11,7 +11,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 /**
  * Utility class for String operations, including formatting and caching deterministic results to
@@ -22,28 +21,17 @@ public class StringUtils {
     protected static final Locale DEFAULT_LOCALE = Locale.of("pt", "BR");
     protected static final DecimalFormat percent = new DecimalFormat("##0.00%",
             DecimalFormatSymbols.getInstance(DEFAULT_LOCALE));
-    protected static final DecimalFormat shortDecimal = new DecimalFormat("##0.0",
-            DecimalFormatSymbols.getInstance(DEFAULT_LOCALE));
-    protected static final DecimalFormat decimalFormat = new DecimalFormat("#,###.##", new DecimalFormatSymbols(DEFAULT_LOCALE));
+    // DecimalFormat is not thread-safe, and tick displays are formatted from region threads
+    // on Folia
+    private static final ThreadLocal<DecimalFormat> shortDecimal = ThreadLocal.withInitial(
+            () -> new DecimalFormat("##0.0", DecimalFormatSymbols.getInstance(DEFAULT_LOCALE)));
+    private static final ThreadLocal<DecimalFormat> decimalFormat = ThreadLocal.withInitial(
+            () -> new DecimalFormat("#,###.##", DecimalFormatSymbols.getInstance(DEFAULT_LOCALE)));
+
     // Using concurrent hash maps to avoid concurrency issues (Folia)
     private static final Map<EntityType, String> formattedEntityStrings = new ConcurrentHashMap<>();
     private static final Map<SuperAbilityType, String> formattedSuperAbilityStrings = new ConcurrentHashMap<>();
     private static final Map<Material, String> formattedMaterialStrings = new ConcurrentHashMap<>();
-    /**
-     * Function to create a pretty string from a base string.
-     */
-    private static final Function<String, String> PRETTY_STRING_FUNC = baseString -> {
-        if (baseString.contains("_") && !baseString.contains(" ")) {
-            return prettify(baseString.split("_"));
-        } else {
-            if (baseString.contains(" ")) {
-                return prettify(baseString.split(" "));
-            } else {
-                return getCapitalized(baseString);
-            }
-        }
-    };
-
     /**
      * Gets a capitalized version of the target string. Results are cached to improve performance.
      *
@@ -64,8 +52,8 @@ public class StringUtils {
      * @param ticks Number of ticks
      * @return String representation of seconds
      */
-    public static String ticksToSeconds(final double ticks) {
-        return shortDecimal.format(ticks / 20);
+    public static String ticksToSeconds(double ticks) {
+        return shortDecimal.get().format(ticks / 20);
     }
 
     /**
@@ -133,21 +121,35 @@ public class StringUtils {
      * @param baseString String to convert
      * @return Pretty string
      */
-    private static String createPrettyString(final String baseString) {
-        return PRETTY_STRING_FUNC.apply(baseString);
+    private static String createPrettyString(String baseString) {
+        return capitalizeAndRejoin(baseString, ' ');
     }
 
-    private static @NotNull String prettify(final String[] substrings) {
-        final StringBuilder prettyString = new StringBuilder();
+    /**
+     * Splits the string on underscores or spaces, capitalizes each word, and rejoins the words
+     * with the given delimiter. Shared by the pretty-string and config-string formatters.
+     */
+    static @NotNull String capitalizeAndRejoin(@NotNull String baseString, char delimiter) {
+        if (baseString.contains("_") && !baseString.contains(" ")) {
+            return capitalizeWords(baseString.split("_"), delimiter);
+        } else if (baseString.contains(" ")) {
+            return capitalizeWords(baseString.split(" "), delimiter);
+        } else {
+            return getCapitalized(baseString);
+        }
+    }
 
-        for (int i = 0; i < substrings.length; i++) {
-            prettyString.append(getCapitalized(substrings[i]));
-            if (i < substrings.length - 1) {
-                prettyString.append(' ');
+    private static @NotNull String capitalizeWords(String[] words, char delimiter) {
+        final StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < words.length; i++) {
+            result.append(getCapitalized(words[i]));
+            if (i < words.length - 1) {
+                result.append(delimiter);
             }
         }
 
-        return prettyString.toString();
+        return result.toString();
     }
 
     /**
@@ -191,6 +193,6 @@ public class StringUtils {
     }
 
     public static @NotNull String formatNumber(final int number) {
-        return decimalFormat.format(number);
+        return decimalFormat.get().format(number);
     }
 }

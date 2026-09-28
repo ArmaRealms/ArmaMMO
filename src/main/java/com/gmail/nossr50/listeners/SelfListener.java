@@ -1,5 +1,6 @@
 package com.gmail.nossr50.listeners;
 
+import com.gmail.nossr50.commands.levelup.LevelUpCommandManager;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -11,14 +12,16 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.player.PlayerLevelUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
-import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.server.PluginDisableEvent;
 
 public class SelfListener implements Listener {
     //Used in task scheduling and other things
@@ -28,8 +31,8 @@ public class SelfListener implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerLevelUp(final McMMOPlayerLevelUpEvent event) {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerLevelUp(McMMOPlayerLevelUpEvent event) {
         final Player player = event.getPlayer();
         final PrimarySkillType skill = event.getSkill();
 
@@ -45,17 +48,47 @@ public class SelfListener implements Listener {
             for (int i = 0; i < event.getLevelsGained(); i++) {
                 final int previousLevelGained = event.getSkillLevel() - i;
                 //Send player skill unlock notifications
-                UserManager.getPlayer(player)
-                        .processUnlockNotifications(plugin, event.getSkill(), previousLevelGained);
+                mmoPlayer.processUnlockNotifications(plugin, event.getSkill(),
+                        previousLevelGained);
             }
-
-            //Reset the delay timer
-            RankUtils.resetUnlockDelayTimer();
 
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                 ScoreboardManager.handleLevelUp(player, skill);
             }
         }
+
+        final LevelUpCommandManager levelUpCommandManager = plugin.getLevelUpCommandManager();
+        if (!levelUpCommandManager.hasRegistrations()) {
+            return;
+        }
+
+        final Set<Integer> levelsGained = new LinkedHashSet<>();
+        final Set<Integer> powerLevelsGained = new LinkedHashSet<>();
+        final int startingLevel = event.getSkillLevel() - event.getLevelsGained();
+        // The power level only counts non-child skills the player has permission for, so a
+        // level up in a skill that does not count leaves the power level where it was
+        final boolean countsTowardPowerLevel = !SkillTools.isChildSkill(skill)
+                && mcMMO.p.getSkillTools().doesPlayerHaveSkillPermission(player, skill);
+        final int startingPowerLevel = countsTowardPowerLevel
+                ? mmoPlayer.getPowerLevel() - event.getLevelsGained() : 0;
+        for (int i = 1; i <= event.getLevelsGained(); i++) {
+            levelsGained.add(startingLevel + i);
+            if (countsTowardPowerLevel) {
+                powerLevelsGained.add(startingPowerLevel + i);
+            }
+        }
+
+        levelUpCommandManager.applyLevelUp(mmoPlayer, skill, levelsGained, powerLevelsGained);
+    }
+
+    @EventHandler
+    public void onPluginDisable(PluginDisableEvent event) {
+        if (event.getPlugin() == plugin) {
+            // mcMMO shutting down is handled in onDisable
+            return;
+        }
+
+        plugin.getLevelUpCommandManager().clearPluginRegistrations(event.getPlugin());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -110,6 +143,8 @@ public class SelfListener implements Listener {
                         mmoPlayer.getPlayer().sendMessage(
                                 "No WG XP Flag - New Raw XP: " + event.getRawXpGained());
                     }
+
+                    return;
                 }
             }
         }
@@ -149,38 +184,18 @@ public class SelfListener implements Listener {
             return;
         }
 
-        final float rawXp = event.getRawXpGained();
+        final DiminishedReturns.Result result = DiminishedReturns.apply(
+                event.getRawXpGained(),
+                mmoPlayer.getProfile().getRegisteredXpGain(primarySkillType),
+                threshold,
+                ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType),
+                ExperienceConfig.getInstance().getExperienceGainsMultiplier(primarySkillType),
+                ExperienceConfig.getInstance().getDiminishedReturnsCap());
 
-        final float guaranteedMinimum = ExperienceConfig.getInstance().getDiminishedReturnsCap() * rawXp;
-
-        final float modifiedThreshold = (float) (
-                threshold / ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType)
-                        * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier());
-        final float difference =
-                (mmoPlayer.getProfile().getRegisteredXpGain(primarySkillType) - modifiedThreshold)
-                        / modifiedThreshold;
-
-        if (difference > 0) {
-//            System.out.println("Total XP Earned: " + mmoPlayer.getProfile().getRegisteredXpGain(primarySkillType) + " / Threshold value: " + threshold);
-//            System.out.println(difference * 100 + "% over the threshold!");
-//            System.out.println("Previous: " + event.getRawXpGained());
-//            System.out.println("Adjusted XP " + (event.getRawXpGained() - (event.getRawXpGained() * difference)));
-            final float newValue = rawXp - (rawXp * difference);
-
-            /*
-             * Make sure players get a guaranteed minimum of XP
-             */
-            //If there is no guaranteed minimum proceed, otherwise only proceed if newValue would be higher than our guaranteed minimum
-            if (guaranteedMinimum <= 0 || newValue > guaranteedMinimum) {
-                if (newValue > 0) {
-                    event.setRawXpGained(newValue);
-                } else {
-                    event.setCancelled(true);
-                }
-            } else {
-                event.setRawXpGained(guaranteedMinimum);
-            }
-
+        if (result.cancelled()) {
+            event.setCancelled(true);
+        } else if (result.changed()) {
+            event.setRawXpGained(result.rawXp());
         }
 
         if (mmoPlayer.isDebugMode()) {

@@ -8,6 +8,11 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.RankUtils;
+import java.util.EnumMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -23,7 +28,76 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Locale;
 
 public final class Permissions {
+    private static final Map<PrimarySkillType, String> SKILL_ENABLED_NODES =
+            perSkillNodes("mcmmo.skills.");
+    private static final Map<PrimarySkillType, String> LUCKY_PERK_NODES =
+            perSkillNodes("mcmmo.perks.lucky.");
+    private static final Map<PrimarySkillType, String> XP_QUADRUPLE_NODES =
+            perSkillNodes("mcmmo.perks.xp.quadruple.");
+    private static final Map<PrimarySkillType, String> XP_TRIPLE_NODES =
+            perSkillNodes("mcmmo.perks.xp.triple.");
+    private static final Map<PrimarySkillType, String> XP_150_PERCENT_NODES =
+            perSkillNodes("mcmmo.perks.xp.150percentboost.");
+    private static final Map<PrimarySkillType, String> XP_DOUBLE_NODES =
+            perSkillNodes("mcmmo.perks.xp.double.");
+    private static final Map<PrimarySkillType, String> XP_50_PERCENT_NODES =
+            perSkillNodes("mcmmo.perks.xp.50percentboost.");
+    private static final Map<PrimarySkillType, String> XP_25_PERCENT_NODES =
+            perSkillNodes("mcmmo.perks.xp.25percentboost.");
+    private static final Map<PrimarySkillType, String> XP_10_PERCENT_NODES =
+            perSkillNodes("mcmmo.perks.xp.10percentboost.");
+    private static final Map<PrimarySkillType, String> XP_CUSTOM_BOOST_NODES =
+            perSkillNodes("mcmmo.perks.xp.customboost.");
+    private static final Map<PrimarySkillType, String> VANILLA_XP_BOOST_NODES =
+            perSkillNodes("mcmmo.ability.", ".vanillaxpboost");
+    private static final Map<ItemType, String> REPAIR_ITEM_TYPE_NODES = perEnumNodes(
+            ItemType.class, type -> "mcmmo.ability.repair."
+                    + type.toString().toLowerCase(Locale.ENGLISH) + "repair");
+    private static final Map<MaterialType, String> REPAIR_MATERIAL_TYPE_NODES = perEnumNodes(
+            MaterialType.class, type -> "mcmmo.ability.repair."
+                    + type.toString().toLowerCase(Locale.ENGLISH) + "repair");
+    private static final Map<ItemType, String> SALVAGE_ITEM_TYPE_NODES = perEnumNodes(
+            ItemType.class, type -> "mcmmo.ability.salvage."
+                    + type.toString().toLowerCase(Locale.ENGLISH) + "salvage");
+    private static final Map<MaterialType, String> SALVAGE_MATERIAL_TYPE_NODES = perEnumNodes(
+            MaterialType.class, type -> "mcmmo.ability.salvage."
+                    + type.toString().toLowerCase(Locale.ENGLISH) + "salvage");
+    private static final Map<EntityType, String> CALL_OF_THE_WILD_NODES = perEnumNodes(
+            EntityType.class, type -> "mcmmo.ability.taming.callofthewild."
+                    + type.toString().toLowerCase(Locale.ENGLISH));
+    // Material is too large to precompute every node eagerly; these fill lazily and are read
+    // from region threads on Folia
+    private static final Map<Material, String> GREEN_THUMB_BLOCK_NODES =
+            new ConcurrentHashMap<>();
+    private static final Map<Material, String> GREEN_THUMB_PLANT_NODES =
+            new ConcurrentHashMap<>();
+
     private Permissions() {
+    }
+
+    private static Map<PrimarySkillType, String> perSkillNodes(String prefix) {
+        return perSkillNodes(prefix, "");
+    }
+
+    private static Map<PrimarySkillType, String> perSkillNodes(String prefix, String suffix) {
+        final Map<PrimarySkillType, String> nodes = new EnumMap<>(PrimarySkillType.class);
+
+        for (PrimarySkillType skill : PrimarySkillType.values()) {
+            nodes.put(skill, prefix + skill.toString().toLowerCase(Locale.ENGLISH) + suffix);
+        }
+
+        return nodes;
+    }
+
+    private static <T extends Enum<T>> Map<T, String> perEnumNodes(Class<T> enumClass,
+            Function<T, String> nodeBuilder) {
+        final Map<T, String> nodes = new EnumMap<>(enumClass);
+
+        for (T constant : enumClass.getEnumConstants()) {
+            nodes.put(constant, nodeBuilder.apply(constant));
+        }
+
+        return nodes;
     }
 
     /*
@@ -215,7 +289,11 @@ public final class Permissions {
         return permissible.hasPermission("mcmmo.commands.xprate.reset");
     }
 
-    public static boolean mcpurge(final Permissible permissible) {
+    public static boolean xprateShow(Permissible permissible) {
+        return permissible.hasPermission("mcmmo.commands.xprate.show");
+    }
+
+    public static boolean mcpurge(Permissible permissible) {
         return permissible.hasPermission("mcmmo.commands.mcpurge");
     }
 
@@ -245,60 +323,57 @@ public final class Permissions {
         return permissible.hasPermission("mcmmo.perks.bypass.salvageenchant");
     }
 
-    public static boolean lucky(final Permissible permissible, final PrimarySkillType skill) {
-        return permissible.hasPermission(
-                "mcmmo.perks.lucky." + skill.toString().toLowerCase(Locale.ENGLISH));
+    public static boolean lucky(Permissible permissible, PrimarySkillType skill) {
+        return permissible.hasPermission(LUCKY_PERK_NODES.get(skill));
     }
 
     /* XP PERKS */
     @Deprecated
     public static boolean quadrupleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.quadruple.all")
-            || permissible.hasPermission("mcmmo.perks.xp.quadruple." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_QUADRUPLE_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean tripleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.triple.all")
-            || permissible.hasPermission("mcmmo.perks.xp.triple." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_TRIPLE_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean doubleAndOneHalfXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.150percentboost.all")
-            || permissible.hasPermission("mcmmo.perks.xp.150percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_150_PERCENT_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean doubleXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.double.all")
-            || permissible.hasPermission("mcmmo.perks.xp.double." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_DOUBLE_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean oneAndOneHalfXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.50percentboost.all")
-            || permissible.hasPermission("mcmmo.perks.xp.50percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_50_PERCENT_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean oneAndAQuarterXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.25percentboost.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.25percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_25_PERCENT_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean oneAndOneTenthXp(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.10percentboost.all")
-            || permissible.hasPermission("mcmmo.perks.xp.10percentboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_10_PERCENT_NODES.get(skill));
     }
 
     @Deprecated
     public static boolean customXpBoost(final Permissible permissible, final PrimarySkillType skill) {
         return permissible.hasPermission("mcmmo.perks.xp.customboost.all")
-                || permissible.hasPermission(
-                "mcmmo.perks.xp.customboost." + skill.toString().toLowerCase(Locale.ENGLISH));
+                || permissible.hasPermission(XP_CUSTOM_BOOST_NODES.get(skill));
     }
 
     /* ACTIVATION PERKS */
@@ -331,15 +406,12 @@ public final class Permissions {
      * SKILLS
      */
 
-    public static boolean skillEnabled(final Permissible permissible, final PrimarySkillType skill) {
-        return permissible.hasPermission(
-                "mcmmo.skills." + skill.toString().toLowerCase(Locale.ENGLISH));
+    public static boolean skillEnabled(Permissible permissible, PrimarySkillType skill) {
+        return permissible.hasPermission(SKILL_ENABLED_NODES.get(skill));
     }
 
-    public static boolean vanillaXpBoost(final Permissible permissible, final PrimarySkillType skill) {
-        return permissible.hasPermission(
-                "mcmmo.ability." + skill.toString().toLowerCase(Locale.ENGLISH)
-                        + ".vanillaxpboost");
+    public static boolean vanillaXpBoost(Permissible permissible, PrimarySkillType skill) {
+        return permissible.hasPermission(VANILLA_XP_BOOST_NODES.get(skill));
     }
 
     public static boolean isSubSkillEnabled(@Nullable final Permissible permissible,
@@ -405,16 +477,16 @@ public final class Permissions {
         return permissible.hasPermission("mcmmo.ability.herbalism.greenterra");
     }
 
-    public static boolean greenThumbBlock(final Permissible permissible, final Material material) {
-        return permissible.hasPermission(
-                "mcmmo.ability.herbalism.greenthumb.blocks." + material.toString().replace("_", "")
-                        .toLowerCase(Locale.ENGLISH));
+    public static boolean greenThumbBlock(Permissible permissible, Material material) {
+        return permissible.hasPermission(GREEN_THUMB_BLOCK_NODES.computeIfAbsent(material,
+                mat -> "mcmmo.ability.herbalism.greenthumb.blocks."
+                        + mat.toString().replace("_", "").toLowerCase(Locale.ENGLISH)));
     }
 
-    public static boolean greenThumbPlant(final Permissible permissible, final Material material) {
-        return permissible.hasPermission(
-                "mcmmo.ability.herbalism.greenthumb.plants." + material.toString().replace("_", "")
-                        .toLowerCase(Locale.ENGLISH));
+    public static boolean greenThumbPlant(Permissible permissible, Material material) {
+        return permissible.hasPermission(GREEN_THUMB_PLANT_NODES.computeIfAbsent(material,
+                mat -> "mcmmo.ability.herbalism.greenthumb.plants."
+                        + mat.toString().replace("_", "").toLowerCase(Locale.ENGLISH)));
     }
 
     /* MINING */
@@ -435,17 +507,13 @@ public final class Permissions {
     }
 
     /* REPAIR */
-    public static boolean repairItemType(final Permissible permissible, final ItemType repairItemType) {
-        return permissible.hasPermission(
-                "mcmmo.ability.repair." + repairItemType.toString().toLowerCase(Locale.ENGLISH)
-                        + "repair");
+    public static boolean repairItemType(Permissible permissible, ItemType repairItemType) {
+        return permissible.hasPermission(REPAIR_ITEM_TYPE_NODES.get(repairItemType));
     }
 
-    public static boolean repairMaterialType(final Permissible permissible,
-                                             final MaterialType repairMaterialType) {
-        return permissible.hasPermission(
-                "mcmmo.ability.repair." + repairMaterialType.toString().toLowerCase(Locale.ENGLISH)
-                        + "repair");
+    public static boolean repairMaterialType(Permissible permissible,
+            MaterialType repairMaterialType) {
+        return permissible.hasPermission(REPAIR_MATERIAL_TYPE_NODES.get(repairMaterialType));
     }
 
     /* SALVAGE */
@@ -453,16 +521,13 @@ public final class Permissions {
         return permissible.hasPermission("mcmmo.ability.salvage.arcanesalvage");
     }
 
-    public static boolean salvageItemType(final Permissible permissible, final ItemType salvageItemType) {
-        return permissible.hasPermission(
-                "mcmmo.ability.salvage." + salvageItemType.toString().toLowerCase(Locale.ENGLISH)
-                        + "salvage");
+    public static boolean salvageItemType(Permissible permissible, ItemType salvageItemType) {
+        return permissible.hasPermission(SALVAGE_ITEM_TYPE_NODES.get(salvageItemType));
     }
 
-    public static boolean salvageMaterialType(final Permissible permissible,
-                                              final MaterialType salvageMaterialType) {
-        return permissible.hasPermission("mcmmo.ability.salvage." + salvageMaterialType.toString()
-                .toLowerCase(Locale.ENGLISH) + "salvage");
+    public static boolean salvageMaterialType(Permissible permissible,
+            MaterialType salvageMaterialType) {
+        return permissible.hasPermission(SALVAGE_MATERIAL_TYPE_NODES.get(salvageMaterialType));
     }
 
     /* SMELTING */
@@ -480,9 +545,8 @@ public final class Permissions {
     }
 
     /* TAMING */
-    public static boolean callOfTheWild(final Permissible permissible, final EntityType type) {
-        return permissible.hasPermission("mcmmo.ability.taming.callofthewild." + type.toString()
-                .toLowerCase(Locale.ENGLISH));
+    public static boolean callOfTheWild(Permissible permissible, EntityType type) {
+        return permissible.hasPermission(CALL_OF_THE_WILD_NODES.get(type));
     }
 
     /* UNARMED */
@@ -505,13 +569,13 @@ public final class Permissions {
     }
 
     /* TRIDENTS */
-    public static boolean tridentsLimitBreak(final Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.tridents.superability");
+    public static boolean tridentsLimitBreak(Permissible permissible) {
+        return permissible.hasPermission("mcmmo.ability.tridents.tridentslimitbreak");
     }
 
     /* MACES */
-    public static boolean macesLimitBreak(final Permissible permissible) {
-        return permissible.hasPermission("mcmmo.ability.maces.limitbreak");
+    public static boolean macesLimitBreak(Permissible permissible) {
+        return permissible.hasPermission("mcmmo.ability.maces.maceslimitbreak");
     }
 
     /*

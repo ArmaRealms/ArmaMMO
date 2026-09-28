@@ -31,14 +31,15 @@ public final class SoundRegistryUtils {
                 foundRegistry = true;
             } catch (final NoSuchFieldException | IllegalAccessException e) {
                 try {
-                    soundReg = registry.getField(SPIGOT_SOUND_REGISTRY_FIELD);
+                    soundReg = registry.getField(SPIGOT_SOUND_REGISTRY_FIELD).get(null);
                     foundRegistry = true;
-                } catch (final NoSuchFieldException ex) {
+                } catch (NoSuchFieldException | IllegalAccessException ex) {
                     // ignored
                 }
             }
-        } catch (final ClassNotFoundException e) {
-            // ignored
+        } catch (ClassNotFoundException | LinkageError e) {
+            // The registry class is missing or failed to initialize on this platform;
+            // fall back to the legacy enum-based lookup
         }
 
         if (foundRegistry) {
@@ -82,7 +83,6 @@ public final class SoundRegistryUtils {
                 } else {
                     mcMMO.p.getLogger().severe(format("Could not find sound with ID %s.", id));
                 }
-                throw new RuntimeException(e);
             }
         }
         return null;

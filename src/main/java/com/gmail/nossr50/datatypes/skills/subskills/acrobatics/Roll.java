@@ -266,8 +266,10 @@ public class Roll extends AcrobaticsSubSkill {
                 = isGraceful ? getGracefulProbability(mmoPlayer)
                 : getNonGracefulProbability(mmoPlayer);
 
-        final double modifiedDamage = calculateModifiedRollDamage(baseDamage,
-                mcMMO.p.getAdvancedConfig().getRollDamageThreshold() * 2);
+        final double damageThreshold = isGraceful
+                ? mcMMO.p.getAdvancedConfig().getGracefulRollDamageThreshold()
+                : mcMMO.p.getAdvancedConfig().getRollDamageThreshold();
+        double modifiedDamage = calculateModifiedRollDamage(baseDamage, damageThreshold);
         rollResultBuilder.modifiedDamage(modifiedDamage);
 
         final boolean isExploiting = isPlayerExploitingAcrobatics(mmoPlayer);

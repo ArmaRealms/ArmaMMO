@@ -204,6 +204,7 @@ public class ExcavationManager extends SkillManager {
      */
     public void gigaDrillBreaker(final Block block) {
         excavationBlockCheck(block);
+        excavationBlockCheck(block);
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
     }

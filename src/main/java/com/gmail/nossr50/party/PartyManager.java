@@ -894,7 +894,8 @@ public final class PartyManager {
         for (final Player member : party.getOnlineMembers()) {
             member.sendMessage(LocaleLoader.getString("Party.LevelUp", levelsGained, level));
 
-            if (levelUpSoundsEnabled) {
+            final McMMOPlayer mmoMember = UserManager.getPlayer(member);
+            if (levelUpSoundsEnabled && (mmoMember == null || mmoMember.useLevelUpSounds())) {
                 SoundManager.sendSound(member, member.getLocation(), SoundType.LEVEL_UP);
             }
         }

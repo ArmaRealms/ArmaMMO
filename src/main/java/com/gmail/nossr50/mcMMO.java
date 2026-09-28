@@ -2,7 +2,9 @@ package com.gmail.nossr50;
 
 import com.gmail.nossr50.chat.ChatManager;
 import com.gmail.nossr50.commands.CommandManager;
+import com.gmail.nossr50.commands.levelup.LevelUpCommandManager;
 import com.gmail.nossr50.config.AdvancedConfig;
+import com.gmail.nossr50.config.CommandOnLevelUpConfig;
 import com.gmail.nossr50.config.CoreSkillsConfig;
 import com.gmail.nossr50.config.CustomItemSupportConfig;
 import com.gmail.nossr50.config.GeneralConfig;
@@ -11,7 +13,6 @@ import com.gmail.nossr50.config.PersistentDataConfig;
 import com.gmail.nossr50.config.RankConfig;
 import com.gmail.nossr50.config.SoundConfig;
 import com.gmail.nossr50.config.WorldBlacklist;
-import com.gmail.nossr50.util.blockmeta.McMMORegionBackupStore;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.party.PartyConfig;
 import com.gmail.nossr50.config.skills.alchemy.PotionConfig;
@@ -41,6 +42,7 @@ import com.gmail.nossr50.runnables.party.PartyAutoKickTask;
 import com.gmail.nossr50.runnables.player.ClearRegisteredXPGainTask;
 import com.gmail.nossr50.runnables.player.PlayerProfileLoadingTask;
 import com.gmail.nossr50.runnables.player.PowerLevelUpdatingTask;
+import com.gmail.nossr50.runnables.skills.PlantCollapseXpTask;
 import com.gmail.nossr50.skills.alchemy.Alchemy;
 import com.gmail.nossr50.skills.repair.repairables.Repairable;
 import com.gmail.nossr50.skills.repair.repairables.RepairableManager;
@@ -48,6 +50,7 @@ import com.gmail.nossr50.skills.repair.repairables.SimpleRepairableManager;
 import com.gmail.nossr50.skills.salvage.salvageables.Salvageable;
 import com.gmail.nossr50.skills.salvage.salvageables.SalvageableManager;
 import com.gmail.nossr50.skills.salvage.salvageables.SimpleSalvageableManager;
+import com.gmail.nossr50.skills.taming.TamingManager;
 import com.gmail.nossr50.util.ChimaeraWing;
 import com.gmail.nossr50.util.EnchantmentMapper;
 import com.gmail.nossr50.util.LogFilter;
@@ -61,6 +64,7 @@ import com.gmail.nossr50.util.TransientEntityTracker;
 import com.gmail.nossr50.util.TransientMetadataTools;
 import com.gmail.nossr50.util.blockmeta.ChunkManager;
 import com.gmail.nossr50.util.blockmeta.ChunkManagerFactory;
+import com.gmail.nossr50.util.blockmeta.McMMORegionBackupStore;
 import com.gmail.nossr50.util.blockmeta.UserBlockTracker;
 import com.gmail.nossr50.util.commands.CommandRegistrationManager;
 import com.gmail.nossr50.util.experience.FormulaManager;
@@ -110,6 +114,7 @@ public class mcMMO extends JavaPlugin {
     private static DatabaseManager databaseManager;
     private static FormulaManager formulaManager;
     private static UpgradeManager upgradeManager;
+    private static LevelUpCommandManager levelUpCommandManager;
     private static MaterialMapStore materialMapStore;
     private static PlayerLevelUtils playerLevelUtils;
     private static TransientMetadataTools transientMetadataTools;
@@ -143,6 +148,10 @@ public class mcMMO extends JavaPlugin {
     /* Plugin Checks */
     private static boolean healthBarPluginEnabled;
     private static boolean projectKorraEnabled;
+    /**
+     * Stored so we can stop expansion-owned tasks during plugin shutdown.
+     */
+    private @Nullable PapiExpansion papiExpansion;
 
     // API checks
     private static boolean serverAPIOutdated = false;
@@ -166,6 +175,8 @@ public class mcMMO extends JavaPlugin {
 
     private FoliaLib foliaLib;
     private PartyManager partyManager;
+
+    private CommandOnLevelUpConfig commandOnLevelUpConfig;
 
     public mcMMO() {
         p = this;
@@ -203,17 +214,22 @@ public class mcMMO extends JavaPlugin {
 
             setupFilePaths();
             generalConfig = new GeneralConfig(getDataFolder()); //Load before skillTools
+
+            //Store this value so other plugins can check it
+            //Must be set before AdvancedConfig loads, its level scaling reads this flag
+            isRetroModeEnabled = generalConfig.getIsRetroMode();
+
             skillTools = new SkillTools(this); //Load after general config
 
             //Init configs
+            levelUpCommandManager = new LevelUpCommandManager(this);
             advancedConfig = new AdvancedConfig(getDataFolder());
+            commandOnLevelUpConfig = new CommandOnLevelUpConfig(getDataFolder());
             partyConfig = new PartyConfig(getDataFolder());
             customItemSupportConfig = new CustomItemSupportConfig(getDataFolder());
 
-            //Store this value so other plugins can check it
-            isRetroModeEnabled = generalConfig.getIsRetroMode();
-
-            MetadataConstants.MCMMO_METADATA_VALUE = new FixedMetadataValue(this, true);
+            // Prime the shared metadata flag value (also populates the deprecated public field)
+            MetadataConstants.getMcMMOMetadataValue();
 
             final PluginManager pluginManager = getServer().getPluginManager();
             healthBarPluginEnabled = pluginManager.getPlugin("HealthBar") != null;
@@ -230,6 +246,9 @@ public class mcMMO extends JavaPlugin {
             if (!noErrorsInConfigFiles) {
                 return;
             }
+
+            //Hacky stuff used as a band-aid
+            TamingManager.initStaticCaches();
 
             if (getServer().getName().equals("Cauldron") || getServer().getName().equals("MCPC+")) {
                 checkModConfigs();
@@ -269,14 +288,21 @@ public class mcMMO extends JavaPlugin {
                                 "You are potentially running an outdated version of your server software"
                                         + ", mcMMO will not work unless you update to a newer version!"),
                         20, 20 * 60 * 30);
-                if (!minecraftGameVersion.isAtLeast(1, 20, 4)) {
+                if (!minecraftGameVersion.isAtLeast(1, 20, 5)) {
                     foliaLib.getScheduler().runTimer(
                             () -> getLogger().severe(
-                                    "This version of mcMMO requires at least Minecraft 1.20.4 to"
+                                    "This version of mcMMO requires at least Minecraft 1.20.5 to"
                                             + " function properly, please update your software or use an older version of mcMMO!"),
                             20, 20 * 60 * 30);
                 }
             } else {
+                // Load the packet-based scoreboard library before registering events/commands
+                // that may touch ScoreboardManager. Guarded by the same config as onDisable's
+                // teardown; falls back to a no-op library on unsupported server versions.
+                if (generalConfig.getScoreboardsEnabled()) {
+                    ScoreboardManager.init();
+                }
+
                 registerEvents();
                 registerCoreSkills();
                 registerCustomRecipes();
@@ -303,7 +329,7 @@ public class mcMMO extends JavaPlugin {
                 chunkManager = ChunkManagerFactory.getChunkManager(); // Get our ChunkletManager
 
                 if (PersistentDataConfig.getInstance().useBlockTracker()
-                    && generalConfig.getRegionDataMigrationBackupsEnabled()) {
+                        && generalConfig.getRegionDataMigrationBackupsEnabled()) {
                     long migrationRestoreTotalNanos = 0L;
                     int migrationRestoreWorldsWithWork = 0;
                     boolean migrationAnnouncementLogged = false;
@@ -395,7 +421,16 @@ public class mcMMO extends JavaPlugin {
         setServerShutdown(false); //Reset flag, used to make decisions about async saves
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PapiExpansion().register();
+            // Keep a reference for explicit shutdown/unregister in onDisable().
+            papiExpansion = new PapiExpansion();
+            if (papiExpansion.register()) {
+                // Only spend refresh work on the leaderboard cache once PlaceholderAPI has
+                // actually accepted the expansion.
+                papiExpansion.startLeaderboardCache();
+            } else {
+                getLogger().warning(
+                        "Failed to register the mcMMO PlaceholderAPI expansion, mcMMO placeholders will be unavailable.");
+            }
         }
     }
 
@@ -409,7 +444,8 @@ public class mcMMO extends JavaPlugin {
 
     private void checkForOutdatedAPI() {
         try {
-            final Class<?> blockDropItemEvent = Class.forName("org.bukkit.event.block.BlockDropItemEvent");
+            Class<?> blockDropItemEvent = Class.forName(
+                    "org.bukkit.event.block.BlockDropItemEvent");
             blockDropItemEvent.getMethod("getItems");
             Class.forName("net.md_5.bungee.api.chat.BaseComponent");
             // 1.20.4 checks
@@ -417,7 +453,8 @@ public class mcMMO extends JavaPlugin {
             entityDamageEvent.getMethod("getDamageSource");
         } catch (final ClassNotFoundException | NoSuchMethodException e) {
             serverAPIOutdated = true;
-            getLogger().severe("Your server software is missing APIs that mcMMO requires to function properly, please update your server software!");
+            getLogger().severe(
+                    "Your server software is missing APIs that mcMMO requires to function properly, please update your server software!");
         }
     }
 
@@ -441,6 +478,9 @@ public class mcMMO extends JavaPlugin {
         try {
             UserManager.saveAll();      // Make sure to save player information if the server shuts down
             UserManager.clearAll();
+            if (levelUpCommandManager != null) {
+                levelUpCommandManager.clearAll();
+            }
             Alchemy.finishAllBrews();   // Finish all partially complete AlchemyBrewTasks to prevent vanilla brewing continuation on restart
             if (partyConfig.isPartyEnabled()) {
                 getPartyManager().saveParties(); // Save our parties
@@ -453,7 +493,7 @@ public class mcMMO extends JavaPlugin {
 
             formulaManager.saveFormula();
             chunkManager.closeAll();
-                if (PersistentDataConfig.getInstance().useBlockTracker()
+            if (PersistentDataConfig.getInstance().useBlockTracker()
                     && generalConfig.getRegionDataMigrationBackupsEnabled()) {
                 long backupTotalNanos = 0L;
                 int backupWorldsWithWork = 0;
@@ -464,6 +504,16 @@ public class mcMMO extends JavaPlugin {
                         continue;
                     }
 
+                    // Announce before the first snapshot is written, not after
+                    if (!backupAnnouncementLogged
+                            && McMMORegionBackupStore.worldNeedsBackup(loadedWorld,
+                                    getLogger())) {
+                        getLogger().info("Legacy region format detected, mcMMO will back up "
+                                + "region data files to prevent data loss, do NOT force a "
+                                + "shutdown until this completes.");
+                        backupAnnouncementLogged = true;
+                    }
+
                     final long backupStartNanos = System.nanoTime();
                     final boolean backupApplied = McMMORegionBackupStore.backupWorld(
                             loadedWorld, getLogger(), getDataFolder().toPath());
@@ -471,13 +521,6 @@ public class mcMMO extends JavaPlugin {
 
                     if (!backupApplied) {
                         continue;
-                    }
-
-                    if (!backupAnnouncementLogged) {
-                        getLogger().info("Legacy region format detected, mcMMO will back up "
-                                + "region data files to prevent data loss, do NOT force a "
-                                + "shutdown until this completes.");
-                        backupAnnouncementLogged = true;
                     }
 
                     backupTotalNanos += backupElapsedNanos;
@@ -513,7 +556,14 @@ public class mcMMO extends JavaPlugin {
         }
 
         LogUtils.debug(mcMMO.p.getLogger(), "Canceling all tasks...");
+        if (papiExpansion != null) {
+            // Shut down expansion resources before global task cancellation.
+            papiExpansion.shutdown();
+            papiExpansion.unregister();
+            papiExpansion = null;
+        }
         getFoliaLib().getScheduler().cancelAllTasks(); // This removes our tasks
+        PlantCollapseXpTask.clearPendingVerifications();
         LogUtils.debug(mcMMO.p.getLogger(), "Unregister all events...");
         HandlerList.unregisterAll(this); // Cancel event registrations
 
@@ -724,14 +774,10 @@ public class mcMMO extends JavaPlugin {
          * Acrobatics skills
          */
 
-        InteractionManager.initMaps(); //Init maps
-
         if (CoreSkillsConfig.getInstance().isPrimarySkillEnabled(PrimarySkillType.ACROBATICS)) {
             LogUtils.debug(mcMMO.p.getLogger(), "Enabling Acrobatics Skills");
 
             //TODO: Should do this differently
-            final Roll roll = new Roll();
-            CoreSkillsConfig.getInstance().isSkillEnabled(roll);
             InteractionManager.registerSubSkill(new Roll());
         }
     }
@@ -959,6 +1005,14 @@ public class mcMMO extends JavaPlugin {
 
     public @NotNull FoliaLib getFoliaLib() {
         return foliaLib;
+    }
+
+    public @NotNull CommandOnLevelUpConfig getCommandOnLevelUpConfig() {
+        return commandOnLevelUpConfig;
+    }
+
+    public @NotNull LevelUpCommandManager getLevelUpCommandManager() {
+        return levelUpCommandManager;
     }
 
     /**

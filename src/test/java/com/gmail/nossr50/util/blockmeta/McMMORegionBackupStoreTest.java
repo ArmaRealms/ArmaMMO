@@ -838,7 +838,8 @@ class McMMORegionBackupStoreTest {
             createCompleteSnapshot(worldBackupRoot, "2026-05-30T10:00:00Z");
 
             // When asking for the newest complete snapshot
-            final Path newest = McMMORegionBackupStore.newestCompleteSnapshot(worldBackupRoot);
+            final Path newest = McMMORegionBackupStore.newestCompleteSnapshot(worldBackupRoot,
+                    silentLogger);
 
             // Then the 2026-05-30 snapshot wins (the 31st is incomplete and has no stamp)
             assertThat(newest).isNotNull();
@@ -854,7 +855,8 @@ class McMMORegionBackupStoreTest {
 
             // When asking for the newest complete snapshot
             // Then null is returned
-            assertThat(McMMORegionBackupStore.newestCompleteSnapshot(worldBackupRoot)).isNull();
+            assertThat(McMMORegionBackupStore.newestCompleteSnapshot(worldBackupRoot,
+                    silentLogger)).isNull();
         }
 
         @Test
@@ -863,7 +865,7 @@ class McMMORegionBackupStoreTest {
             // When asking for the newest complete snapshot
             // Then null is returned without throwing
             assertThat(McMMORegionBackupStore.newestCompleteSnapshot(
-                    worldBackupRoot("nonexistent"))).isNull();
+                    worldBackupRoot("nonexistent"), silentLogger)).isNull();
         }
 
         private void createCompleteSnapshot(Path root, String iso) throws IOException {
@@ -875,6 +877,50 @@ class McMMORegionBackupStoreTest {
 
         private void createIncompleteSnapshot(Path root, String iso) throws IOException {
             Files.createDirectories(root.resolve(snapshotName(iso)));
+        }
+    }
+
+    /**
+     * The pre-check lets shutdown announce the backup pass before the first snapshot is
+     * written; it must agree with what backup() would actually do.
+     */
+    @Nested
+    class NeedsBackupPreCheck {
+
+        @Test
+        void legacyShapeWorldWithRegionDataShouldNeedBackup() throws IOException {
+            // Given - a legacy-shape world with tracked region data
+            final String worldName = "world";
+            final Path worldFolder = legacyWorldFolder(worldName);
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+
+            // When / Then - the pre-check reports a backup is needed
+            assertThat(McMMORegionBackupStore.needsBackup(containerRoot, worldName, worldFolder,
+                    silentLogger)).isTrue();
+        }
+
+        @Test
+        void legacyShapeWorldWithoutRegionDataShouldNotNeedBackup() throws IOException {
+            // Given - a legacy-shape world with no tracked region data
+            final String worldName = "world";
+            final Path worldFolder = legacyWorldFolder(worldName);
+            Files.createDirectories(worldFolder);
+
+            // When / Then - there is nothing to back up
+            assertThat(McMMORegionBackupStore.needsBackup(containerRoot, worldName, worldFolder,
+                    silentLogger)).isFalse();
+        }
+
+        @Test
+        void newShapeWorldShouldNotNeedBackup() throws IOException {
+            // Given - a world already on the new Paper layout, even with region data present
+            final String worldName = "world";
+            final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+
+            // When / Then - snapshots are not needed on the new shape
+            assertThat(McMMORegionBackupStore.needsBackup(containerRoot, worldName, worldFolder,
+                    silentLogger)).isFalse();
         }
     }
 

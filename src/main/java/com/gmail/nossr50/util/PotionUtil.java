@@ -67,12 +67,20 @@ public final class PotionUtil {
 
     /**
      * Returns the NamespacedKey key string portion for this potion type (e.g. "swiftness").
+     *
+     * @deprecated No remaining callers; scheduled for removal.
      */
-    public static @NotNull String getKeyGetKey(@NotNull final PotionType potionType) {
-        return potionType.getKey().getKey();
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public static @NotNull String getKeyGetKey(@NotNull PotionType potionType) {
+        final NamespacedKey key = potionType.getKey();
+        return key != null ? key.getKey() : potionType.name();
     }
 
-    public static String convertPotionConfigName(final String legacyName) {
+    /**
+     * @deprecated No remaining callers; scheduled for removal.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public static String convertPotionConfigName(String legacyName) {
         String replacementName = legacyName;
 
         // Remove generated potions.yml config naming convention
@@ -91,17 +99,21 @@ public final class PotionUtil {
         return replacementName;
     }
 
-    public static String convertLegacyNames(final String legacyPotionType) {
-        String modernized = legacyPotionType;
+    public static String convertLegacyNames(String legacyPotionType) {
+        String prefix = "";
+        String baseName = legacyPotionType;
 
-        for (final var key : legacyPotionTypes.keySet()) {
-            if (modernized.contains(key)) {
-                modernized = modernized.replace(key, legacyPotionTypes.get(key));
-                break;
-            }
+        // Only map the base name behind any strong/long prefix; exact matching keeps modern
+        // names that contain a legacy name as a substring (e.g. REGENERATION) untouched
+        if (baseName.startsWith(STRONG + "_")) {
+            prefix = STRONG + "_";
+            baseName = baseName.substring(prefix.length());
+        } else if (baseName.startsWith(LONG + "_")) {
+            prefix = LONG + "_";
+            baseName = baseName.substring(prefix.length());
         }
 
-        return modernized;
+        return prefix + legacyPotionTypes.getOrDefault(baseName, baseName);
     }
 
     public static boolean isStrong(@NotNull final PotionMeta potionMeta) {

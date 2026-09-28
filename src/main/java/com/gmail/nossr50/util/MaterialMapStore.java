@@ -18,7 +18,8 @@ public class MaterialMapStore {
     private final @NotNull HashSet<String> toolBlackList;
     private final @NotNull HashSet<String> mossyWhiteList;
     private final @NotNull HashSet<String> treeFellerDestructibleWhiteList;
-    private final @NotNull HashSet<String> herbalismAbilityBlackList;
+    private final @NotNull HashSet<String> treeFellerGuaranteedDropWhiteList;
+    private final @NotNull HashSet<String> herbalismAbilityWhiteList;
     private final @NotNull HashSet<String> blockCrackerWhiteList;
     private final @NotNull HashSet<String> canMakeShroomyWhiteList;
     private final @NotNull HashSet<String> multiBlockPlant;
@@ -68,7 +69,8 @@ public class MaterialMapStore {
         toolBlackList = new HashSet<>();
         mossyWhiteList = new HashSet<>();
         treeFellerDestructibleWhiteList = new HashSet<>();
-        herbalismAbilityBlackList = new HashSet<>();
+        treeFellerGuaranteedDropWhiteList = new HashSet<>();
+        herbalismAbilityWhiteList = new HashSet<>();
         blockCrackerWhiteList = new HashSet<>();
         canMakeShroomyWhiteList = new HashSet<>();
         multiBlockPlant = new HashSet<>();
@@ -123,6 +125,7 @@ public class MaterialMapStore {
         fillToolBlackList();
         fillMossyWhiteList();
         fillTreeFellerDestructibleWhiteList();
+        fillTreeFellerGuaranteedDropWhiteList();
         fillHerbalismAbilityBlackList();
         fillBlockCrackerWhiteList();
         fillShroomyWhiteList();
@@ -159,12 +162,24 @@ public class MaterialMapStore {
         return mossyWhiteList.contains(material.getKey().getKey());
     }
 
-    public boolean isTreeFellerDestructible(@NotNull final Material material) {
-        return treeFellerDestructibleWhiteList.contains(material.getKey().getKey());
+    public boolean isTreeFellerDestructible(@NotNull Material material) {
+        return isTreeFellerDestructible(material.getKey().getKey());
     }
 
-    public boolean isHerbalismAbilityWhiteListed(@NotNull final Material material) {
-        return herbalismAbilityBlackList.contains(material.getKey().getKey());
+    public boolean isTreeFellerDestructible(@NotNull String id) {
+        return treeFellerDestructibleWhiteList.contains(id);
+    }
+
+    public boolean isTreeFellerGuaranteedDrop(@NotNull Material material) {
+        return isTreeFellerGuaranteedDrop(material.getKey().getKey());
+    }
+
+    public boolean isTreeFellerGuaranteedDrop(@NotNull String id) {
+        return treeFellerGuaranteedDropWhiteList.contains(id);
+    }
+
+    public boolean isHerbalismAbilityWhiteListed(@NotNull Material material) {
+        return herbalismAbilityWhiteList.contains(material.getKey().getKey());
     }
 
     public boolean isBlockCrackerWhiteListed(@NotNull final Material material) {
@@ -257,8 +272,22 @@ public class MaterialMapStore {
         intendedToolPickAxe.add("lantern");
         intendedToolPickAxe.add("weighted_pressure_plates");
         intendedToolPickAxe.add("block_of_iron");
-        intendedToolPickAxe.add("copper_blocks");
+        intendedToolPickAxe.add("copper_block");
+        intendedToolPickAxe.add("exposed_copper");
+        intendedToolPickAxe.add("weathered_copper");
+        intendedToolPickAxe.add("oxidized_copper");
+        intendedToolPickAxe.add("waxed_copper_block");
+        intendedToolPickAxe.add("waxed_exposed_copper");
+        intendedToolPickAxe.add("waxed_weathered_copper");
+        intendedToolPickAxe.add("waxed_oxidized_copper");
         intendedToolPickAxe.add("cut_copper");
+        intendedToolPickAxe.add("exposed_cut_copper");
+        intendedToolPickAxe.add("weathered_cut_copper");
+        intendedToolPickAxe.add("oxidized_cut_copper");
+        intendedToolPickAxe.add("waxed_cut_copper");
+        intendedToolPickAxe.add("waxed_exposed_cut_copper");
+        intendedToolPickAxe.add("waxed_weathered_cut_copper");
+        intendedToolPickAxe.add("waxed_oxidized_cut_copper");
         intendedToolPickAxe.add("cut_copper_slab");
         intendedToolPickAxe.add("cut_copper_stairs");
         intendedToolPickAxe.add("lapis_lazuli_block");
@@ -371,17 +400,16 @@ public class MaterialMapStore {
         intendedToolPickAxe.add("blackstone_slab");
         intendedToolPickAxe.add("polished_blackstone_slab");
         intendedToolPickAxe.add("polished_blackstone_brick_slab");
-        intendedToolPickAxe.add("lightly_weathered_cut_copper_slab");
-        intendedToolPickAxe.add("semi_weathered_cut_copper_slab");
-        intendedToolPickAxe.add("waxed_semi_weathered_cut_copper_slab");
+        intendedToolPickAxe.add("exposed_cut_copper_slab");
         intendedToolPickAxe.add("weathered_cut_copper_slab");
+        intendedToolPickAxe.add("oxidized_cut_copper_slab");
         intendedToolPickAxe.add("waxed_cut_copper_slab");
-        intendedToolPickAxe.add("waxed_lightly_weathered_cut_copper_slab");
+        intendedToolPickAxe.add("waxed_exposed_cut_copper_slab");
+        intendedToolPickAxe.add("waxed_weathered_cut_copper_slab");
+        intendedToolPickAxe.add("waxed_oxidized_cut_copper_slab");
 
-        //stairs (not all of these exist, just copied the above list and replaced slab with stairs)
-        intendedToolPickAxe.add("petrified_oak_stairs");
+        //stairs
         intendedToolPickAxe.add("stone_stairs");
-        intendedToolPickAxe.add("smooth_stone_stairs");
         intendedToolPickAxe.add("cobblestone_stairs");
         intendedToolPickAxe.add("mossy_cobblestone_stairs");
         intendedToolPickAxe.add("stone_brick_stairs");
@@ -393,10 +421,8 @@ public class MaterialMapStore {
         intendedToolPickAxe.add("granite_stairs");
         intendedToolPickAxe.add("polished_granite_stairs");
         intendedToolPickAxe.add("sandstone_stairs");
-        intendedToolPickAxe.add("cut_sandstone_stairs");
         intendedToolPickAxe.add("smooth_sandstone_stairs");
         intendedToolPickAxe.add("red_sandstone_stairs");
-        intendedToolPickAxe.add("cut_red_sandstone_stairs");
         intendedToolPickAxe.add("smooth_red_sandstone_stairs");
         intendedToolPickAxe.add("brick_stairs");
         intendedToolPickAxe.add("prismarine_brick_stairs");
@@ -410,12 +436,13 @@ public class MaterialMapStore {
         intendedToolPickAxe.add("blackstone_stairs");
         intendedToolPickAxe.add("polished_blackstone_stairs");
         intendedToolPickAxe.add("polished_blackstone_brick_stairs");
-        intendedToolPickAxe.add("lightly_weathered_cut_copper_stairs");
-        intendedToolPickAxe.add("semi_weathered_cut_copper_stairs");
-        intendedToolPickAxe.add("waxed_semi_weathered_cut_copper_stairs");
+        intendedToolPickAxe.add("exposed_cut_copper_stairs");
         intendedToolPickAxe.add("weathered_cut_copper_stairs");
+        intendedToolPickAxe.add("oxidized_cut_copper_stairs");
         intendedToolPickAxe.add("waxed_cut_copper_stairs");
-        intendedToolPickAxe.add("waxed_lightly_weathered_cut_copper_stairs");
+        intendedToolPickAxe.add("waxed_exposed_cut_copper_stairs");
+        intendedToolPickAxe.add("waxed_weathered_cut_copper_stairs");
+        intendedToolPickAxe.add("waxed_oxidized_cut_copper_stairs");
 
         //1.17 Mining (non-ores)
         intendedToolPickAxe.add("calcite");
@@ -429,6 +456,103 @@ public class MaterialMapStore {
         intendedToolPickAxe.add("deepslate");
         intendedToolPickAxe.add("cobbled_deepslate");
         intendedToolPickAxe.add("tuff");
+
+        //26.2 Chaos Cubed (sulfur caves)
+        intendedToolPickAxe.add("cinnabar");
+        intendedToolPickAxe.add("cinnabar_stairs");
+        intendedToolPickAxe.add("cinnabar_slab");
+        intendedToolPickAxe.add("cinnabar_wall");
+        intendedToolPickAxe.add("polished_cinnabar");
+        intendedToolPickAxe.add("polished_cinnabar_stairs");
+        intendedToolPickAxe.add("polished_cinnabar_slab");
+        intendedToolPickAxe.add("polished_cinnabar_wall");
+        intendedToolPickAxe.add("cinnabar_bricks");
+        intendedToolPickAxe.add("cinnabar_brick_stairs");
+        intendedToolPickAxe.add("cinnabar_brick_slab");
+        intendedToolPickAxe.add("cinnabar_brick_wall");
+        intendedToolPickAxe.add("chiseled_cinnabar");
+        intendedToolPickAxe.add("sulfur");
+        intendedToolPickAxe.add("sulfur_stairs");
+        intendedToolPickAxe.add("sulfur_slab");
+        intendedToolPickAxe.add("sulfur_wall");
+        intendedToolPickAxe.add("polished_sulfur");
+        intendedToolPickAxe.add("polished_sulfur_stairs");
+        intendedToolPickAxe.add("polished_sulfur_slab");
+        intendedToolPickAxe.add("polished_sulfur_wall");
+        intendedToolPickAxe.add("sulfur_bricks");
+        intendedToolPickAxe.add("sulfur_brick_stairs");
+        intendedToolPickAxe.add("sulfur_brick_slab");
+        intendedToolPickAxe.add("sulfur_brick_wall");
+        intendedToolPickAxe.add("chiseled_sulfur");
+        intendedToolPickAxe.add("potent_sulfur");
+        intendedToolPickAxe.add("sulfur_spike");
+
+        //26.3 concrete stairs and slabs, plus concrete itself for world gen that places it
+        intendedToolPickAxe.add("white_concrete");
+        intendedToolPickAxe.add("orange_concrete");
+        intendedToolPickAxe.add("magenta_concrete");
+        intendedToolPickAxe.add("light_blue_concrete");
+        intendedToolPickAxe.add("yellow_concrete");
+        intendedToolPickAxe.add("lime_concrete");
+        intendedToolPickAxe.add("pink_concrete");
+        intendedToolPickAxe.add("gray_concrete");
+        intendedToolPickAxe.add("light_gray_concrete");
+        intendedToolPickAxe.add("cyan_concrete");
+        intendedToolPickAxe.add("purple_concrete");
+        intendedToolPickAxe.add("blue_concrete");
+        intendedToolPickAxe.add("brown_concrete");
+        intendedToolPickAxe.add("green_concrete");
+        intendedToolPickAxe.add("red_concrete");
+        intendedToolPickAxe.add("black_concrete");
+        intendedToolPickAxe.add("white_concrete_stairs");
+        intendedToolPickAxe.add("orange_concrete_stairs");
+        intendedToolPickAxe.add("magenta_concrete_stairs");
+        intendedToolPickAxe.add("light_blue_concrete_stairs");
+        intendedToolPickAxe.add("yellow_concrete_stairs");
+        intendedToolPickAxe.add("lime_concrete_stairs");
+        intendedToolPickAxe.add("pink_concrete_stairs");
+        intendedToolPickAxe.add("gray_concrete_stairs");
+        intendedToolPickAxe.add("light_gray_concrete_stairs");
+        intendedToolPickAxe.add("cyan_concrete_stairs");
+        intendedToolPickAxe.add("purple_concrete_stairs");
+        intendedToolPickAxe.add("blue_concrete_stairs");
+        intendedToolPickAxe.add("brown_concrete_stairs");
+        intendedToolPickAxe.add("green_concrete_stairs");
+        intendedToolPickAxe.add("red_concrete_stairs");
+        intendedToolPickAxe.add("black_concrete_stairs");
+        intendedToolPickAxe.add("white_concrete_slab");
+        intendedToolPickAxe.add("orange_concrete_slab");
+        intendedToolPickAxe.add("magenta_concrete_slab");
+        intendedToolPickAxe.add("light_blue_concrete_slab");
+        intendedToolPickAxe.add("yellow_concrete_slab");
+        intendedToolPickAxe.add("lime_concrete_slab");
+        intendedToolPickAxe.add("pink_concrete_slab");
+        intendedToolPickAxe.add("gray_concrete_slab");
+        intendedToolPickAxe.add("light_gray_concrete_slab");
+        intendedToolPickAxe.add("cyan_concrete_slab");
+        intendedToolPickAxe.add("purple_concrete_slab");
+        intendedToolPickAxe.add("blue_concrete_slab");
+        intendedToolPickAxe.add("brown_concrete_slab");
+        intendedToolPickAxe.add("green_concrete_slab");
+        intendedToolPickAxe.add("red_concrete_slab");
+        intendedToolPickAxe.add("black_concrete_slab");
+        //be: double slab form of the concrete slabs
+        intendedToolPickAxe.add("white_concrete_double_slab");
+        intendedToolPickAxe.add("orange_concrete_double_slab");
+        intendedToolPickAxe.add("magenta_concrete_double_slab");
+        intendedToolPickAxe.add("light_blue_concrete_double_slab");
+        intendedToolPickAxe.add("yellow_concrete_double_slab");
+        intendedToolPickAxe.add("lime_concrete_double_slab");
+        intendedToolPickAxe.add("pink_concrete_double_slab");
+        intendedToolPickAxe.add("gray_concrete_double_slab");
+        intendedToolPickAxe.add("light_gray_concrete_double_slab");
+        intendedToolPickAxe.add("cyan_concrete_double_slab");
+        intendedToolPickAxe.add("purple_concrete_double_slab");
+        intendedToolPickAxe.add("blue_concrete_double_slab");
+        intendedToolPickAxe.add("brown_concrete_double_slab");
+        intendedToolPickAxe.add("green_concrete_double_slab");
+        intendedToolPickAxe.add("red_concrete_double_slab");
+        intendedToolPickAxe.add("black_concrete_double_slab");
     }
 
     private void fillArmors() {
@@ -548,60 +672,50 @@ public class MaterialMapStore {
     }
 
     private void fillSwords() {
-        swords.add("wood_sword");
         swords.add("wooden_sword");
         swords.add("stone_sword");
         swords.add("copper_sword");
         swords.add("iron_sword");
-        swords.add("gold_sword");
         swords.add("golden_sword");
         swords.add("diamond_sword");
         swords.add("netherite_sword");
     }
 
     private void fillAxes() {
-        axes.add("wood_axe");
         axes.add("wooden_axe");
         axes.add("stone_axe");
         axes.add("copper_axe");
         axes.add("iron_axe");
-        axes.add("gold_axe");
         axes.add("golden_axe");
         axes.add("diamond_axe");
         axes.add("netherite_axe");
     }
 
     private void fillPickAxes() {
-        pickAxes.add("wood_pickaxe");
         pickAxes.add("wooden_pickaxe");
         pickAxes.add("stone_pickaxe");
         pickAxes.add("copper_pickaxe");
         pickAxes.add("iron_pickaxe");
-        pickAxes.add("gold_pickaxe");
         pickAxes.add("golden_pickaxe");
         pickAxes.add("diamond_pickaxe");
         pickAxes.add("netherite_pickaxe");
     }
 
     private void fillHoes() {
-        hoes.add("wood_hoe");
         hoes.add("wooden_hoe");
         hoes.add("stone_hoe");
         hoes.add("copper_hoe");
         hoes.add("iron_hoe");
-        hoes.add("gold_hoe");
         hoes.add("golden_hoe");
         hoes.add("diamond_hoe");
         hoes.add("netherite_hoe");
     }
 
     private void fillShovels() {
-        shovels.add("wood_shovel");
         shovels.add("wooden_shovel");
         shovels.add("stone_shovel");
         shovels.add("copper_shovel");
         shovels.add("iron_shovel");
-        shovels.add("gold_shovel");
         shovels.add("golden_shovel");
         shovels.add("diamond_shovel");
         shovels.add("netherite_shovel");
@@ -636,12 +750,6 @@ public class MaterialMapStore {
     }
 
     private void fillGoldArmorWhiteList() {
-        goldArmor.add("gold_helmet");
-        goldArmor.add("gold_chestplate");
-        goldArmor.add("gold_leggings");
-        goldArmor.add("gold_boots");
-
-        //Gold became Golden post 1.13
         goldArmor.add("golden_helmet");
         goldArmor.add("golden_chestplate");
         goldArmor.add("golden_leggings");
@@ -663,13 +771,6 @@ public class MaterialMapStore {
     }
 
     private void fillWoodToolsWhiteList() {
-        woodTools.add("wood_sword");
-        woodTools.add("wood_axe");
-        woodTools.add("wood_hoe");
-        woodTools.add("wood_pickaxe");
-        woodTools.add("wood_shovel");
-
-        //Wood became wooden post 1.13
         woodTools.add("wooden_sword");
         woodTools.add("wooden_axe");
         woodTools.add("wooden_hoe");
@@ -712,13 +813,6 @@ public class MaterialMapStore {
     }
 
     private void fillGoldToolsWhiteList() {
-        goldTools.add("gold_sword");
-        goldTools.add("gold_axe");
-        goldTools.add("gold_hoe");
-        goldTools.add("gold_pickaxe");
-        goldTools.add("gold_shovel");
-
-        //Gold became golden post 1.13
         goldTools.add("golden_sword");
         goldTools.add("golden_axe");
         goldTools.add("golden_hoe");
@@ -1098,7 +1192,7 @@ public class MaterialMapStore {
 
     private void fillMultiBlockHangingPlantSet() {
         multiBlockHangingPlant.add("weeping_vines_plant");
-        multiBlockHangingPlant.add("twisted_vines_plant");
+        multiBlockHangingPlant.add("twisting_vines_plant");
         multiBlockHangingPlant.add("cave_vines_plant");
         multiBlockHangingPlant.add("pale_hanging_moss");
     }
@@ -1119,10 +1213,10 @@ public class MaterialMapStore {
     }
 
     private void fillHerbalismAbilityBlackList() {
-        herbalismAbilityBlackList.add("dirt");
-        herbalismAbilityBlackList.add("grass_block");
-        herbalismAbilityBlackList.add("dirt_path");
-        herbalismAbilityBlackList.add("farmland");
+        herbalismAbilityWhiteList.add("dirt");
+        herbalismAbilityWhiteList.add("grass_block");
+        herbalismAbilityWhiteList.add("dirt_path");
+        herbalismAbilityWhiteList.add("farmland");
     }
 
     private void fillTreeFellerDestructibleWhiteList() {
@@ -1133,6 +1227,9 @@ public class MaterialMapStore {
         treeFellerDestructibleWhiteList.add("birch_leaves");
         treeFellerDestructibleWhiteList.add("dark_oak_leaves");
         treeFellerDestructibleWhiteList.add("pale_oak_leaves");
+        treeFellerDestructibleWhiteList.add("red_poplar_leaves");
+        treeFellerDestructibleWhiteList.add("orange_poplar_leaves");
+        treeFellerDestructibleWhiteList.add("yellow_poplar_leaves");
         treeFellerDestructibleWhiteList.add("jungle_leaves");
         treeFellerDestructibleWhiteList.add("spruce_leaves");
         treeFellerDestructibleWhiteList.add("azalea_leaves");
@@ -1143,12 +1240,21 @@ public class MaterialMapStore {
         treeFellerDestructibleWhiteList.add("warped_wart_block");
         treeFellerDestructibleWhiteList.add("brown_mushroom_block");
         treeFellerDestructibleWhiteList.add("red_mushroom_block");
+        treeFellerDestructibleWhiteList.add("shelf_mushroom");
+    }
+
+    /**
+     * Non-wood tree parts that Tree Feller drops every time instead of putting them on the leaf
+     * roll, because vanilla pops them the moment the log they grow on breaks.
+     */
+    private void fillTreeFellerGuaranteedDropWhiteList() {
+        treeFellerGuaranteedDropWhiteList.add("shelf_mushroom");
     }
 
     private void fillMossyWhiteList() {
         mossyWhiteList.add("cobblestone");
         mossyWhiteList.add("dirt");
-        mossyWhiteList.add("grass_path");
+        mossyWhiteList.add("dirt_path");
         mossyWhiteList.add("stone_bricks");
         mossyWhiteList.add("cobblestone_wall");
     }
@@ -1181,6 +1287,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_button");
         blackList.add("cherry_button");
         blackList.add("pale_oak_button");
+        blackList.add("poplar_button");
         blackList.add("bamboo_button");
         blackList.add("crimson_button");
         blackList.add("warped_button");
@@ -1200,6 +1307,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_trapdoor");
         blackList.add("cherry_trapdoor");
         blackList.add("pale_oak_trapdoor");
+        blackList.add("poplar_trapdoor");
         blackList.add("bamboo_trapdoor");
         blackList.add("crimson_trapdoor");
         blackList.add("warped_trapdoor");
@@ -1229,6 +1337,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_fence_gate");
         blackList.add("cherry_fence_gate");
         blackList.add("pale_oak_fence_gate");
+        blackList.add("poplar_fence_gate");
         blackList.add("bamboo_fence_gate");
         blackList.add("crimson_fence_gate");
         blackList.add("warped_fence_gate");
@@ -1251,6 +1360,7 @@ public class MaterialMapStore {
         blackList.add("red_bed");
         blackList.add("white_bed");
         blackList.add("yellow_bed");
+        blackList.add("straw_bed");
     }
 
     private void addPressurePlatesToBlackList(final Set<String> blackList) {
@@ -1263,6 +1373,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_pressure_plate");
         blackList.add("cherry_pressure_plate");
         blackList.add("pale_oak_pressure_plate");
+        blackList.add("poplar_pressure_plate");
         blackList.add("bamboo_pressure_plate");
         blackList.add("crimson_pressure_plate");
         blackList.add("warped_pressure_plate");
@@ -1293,6 +1404,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_shelf");
         blackList.add("cherry_shelf");
         blackList.add("pale_oak_shelf");
+        blackList.add("poplar_shelf");
         blackList.add("bamboo_shelf");
         blackList.add("crimson_shelf");
         blackList.add("warped_shelf");
@@ -1317,6 +1429,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_door");
         blackList.add("cherry_door");
         blackList.add("pale_oak_door");
+        blackList.add("poplar_door");
         blackList.add("bamboo_door");
         blackList.add("crimson_door");
         blackList.add("warped_door");
@@ -1344,6 +1457,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_fence");
         blackList.add("cherry_fence");
         blackList.add("pale_oak_fence");
+        blackList.add("poplar_fence");
         blackList.add("bamboo_fence");
         blackList.add("crimson_fence");
         blackList.add("warped_fence");
@@ -1366,6 +1480,8 @@ public class MaterialMapStore {
         blackList.add("mangrove_sign");
         blackList.add("cherry_sign");
         blackList.add("pale_oak_sign");
+        blackList.add("poplar_sign");
+        blackList.add("poplar_standing_sign"); //be
         blackList.add("bamboo_sign");
         blackList.add("crimson_sign");
         blackList.add("warped_sign");
@@ -1382,6 +1498,7 @@ public class MaterialMapStore {
         blackList.add("mangrove_hanging_sign");
         blackList.add("cherry_hanging_sign");
         blackList.add("pale_oak_hanging_sign");
+        blackList.add("poplar_hanging_sign");
         blackList.add("bamboo_hanging_sign");
         blackList.add("crimson_hanging_sign");
         blackList.add("warped_hanging_sign");
@@ -1500,6 +1617,11 @@ public class MaterialMapStore {
         toolBlackList.add("pale_oak_wood");
         toolBlackList.add("stripped_pale_oak_wood");
 
+        toolBlackList.add("poplar_log");
+        toolBlackList.add("stripped_poplar_log");
+        toolBlackList.add("poplar_wood");
+        toolBlackList.add("stripped_poplar_wood");
+
         toolBlackList.add("spruce_log");
         toolBlackList.add("stripped_spruce_log");
         toolBlackList.add("spruce_wood");
@@ -1520,11 +1642,16 @@ public class MaterialMapStore {
     }
 
     public @NotNull HashSet<String> getNetheriteArmor() {
-        return netheriteArmor;
+        // Copied so callers can't modify the register
+        return new HashSet<>(netheriteArmor);
     }
 
+    /**
+     * @deprecated No remaining callers; scheduled for removal.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
     public @NotNull HashSet<String> getNetheriteTools() {
-        return netheriteTools;
+        return new HashSet<>(netheriteTools);
     }
 
     public int getTier(@NotNull final Material material) {

@@ -13,7 +13,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -46,8 +45,6 @@ public final class ParticleEffectUtils {
 
         SoundManager.sendCategorizedSound(livingEntity.getLocation(), SoundType.CRIPPLE,
                 SoundCategory.PLAYERS, 0.2F);
-        livingEntity.getWorld()
-                .playEffect(getParticleLocation(livingEntity), Effect.ANVIL_BREAK, null, 20);
 
         if (livingEntity instanceof Player player) {
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
@@ -74,10 +71,7 @@ public final class ParticleEffectUtils {
             case 1 -> new Location(world, x + offSetVal, y, z);
             case 2 -> new Location(world, x, y + offSetVal, z);
             case 3 -> new Location(world, x, y - offSetVal, z);
-            case 4 -> {
-                Location locE = new Location(world, x, y, z + offSetVal);
-                yield new Location(world, x, y, z - offSetVal);
-            }
+            case 4 -> new Location(world, x, y, z - offSetVal);
             case 5 -> new Location(world, x + offSetVal, y, z + offSetVal);
             case 6 -> new Location(world, x - offSetVal, y, z - offSetVal);
             case 7 -> new Location(world, x - offSetVal, y - offSetVal, z - offSetVal);
@@ -93,18 +87,6 @@ public final class ParticleEffectUtils {
         }
 
         playSmokeEffect(player.getLocation());
-    }
-
-    public static void playFluxEffect(Location location) {
-        if (!mcMMO.p.getGeneralConfig().getFluxEffectEnabled()) {
-            return;
-        }
-
-        if (location.getWorld() == null) {
-            return;
-        }
-
-        location.getWorld().playEffect(location, Effect.MOBSPAWNER_FLAMES, 1);
     }
 
     public static void playSmokeEffect(Location location) {
@@ -147,41 +129,11 @@ public final class ParticleEffectUtils {
                 .playEffect(livingEntity.getEyeLocation(), Effect.MOBSPAWNER_FLAMES, 1);
     }
 
+    /**
+     * @deprecated Has not produced an effect since the firework shower was disabled; scheduled
+     * for removal.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
     public static void playAbilityDisabledEffect(Player player) {
-        if (!mcMMO.p.getGeneralConfig().getAbilityDeactivationEffectEnabled()) {
-        }
-
-        /*if (hasHeadRoom(player)) {
-            fireworkParticleShower(player, Color.RED);
-        }*/
-    }
-
-/*    public static void fireworkParticleShower(Player player, Color color) {
-        Location location = player.getLocation();
-        location.setY(location.getY() + (player.isInsideVehicle() ? 1.0 : -1.0));
-        location.setPitch(-90);
-
-        Firework firework = (Firework) player.getWorld().spawnEntity(location, EntityType.FIREWORK);
-        firework.setMetadata(mcMMO.funfettiMetadataKey, new FixedMetadataValue(mcMMO.p, null));
-        FireworkMeta fireworkMeta = firework.getFireworkMeta();
-        FireworkEffect effect = FireworkEffect.builder().flicker(false).withColor(color).with((Config.getInstance().getLargeFireworks() ? Type.BALL_LARGE : Type.BALL)).trail(true).build();
-        fireworkMeta.addEffect(effect);
-        fireworkMeta.addEffect(effect);
-        fireworkMeta.setPower(0);
-        firework.setFireworkMeta(fireworkMeta);
-    }*/
-
-    private static boolean hasHeadRoom(Player player) {
-        boolean hasHeadRoom = true;
-        Block headBlock = player.getEyeLocation().getBlock();
-
-        for (int i = 0; i < 3; i++) {
-            if (!headBlock.getRelative(BlockFace.UP, i).isEmpty()) {
-                hasHeadRoom = false;
-                break;
-            }
-        }
-
-        return hasHeadRoom;
     }
 }

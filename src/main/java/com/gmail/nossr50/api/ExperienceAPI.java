@@ -225,11 +225,12 @@ public final class ExperienceAPI {
      * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addMultipliedXP(final Player player, final String skillType, final int XP,
-                                       final String xpGainReason) {
+    public static void addMultipliedXP(Player player, String skillType, int XP,
+            String xpGainReason) {
+        final PrimarySkillType skill = getSkillType(skillType);
         getPlayer(player).applyXpGain(
-                getSkillType(skillType),
-                (int) (XP * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier()),
+                skill,
+                (int) (XP * ExperienceConfig.getInstance().getExperienceGainsMultiplier(skill)),
                 getXPGainReason(xpGainReason), CUSTOM);
     }
 
@@ -245,10 +246,11 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static void addMultipliedXPOffline(final String playerName, final String skillType, final int XP) {
+    public static void addMultipliedXPOffline(String playerName, String skillType, int XP) {
+        final PrimarySkillType skill = getSkillType(skillType);
         addOfflineXP(
-                playerName, getSkillType(skillType),
-                (int) (XP * ExperienceConfig.getInstance().getExperienceGainsGlobalMultiplier()));
+                playerName, skill,
+                (int) (XP * ExperienceConfig.getInstance().getExperienceGainsMultiplier(skill)));
     }
 
     /**
@@ -303,14 +305,14 @@ public final class ExperienceAPI {
         if (isUnshared) {
             getPlayer(player).beginUnsharedXpGain(
                     skill, (int) (XP / expConf.getFormulaSkillModifier(
-                            skill) * expConf.getExperienceGainsGlobalMultiplier()),
+                            skill) * expConf.getExperienceGainsMultiplier(skill)),
                     getXPGainReason(xpGainReason), CUSTOM);
             return;
         }
 
         getPlayer(player).applyXpGain(
                 skill, (int) (XP / expConf.getFormulaSkillModifier(
-                        skill) * expConf.getExperienceGainsGlobalMultiplier()),
+                        skill) * expConf.getExperienceGainsMultiplier(skill)),
                 getXPGainReason(xpGainReason), CUSTOM);
     }
 
@@ -333,7 +335,7 @@ public final class ExperienceAPI {
                 playerName, skill,
                 (int) (XP / ExperienceConfig.getInstance().getFormulaSkillModifier(
                         skill) * ExperienceConfig.getInstance()
-                        .getExperienceGainsGlobalMultiplier()));
+                        .getExperienceGainsMultiplier(skill)));
     }
 
     /**
@@ -985,8 +987,10 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static void setLevelOffline(final String playerName, final String skillType, final int skillLevel) {
-        getOfflineProfile(playerName).modifySkill(getSkillType(skillType), skillLevel);
+    public static void setLevelOffline(String playerName, String skillType, int skillLevel) {
+        final PlayerProfile profile = getOfflineProfile(playerName);
+        profile.modifySkill(getSkillType(skillType), skillLevel);
+        profile.scheduleAsyncSave();
     }
 
     /**
@@ -1000,8 +1004,10 @@ public final class ExperienceAPI {
      * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static void setLevelOffline(final UUID uuid, final String skillType, final int skillLevel) {
-        getOfflineProfile(uuid).modifySkill(getSkillType(skillType), skillLevel);
+    public static void setLevelOffline(UUID uuid, String skillType, int skillLevel) {
+        final PlayerProfile profile = getOfflineProfile(uuid);
+        profile.modifySkill(getSkillType(skillType), skillLevel);
+        profile.scheduleAsyncSave();
     }
 
     /**
@@ -1032,8 +1038,10 @@ public final class ExperienceAPI {
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static void setXPOffline(final String playerName, final String skillType, final int newValue) {
-        getOfflineProfile(playerName).setSkillXpLevel(getNonChildSkillType(skillType), newValue);
+    public static void setXPOffline(String playerName, String skillType, int newValue) {
+        final PlayerProfile profile = getOfflineProfile(playerName);
+        profile.setSkillXpLevel(getNonChildSkillType(skillType), newValue);
+        profile.scheduleAsyncSave();
     }
 
     /**
@@ -1048,8 +1056,10 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static void setXPOffline(final UUID uuid, final String skillType, final int newValue) {
-        getOfflineProfile(uuid).setSkillXpLevel(getNonChildSkillType(skillType), newValue);
+    public static void setXPOffline(UUID uuid, String skillType, int newValue) {
+        final PlayerProfile profile = getOfflineProfile(uuid);
+        profile.setSkillXpLevel(getNonChildSkillType(skillType), newValue);
+        profile.scheduleAsyncSave();
     }
 
     /**
@@ -1080,8 +1090,10 @@ public final class ExperienceAPI {
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static void removeXPOffline(final String playerName, final String skillType, final int xp) {
-        getOfflineProfile(playerName).removeXp(getNonChildSkillType(skillType), xp);
+    public static void removeXPOffline(String playerName, String skillType, int xp) {
+        final PlayerProfile profile = getOfflineProfile(playerName);
+        profile.removeXp(getNonChildSkillType(skillType), xp);
+        profile.scheduleAsyncSave();
     }
 
     /**
@@ -1096,8 +1108,10 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static void removeXPOffline(final UUID uuid, final String skillType, final int xp) {
-        getOfflineProfile(uuid).removeXp(getNonChildSkillType(skillType), xp);
+    public static void removeXPOffline(UUID uuid, String skillType, int xp) {
+        final PlayerProfile profile = getOfflineProfile(uuid);
+        profile.removeXp(getNonChildSkillType(skillType), xp);
+        profile.scheduleAsyncSave();
     }
 
     /**

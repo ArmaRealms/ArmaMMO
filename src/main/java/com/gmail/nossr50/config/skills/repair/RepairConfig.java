@@ -74,11 +74,16 @@ public class RepairConfig extends BukkitConfig {
             }
 
             // Repair Material Type
+            // The default file has used ItemMaterialCategory since 2019, so that is the
+            // primary key. MaterialType is the older name and still loads as a fallback.
             MaterialType repairMaterialType = MaterialType.OTHER;
-            final String repairMaterialTypeString = config.getString(
-                    "Repairables." + key + ".MaterialType", "OTHER");
+            final String materialTypeKey =
+                    config.contains("Repairables." + key + ".ItemMaterialCategory")
+                            ? "Repairables." + key + ".ItemMaterialCategory"
+                            : "Repairables." + key + ".MaterialType";
+            final String repairMaterialTypeString = config.getString(materialTypeKey, "OTHER");
 
-            if (!config.contains("Repairables." + key + ".MaterialType")) {
+            if (!config.contains(materialTypeKey)) {
                 final ItemStack repairItem = new ItemStack(itemMaterial);
 
                 if (isWoodTool(repairItem)) {
