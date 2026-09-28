@@ -85,7 +85,7 @@ public class WorldListener implements Listener {
         mcMMO.getChunkManager().unloadWorld(event.getWorld());
 
         if (PersistentDataConfig.getInstance().useBlockTracker()
-            && plugin.getGeneralConfig().getRegionDataMigrationBackupsEnabled()) {
+                && plugin.getGeneralConfig().getRegionDataMigrationBackupsEnabled()) {
             McMMORegionBackupStore.backupWorld(event.getWorld(), plugin.getLogger(),
                     plugin.getDataFolder().toPath());
         }

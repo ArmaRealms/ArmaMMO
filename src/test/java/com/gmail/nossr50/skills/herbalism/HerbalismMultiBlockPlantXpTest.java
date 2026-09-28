@@ -1,21 +1,5 @@
 package com.gmail.nossr50.skills.herbalism;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.atMost;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -24,12 +8,6 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.PlantCollapseXpTask;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -45,6 +23,29 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers XP rewards for multi-block plants (bamboo, sugar cane, kelp, cactus, chorus, hanging
@@ -62,6 +63,24 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
 
     private HerbalismManager herbalismManager;
     private FoliaLib foliaLib;
+
+    private static Stream<Arguments> verticalPlantColumns() {
+        return Stream.of(
+                Arguments.of(Material.BAMBOO, BlockFace.UP, 3),
+                Arguments.of(Material.SUGAR_CANE, BlockFace.UP, 2),
+                Arguments.of(Material.KELP_PLANT, BlockFace.UP, 3),
+                Arguments.of(Material.WEEPING_VINES_PLANT, BlockFace.DOWN, 2)
+        );
+    }
+
+    private static Stream<Arguments> verticalPlantColumnsWithCollapseMaterial() {
+        return Stream.of(
+                Arguments.of(Material.BAMBOO, BlockFace.UP, 3, Material.AIR),
+                Arguments.of(Material.SUGAR_CANE, BlockFace.UP, 2, Material.AIR),
+                Arguments.of(Material.KELP_PLANT, BlockFace.UP, 3, Material.WATER),
+                Arguments.of(Material.WEEPING_VINES_PLANT, BlockFace.DOWN, 2, Material.AIR)
+        );
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -90,7 +109,7 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
     @ParameterizedTest(name = "{0} column of {2} never breaks -> only origin XP")
     @MethodSource("verticalPlantColumns")
     void columnXpShouldNotBePaidWhenColumnNeverBreaks(Material plantType, BlockFace growthFace,
-            int columnLength) {
+                                                      int columnLength) {
         // Given - a natural multi-block plant column whose connected blocks never actually
         // break (the exploit: the broken segment is replaced before vanilla's scheduled tick)
         final MockPlantColumn column = mockVerticalPlantColumn(plantType, growthFace,
@@ -108,7 +127,7 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
     @ParameterizedTest(name = "{0} column of {2} collapses -> full XP")
     @MethodSource("verticalPlantColumnsWithCollapseMaterial")
     void columnXpShouldBePaidOnceColumnActuallyBreaks(Material plantType, BlockFace growthFace,
-            int columnLength, Material collapseMaterial) {
+                                                      int columnLength, Material collapseMaterial) {
         // Given - a natural multi-block plant column that genuinely collapses after the break
         // (kelp positions turn to water rather than air)
         final MockPlantColumn column = mockVerticalPlantColumn(plantType, growthFace,
@@ -254,6 +273,8 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
         verify(chunkManager, never()).setEligible(placedBlock.block());
     }
 
+    /* Test scaffolding */
+
     @Test
     void columnXpShouldNotBePaidWhenChunkUnloadsBeforeVerification() {
         // Given - a bamboo column awaiting collapse verification
@@ -284,55 +305,8 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
         verify(timerHandle, atLeastOnce()).cancel();
     }
 
-    /* Test scaffolding */
-
-    private static Stream<Arguments> verticalPlantColumns() {
-        return Stream.of(
-                Arguments.of(Material.BAMBOO, BlockFace.UP, 3),
-                Arguments.of(Material.SUGAR_CANE, BlockFace.UP, 2),
-                Arguments.of(Material.KELP_PLANT, BlockFace.UP, 3),
-                Arguments.of(Material.WEEPING_VINES_PLANT, BlockFace.DOWN, 2)
-        );
-    }
-
-    private static Stream<Arguments> verticalPlantColumnsWithCollapseMaterial() {
-        return Stream.of(
-                Arguments.of(Material.BAMBOO, BlockFace.UP, 3, Material.AIR),
-                Arguments.of(Material.SUGAR_CANE, BlockFace.UP, 2, Material.AIR),
-                Arguments.of(Material.KELP_PLANT, BlockFace.UP, 3, Material.WATER),
-                Arguments.of(Material.WEEPING_VINES_PLANT, BlockFace.DOWN, 2, Material.AIR)
-        );
-    }
-
-    /**
-     * A mocked plant column: the origin block that the break event targets plus the connected
-     * blocks vanilla would pop on later ticks. Column block types are mutable so tests can
-     * simulate the column collapsing or surviving.
-     */
-    private static final class MockPlantColumn {
-        final BlockBreakEvent event;
-        final List<MockBlock> columnBlocks;
-        final MockBlock beyondColumn;
-
-        MockPlantColumn(BlockBreakEvent event, List<MockBlock> columnBlocks,
-                MockBlock beyondColumn) {
-            this.event = event;
-            this.columnBlocks = columnBlocks;
-            this.beyondColumn = beyondColumn;
-        }
-
-        void collapse(Material collapseMaterial) {
-            for (MockBlock columnBlock : columnBlocks) {
-                columnBlock.typeRef().set(collapseMaterial);
-            }
-        }
-    }
-
-    private record MockBlock(Block block, AtomicReference<Material> typeRef) {
-    }
-
     private MockPlantColumn mockVerticalPlantColumn(Material plantType, BlockFace growthFace,
-            int columnLength) {
+                                                    int columnLength) {
         final int originY = 64;
         final int yStep = growthFace == BlockFace.UP ? 1 : -1;
         final MockBlock origin = mockPlantBlock(plantType, new Location(world, 10, originY, 10));
@@ -407,7 +381,7 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
      * upward neighbour. Returns the upward air neighbour when no override was given.
      */
     private MockBlock linkChorusNeighbours(MockBlock source, int x, int y, int z,
-            Block upOverride) {
+                                           Block upOverride) {
         final BlockFace[] faces = {BlockFace.UP, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST,
                 BlockFace.WEST};
         MockBlock upNeighbour = null;
@@ -495,5 +469,32 @@ class HerbalismMultiBlockPlantXpTest extends MMOTestEnvironment {
             total += xp;
         }
         return total;
+    }
+
+    /**
+     * A mocked plant column: the origin block that the break event targets plus the connected
+     * blocks vanilla would pop on later ticks. Column block types are mutable so tests can
+     * simulate the column collapsing or surviving.
+     */
+    private static final class MockPlantColumn {
+        final BlockBreakEvent event;
+        final List<MockBlock> columnBlocks;
+        final MockBlock beyondColumn;
+
+        MockPlantColumn(BlockBreakEvent event, List<MockBlock> columnBlocks,
+                        MockBlock beyondColumn) {
+            this.event = event;
+            this.columnBlocks = columnBlocks;
+            this.beyondColumn = beyondColumn;
+        }
+
+        void collapse(Material collapseMaterial) {
+            for (MockBlock columnBlock : columnBlocks) {
+                columnBlock.typeRef().set(collapseMaterial);
+            }
+        }
+    }
+
+    private record MockBlock(Block block, AtomicReference<Material> typeRef) {
     }
 }

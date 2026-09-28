@@ -17,12 +17,14 @@ public class SimpleRepairable implements Repairable {
     private final MaterialType repairMaterialType;
     private final double xpMultiplier;
     private final int minQuantity;
-    /** Zero until the recipe count has been worked out; a worked out count is at least one. */
+    /**
+     * Zero until the recipe count has been worked out; a worked out count is at least one.
+     */
     private int recipeMinimumQuantity;
 
     protected SimpleRepairable(Material type, Material repairMaterial,
-            String repairMaterialPrettyName, int minimumLevel, short maximumDurability,
-            ItemType repairItemType, MaterialType repairMaterialType, double xpMultiplier) {
+                               String repairMaterialPrettyName, int minimumLevel, short maximumDurability,
+                               ItemType repairItemType, MaterialType repairMaterialType, double xpMultiplier) {
         this(type, repairMaterial, repairMaterialPrettyName, minimumLevel, maximumDurability,
                 repairItemType, repairMaterialType, xpMultiplier, NOT_CONFIGURED);
     }

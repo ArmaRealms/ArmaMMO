@@ -1,14 +1,5 @@
 package com.gmail.nossr50;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.commands.levelup.LevelUpCommandManager;
 import com.gmail.nossr50.config.AdvancedConfig;
@@ -40,11 +31,6 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -61,6 +47,21 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.PluginManager;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public abstract class MMOTestEnvironment {
     protected MockedStatic<Bukkit> mockedBukkit;
@@ -105,6 +106,18 @@ public abstract class MMOTestEnvironment {
     protected File testDataFolder;
     protected FoliaLib foliaLib;
     private FormulaManager formulaManager;
+
+    private static void deleteRecursively(final File file) {
+        if (file.isDirectory()) {
+            final File[] children = file.listFiles();
+            if (children != null) {
+                for (final File child : children) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+        file.delete();
+    }
 
     protected void mockBaseEnvironment(Logger logger) throws InvalidSkillException {
         mockedMcMMO = mockStatic(mcMMO.class);
@@ -412,17 +425,5 @@ public abstract class MMOTestEnvironment {
             deleteRecursively(testDataFolder);
             testDataFolder = null;
         }
-    }
-
-    private static void deleteRecursively(final File file) {
-        if (file.isDirectory()) {
-            final File[] children = file.listFiles();
-            if (children != null) {
-                for (final File child : children) {
-                    deleteRecursively(child);
-                }
-            }
-        }
-        file.delete();
     }
 }

@@ -11,8 +11,6 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -20,10 +18,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InspectCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (args.length == 1) {
             String playerName = CommandUtils.getMatchedPlayerName(args[0]);
             if (CommandUtils.isInvalidOldUsername(sender, playerName)) {
@@ -131,7 +132,7 @@ public class InspectCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+                                      @NotNull String alias, String[] args) {
         if (args.length == 1) {
             List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
             return StringUtil.copyPartialMatches(args[0], playerNames,

@@ -1,14 +1,5 @@
 package com.gmail.nossr50.listeners;
 
-import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -18,11 +9,21 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.player.PlayerLevelUtils;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class SelfListenerTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(SelfListenerTest.class.getName());
@@ -69,7 +70,7 @@ class SelfListenerTest extends MMOTestEnvironment {
         // And - the early game boost would add XP for this low-level player
         when(ExperienceConfig.getInstance().isEarlyGameBoostEnabled()).thenReturn(true);
         playerLevelUtilsMock.when(
-                () -> PlayerLevelUtils.qualifiesForEarlyGameBoost(mmoPlayer, ACROBATICS))
+                        () -> PlayerLevelUtils.qualifiesForEarlyGameBoost(mmoPlayer, ACROBATICS))
                 .thenReturn(true);
         doReturn(1000).when(mmoPlayer).getXpToLevel(ACROBATICS);
 

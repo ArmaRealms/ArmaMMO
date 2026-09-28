@@ -1,13 +1,5 @@
 package com.gmail.nossr50.commands;
 
-import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
-import static java.util.UUID.randomUUID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.commands.database.McremoveCommand;
@@ -23,11 +15,6 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Permissions;
-import java.util.List;
-import java.util.Locale;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -37,6 +24,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Supplier;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
+import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 /**
  * Players who lost their name to someone else are stored under a placeholder name. An admin
  * command given the placeholder must not act on whichever of them the database finds first:
@@ -45,35 +46,17 @@ import org.junit.jupiter.params.provider.MethodSource;
 class PlaceholderNameCommandsTest extends MMOTestEnvironment {
     private static final Logger logger =
             Logger.getLogger(PlaceholderNameCommandsTest.class.getName());
-    /** The spelling FlatFile wrote before it shared the SQL placeholder. */
+    /**
+     * The spelling FlatFile wrote before it shared the SQL placeholder.
+     */
     private static final String LEGACY_FLATFILE_PLACEHOLDER = INVALID_OLD_USERNAME + "'";
 
     private DatabaseManager databaseManager;
     private Command command;
 
-    @BeforeEach
-    void setUp() throws InvalidSkillException {
-        mockBaseEnvironment(logger);
-        databaseManager = mock(DatabaseManager.class);
-        mockedMcMMO.when(mcMMO::getDatabaseManager).thenReturn(databaseManager);
-        command = mock(Command.class);
-
-        // The sender may use every command on other players, including offline ones
-        when(Permissions.addlevelsOthers(player)).thenReturn(true);
-        when(Permissions.addxpOthers(player)).thenReturn(true);
-        when(Permissions.mmoeditOthers(player)).thenReturn(true);
-        when(Permissions.skillresetOthers(player)).thenReturn(true);
-        when(Permissions.inspectFar(player)).thenReturn(true);
-        when(Permissions.mcrankOthers(player)).thenReturn(true);
-        when(player.hasMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA)).thenReturn(true);
-    }
-
-    @AfterEach
-    void tearDown() {
-        cleanUpStaticMocks();
-    }
-
-    /** Each command that names another player, with the arguments after the name. */
+    /**
+     * Each command that names another player, with the arguments after the name.
+     */
     static Stream<Arguments> commandsThatLookUpAPlayerByName() {
         return Stream.of(
                 Arguments.of("addlevels", (Supplier<CommandExecutor>) AddlevelsCommand::new,
@@ -102,6 +85,28 @@ class PlaceholderNameCommandsTest extends MMOTestEnvironment {
                         commandCase.get()[2], placeholder)));
     }
 
+    @BeforeEach
+    void setUp() throws InvalidSkillException {
+        mockBaseEnvironment(logger);
+        databaseManager = mock(DatabaseManager.class);
+        mockedMcMMO.when(mcMMO::getDatabaseManager).thenReturn(databaseManager);
+        command = mock(Command.class);
+
+        // The sender may use every command on other players, including offline ones
+        when(Permissions.addlevelsOthers(player)).thenReturn(true);
+        when(Permissions.addxpOthers(player)).thenReturn(true);
+        when(Permissions.mmoeditOthers(player)).thenReturn(true);
+        when(Permissions.skillresetOthers(player)).thenReturn(true);
+        when(Permissions.inspectFar(player)).thenReturn(true);
+        when(Permissions.mcrankOthers(player)).thenReturn(true);
+        when(player.hasMetadata(MetadataConstants.METADATA_KEY_PLAYER_DATA)).thenReturn(true);
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanUpStaticMocks();
+    }
+
     /**
      * Makes the database find a player under the placeholder, as it did before lookups by name
      * refused it, so a command without its own guard goes on to act on that player.
@@ -119,8 +124,8 @@ class PlaceholderNameCommandsTest extends MMOTestEnvironment {
     @ParameterizedTest(name = "/{0} {3}")
     @MethodSource("commandsGivenEachPlaceholderSpelling")
     void commandShouldFindNoPlayerUnderThePlaceholder(String label,
-            Supplier<CommandExecutor> commandExecutor, List<String> argumentsAfterTheName,
-            String placeholder) {
+                                                      Supplier<CommandExecutor> commandExecutor, List<String> argumentsAfterTheName,
+                                                      String placeholder) {
         // Given - a player stored under the placeholder
         storePlayerUnderThePlaceholder(placeholder);
         final String[] arguments = Stream.concat(Stream.of(placeholder),

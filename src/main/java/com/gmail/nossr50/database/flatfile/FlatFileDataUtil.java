@@ -1,65 +1,12 @@
 package com.gmail.nossr50.database.flatfile;
 
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BERSERK;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BLAST_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_CHIMAERA_WING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_GIGA_DRILL_BREAKER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_GREEN_TERRA;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SERRATED_STRIKES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SKULL_SPLITTER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SUPER_BREAKER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SUPER_SHOTGUN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_TREE_FELLER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ACROBATICS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ALCHEMY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_AXES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_CROSSBOWS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_EXCAVATION;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_FISHING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_HERBALISM;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_REPAIR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SWORDS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_TAMING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_UNARMED;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_WOODCUTTING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.HEALTHBAR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.LEGACY_LAST_LOGIN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.OVERHAUL_LAST_LOGIN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SCOREBOARD_TIPS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ACROBATICS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ALCHEMY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_AXES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_CROSSBOWS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_EXCAVATION;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_FISHING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_HERBALISM;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_REPAIR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SWORDS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_TAMING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_UNARMED;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_WOODCUTTING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
-import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
-
 import com.gmail.nossr50.database.FlatFileDataFlag;
 import com.gmail.nossr50.database.FlatFileDatabaseManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
 
 public class FlatFileDataUtil {
 
@@ -124,7 +71,8 @@ public class FlatFileDataUtil {
                  SKILLS_ARCHERY,
                  SKILLS_SWORDS, SKILLS_AXES, SKILLS_WOODCUTTING, SKILLS_ACROBATICS, SKILLS_TAMING,
                  SKILLS_FISHING,
-                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS -> String.valueOf(startingLevel);
+                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS ->
+                    String.valueOf(startingLevel);
             case OVERHAUL_LAST_LOGIN -> String.valueOf(-1L);
             case COOLDOWN_BERSERK, COOLDOWN_GIGA_DRILL_BREAKER, COOLDOWN_TREE_FELLER,
                  COOLDOWN_GREEN_TERRA,

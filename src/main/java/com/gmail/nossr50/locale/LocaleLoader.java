@@ -33,24 +33,13 @@ import java.util.regex.Pattern;
 public final class LocaleLoader {
     private static final String BUNDLE_ROOT = "com.gmail.nossr50.locale.locale";
     private static final String OVERRIDE_FILE_NAME = "locale_override.properties";
-
-    /**
-     * The loaded bundles and their string cache, immutable as a unit. Readers on any thread
-     * (async chat, Folia regions) grab the whole snapshot once, so a locale reload can never
-     * expose half-swapped bundles or a cache mixing old and new strings.
-     */
-    private record LocaleSnapshot(ResourceBundle bundle, ResourceBundle filesystemBundle,
-            ResourceBundle enBundle, Map<String, String> cache) {
-    }
-
-    private static volatile LocaleSnapshot localeSnapshot = null;
     // Matches the pattern &#RRGGBB
     private static final Pattern hexPattern = Pattern.compile("&#([A-Fa-f0-9]{6})");
     private static final Pattern minecraftHexPattern = Pattern.compile(
             "§x(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])");
+    private static volatile LocaleSnapshot localeSnapshot = null;
     // Bumped on reload so consumers caching derived locale data know to rebuild
     private static volatile int localeGeneration = 0;
-
     private LocaleLoader() {
     }
 
@@ -81,7 +70,7 @@ public final class LocaleLoader {
      * @return The properly formatted text component
      */
     public static @NotNull TextComponent getTextComponent(@NotNull String key,
-            Object... messageArguments) {
+                                                          Object... messageArguments) {
         final LocaleSnapshot snapshot = getSnapshot();
         String rawMessage = snapshot.cache()
                 .computeIfAbsent(key, missingKey -> getRawString(snapshot, missingKey));
@@ -186,29 +175,29 @@ public final class LocaleLoader {
      */
     private static @NotNull String translateNamedColorTokens(@NotNull String input) {
         // Colors
-        input = input.replace("[[BLACK]]",       "&0");
-        input = input.replace("[[DARK_BLUE]]",   "&1");
-        input = input.replace("[[DARK_GREEN]]",  "&2");
-        input = input.replace("[[DARK_AQUA]]",   "&3");
-        input = input.replace("[[DARK_RED]]",    "&4");
+        input = input.replace("[[BLACK]]", "&0");
+        input = input.replace("[[DARK_BLUE]]", "&1");
+        input = input.replace("[[DARK_GREEN]]", "&2");
+        input = input.replace("[[DARK_AQUA]]", "&3");
+        input = input.replace("[[DARK_RED]]", "&4");
         input = input.replace("[[DARK_PURPLE]]", "&5");
-        input = input.replace("[[GOLD]]",        "&6");
-        input = input.replace("[[GRAY]]",        "&7");
-        input = input.replace("[[DARK_GRAY]]",   "&8");
-        input = input.replace("[[BLUE]]",        "&9");
-        input = input.replace("[[GREEN]]",       "&a");
-        input = input.replace("[[AQUA]]",        "&b");
-        input = input.replace("[[RED]]",         "&c");
-        input = input.replace("[[LIGHT_PURPLE]]","&d");
-        input = input.replace("[[YELLOW]]",      "&e");
-        input = input.replace("[[WHITE]]",       "&f");
+        input = input.replace("[[GOLD]]", "&6");
+        input = input.replace("[[GRAY]]", "&7");
+        input = input.replace("[[DARK_GRAY]]", "&8");
+        input = input.replace("[[BLUE]]", "&9");
+        input = input.replace("[[GREEN]]", "&a");
+        input = input.replace("[[AQUA]]", "&b");
+        input = input.replace("[[RED]]", "&c");
+        input = input.replace("[[LIGHT_PURPLE]]", "&d");
+        input = input.replace("[[YELLOW]]", "&e");
+        input = input.replace("[[WHITE]]", "&f");
         // Formatting
-        input = input.replace("[[BOLD]]",        "&l");
-        input = input.replace("[[UNDERLINE]]",   "&n");
-        input = input.replace("[[ITALIC]]",      "&o");
-        input = input.replace("[[STRIKE]]",      "&m");
-        input = input.replace("[[MAGIC]]",       "&k");
-        input = input.replace("[[RESET]]",       "&r");
+        input = input.replace("[[BOLD]]", "&l");
+        input = input.replace("[[UNDERLINE]]", "&n");
+        input = input.replace("[[ITALIC]]", "&o");
+        input = input.replace("[[STRIKE]]", "&m");
+        input = input.replace("[[MAGIC]]", "&k");
+        input = input.replace("[[RESET]]", "&r");
         return input;
     }
 
@@ -523,5 +512,14 @@ public final class LocaleLoader {
         }
         matcher.appendTail(buffer);
         return buffer.toString();
+    }
+
+    /**
+     * The loaded bundles and their string cache, immutable as a unit. Readers on any thread
+     * (async chat, Folia regions) grab the whole snapshot once, so a locale reload can never
+     * expose half-swapped bundles or a cache mixing old and new strings.
+     */
+    private record LocaleSnapshot(ResourceBundle bundle, ResourceBundle filesystemBundle,
+                                  ResourceBundle enBundle, Map<String, String> cache) {
     }
 }

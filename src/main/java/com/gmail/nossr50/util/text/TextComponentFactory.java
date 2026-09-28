@@ -86,7 +86,7 @@ public class TextComponentFactory {
     public static void sendPlayerSubSkillWikiLink(
             @NotNull Player player,
             @NotNull String subskillformatted,
-                                                  @NotNull SubSkillType subSkillType) {
+            @NotNull SubSkillType subSkillType) {
         if (!mcMMO.p.getGeneralConfig().getUrlLinksEnabled()) {
             return;
         }
@@ -267,7 +267,7 @@ public class TextComponentFactory {
 
     private static Component buildSubSkillButton(
             @NotNull Player player,
-                                                         @NotNull AbstractSubSkill abstractSubSkill) {
+            @NotNull AbstractSubSkill abstractSubSkill) {
         final String skillName = abstractSubSkill.getNiceName();
         final SubSkillType subSkillType = abstractSubSkill.getSubSkillType();
         final boolean unlocked = RankUtils.hasUnlockedSubskill(player, subSkillType);
@@ -334,7 +334,7 @@ public class TextComponentFactory {
             // JSON.DescriptionHeader=&5Description:
             tooltip.append(LocaleLoader.getTextComponent("JSON.DescriptionHeader"));
             tooltip.append(Component.newline());
-                                                       tooltip.append(LocaleLoader.getTextComponent(
+            tooltip.append(LocaleLoader.getTextComponent(
                     subSkillType.getLocaleKeyRoot() + ".Description"));
         }
 
@@ -346,7 +346,7 @@ public class TextComponentFactory {
      * All colors come from locale string {@code &} codes.
      */
     private static Component buildSubSkillHover(
-                                                       @NotNull Player player, @NotNull AbstractSubSkill abstractSubSkill) {
+            @NotNull Player player, @NotNull AbstractSubSkill abstractSubSkill) {
         final String skillName = abstractSubSkill.getNiceName();
         final SubSkillType subSkillType = abstractSubSkill.getSubSkillType();
         final boolean unlocked = RankUtils.hasUnlockedSubskill(player, abstractSubSkill);
@@ -389,7 +389,7 @@ public class TextComponentFactory {
      */
     private static TextComponent.Builder buildHoverNameHeader(
             @NotNull Player player,
-                                                                      @NotNull String skillName,
+            @NotNull String skillName,
             @NotNull SubSkillType subSkillType,
             boolean unlocked) {
         final String nameArg;
@@ -446,20 +446,20 @@ public class TextComponentFactory {
      * {@code JSON.Locked=&8-=[LOCKED]=-} and {@code JSON.LevelRequirement=&9Level Requirement}.
      */
     private static void appendLockedSection(
-                                  @NotNull
-                                  TextComponent.Builder tooltip, @NotNull SubSkillType subSkillType) {
+            @NotNull
+            TextComponent.Builder tooltip, @NotNull SubSkillType subSkillType) {
         appendLockedCore(tooltip, String.valueOf(
                 RankConfig.getInstance().getSubSkillUnlockLevel(subSkillType, 1)));
     }
 
     private static void appendLockedSection(
-                                  @NotNull TextComponent.Builder tooltip, @NotNull AbstractSubSkill abstractSubSkill) {
+            @NotNull TextComponent.Builder tooltip, @NotNull AbstractSubSkill abstractSubSkill) {
         appendLockedCore(tooltip, String.valueOf(
                 RankConfig.getInstance().getSubSkillUnlockLevel(abstractSubSkill, 1)));
     }
 
     private static void appendLockedCore(
-                                  @NotNull TextComponent.Builder tooltip, @NotNull String unlockLevel) {
+            @NotNull TextComponent.Builder tooltip, @NotNull String unlockLevel) {
         // JSON.Locked=&8-=[LOCKED]=-
         tooltip.append(LocaleLoader.getTextComponent("JSON.Locked"));
         tooltip.append(Component.newline()).append(Component.newline());
@@ -477,7 +477,7 @@ public class TextComponentFactory {
      */
     private static void appendSubSkillTypeTag(
             @NotNull AbstractSubSkill abstractSubSkill,
-                                                        @NotNull TextComponent.Builder tooltip) {
+            @NotNull TextComponent.Builder tooltip) {
         final String typeKey;
         if (abstractSubSkill.isSuperAbility()) {
             typeKey = "JSON.Type.SuperAbility";

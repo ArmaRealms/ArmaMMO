@@ -1,11 +1,12 @@
 package com.gmail.nossr50.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Set;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class MaterialMapStoreTest {
 
@@ -57,8 +58,7 @@ class MaterialMapStoreTest {
             final Field guaranteedDropField = MaterialMapStore.class
                     .getDeclaredField("treeFellerGuaranteedDropWhiteList");
             guaranteedDropField.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            final Set<String> guaranteedDrops = (Set<String>) guaranteedDropField.get(store);
+            @SuppressWarnings("unchecked") final Set<String> guaranteedDrops = (Set<String>) guaranteedDropField.get(store);
 
             // Then - the register carries entries and each one is destructible as well
             assertThat(guaranteedDrops).isNotEmpty();

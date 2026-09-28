@@ -1,7 +1,5 @@
 package com.gmail.nossr50.util;
 
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.TreeFellerBlockBreakEvent;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -42,8 +40,6 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
@@ -60,6 +56,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * This class is meant to help make event related code less boilerplate
@@ -211,25 +212,25 @@ public final class EventUtils {
     /**
      * Calls a new SubSkillEvent for this SubSkill and then returns it
      *
-     * @param player target player
+     * @param player       target player
      * @param subSkillType target subskill
      * @return the event after it has been fired
      */
     @Deprecated(forRemoval = true, since = "2.2.010")
     public static @NotNull SubSkillEvent callSubSkillEvent(@NotNull Player player,
-            @NotNull SubSkillType subSkillType) {
+                                                           @NotNull SubSkillType subSkillType) {
         return callSubSkillEvent(requireNonNull(UserManager.getPlayer(player)), subSkillType);
     }
 
     /**
      * Calls a new SubSkillEvent for this SubSkill and then returns it
      *
-     * @param mmoPlayer target mmoPlayer
+     * @param mmoPlayer    target mmoPlayer
      * @param subSkillType target subskill
      * @return the event after it has been fired
      */
     public static @NotNull SubSkillEvent callSubSkillEvent(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull SubSkillType subSkillType) {
+                                                           @NotNull SubSkillType subSkillType) {
         requireNonNull(mmoPlayer, "mmoPlayer cannot be null");
         requireNonNull(subSkillType, "subSkillType cannot be null");
         final SubSkillEvent event = new SubSkillEvent(mmoPlayer, subSkillType);
@@ -241,13 +242,13 @@ public final class EventUtils {
     /**
      * Calls a new SubSkillBlockEvent for this SubSkill and its related block and then returns it
      *
-     * @param player target player
+     * @param player       target player
      * @param subSkillType target subskill
-     * @param block associated block
+     * @param block        associated block
      * @return the event after it has been fired
      */
     public static @NotNull SubSkillBlockEvent callSubSkillBlockEvent(@NotNull Player player,
-            @NotNull SubSkillType subSkillType, @NotNull Block block) {
+                                                                     @NotNull SubSkillType subSkillType, @NotNull Block block) {
         SubSkillBlockEvent event = new SubSkillBlockEvent(player, subSkillType, block);
         callEvent(event);
 
@@ -255,21 +256,21 @@ public final class EventUtils {
     }
 
     public static boolean tryLevelChangeEvent(Player player, PrimarySkillType skill,
-            int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason) {
+                                              int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason) {
         return tryLevelChangeEvent(player, UserManager.getPlayer(player), skill, levelsChanged,
                 xpRemoved, isLevelUp, xpGainReason);
     }
 
     public static boolean tryLevelChangeEvent(@NotNull McMMOPlayer mmoPlayer,
-            PrimarySkillType skill, int levelsChanged, float xpRemoved, boolean isLevelUp,
-            XPGainReason xpGainReason) {
+                                              PrimarySkillType skill, int levelsChanged, float xpRemoved, boolean isLevelUp,
+                                              XPGainReason xpGainReason) {
         return tryLevelChangeEvent(mmoPlayer.getPlayer(), mmoPlayer, skill, levelsChanged,
                 xpRemoved, isLevelUp, xpGainReason);
     }
 
     private static boolean tryLevelChangeEvent(Player player, @Nullable McMMOPlayer mmoPlayer,
-            PrimarySkillType skill, int levelsChanged, float xpRemoved, boolean isLevelUp,
-            XPGainReason xpGainReason) {
+                                               PrimarySkillType skill, int levelsChanged, float xpRemoved, boolean isLevelUp,
+                                               XPGainReason xpGainReason) {
         McMMOPlayerLevelChangeEvent event =
                 isLevelUp ? new McMMOPlayerLevelUpEvent(player, skill, levelsChanged, xpGainReason)
                         : new McMMOPlayerLevelDownEvent(player, skill, levelsChanged, xpGainReason);
@@ -305,11 +306,11 @@ public final class EventUtils {
      * /mmoedit) and rolls the edit back if the event is cancelled.
      *
      * @param levelsChanged the absolute level the skill was set to
-     * @param oldLevel the skill level before the edit
+     * @param oldLevel      the skill level before the edit
      */
     public static boolean tryLevelEditEvent(Player player, PrimarySkillType skill,
-            int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason,
-            int oldLevel) {
+                                            int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason,
+                                            int oldLevel) {
         return tryLevelChangeEvent(player, skill,
                 editedLevelDelta(levelsChanged, oldLevel, isLevelUp), xpRemoved, isLevelUp,
                 xpGainReason);
@@ -320,11 +321,11 @@ public final class EventUtils {
      * /mmoedit) and rolls the edit back if the event is cancelled.
      *
      * @param levelsChanged the absolute level the skill was set to
-     * @param oldLevel the skill level before the edit
+     * @param oldLevel      the skill level before the edit
      */
     public static boolean tryLevelEditEvent(@NotNull McMMOPlayer mmoPlayer, PrimarySkillType skill,
-            int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason,
-            int oldLevel) {
+                                            int levelsChanged, float xpRemoved, boolean isLevelUp, XPGainReason xpGainReason,
+                                            int oldLevel) {
         return tryLevelChangeEvent(mmoPlayer, skill,
                 editedLevelDelta(levelsChanged, oldLevel, isLevelUp), xpRemoved, isLevelUp,
                 xpGainReason);
@@ -337,8 +338,8 @@ public final class EventUtils {
     /**
      * Simulate a block break event.
      *
-     * @param block The block to break
-     * @param player The player breaking the block
+     * @param block          The block to break
+     * @param player         The player breaking the block
      * @param shouldArmSwing ignored (here for API compatibility)
      * @return true if the event wasn't cancelled, false otherwise
      * @deprecated Use {@link #simulateBlockBreak(Block, Player, FakeBlockBreakEventType)} instead
@@ -351,7 +352,7 @@ public final class EventUtils {
     /**
      * Simulate a block break event.
      *
-     * @param block The block to break
+     * @param block  The block to break
      * @param player The player breaking the block
      * @return true if the event wasn't cancelled, false otherwise
      * @deprecated Use {@link #simulateBlockBreak(Block, Player, FakeBlockBreakEventType)} instead
@@ -364,13 +365,13 @@ public final class EventUtils {
     /**
      * Simulate a block break event.
      *
-     * @param block The block to break
-     * @param player The player breaking the block
+     * @param block     The block to break
+     * @param player    The player breaking the block
      * @param eventType The type of event to signal to other plugins
      * @return true if the event wasn't cancelled, false otherwise
      */
     public static boolean simulateBlockBreak(Block block, Player player,
-            FakeBlockBreakEventType eventType) {
+                                             FakeBlockBreakEventType eventType) {
         if (IN_FAKE_BREAK.get()) {
             return true;
         }
@@ -437,7 +438,7 @@ public final class EventUtils {
     }
 
     public static boolean handlePartyLevelChangeEvent(Party party, int levelsChanged,
-            float xpRemoved) {
+                                                      float xpRemoved) {
         McMMOPartyLevelUpEvent event = new McMMOPartyLevelUpEvent(party, levelsChanged);
         callEvent(event);
 
@@ -452,7 +453,7 @@ public final class EventUtils {
     }
 
     public static boolean handleXpGainEvent(Player player, PrimarySkillType skill, float xpGained,
-            XPGainReason xpGainReason) {
+                                            XPGainReason xpGainReason) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         if (mmoPlayer == null) {
             return true;
@@ -473,7 +474,7 @@ public final class EventUtils {
     }
 
     public static boolean handleStatsLossEvent(Player player, HashMap<String, Integer> levelChanged,
-            HashMap<String, Float> experienceChanged) {
+                                               HashMap<String, Float> experienceChanged) {
         if (UserManager.getPlayer(player) == null) {
             return true;
         }
@@ -514,7 +515,7 @@ public final class EventUtils {
     }
 
     public static boolean handleVampirismEvent(Player killer, Player victim,
-            HashMap<String, Integer> levelChanged, HashMap<String, Float> experienceChanged) {
+                                               HashMap<String, Integer> levelChanged, HashMap<String, Float> experienceChanged) {
         McMMOPlayerVampirismEvent eventKiller = new McMMOPlayerVampirismEvent(killer, false,
                 levelChanged, experienceChanged);
         McMMOPlayerVampirismEvent eventVictim = new McMMOPlayerVampirismEvent(victim, true,
@@ -576,7 +577,7 @@ public final class EventUtils {
 
     @Deprecated(forRemoval = true, since = "2.2.010")
     public static McMMOPlayerAbilityDeactivateEvent callAbilityDeactivateEvent(Player player,
-            SuperAbilityType ability) {
+                                                                               SuperAbilityType ability) {
         return callAbilityDeactivateEvent(requireNonNull(UserManager.getPlayer(player)), ability);
     }
 
@@ -591,25 +592,25 @@ public final class EventUtils {
 
     @Deprecated(forRemoval = true, since = "2.2.010")
     public static McMMOPlayerFishingTreasureEvent callFishingTreasureEvent(Player player,
-            ItemStack treasureDrop, int treasureXp, Map<Enchantment, Integer> enchants) {
+                                                                           ItemStack treasureDrop, int treasureXp, Map<Enchantment, Integer> enchants) {
         return callFishingTreasureEvent(requireNonNull(UserManager.getPlayer(player)), treasureDrop,
                 treasureXp, enchants);
     }
 
     public static McMMOPlayerFishingTreasureEvent callFishingTreasureEvent(McMMOPlayer mmoPlayer,
-            ItemStack treasureDrop, int treasureXp, Map<Enchantment, Integer> enchants) {
+                                                                           ItemStack treasureDrop, int treasureXp, Map<Enchantment, Integer> enchants) {
         final McMMOPlayerFishingTreasureEvent event =
                 enchants.isEmpty() ? new McMMOPlayerFishingTreasureEvent(mmoPlayer, treasureDrop,
                         treasureXp)
                         : new McMMOPlayerMagicHunterEvent(mmoPlayer, treasureDrop, treasureXp,
-                                enchants);
+                        enchants);
         callEvent(event);
 
         return event;
     }
 
     public static FakePlayerFishEvent callFakeFishEvent(Player player, FishHook hook,
-            @Nullable EquipmentSlot hand) {
+                                                        @Nullable EquipmentSlot hand) {
         FakePlayerFishEvent event = new FakePlayerFishEvent(player, null, hook,
                 hand, PlayerFishEvent.State.FISHING);
         callEvent(event);
@@ -618,7 +619,7 @@ public final class EventUtils {
     }
 
     public static McMMOPlayerRepairCheckEvent callRepairCheckEvent(Player player, short durability,
-            ItemStack repairMaterial, ItemStack repairedObject) {
+                                                                   ItemStack repairMaterial, ItemStack repairedObject) {
         McMMOPlayerRepairCheckEvent event = new McMMOPlayerRepairCheckEvent(player, durability,
                 repairMaterial, repairedObject);
         callEvent(event);
@@ -641,13 +642,12 @@ public final class EventUtils {
     }
 
     public static McMMOPlayerSalvageCheckEvent callSalvageCheckEvent(Player player,
-            ItemStack salvageMaterial, ItemStack salvageResults, ItemStack enchantedBook) {
+                                                                     ItemStack salvageMaterial, ItemStack salvageResults, ItemStack enchantedBook) {
         McMMOPlayerSalvageCheckEvent event = new McMMOPlayerSalvageCheckEvent(player,
                 salvageMaterial, salvageResults, enchantedBook);
         callEvent(event);
 
         return event;
     }
-
 
 }

@@ -311,7 +311,7 @@ public class SalvageManager extends SkillManager {
      * prompt (for example through vanilla armor quick-equipping) starts a new confirmation
      * instead of being salvaged.
      *
-     * @param item the item the player is attempting to salvage
+     * @param item      the item the player is attempting to salvage
      * @param actualize whether to start a new confirmation when none applies to the item
      * @return true if the player has confirmed salvaging the given item
      */

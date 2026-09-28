@@ -1,9 +1,5 @@
 package com.gmail.nossr50.datatypes.player;
 
-import org.bukkit.plugin.Plugin;
-
-import static com.gmail.nossr50.util.EventUtils.callPlayerAbilityActivateEvent;
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.chat.author.PlayerAuthor;
 import com.gmail.nossr50.config.ChatConfig;
@@ -60,10 +56,6 @@ import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Level;
 import net.kyori.adventure.identity.Identified;
 import net.kyori.adventure.identity.Identity;
 import org.bukkit.Bukkit;
@@ -73,6 +65,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,6 +74,10 @@ import org.jetbrains.annotations.VisibleForTesting;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+
+import static com.gmail.nossr50.util.EventUtils.callPlayerAbilityActivateEvent;
+import static java.util.Objects.requireNonNull;
 
 public class McMMOPlayer implements Identified {
     private final @NotNull Identity identity;
@@ -169,8 +166,8 @@ public class McMMOPlayer implements Identified {
             } catch (final InvalidSkillException e) {
                 mcMMO.p.getLogger().log(Level.SEVERE,
                         "Invalid skill while initializing skill managers for player "
-                        + player.getName()
-                        + ". Contact the plugin developers.", e);
+                                + player.getName()
+                                + ". Contact the plugin developers.", e);
             }
         }
     }
@@ -237,12 +234,12 @@ public class McMMOPlayer implements Identified {
     }
 
     public void processPostXpEvent(PrimarySkillType primarySkillType, Plugin plugin,
-            XPGainSource xpGainSource) {
+                                   XPGainSource xpGainSource) {
         processPostXpEvent(primarySkillType, plugin, xpGainSource, getPowerLevelUpperBound());
     }
 
     private void processPostXpEvent(PrimarySkillType primarySkillType, Plugin plugin,
-            XPGainSource xpGainSource, int powerLevelUpperBound) {
+                                    XPGainSource xpGainSource, int powerLevelUpperBound) {
         //Check if they've reached the power level cap just now
         if (hasReachedPowerLevelCap(powerLevelUpperBound)) {
             NotificationManager.sendPlayerInformationChatOnly(player, "LevelCap.PowerLevel",
@@ -624,7 +621,7 @@ public class McMMOPlayer implements Identified {
     }
 
     private boolean hasReachedLevelCap(PrimarySkillType primarySkillType,
-            int powerLevelUpperBound) {
+                                       int powerLevelUpperBound) {
         if (hasReachedPowerLevelCap(powerLevelUpperBound)) {
             return true;
         }
@@ -772,7 +769,7 @@ public class McMMOPlayer implements Identified {
      * @param primarySkillType The skill to check
      */
     private void checkXp(PrimarySkillType primarySkillType, XPGainReason xpGainReason,
-            XPGainSource xpGainSource) {
+                         XPGainSource xpGainSource) {
         // Compute the bound once and track level-ups locally instead of recounting
         // on every cap check
         final int powerLevelUpperBound = getPowerLevelUpperBound();
@@ -1237,7 +1234,7 @@ public class McMMOPlayer implements Identified {
      * Adds levels to a skill and fires the level change events, like the /addlevels command.
      * Levels added to a child skill split evenly across its parent skills.
      *
-     * @param skill the skill to add levels to
+     * @param skill  the skill to add levels to
      * @param levels the number of levels to add
      */
     public void addLevels(PrimarySkillType skill, int levels) {
@@ -1264,7 +1261,7 @@ public class McMMOPlayer implements Identified {
      * {@link #beginXpGain(PrimarySkillType, float, XPGainReason, XPGainSource)} applies.
      *
      * @param skill the skill to add XP to
-     * @param xp the amount of XP to add
+     * @param xp    the amount of XP to add
      */
     public void addXp(PrimarySkillType skill, float xp) {
         applyXpGain(skill, xp, XPGainReason.UNKNOWN, XPGainSource.SELF);

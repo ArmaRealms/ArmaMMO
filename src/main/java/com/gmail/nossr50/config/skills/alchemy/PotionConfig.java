@@ -1,22 +1,10 @@
 package com.gmail.nossr50.config.skills.alchemy;
 
-import static com.gmail.nossr50.util.ItemUtils.customName;
-import static com.gmail.nossr50.util.PotionUtil.matchPotionType;
-import static com.gmail.nossr50.util.PotionUtil.setBasePotionType;
 import com.gmail.nossr50.config.LegacyConfigLoader;
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.datatypes.skills.alchemy.AlchemyPotion;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.ItemUtils;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.gmail.nossr50.util.LogUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -35,21 +23,19 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.util.ItemUtils.customName;
+import static com.gmail.nossr50.util.PotionUtil.matchPotionType;
+import static com.gmail.nossr50.util.PotionUtil.setBasePotionType;
 
 public class PotionConfig extends LegacyConfigLoader {
-    private static final String BREEZE_ROD_STR = "BREEZE_ROD";
-    private static final String INFESTED_EFFECT_STR = "INFESTED";
-    private static final String WEAVING_EFFECT_STR = "WEAVING";
-    private static final String OOZING_EFFECT_STR = "OOZING";
-    private static final String WIND_CHARGED_EFFECT_STR = "WIND_CHARGED";
-    private static final String SLIME_BLOCK_STR = "SLIME_BLOCK";
-    private static final String COBWEB_STR = "COBWEB";
-    private static final String STONE_STR = "STONE";
-
     // The four Tricky Trials splash potion YAML keys shipped with incorrect duration 2500 ticks;
     // the correct value is 3600 (matching the base potion duration).
     @VisibleForTesting
@@ -62,7 +48,6 @@ public class PotionConfig extends LegacyConfigLoader {
     static final int TRICKY_TRIALS_SPLASH_INCORRECT_DURATION = 2500;
     @VisibleForTesting
     static final int TRICKY_TRIALS_SPLASH_CORRECT_DURATION = 3600;
-
     // The four Tricky Trials lingering potion YAML keys shipped with incorrect duration 3000 ticks;
     // the correct value is 900 (1/4 of the base 3600 tick duration per vanilla rules).
     @VisibleForTesting
@@ -75,7 +60,14 @@ public class PotionConfig extends LegacyConfigLoader {
     static final int TRICKY_TRIALS_LINGERING_INCORRECT_DURATION = 3000;
     @VisibleForTesting
     static final int TRICKY_TRIALS_LINGERING_CORRECT_DURATION = 900;
-
+    private static final String BREEZE_ROD_STR = "BREEZE_ROD";
+    private static final String INFESTED_EFFECT_STR = "INFESTED";
+    private static final String WEAVING_EFFECT_STR = "WEAVING";
+    private static final String OOZING_EFFECT_STR = "OOZING";
+    private static final String WIND_CHARGED_EFFECT_STR = "WIND_CHARGED";
+    private static final String SLIME_BLOCK_STR = "SLIME_BLOCK";
+    private static final String COBWEB_STR = "COBWEB";
+    private static final String STONE_STR = "STONE";
     private final List<ItemStack> concoctionsIngredientsTierOne = new ArrayList<>();
     private final List<ItemStack> concoctionsIngredientsTierTwo = new ArrayList<>();
     private final List<ItemStack> concoctionsIngredientsTierThree = new ArrayList<>();
@@ -113,41 +105,6 @@ public class PotionConfig extends LegacyConfigLoader {
                 WEAVING_EFFECT_STR) || effectStr.equalsIgnoreCase(OOZING_EFFECT_STR)
                 || effectStr.equalsIgnoreCase(
                 WIND_CHARGED_EFFECT_STR);
-    }
-
-    @Override
-    protected void loadKeys() {
-    }
-
-    public void loadPotions() {
-        if (mcMMO.getUpgradeManager().shouldUpgrade(
-                UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS)) {
-            mcMMO.p.getLogger().log(Level.INFO,
-                    "Fixing incorrect potion durations for Tricky Trials potions,"
-                            + " this will only run once...");
-            final boolean patched = fixTrickyTrialsPotionDurations(config, mcMMO.p.getLogger());
-            if (patched) {
-                try {
-                    config.save(getFile());
-                    mcMMO.getUpgradeManager().setUpgradeCompleted(
-                            UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS);
-                } catch (IOException e) {
-                    mcMMO.p.getLogger().log(Level.SEVERE,
-                            "Failed to save potions.yml after patching Tricky Trials potion"
-                                    + " durations. You may manually fix the Effects durations:"
-                                    + " splash potions should be 3600, lingering potions should"
-                                    + " be 900, for INFESTATION, WEAVING, WIND_CHARGING, and"
-                                    + " OOZING.", e);
-                }
-            } else {
-                // Nothing to patch (keys absent or already correct) — mark complete so we
-                // don't check again on the next server startup.
-                mcMMO.getUpgradeManager().setUpgradeCompleted(
-                        UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS);
-            }
-        }
-        loadConcoctions();
-        loadPotionMap();
     }
 
     /**
@@ -241,6 +198,41 @@ public class PotionConfig extends LegacyConfigLoader {
         }
 
         return anyPatched;
+    }
+
+    @Override
+    protected void loadKeys() {
+    }
+
+    public void loadPotions() {
+        if (mcMMO.getUpgradeManager().shouldUpgrade(
+                UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS)) {
+            mcMMO.p.getLogger().log(Level.INFO,
+                    "Fixing incorrect potion durations for Tricky Trials potions,"
+                            + " this will only run once...");
+            final boolean patched = fixTrickyTrialsPotionDurations(config, mcMMO.p.getLogger());
+            if (patched) {
+                try {
+                    config.save(getFile());
+                    mcMMO.getUpgradeManager().setUpgradeCompleted(
+                            UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS);
+                } catch (IOException e) {
+                    mcMMO.p.getLogger().log(Level.SEVERE,
+                            "Failed to save potions.yml after patching Tricky Trials potion"
+                                    + " durations. You may manually fix the Effects durations:"
+                                    + " splash potions should be 3600, lingering potions should"
+                                    + " be 900, for INFESTATION, WEAVING, WIND_CHARGING, and"
+                                    + " OOZING.", e);
+                }
+            } else {
+                // Nothing to patch (keys absent or already correct) — mark complete so we
+                // don't check again on the next server startup.
+                mcMMO.getUpgradeManager().setUpgradeCompleted(
+                        UpgradeType.FIX_TRICKY_TRIALS_SPLASH_POTION_DURATIONS);
+            }
+        }
+        loadConcoctions();
+        loadPotionMap();
     }
 
     @VisibleForTesting

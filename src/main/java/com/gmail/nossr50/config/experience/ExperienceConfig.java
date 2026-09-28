@@ -1,19 +1,11 @@
 package com.gmail.nossr50.config.experience;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -23,14 +15,28 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.EntityType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
+
 public class ExperienceConfig extends BukkitConfig {
     private static ExperienceConfig instance;
     final private Map<PrimarySkillType, Map<Material, Integer>> blockExperienceMap = new HashMap<>();
-
+    private final Map<PrimarySkillType, Double> formulaSkillModifiers =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Integer> diminishedReturnsThresholds =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Boolean> experienceBarEnabled =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarColor> experienceBarColors =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarStyle> experienceBarStyles =
+            new EnumMap<>(PrimarySkillType.class);
     /* Values resolved once and reused on the XP hot path; reset by loadKeys() */
     private FormulaType formulaType;
     private Boolean cumulativeCurveEnabled;
@@ -56,16 +62,6 @@ public class ExperienceConfig extends BukkitConfig {
     private Float diminishedReturnsCap;
     private Integer diminishedReturnsTimeInterval;
     private Boolean experienceBarsEnabled;
-    private final Map<PrimarySkillType, Double> formulaSkillModifiers =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, Integer> diminishedReturnsThresholds =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, Boolean> experienceBarEnabled =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, BarColor> experienceBarColors =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, BarStyle> experienceBarStyles =
-            new EnumMap<>(PrimarySkillType.class);
 
     private ExperienceConfig() {
         super("experience.yml");

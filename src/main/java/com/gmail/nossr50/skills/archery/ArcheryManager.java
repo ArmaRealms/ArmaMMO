@@ -1,7 +1,5 @@
 package com.gmail.nossr50.skills.archery;
 
-import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
-
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -23,9 +21,39 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 
+import static com.gmail.nossr50.util.PotionEffectUtil.getNauseaPotionEffectType;
+
 public class ArcheryManager extends SkillManager {
     public ArcheryManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.ARCHERY);
+    }
+
+    /**
+     * Calculate bonus XP awarded for Archery when hitting a far-away target.
+     *
+     * @param target The {@link LivingEntity} damaged by the arrow
+     * @param arrow  The {@link Entity} who shot the arrow
+     */
+    public static double distanceXpBonusMultiplier(LivingEntity target, Entity arrow) {
+        //Hacky Fix - some plugins spawn arrows and assign them to players after the ProjectileLaunchEvent fires
+        if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE)) {
+            return 1;
+        }
+
+        final Location firedLocation = (Location) arrow.getMetadata(
+                MetadataConstants.METADATA_KEY_ARROW_DISTANCE).get(0).value();
+        final Location targetLocation = target.getLocation();
+
+        if (firedLocation == null || firedLocation.getWorld() == null) {
+            return 1;
+        }
+
+        if (firedLocation.getWorld() != targetLocation.getWorld()) {
+            return 1;
+        }
+
+        return 1 + Math.min(firedLocation.distance(targetLocation), 50)
+                * Archery.DISTANCE_XP_MULTIPLIER;
     }
 
     public boolean canDaze(LivingEntity target) {
@@ -51,34 +79,6 @@ public class ArcheryManager extends SkillManager {
         }
 
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.ARCHERY_ARROW_RETRIEVAL);
-    }
-
-    /**
-     * Calculate bonus XP awarded for Archery when hitting a far-away target.
-     *
-     * @param target The {@link LivingEntity} damaged by the arrow
-     * @param arrow The {@link Entity} who shot the arrow
-     */
-    public static double distanceXpBonusMultiplier(LivingEntity target, Entity arrow) {
-        //Hacky Fix - some plugins spawn arrows and assign them to players after the ProjectileLaunchEvent fires
-        if (!arrow.hasMetadata(MetadataConstants.METADATA_KEY_ARROW_DISTANCE)) {
-            return 1;
-        }
-
-        final Location firedLocation = (Location) arrow.getMetadata(
-                MetadataConstants.METADATA_KEY_ARROW_DISTANCE).get(0).value();
-        final Location targetLocation = target.getLocation();
-
-        if (firedLocation == null || firedLocation.getWorld() == null) {
-            return 1;
-        }
-
-        if (firedLocation.getWorld() != targetLocation.getWorld()) {
-            return 1;
-        }
-
-        return 1 + Math.min(firedLocation.distance(targetLocation), 50)
-                * Archery.DISTANCE_XP_MULTIPLIER;
     }
 
     /**

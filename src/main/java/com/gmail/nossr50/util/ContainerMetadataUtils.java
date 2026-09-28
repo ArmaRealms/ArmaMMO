@@ -1,7 +1,5 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_LEAST_SIG;
-import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_MOST_SIG;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.util.player.UserManager;
 import org.bukkit.Bukkit;
@@ -17,6 +15,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
+import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_LEAST_SIG;
+import static com.gmail.nossr50.util.MetadataService.NSK_CONTAINER_UUID_MOST_SIG;
+
 public class ContainerMetadataUtils {
 
     public static void changeContainerOwnership(@Nullable final BlockState blockState,
@@ -30,7 +31,7 @@ public class ContainerMetadataUtils {
     }
 
     private static void changeContainerOwnership(@NotNull BlockState blockState,
-            @Nullable OfflinePlayer previousOwner, @NotNull Player player) {
+                                                 @Nullable OfflinePlayer previousOwner, @NotNull Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         /*
@@ -55,7 +56,7 @@ public class ContainerMetadataUtils {
     }
 
     private static void printOwnershipLossDebug(@NotNull BlockState blockState,
-            @Nullable OfflinePlayer containerOwner) {
+                                                @Nullable OfflinePlayer containerOwner) {
         if (containerOwner != null && containerOwner.isOnline()) {
             final McMMOPlayer mmoContainerOwner = UserManager.getPlayer(containerOwner.getPlayer());
 

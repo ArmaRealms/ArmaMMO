@@ -1,33 +1,7 @@
 package com.gmail.nossr50.database;
 
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BERSERK;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.OVERHAUL_LAST_LOGIN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
-import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
-import static com.gmail.nossr50.database.UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
-import static com.gmail.nossr50.util.skills.SkillTools.isChildSkill;
-import static java.util.UUID.randomUUID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.database.flatfile.LeaderboardStatus;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
 import com.gmail.nossr50.datatypes.database.PlayerNameAndUUID;
@@ -36,10 +10,28 @@ import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.player.UniqueDataType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
-import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.google.common.io.Files;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -70,30 +62,36 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BERSERK;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SPEARS;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.OVERHAUL_LAST_LOGIN;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.database.UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.util.skills.SkillTools.isChildSkill;
+import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Tag("docker")
 class FlatFileDatabaseManagerTest {
-
-    private static File testDataFolder;
-    private static MockedStatic<ExperienceConfig> mockedExperienceConfig;
 
     public static final @NotNull String TEST_FILE_NAME = "test.mcmmo.users";
     public static final @NotNull String BAD_FILE_LINE_ONE = "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:";
@@ -102,14 +100,63 @@ class FlatFileDatabaseManagerTest {
     public static final @NotNull String DB_HEALTHY = "healthydb.users";
     public static final @NotNull String HEALTHY_DB_LINE_ONE_UUID_STR = "588fe472-1c82-4c4e-9aa1-7eefccb277e3";
     public static final @NotNull String DB_MISSING_LAST_LOGIN = "missinglastlogin.users";
-
-    private static File tempDir;
     private static final @NotNull Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     private static final String EXISTING_PLAYER = "nossr50";
     private static final UUID EXISTING_PLAYER_UUID = UUID.fromString(HEALTHY_DB_LINE_ONE_UUID_STR);
-
+    // Nothing wrong with this database
+    private static final String[] normalDatabaseData = {
+            "nossr50:1:IGNORED:IGNORED:10:2:20:3:4:5:6:7:8:9:10:30:40:50:60:70:80:90:100:IGNORED:11:110:111:222:333:444:555:666:777:IGNORED:12:120:888:IGNORED:HEARTS:13:130:588fe472-1c82-4c4e-9aa1-7eefccb277e3:1111:999:2020:140:14:150:15:1111:2222:3333:160:16:4444:170:17:5555:",
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:3030:0:0:0:0:0:0:0:0:0:0:0:0:0:",
+            "powerless:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:1337:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:4040:0:0:0:0:0:0:0:0:0:0:0:0:0:"
+    };
+    private static final String[] badUUIDDatabaseData = {
+            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "z750:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:3:5:1600906906:",
+            // This one has an incorrect UUID representation
+            "powerless:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:"
+    };
+    private static final String[] outdatedDatabaseData = {
+            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
+            "electronicboy:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:"
+            // This user is missing data added after UUID index
+    };
+    private static final String[] emptyLineDatabaseData = {
+            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
+            "kashike:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:",
+            "" // EMPTY LINE
+    };
+    private static final String[] emptyNameDatabaseData = {
+            ":1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
+            "aikar:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:"
+    };
+    private static final String[] duplicateNameDatabaseData = {
+            "mochi:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mochi:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:631e3896-da2a-4077-974b-d047859d76bc:0:0:",
+    };
+    private static final String[] duplicateUUIDDatabaseData = {
+            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mrfloris:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+    };
+    private static final String[] corruptDatabaseData = {
+            "nossr50:1000:::0:100:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
+            "corruptdataboy:の:::ののの0:2452:0:1983:1937:1790:3042ののののの:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617のののののの583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:d20c6e8d-5615-4284-b8d1-e20b92011530:5:1600906906:",
+            "のjapaneseuserの:333:::0:2452:0:444:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:25870f0e-7558-4659-9f60-417e24cb3332:5:1600906906:",
+            "sameUUIDasjapaneseuser:333:::0:442:0:544:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:25870f0e-7558-4659-9f60-417e24cb3332:5:1600906906:",
+    };
+    private static final String[] badDatabaseData = {
+            // First entry here is missing some values
+            "nossr50:1000:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
+            // Second entry here has an integer value replaced by a string
+            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:badvalue:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:"
+    };
+    private static File testDataFolder;
+    private static MockedStatic<ExperienceConfig> mockedExperienceConfig;
+    private static File tempDir;
     private final long PURGE_TIME = 2_630_000_000L; // ~30 days in ms
-
     // Making them all unique makes it easier on us to edit this stuff later
     int expectedLvlMining = 1, expectedLvlWoodcutting = 2, expectedLvlRepair = 3,
             expectedLvlUnarmed = 4, expectedLvlHerbalism = 5, expectedLvlExcavation = 6,
@@ -117,14 +164,12 @@ class FlatFileDatabaseManagerTest {
             expectedLvlAcrobatics = 10, expectedLvlTaming = 11, expectedLvlFishing = 12,
             expectedLvlAlchemy = 13, expectedLvlCrossbows = 14, expectedLvlTridents = 15,
             expectedLvlMaces = 16, expectedLvlSpears = 17;
-
     float expectedExpMining = 10, expectedExpWoodcutting = 20, expectedExpRepair = 30,
             expectedExpUnarmed = 40, expectedExpHerbalism = 50, expectedExpExcavation = 60,
             expectedExpArchery = 70, expectedExpSwords = 80, expectedExpAxes = 90,
             expectedExpAcrobatics = 100, expectedExpTaming = 110, expectedExpFishing = 120,
             expectedExpAlchemy = 130, expectedExpCrossbows = 140, expectedExpTridents = 150,
             expectedExpMaces = 160, expectedExpSpears = 170;
-
     long expectedBerserkCd = 111, expectedGigaDrillBreakerCd = 222, expectedTreeFellerCd = 333,
             expectedGreenTerraCd = 444, expectedSerratedStrikesCd = 555,
             expectedSkullSplitterCd = 666, expectedSuperBreakerCd = 777,
@@ -132,7 +177,6 @@ class FlatFileDatabaseManagerTest {
             expectedSuperShotgunCd = 1111, expectedTridentSuperCd = 2222,
             expectedExplosiveShotCd = 3333, expectedMacesSuperCd = 4444,
             expectedSpearsSuperCd = 5555;
-
     int expectedScoreboardTips = 1111;
     Long expectedLastLogin = 2020L;
 
@@ -161,16 +205,6 @@ class FlatFileDatabaseManagerTest {
                 .thenReturn(null);
     }
 
-    @BeforeEach
-    void initEachTest() {
-        //noinspection UnstableApiUsage
-        tempDir = Files.createTempDir();
-    }
-
-    private @NotNull String getTemporaryUserFilePath() {
-        return tempDir.getPath() + File.separator + TEST_FILE_NAME;
-    }
-
     @AfterAll
     static void tearDownAll() {
         if (mockedExperienceConfig != null) {
@@ -181,73 +215,98 @@ class FlatFileDatabaseManagerTest {
         }
     }
 
-    @AfterEach
-    void tearDown() {
-        recursiveDelete(tempDir);
+    @NotNull
+    private static Player initMockPlayer(@NotNull String name, @NotNull UUID uuid) {
+        Player mockPlayer = mock(Player.class);
+        Mockito.when(mockPlayer.getName()).thenReturn(name);
+        Mockito.when(mockPlayer.getUniqueId()).thenReturn(uuid);
+        Mockito.when(mockPlayer.isOnline()).thenReturn(true);
+        return mockPlayer;
     }
 
-    // Nothing wrong with this database
-    private static final String[] normalDatabaseData = {
-            "nossr50:1:IGNORED:IGNORED:10:2:20:3:4:5:6:7:8:9:10:30:40:50:60:70:80:90:100:IGNORED:11:110:111:222:333:444:555:666:777:IGNORED:12:120:888:IGNORED:HEARTS:13:130:588fe472-1c82-4c4e-9aa1-7eefccb277e3:1111:999:2020:140:14:150:15:1111:2222:3333:160:16:4444:170:17:5555:",
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:3030:0:0:0:0:0:0:0:0:0:0:0:0:0:",
-            "powerless:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:1337:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:4040:0:0:0:0:0:0:0:0:0:0:0:0:0:"
-    };
+    public static void recursiveDelete(@NotNull File directoryToBeDeleted) {
+        if (directoryToBeDeleted.isDirectory()) {
+            for (File file : directoryToBeDeleted.listFiles()) {
+                recursiveDelete(file);
+            }
+        }
+        directoryToBeDeleted.delete();
+    }
 
-    private static final String[] badUUIDDatabaseData = {
-            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "z750:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:3:5:1600906906:",
-            // This one has an incorrect UUID representation
-            "powerless:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:"
-    };
-
-    private static final String[] outdatedDatabaseData = {
-            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
-            "electronicboy:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:"
-            // This user is missing data added after UUID index
-    };
-
-    private static final String[] emptyLineDatabaseData = {
-            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
-            "kashike:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:",
-            "" // EMPTY LINE
-    };
-
-    private static final String[] emptyNameDatabaseData = {
-            ":1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
-            "aikar:0:::0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0::0:0:0:0:0:0:0:0:0::0:0:0:0:HEARTS:0:0:e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c:5:1600906906:"
-    };
-
-    private static final String[] duplicateNameDatabaseData = {
-            "mochi:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mochi:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:631e3896-da2a-4077-974b-d047859d76bc:0:0:",
-    };
-
-    private static final String[] duplicateUUIDDatabaseData = {
-            "nossr50:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mrfloris:1000:::0:1000:640:1000:1000:1000:1000:1000:1000:1000:1000:16:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-    };
-
-    private static final String[] corruptDatabaseData = {
-            "nossr50:1000:::0:100:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:",
-            "corruptdataboy:の:::ののの0:2452:0:1983:1937:1790:3042ののののの:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617のののののの583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:d20c6e8d-5615-4284-b8d1-e20b92011530:5:1600906906:",
-            "のjapaneseuserの:333:::0:2452:0:444:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:25870f0e-7558-4659-9f60-417e24cb3332:5:1600906906:",
-            "sameUUIDasjapaneseuser:333:::0:442:0:544:1937:1790:3042:1138:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:25870f0e-7558-4659-9f60-417e24cb3332:5:1600906906:",
-    };
-
-    private static final String[] badDatabaseData = {
-            // First entry here is missing some values
-            "nossr50:1000:0:500:0:0:0:0:0::1000:0:0:0:1593543012:0:0:0:0::1000:0:0:1593806053:HEARTS:1000:0:588fe472-1c82-4c4e-9aa1-7eefccb277e3:0:0:",
-            // Second entry here has an integer value replaced by a string
-            "mrfloris:2420:::0:2452:0:1983:1937:1790:3042:badvalue:3102:2408:3411:0:0:0:0:0:0:0:0::642:0:1617583171:0:1617165043:0:1617583004:1617563189:1616785408::2184:0:0:1617852413:HEARTS:415:0:631e3896-da2a-4077-974b-d047859d76bc:5:1600906906:"
-    };
+    private static void resetLeaderboardThrottle(FlatFileDatabaseManager databaseManager)
+            throws Exception {
+        final Field lastUpdateField = FlatFileDatabaseManager.class.getDeclaredField("lastUpdate");
+        lastUpdateField.setAccessible(true);
+        ((AtomicLong) lastUpdateField.get(databaseManager)).set(0L);
+    }
 
     // ------------------------------------------------------------------------
     // Core initialization / smoke tests
     // ------------------------------------------------------------------------
+
+    private static List<String> usersFileLines(FlatFileDatabaseManager databaseManager)
+            throws IOException {
+        return java.nio.file.Files.readAllLines(databaseManager.getUsersFile().toPath());
+    }
+
+    /**
+     * A row with its name replaced.
+     */
+    private static String rowWithName(String row, String playerName) {
+        return playerName + row.substring(row.indexOf(':'));
+    }
+
+    /**
+     * nossr50's row with one field replaced.
+     */
+    private static String existingPlayerRowWith(int fieldIndex, String value) {
+        final String[] fields = normalDatabaseData[0].split(":");
+        fields[fieldIndex] = value;
+        return String.join(":", fields) + ":";
+    }
+
+    /**
+     * nossr50's row cut short, the way a row written by an older mcMMO looks.
+     */
+    private static String existingPlayerRowCutAfter(int fieldCount) {
+        final String[] fields = normalDatabaseData[0].split(":");
+        return String.join(":", Arrays.copyOf(fields, fieldCount)) + ":";
+    }
+
+    // ------------------------------------------------------------------------
+    // Save / load user tests
+    // ------------------------------------------------------------------------
+
+    private static @NotNull BufferedReader createFailingReader(File file, int failOnReadLineCall)
+            throws IOException {
+        return new BufferedReader(new FileReader(file)) {
+            private int readCount = 0;
+
+            @Override
+            public String readLine() throws IOException {
+                readCount++;
+                if (readCount == failOnReadLineCall) {
+                    throw new IOException("Simulated mid-read I/O error on line " + readCount);
+                }
+                return super.readLine();
+            }
+        };
+    }
+
+    @BeforeEach
+    void initEachTest() {
+        //noinspection UnstableApiUsage
+        tempDir = Files.createTempDir();
+    }
+
+    private @NotNull String getTemporaryUserFilePath() {
+        return tempDir.getPath() + File.separator + TEST_FILE_NAME;
+    }
+
+    @AfterEach
+    void tearDown() {
+        recursiveDelete(tempDir);
+    }
 
     @Test
     void defaultInitCreatesDatabaseManagerAndUserFile() {
@@ -301,10 +360,6 @@ class FlatFileDatabaseManagerTest {
         assertThat(firstStatus).isEqualTo(LeaderboardStatus.UPDATED);
         assertThat(secondStatus).isEqualTo(LeaderboardStatus.TOO_SOON_TO_UPDATE);
     }
-
-    // ------------------------------------------------------------------------
-    // Save / load user tests
-    // ------------------------------------------------------------------------
 
     @Test
     void saveUserPersistsUserAndOverwritesNameOnSecondSave() {
@@ -822,6 +877,10 @@ class FlatFileDatabaseManagerTest {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // File health & structure tests
+    // ------------------------------------------------------------------------
+
     private void checkNewUserValues(@NotNull PlayerProfile playerProfile, int startingLevel) {
         // Given / Then – new user should be zero-initialized
         for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
@@ -933,8 +992,8 @@ class FlatFileDatabaseManagerTest {
     }
 
     private void assertHealthyDataProfileValues(@NotNull String expectedPlayerName,
-            @NotNull UUID expectedUuid,
-            @NotNull PlayerProfile profile) {
+                                                @NotNull UUID expectedUuid,
+                                                @NotNull PlayerProfile profile) {
         // Given / Then – profile is loaded and matches basic identity
         assertTrue(profile.isLoaded());
         assertEquals(expectedUuid, profile.getUniqueId());
@@ -1037,10 +1096,6 @@ class FlatFileDatabaseManagerTest {
         };
     }
 
-    // ------------------------------------------------------------------------
-    // File health & structure tests
-    // ------------------------------------------------------------------------
-
     @Test
     void overwriteName_whenDuplicateNamesExist_rewritesSecondName() throws IOException {
         // Given
@@ -1133,6 +1188,10 @@ class FlatFileDatabaseManagerTest {
         assertNotEquals(0, dataFlags.size());
     }
 
+    // ------------------------------------------------------------------------
+    // Leaderboards & ranks
+    // ------------------------------------------------------------------------
+
     @Test
     void findFixableDuplicateNamesDetectsDuplicateNameFlag() throws IOException {
         // Given
@@ -1219,10 +1278,6 @@ class FlatFileDatabaseManagerTest {
         // Then
         assertEquals(DatabaseType.FLATFILE, databaseManager.getDatabaseType());
     }
-
-    // ------------------------------------------------------------------------
-    // Leaderboards & ranks
-    // ------------------------------------------------------------------------
 
     @Test
     void readRankReturnsRanksForAllSkillsAndPowerLevel() {
@@ -1386,7 +1441,7 @@ class FlatFileDatabaseManagerTest {
     }
 
     private void replaceDataInFile(@NotNull FlatFileDatabaseManager databaseManager,
-            @NotNull String[] dataEntries) throws IOException {
+                                   @NotNull String[] dataEntries) throws IOException {
         String filePath = databaseManager.getUsersFile().getAbsolutePath();
 
         // Given / When – overwrite file contents with provided entries
@@ -1409,8 +1464,8 @@ class FlatFileDatabaseManagerTest {
     }
 
     private void overwriteDataAndCheckForFlag(@NotNull FlatFileDatabaseManager targetDatabase,
-            @NotNull String[] data,
-            @NotNull FlatFileDataFlag expectedFlag) throws IOException {
+                                              @NotNull String[] data,
+                                              @NotNull FlatFileDataFlag expectedFlag) throws IOException {
         // Given
         replaceDataInFile(targetDatabase, data);
 
@@ -1420,31 +1475,6 @@ class FlatFileDatabaseManagerTest {
         // Then
         assertNotNull(dataFlags);
         assertTrue(dataFlags.contains(expectedFlag));
-    }
-
-    @NotNull
-    private static Player initMockPlayer(@NotNull String name, @NotNull UUID uuid) {
-        Player mockPlayer = mock(Player.class);
-        Mockito.when(mockPlayer.getName()).thenReturn(name);
-        Mockito.when(mockPlayer.getUniqueId()).thenReturn(uuid);
-        Mockito.when(mockPlayer.isOnline()).thenReturn(true);
-        return mockPlayer;
-    }
-
-    private static class DebugFilter implements Filter {
-        @Override
-        public boolean isLoggable(LogRecord record) {
-            return false;
-        }
-    }
-
-    public static void recursiveDelete(@NotNull File directoryToBeDeleted) {
-        if (directoryToBeDeleted.isDirectory()) {
-            for (File file : directoryToBeDeleted.listFiles()) {
-                recursiveDelete(file);
-            }
-        }
-        directoryToBeDeleted.delete();
     }
 
     /**
@@ -1628,13 +1658,6 @@ class FlatFileDatabaseManagerTest {
                 .containsExactly("leader", "follower");
     }
 
-    private static void resetLeaderboardThrottle(FlatFileDatabaseManager databaseManager)
-            throws Exception {
-        final Field lastUpdateField = FlatFileDatabaseManager.class.getDeclaredField("lastUpdate");
-        lastUpdateField.setAccessible(true);
-        ((AtomicLong) lastUpdateField.get(databaseManager)).set(0L);
-    }
-
     private FlatFileDatabaseManager createDatabaseWithTwoRankedUsers() {
         // Given – a fresh FlatFile DB
         var databaseManager = new FlatFileDatabaseManager(
@@ -1666,6 +1689,27 @@ class FlatFileDatabaseManagerTest {
         return databaseManager;
     }
 
+    private FlatFileDatabaseManager spyOnSeededDatabase(@NotNull String[] seedData)
+            throws IOException {
+        return spyOnSeededDatabase(seedData, logger);
+    }
+
+    private FlatFileDatabaseManager spyOnSeededDatabase(@NotNull String[] seedData,
+                                                        @NotNull Logger databaseLogger) throws IOException {
+        final File usersFile = new File(getTemporaryUserFilePath());
+        final FlatFileDatabaseManager databaseManager = Mockito.spy(
+                new FlatFileDatabaseManager(usersFile, databaseLogger, PURGE_TIME, 0, true));
+        replaceDataInFile(databaseManager, seedData);
+        return databaseManager;
+    }
+
+    private static class DebugFilter implements Filter {
+        @Override
+        public boolean isLoggable(LogRecord record) {
+            return false;
+        }
+    }
+
     /**
      * Every rewrite of mcmmo.users reads the whole file into memory first. Before these guards a
      * read that failed partway fell through to the write and replaced the file with whatever had
@@ -1673,12 +1717,6 @@ class FlatFileDatabaseManagerTest {
      */
     @Nested
     class UsersFileFailures {
-        /** Runs one database operation and returns what it reports, for comparison. */
-        @FunctionalInterface
-        interface UsersFileOperation {
-            @Nullable Object runOn(@NotNull FlatFileDatabaseManager databaseManager);
-        }
-
         static Stream<Arguments> operationsThatReadTheUsersFile() {
             return Stream.of(
                     Arguments.of("newUser(String, UUID)",
@@ -1715,27 +1753,6 @@ class FlatFileDatabaseManagerTest {
             );
         }
 
-        @ParameterizedTest(name = "{0}")
-        @MethodSource("operationsThatReadTheUsersFile")
-        void readFailureShouldLeaveTheUsersFileUntouched(String operationName,
-                UsersFileOperation operation, @Nullable Object expectedResult)
-                throws IOException {
-            // Given - a populated users file whose second line cannot be read
-            final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
-                    normalDatabaseData);
-            final File usersFile = databaseManager.getUsersFile();
-            final byte[] originalBytes = java.nio.file.Files.readAllBytes(usersFile.toPath());
-            Mockito.doAnswer(invocation -> createFailingReader(usersFile, 2))
-                    .when(databaseManager).newBufferedReader();
-
-            // When - the operation runs
-            final Object result = operation.runOn(databaseManager);
-
-            // Then - it reports failure and the file is byte for byte what it was
-            assertThat(result).isEqualTo(expectedResult);
-            assertThat(usersFile).hasBinaryContent(originalBytes);
-        }
-
         /**
          * The write reopens mcmmo.users in truncate mode. When that fails, the operation has
          * changed nothing and must say so, or callers such as the UUID upgrade treat the batch
@@ -1766,9 +1783,30 @@ class FlatFileDatabaseManagerTest {
         }
 
         @ParameterizedTest(name = "{0}")
+        @MethodSource("operationsThatReadTheUsersFile")
+        void readFailureShouldLeaveTheUsersFileUntouched(String operationName,
+                                                         UsersFileOperation operation, @Nullable Object expectedResult)
+                throws IOException {
+            // Given - a populated users file whose second line cannot be read
+            final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
+                    normalDatabaseData);
+            final File usersFile = databaseManager.getUsersFile();
+            final byte[] originalBytes = java.nio.file.Files.readAllBytes(usersFile.toPath());
+            Mockito.doAnswer(invocation -> createFailingReader(usersFile, 2))
+                    .when(databaseManager).newBufferedReader();
+
+            // When - the operation runs
+            final Object result = operation.runOn(databaseManager);
+
+            // Then - it reports failure and the file is byte for byte what it was
+            assertThat(result).isEqualTo(expectedResult);
+            assertThat(usersFile).hasBinaryContent(originalBytes);
+        }
+
+        @ParameterizedTest(name = "{0}")
         @MethodSource("operationsThatRewriteTheUsersFile")
         void writeFailureShouldBeReportedAsFailure(String operationName,
-                UsersFileOperation operation, @Nullable Object expectedResult)
+                                                   UsersFileOperation operation, @Nullable Object expectedResult)
                 throws IOException {
             // Given - a users file, including a powerless player, that cannot be written
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
@@ -1803,6 +1841,14 @@ class FlatFileDatabaseManagerTest {
             assertThat(flags).isNull();
             assertThat(usersFile).hasBinaryContent(originalBytes);
         }
+
+        /**
+         * Runs one database operation and returns what it reports, for comparison.
+         */
+        @FunctionalInterface
+        interface UsersFileOperation {
+            @Nullable Object runOn(@NotNull FlatFileDatabaseManager databaseManager);
+        }
     }
 
     /**
@@ -1813,14 +1859,9 @@ class FlatFileDatabaseManagerTest {
      */
     @Nested
     class FirstLoginProfiles {
-        /** Asks the database for a new player's profile, by either of the newUser overloads. */
-        @FunctionalInterface
-        interface NewUserRequest {
-            @NotNull PlayerProfile request(@NotNull FlatFileDatabaseManager databaseManager,
-                    @NotNull String playerName, @NotNull UUID uuid);
-        }
-
-        /** Rows the loader cannot parse. The startup health check resets these values to 0. */
+        /**
+         * Rows the loader cannot parse. The startup health check resets these values to 0.
+         */
         static Stream<Arguments> rowsThatFailToLoad() {
             return Stream.of(
                     Arguments.of("a Berserk cooldown that is not a number",
@@ -1848,11 +1889,41 @@ class FlatFileDatabaseManagerTest {
                             load.get()[1])));
         }
 
-        /** The error used to be swallowed, so the player reset with no trace of why. */
+        static Stream<Arguments> newUserRequests() {
+            return Stream.of(
+                    Arguments.of("newUser(Player)",
+                            (NewUserRequest) (databaseManager, playerName, uuid) ->
+                                    databaseManager.newUser(initMockPlayer(playerName, uuid))),
+                    Arguments.of("newUser(String, UUID)",
+                            (NewUserRequest) (databaseManager, playerName, uuid) ->
+                                    databaseManager.newUser(playerName, uuid))
+            );
+        }
+
+        static Stream<Arguments> storedRowsOfTheExistingPlayer() {
+            return Stream.of(
+                    Arguments.of("a row that loads", normalDatabaseData[0]),
+                    Arguments.of("a row with the UUID in capitals",
+                            existingPlayerRowWith(UUID_INDEX,
+                                    HEALTHY_DB_LINE_ONE_UUID_STR.toUpperCase(Locale.ROOT))),
+                    Arguments.of("a row that fails to load",
+                            existingPlayerRowWith(COOLDOWN_BERSERK, "garbage"))
+            );
+        }
+
+        static Stream<Arguments> newUserRequestsForStoredRows() {
+            return newUserRequests().flatMap(request -> storedRowsOfTheExistingPlayer().map(
+                    row -> Arguments.of(request.get()[0], request.get()[1], row.get()[0],
+                            row.get()[1])));
+        }
+
+        /**
+         * The error used to be swallowed, so the player reset with no trace of why.
+         */
         @ParameterizedTest(name = "{0}, loaded {2}")
         @MethodSource("brokenRowLoads")
         void rowThatFailsToLoadShouldBeUnloadedAndLogged(String rowProblem, String brokenRow,
-                String lookup, Function<FlatFileDatabaseManager, PlayerProfile> load)
+                                                         String lookup, Function<FlatFileDatabaseManager, PlayerProfile> load)
                 throws IOException {
             // Given - the player's row cannot be parsed
             final RecordingHandler logRecords = new RecordingHandler();
@@ -1900,7 +1971,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "loaded {0}")
         @MethodSource("loadsOfTheExistingPlayer")
         void rowFromAnOlderMcMMOShouldLoadWithTheMissingColumnsAtZero(String lookup,
-                Function<FlatFileDatabaseManager, PlayerProfile> load) throws IOException {
+                                                                      Function<FlatFileDatabaseManager, PlayerProfile> load) throws IOException {
             // Given - the player's row ends after the last login column
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(new String[]{
                     existingPlayerRowCutAfter(OVERHAUL_LAST_LOGIN + 1)});
@@ -1919,7 +1990,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "loaded {0}")
         @MethodSource("loadsOfTheExistingPlayer")
         void loadShouldUseALaterRowForTheSamePlayerWhenTheFirstIsBroken(String lookup,
-                Function<FlatFileDatabaseManager, PlayerProfile> load) throws IOException {
+                                                                        Function<FlatFileDatabaseManager, PlayerProfile> load) throws IOException {
             // Given - a broken row for the player, followed by a good one
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(new String[]{
                     existingPlayerRowWith(COOLDOWN_BERSERK, "garbage"), normalDatabaseData[0]});
@@ -1932,7 +2003,9 @@ class FlatFileDatabaseManagerTest {
             assertThat(profile.getSkillLevel(PrimarySkillType.MINING)).isEqualTo(1);
         }
 
-        /** Only the player's own row is parsed, so other broken rows cannot hold them up. */
+        /**
+         * Only the player's own row is parsed, so other broken rows cannot hold them up.
+         */
         @Test
         void otherBrokenRowsShouldNotStopAPlayerLoading() throws IOException {
             // Given - another player's broken row and a row with a malformed UUID come first
@@ -1942,7 +2015,7 @@ class FlatFileDatabaseManagerTest {
             final String malformedUuidRow = normalDatabaseData[2].replace(
                     "e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c", "not-a-uuid");
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(new String[]{
-                    otherPlayersBrokenRow, malformedUuidRow, normalDatabaseData[0]},
+                            otherPlayersBrokenRow, malformedUuidRow, normalDatabaseData[0]},
                     logRecords.newLogger());
 
             // When - the player's profile is loaded
@@ -1954,34 +2027,6 @@ class FlatFileDatabaseManagerTest {
             assertThat(logRecords.messagesAt(Level.SEVERE)).isEmpty();
         }
 
-        static Stream<Arguments> newUserRequests() {
-            return Stream.of(
-                    Arguments.of("newUser(Player)",
-                            (NewUserRequest) (databaseManager, playerName, uuid) ->
-                                    databaseManager.newUser(initMockPlayer(playerName, uuid))),
-                    Arguments.of("newUser(String, UUID)",
-                            (NewUserRequest) (databaseManager, playerName, uuid) ->
-                                    databaseManager.newUser(playerName, uuid))
-            );
-        }
-
-        static Stream<Arguments> storedRowsOfTheExistingPlayer() {
-            return Stream.of(
-                    Arguments.of("a row that loads", normalDatabaseData[0]),
-                    Arguments.of("a row with the UUID in capitals",
-                            existingPlayerRowWith(UUID_INDEX,
-                                    HEALTHY_DB_LINE_ONE_UUID_STR.toUpperCase(Locale.ROOT))),
-                    Arguments.of("a row that fails to load",
-                            existingPlayerRowWith(COOLDOWN_BERSERK, "garbage"))
-            );
-        }
-
-        static Stream<Arguments> newUserRequestsForStoredRows() {
-            return newUserRequests().flatMap(request -> storedRowsOfTheExistingPlayer().map(
-                    row -> Arguments.of(request.get()[0], request.get()[1], row.get()[0],
-                            row.get()[1])));
-        }
-
         /**
          * A new profile for a stored player would be saved over their row. newUser(Player) is
          * reached when their load failed, and both overloads are public API.
@@ -1989,7 +2034,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "{0}, {2}")
         @MethodSource("newUserRequestsForStoredRows")
         void newUserShouldNotStartOverAStoredPlayer(String requestName, NewUserRequest newUser,
-                String rowDescription, String storedRow) throws IOException {
+                                                    String rowDescription, String storedRow) throws IOException {
             // Given - the player has a row
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
                     new String[]{storedRow, normalDatabaseData[1]});
@@ -2005,7 +2050,9 @@ class FlatFileDatabaseManagerTest {
             assertThat(usersFile).hasBinaryContent(originalBytes);
         }
 
-        /** A player who has never joined is not in the file, and starts fresh. */
+        /**
+         * A player who has never joined is not in the file, and starts fresh.
+         */
         @ParameterizedTest(name = "{0}")
         @MethodSource("newUserRequests")
         void newUserShouldStartANewPlayerFresh(String requestName, NewUserRequest newUser)
@@ -2031,7 +2078,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("newUserRequests")
         void newUserShouldStartFreshAndTakeTheNameWhenOnlyTheNameIsTaken(String requestName,
-                NewUserRequest newUser) throws IOException {
+                                                                         NewUserRequest newUser) throws IOException {
             // Given - a users file with a different player under the same name
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
                     normalDatabaseData);
@@ -2105,7 +2152,9 @@ class FlatFileDatabaseManagerTest {
                             .contains("UUID"));
         }
 
-        /** Lines starting with # are comments to every reader of the file. */
+        /**
+         * Lines starting with # are comments to every reader of the file.
+         */
         @ParameterizedTest(name = "{0}")
         @MethodSource("newUserRequests")
         void newUserShouldIgnoreACommentedOutRow(String requestName, NewUserRequest newUser)
@@ -2121,6 +2170,15 @@ class FlatFileDatabaseManagerTest {
             // Then - it is loaded
             assertThat(newProfile.isLoaded()).isTrue();
         }
+
+        /**
+         * Asks the database for a new player's profile, by either of the newUser overloads.
+         */
+        @FunctionalInterface
+        interface NewUserRequest {
+            @NotNull PlayerProfile request(@NotNull FlatFileDatabaseManager databaseManager,
+                                           @NotNull String playerName, @NotNull UUID uuid);
+        }
     }
 
     /**
@@ -2131,7 +2189,9 @@ class FlatFileDatabaseManagerTest {
     class SavingByUuid {
         private static final int SAVED_MINING_LEVEL = 7;
 
-        /** Rows that have no UUID to identify them by. */
+        /**
+         * Rows that have no UUID to identify them by.
+         */
         static Stream<Arguments> rowsWithoutAUuid() {
             return Stream.of(
                     Arguments.of("an empty UUID", existingPlayerRowWith(UUID_INDEX, "")),
@@ -2143,10 +2203,59 @@ class FlatFileDatabaseManagerTest {
         }
 
         private static PlayerProfile profileWithSavedProgress(String playerName,
-                @Nullable UUID uuid) {
+                                                              @Nullable UUID uuid) {
             final PlayerProfile profile = new PlayerProfile(playerName, uuid, true, 0);
             profile.modifySkill(PrimarySkillType.MINING, SAVED_MINING_LEVEL);
             return profile;
+        }
+
+        static Stream<Arguments> playersWhoAreNotOnline() {
+            final OfflinePlayer offlinePlayer = mock(OfflinePlayer.class);
+            when(offlinePlayer.getName()).thenReturn("mrfloris");
+            when(offlinePlayer.getUniqueId()).thenReturn(EXISTING_PLAYER_UUID);
+            final Player playerWhoLoggedOut = initMockPlayer("mrfloris", EXISTING_PLAYER_UUID);
+            when(playerWhoLoggedOut.isOnline()).thenReturn(false);
+            return Stream.of(
+                    Arguments.of("an offline player", offlinePlayer),
+                    Arguments.of("a player who logged out", playerWhoLoggedOut)
+            );
+        }
+
+        static Stream<Arguments> storedNamesOfAPlayerLoggingInUnderANewName() {
+            return Stream.of(
+                    Arguments.of("the placeholder", INVALID_OLD_USERNAME),
+                    Arguments.of("their old name", EXISTING_PLAYER)
+            );
+        }
+
+        /**
+         * Saves the way PlayerProfile.save does, which skips a profile that has not changed.
+         */
+        private static void saveTheWayMcMMODoes(FlatFileDatabaseManager databaseManager,
+                                                PlayerProfile profile) {
+            try (MockedStatic<mcMMO> mockedMcMMO = Mockito.mockStatic(mcMMO.class)) {
+                mockedMcMMO.when(mcMMO::getDatabaseManager).thenReturn(databaseManager);
+                profile.save(true);
+            }
+        }
+
+        /**
+         * A users file, and the name a profile without a UUID is saved under.
+         */
+        static Stream<Arguments> namesForAProfileWithoutAUuid() {
+            return Stream.of(
+                    Arguments.of("a free name", normalDatabaseData, "newPlayer"),
+                    Arguments.of("a player's name", normalDatabaseData, EXISTING_PLAYER),
+                    Arguments.of("a player's name in other capitals", normalDatabaseData,
+                            "NOSSR50"),
+                    Arguments.of("the name of a row without a UUID",
+                            new String[]{existingPlayerRowWith(UUID_INDEX, "NULL"),
+                                    normalDatabaseData[1]},
+                            EXISTING_PLAYER),
+                    Arguments.of("the placeholder", new String[]{
+                                    existingPlayerRowWith(USERNAME_INDEX, INVALID_OLD_USERNAME)},
+                            INVALID_OLD_USERNAME)
+            );
         }
 
         /**
@@ -2252,18 +2361,6 @@ class FlatFileDatabaseManagerTest {
                     .contains(rowWithName(normalDatabaseData[1], INVALID_OLD_USERNAME));
         }
 
-        static Stream<Arguments> playersWhoAreNotOnline() {
-            final OfflinePlayer offlinePlayer = mock(OfflinePlayer.class);
-            when(offlinePlayer.getName()).thenReturn("mrfloris");
-            when(offlinePlayer.getUniqueId()).thenReturn(EXISTING_PLAYER_UUID);
-            final Player playerWhoLoggedOut = initMockPlayer("mrfloris", EXISTING_PLAYER_UUID);
-            when(playerWhoLoggedOut.isOnline()).thenReturn(false);
-            return Stream.of(
-                    Arguments.of("an offline player", offlinePlayer),
-                    Arguments.of("a player who logged out", playerWhoLoggedOut)
-            );
-        }
-
         /**
          * Only a player who is online is known to go by the name they are loaded under. An
          * offline player carries the name they last joined with, so saving them under it wrote
@@ -2272,7 +2369,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("playersWhoAreNotOnline")
         void playerWhoIsNotOnlineShouldNotTakeTheirOldNameBack(String description,
-                OfflinePlayer nameLostPlayer) throws IOException {
+                                                               OfflinePlayer nameLostPlayer) throws IOException {
             // Given - a player who lost their name, and the player holding it now
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(new String[]{
                     existingPlayerRowWith(USERNAME_INDEX, INVALID_OLD_USERNAME),
@@ -2319,13 +2416,6 @@ class FlatFileDatabaseManagerTest {
             assertThat(logRecords.messagesAt(Level.WARNING)).isEmpty();
         }
 
-        static Stream<Arguments> storedNamesOfAPlayerLoggingInUnderANewName() {
-            return Stream.of(
-                    Arguments.of("the placeholder", INVALID_OLD_USERNAME),
-                    Arguments.of("their old name", EXISTING_PLAYER)
-            );
-        }
-
         /**
          * mcMMO only saves a profile that changed, so a name taken at login has to count as a
          * change. Otherwise the row kept its stored name, the placeholder included, for as long
@@ -2349,7 +2439,9 @@ class FlatFileDatabaseManagerTest {
                     .isEqualTo("nossr51");
         }
 
-        /** Each save rewrites mcmmo.users, so a login that changes nothing must not cause one. */
+        /**
+         * Each save rewrites mcmmo.users, so a login that changes nothing must not cause one.
+         */
         @Test
         void loginUnderTheStoredNameShouldNotBeSavedWithoutAChange() throws IOException {
             // Given - a stored player, who logs in under the name stored for them
@@ -2363,15 +2455,6 @@ class FlatFileDatabaseManagerTest {
 
             // Then - nothing is written
             verify(databaseManager, never()).saveUser(any(PlayerProfile.class));
-        }
-
-        /** Saves the way PlayerProfile.save does, which skips a profile that has not changed. */
-        private static void saveTheWayMcMMODoes(FlatFileDatabaseManager databaseManager,
-                PlayerProfile profile) {
-            try (MockedStatic<mcMMO> mockedMcMMO = Mockito.mockStatic(mcMMO.class)) {
-                mockedMcMMO.when(mcMMO::getDatabaseManager).thenReturn(databaseManager);
-                profile.save(true);
-            }
         }
 
         /**
@@ -2420,7 +2503,9 @@ class FlatFileDatabaseManagerTest {
                     .getSkillLevel(PrimarySkillType.MINING)).isEqualTo(SAVED_MINING_LEVEL);
         }
 
-        /** Loading parses the UUID, so saving has to match it the same way. */
+        /**
+         * Loading parses the UUID, so saving has to match it the same way.
+         */
         @Test
         void playerShouldSaveOverTheirRowWhenItsUuidIsInCapitals() throws IOException {
             // Given - the player's row has their UUID in capitals
@@ -2439,7 +2524,9 @@ class FlatFileDatabaseManagerTest {
                     .getSkillLevel(PrimarySkillType.MINING)).isEqualTo(SAVED_MINING_LEVEL);
         }
 
-        /** Every row with the UUID is replaced, so a stale duplicate cannot load later. */
+        /**
+         * Every row with the UUID is replaced, so a stale duplicate cannot load later.
+         */
         @Test
         void playerShouldSaveOverEveryRowWithTheirUuid() throws IOException {
             // Given - two rows with the player's UUID, around another player's row
@@ -2469,7 +2556,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("rowsWithoutAUuid")
         void playerShouldTakeTheirNameFromARowWithoutAUuid(String rowProblem,
-                String rowWithoutUuid) throws IOException {
+                                                           String rowWithoutUuid) throws IOException {
             // Given - a row with the player's name but no UUID, ahead of other rows
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(
                     new String[]{rowWithoutUuid, normalDatabaseData[1]});
@@ -2491,23 +2578,6 @@ class FlatFileDatabaseManagerTest {
                     .contains(rowWithName(rowWithoutUuid, INVALID_OLD_USERNAME));
         }
 
-        /** A users file, and the name a profile without a UUID is saved under. */
-        static Stream<Arguments> namesForAProfileWithoutAUuid() {
-            return Stream.of(
-                    Arguments.of("a free name", normalDatabaseData, "newPlayer"),
-                    Arguments.of("a player's name", normalDatabaseData, EXISTING_PLAYER),
-                    Arguments.of("a player's name in other capitals", normalDatabaseData,
-                            "NOSSR50"),
-                    Arguments.of("the name of a row without a UUID",
-                            new String[]{existingPlayerRowWith(UUID_INDEX, "NULL"),
-                                    normalDatabaseData[1]},
-                            EXISTING_PLAYER),
-                    Arguments.of("the placeholder", new String[]{
-                            existingPlayerRowWith(USERNAME_INDEX, INVALID_OLD_USERNAME)},
-                            INVALID_OLD_USERNAME)
-            );
-        }
-
         /**
          * FlatFile only stores players with a UUID, and drops rows without one when it starts.
          * Nothing ties a profile without one to a player, so it is refused instead of written
@@ -2516,7 +2586,7 @@ class FlatFileDatabaseManagerTest {
         @ParameterizedTest(name = "saved under {0}")
         @MethodSource("namesForAProfileWithoutAUuid")
         void profileWithoutAUuidShouldNotBeSaved(String nameDescription, String[] seedData,
-                String savedName) throws IOException {
+                                                 String savedName) throws IOException {
             // Given - a users file, and a profile without a UUID
             final RecordingHandler logRecords = new RecordingHandler();
             final FlatFileDatabaseManager databaseManager = spyOnSeededDatabase(seedData,
@@ -2550,7 +2620,9 @@ class FlatFileDatabaseManagerTest {
         private static final String NAME_LOST_BEFORE_THE_SPELLING_CHANGED_ROW =
                 rowWithName(normalDatabaseData[1], LEGACY_FLATFILE_INVALID_OLD_USERNAME);
         private static final String PLAYER_WITH_A_NAME = "powerless";
-        /** A row without a UUID, which the startup check drops. */
+        /**
+         * A row without a UUID, which the startup check drops.
+         */
         private static final String NAME_LOST_WITHOUT_A_UUID_ROW =
                 rowWithName(existingPlayerRowWith(UUID_INDEX, ""), INVALID_OLD_USERNAME);
         private static final int SAVED_MINING_LEVEL = 7;
@@ -2649,7 +2721,9 @@ class FlatFileDatabaseManagerTest {
             assertThat(usersFile).hasBinaryContent(originalBytes);
         }
 
-        /** Bulk saves match names exactly, so only the spellings stored in rows can match one. */
+        /**
+         * Bulk saves match names exactly, so only the spellings stored in rows can match one.
+         */
         @ParameterizedTest(name = "saved as {0}")
         @ValueSource(strings = {INVALID_OLD_USERNAME, LEGACY_FLATFILE_INVALID_OLD_USERNAME})
         void savingUuidsInBulkShouldSkipThePlaceholder(String placeholder) throws IOException {
@@ -2700,7 +2774,7 @@ class FlatFileDatabaseManagerTest {
         @MethodSource("com.gmail.nossr50.database.FlatFileDatabaseManagerTest$SavingByUuid"
                 + "#rowsWithoutAUuid")
         void storedUsersShouldListARowWithoutAUsableUuidWithoutOne(String description,
-                String row) throws IOException {
+                                                                   String row) throws IOException {
             // Given - a player whose row has no UUID that can be read
             final FlatFileDatabaseManager databaseManager =
                     spyOnSeededDatabase(new String[]{row});
@@ -2713,7 +2787,9 @@ class FlatFileDatabaseManagerTest {
             assertThat(storedUsers).containsExactly(new PlayerNameAndUUID(EXISTING_PLAYER, null));
         }
 
-        /** SQL already left these rows out, and the ranks follow the leaderboards. */
+        /**
+         * SQL already left these rows out, and the ranks follow the leaderboards.
+         */
         @Test
         void leaderboardsAndRanksShouldLeaveOutPlayersWhoLostTheirNames() throws Exception {
             // Given - players who lost their names, both out-levelling a player with a name
@@ -2766,7 +2842,9 @@ class FlatFileDatabaseManagerTest {
             assertThat(usersFile).hasBinaryContent(originalBytes);
         }
 
-        /** FlatFile writes the spelling SQL uses from now on. */
+        /**
+         * FlatFile writes the spelling SQL uses from now on.
+         */
         @Test
         void healthCheckShouldRenameALaterDuplicateNameToThePlaceholder() throws IOException {
             // Given - two players stored under the same name
@@ -2782,59 +2860,6 @@ class FlatFileDatabaseManagerTest {
                     .extracting(line -> line.split(":")[USERNAME_INDEX])
                     .containsExactly("mochi", INVALID_OLD_USERNAME);
         }
-    }
-
-    private static List<String> usersFileLines(FlatFileDatabaseManager databaseManager)
-            throws IOException {
-        return java.nio.file.Files.readAllLines(databaseManager.getUsersFile().toPath());
-    }
-
-    /** A row with its name replaced. */
-    private static String rowWithName(String row, String playerName) {
-        return playerName + row.substring(row.indexOf(':'));
-    }
-
-    /** nossr50's row with one field replaced. */
-    private static String existingPlayerRowWith(int fieldIndex, String value) {
-        final String[] fields = normalDatabaseData[0].split(":");
-        fields[fieldIndex] = value;
-        return String.join(":", fields) + ":";
-    }
-
-    /** nossr50's row cut short, the way a row written by an older mcMMO looks. */
-    private static String existingPlayerRowCutAfter(int fieldCount) {
-        final String[] fields = normalDatabaseData[0].split(":");
-        return String.join(":", Arrays.copyOf(fields, fieldCount)) + ":";
-    }
-
-    private FlatFileDatabaseManager spyOnSeededDatabase(@NotNull String[] seedData)
-            throws IOException {
-        return spyOnSeededDatabase(seedData, logger);
-    }
-
-    private FlatFileDatabaseManager spyOnSeededDatabase(@NotNull String[] seedData,
-            @NotNull Logger databaseLogger) throws IOException {
-        final File usersFile = new File(getTemporaryUserFilePath());
-        final FlatFileDatabaseManager databaseManager = Mockito.spy(
-                new FlatFileDatabaseManager(usersFile, databaseLogger, PURGE_TIME, 0, true));
-        replaceDataInFile(databaseManager, seedData);
-        return databaseManager;
-    }
-
-    private static @NotNull BufferedReader createFailingReader(File file, int failOnReadLineCall)
-            throws IOException {
-        return new BufferedReader(new FileReader(file)) {
-            private int readCount = 0;
-
-            @Override
-            public String readLine() throws IOException {
-                readCount++;
-                if (readCount == failOnReadLineCall) {
-                    throw new IOException("Simulated mid-read I/O error on line " + readCount);
-                }
-                return super.readLine();
-            }
-        };
     }
 
 }

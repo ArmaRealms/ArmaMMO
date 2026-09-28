@@ -1,11 +1,12 @@
 package com.gmail.nossr50.config.party;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.BukkitConfig;
 import org.bukkit.Material;
 
 import java.util.HashSet;
 import java.util.Locale;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class ItemWeightConfig extends BukkitConfig {
     private static ItemWeightConfig instance;

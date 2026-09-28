@@ -1,12 +1,13 @@
 package com.gmail.nossr50.commands.levelup;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Builds a {@link LevelUpCommand}. Provide at least one command and either skills with levels,

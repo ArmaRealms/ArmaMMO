@@ -1,6 +1,5 @@
 package com.gmail.nossr50.skills.unarmed;
 
-import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -26,6 +25,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
 
 public class UnarmedManager extends SkillManager {
     public static final double BERSERK_DMG_MODIFIER = 1.5;
@@ -126,7 +127,7 @@ public class UnarmedManager extends SkillManager {
     /**
      * Check for disarm.
      *
-     * @param defender The defending player
+     * @param defender            The defending player
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void disarmCheck(@NotNull Player defender, double attackStrengthScale) {
@@ -183,7 +184,7 @@ public class UnarmedManager extends SkillManager {
     /**
      * Handle the effects of the Berserk ability
      *
-     * @param damage The amount of damage initially dealt by the event
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      * @return the bonus damage granted by Berserk, negative for weak (uncharged) hits
      */

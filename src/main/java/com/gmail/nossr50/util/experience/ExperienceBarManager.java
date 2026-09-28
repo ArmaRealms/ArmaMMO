@@ -106,13 +106,13 @@ public class ExperienceBarManager {
     }
 
     public void xpBarSettingToggle(@NotNull XPBarSettingTarget settingTarget,
-            @Nullable PrimarySkillType skillType) {
+                                   @Nullable PrimarySkillType skillType) {
         applyBarSetting(settingTarget, skillType);
         informPlayer(settingTarget, skillType);
     }
 
     private void applyBarSetting(@NotNull XPBarSettingTarget settingTarget,
-            @Nullable PrimarySkillType skillType) {
+                                 @Nullable PrimarySkillType skillType) {
         switch (settingTarget) {
             case SHOW -> {
                 disabledBars.remove(skillType);

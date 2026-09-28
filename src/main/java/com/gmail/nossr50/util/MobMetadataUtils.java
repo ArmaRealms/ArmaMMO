@@ -1,21 +1,9 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.util.MetadataService.NSK_COTW_SUMMONED_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_EGG_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_EXPLOITED_ENDERMEN;
-import static com.gmail.nossr50.util.MetadataService.NSK_MOB_SPAWNER_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_NETHER_GATE_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_BRED_MOB;
-import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_TAMED_MOB;
 import com.gmail.nossr50.api.exceptions.IncompleteNamespacedKeyRegister;
 import com.gmail.nossr50.config.PersistentDataConfig;
 import com.gmail.nossr50.metadata.MobMetaFlagType;
 import com.google.common.collect.MapMaker;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -24,9 +12,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static com.gmail.nossr50.util.MetadataService.NSK_COTW_SUMMONED_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_EGG_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_EXPLOITED_ENDERMEN;
+import static com.gmail.nossr50.util.MetadataService.NSK_MOB_SPAWNER_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_NETHER_GATE_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_BRED_MOB;
+import static com.gmail.nossr50.util.MetadataService.NSK_PLAYER_TAMED_MOB;
 
 public final class MobMetadataUtils {
     private static final @NotNull ConcurrentMap<Entity, Set<MobMetaFlagType>> mobRegistry; // transient data
@@ -89,7 +86,7 @@ public final class MobMetadataUtils {
      * @return true if the mob has the specified metadata flag
      */
     public static boolean hasMobFlag(@NotNull MobMetaFlagType flag,
-            @NotNull LivingEntity livingEntity) {
+                                     @NotNull LivingEntity livingEntity) {
         if (persistentFlags.contains(flag)) {
             return livingEntity.getPersistentDataContainer()
                     .has(mobFlagKeyMap.get(flag), PersistentDataType.BYTE);
@@ -156,7 +153,7 @@ public final class MobMetadataUtils {
      * @param livingEntity the target living entity
      */
     public static void flagMetadata(@NotNull MobMetaFlagType flag,
-            @NotNull LivingEntity livingEntity) {
+                                    @NotNull LivingEntity livingEntity) {
         if (persistentFlags.contains(flag)) {
             if (!hasMobFlag(flag, livingEntity)) {
                 final PersistentDataContainer persistentDataContainer = livingEntity.getPersistentDataContainer();
@@ -177,7 +174,7 @@ public final class MobMetadataUtils {
      * @param livingEntity the target living entity
      */
     public static void removeMobFlag(@NotNull MobMetaFlagType flag,
-            @NotNull LivingEntity livingEntity) {
+                                     @NotNull LivingEntity livingEntity) {
         if (persistentFlags.contains(flag)) {
             if (hasMobFlag(flag, livingEntity)) {
                 final PersistentDataContainer persistentDataContainer = livingEntity.getPersistentDataContainer();

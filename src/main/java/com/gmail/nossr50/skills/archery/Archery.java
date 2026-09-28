@@ -17,15 +17,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Archery {
-    private static final Map<UUID, TrackedEntity> trackedEntities = new ConcurrentHashMap<>();
-
-    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
-            .getSkillShotDamageMax();
-
-    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
-
     public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
             .getArcheryDistanceMultiplier();
+    private static final Map<UUID, TrackedEntity> trackedEntities = new ConcurrentHashMap<>();
+    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
+            .getSkillShotDamageMax();
+    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
 
     protected static void incrementTrackerValue(LivingEntity livingEntity) {
         final TrackedEntity trackedEntity = trackedEntities.computeIfAbsent(

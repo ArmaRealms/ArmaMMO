@@ -1,14 +1,5 @@
 package com.gmail.nossr50.skills.herbalism;
 
-import static com.gmail.nossr50.util.ItemUtils.hasItemIncludingOffHand;
-import static com.gmail.nossr50.util.ItemUtils.removeItemIncludingOffHand;
-import static com.gmail.nossr50.util.Misc.TICK_CONVERSION_FACTOR;
-import static com.gmail.nossr50.util.Misc.getBlockCenter;
-import static com.gmail.nossr50.util.Permissions.isSubSkillEnabled;
-import static com.gmail.nossr50.util.skills.RankUtils.hasUnlockedSubskill;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -54,7 +45,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -307,12 +297,12 @@ public class HerbalismManager extends SkillManager {
      * verification task if any claims were made. Blocks already claimed by an earlier break are
      * skipped, so rapid re-breaks cannot collect XP for the same blocks twice.
      *
-     * @param originalBreak the block broken by the event
-     * @param brokenPlants all plant blocks expected to break because of the event
+     * @param originalBreak    the block broken by the event
+     * @param brokenPlants     all plant blocks expected to break because of the event
      * @param collapseXpBudget the most XP the verification task may pay out
      */
     private void scheduleCollapseVerification(BlockState originalBreak,
-            Set<Block> brokenPlants, int collapseXpBudget) {
+                                              Set<Block> brokenPlants, int collapseXpBudget) {
         if (brokenPlants.size() <= 1) {
             // Single-block plants have nothing left to verify
             return;
@@ -444,7 +434,7 @@ public class HerbalismManager extends SkillManager {
     public void markForBonusDrops(Block block) {
         final boolean triple = mmoPlayer.getAbilityMode(SuperAbilityType.GREEN_TERRA)
                 || (canUseVerdantBounty() && ProbabilityUtil.isSkillRNGSuccessful(
-                        SubSkillType.HERBALISM_VERDANT_BOUNTY, mmoPlayer));
+                SubSkillType.HERBALISM_VERDANT_BOUNTY, mmoPlayer));
         BlockUtils.markDropsAsBonus(block, triple);
     }
 
@@ -540,7 +530,7 @@ public class HerbalismManager extends SkillManager {
      *
      * @param brokenPlants snapshot of broken blocks
      * @deprecated XP for multi-block plants, chorus trees included, is verified and awarded by
-     *         {@link com.gmail.nossr50.runnables.skills.PlantCollapseXpTask}
+     * {@link com.gmail.nossr50.runnables.skills.PlantCollapseXpTask}
      */
     @Deprecated(forRemoval = true, since = "2.3.000")
     public void awardXPForBlockSnapshots(List<BlockSnapshot> brokenPlants) {

@@ -84,7 +84,7 @@ public class MacesManager extends SkillManager {
     /**
      * Process Cripple attack.
      *
-     * @param target The defending entity
+     * @param target              The defending entity
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void processCripple(@NotNull LivingEntity target, double attackStrengthScale) {

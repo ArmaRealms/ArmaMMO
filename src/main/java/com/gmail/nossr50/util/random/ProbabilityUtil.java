@@ -1,6 +1,5 @@
 package com.gmail.nossr50.util.random;
 
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -18,6 +17,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import static java.util.Objects.requireNonNull;
+
 public class ProbabilityUtil {
     /**
      * @deprecated DecimalFormat is not safe to share between threads; no longer used internally
@@ -25,11 +26,11 @@ public class ProbabilityUtil {
     @Deprecated(forRemoval = true, since = "2.3.000")
     public static final @NotNull DecimalFormat percent = new DecimalFormat("##0.00%",
             DecimalFormatSymbols.getInstance(Locale.US));
+    public static final double LUCKY_MODIFIER = 1.333D;
     // DecimalFormat is not thread-safe, and display values are formatted from region threads
     // on Folia
     private static final ThreadLocal<DecimalFormat> percentFormat = ThreadLocal.withInitial(
             () -> new DecimalFormat("##0.00%", DecimalFormatSymbols.getInstance(Locale.US)));
-    public static final double LUCKY_MODIFIER = 1.333D;
 
     /**
      * Return a chance of success in "percentage" format, shown to the player in UI elements

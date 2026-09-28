@@ -1,10 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static com.gmail.nossr50.util.ItemMetadataUtils.isLegacyAbilityTool;
-import static com.gmail.nossr50.util.ItemMetadataUtils.isSuperAbilityBoosted;
-import static com.gmail.nossr50.util.ItemMetadataUtils.removeBonusDigSpeedOnSuperAbilityTool;
-import static com.gmail.nossr50.util.PotionEffectUtil.getHastePotionEffectType;
-
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -13,7 +8,6 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
-import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.ItemMetadataUtils;
 import com.gmail.nossr50.util.ItemUtils;
@@ -22,8 +16,6 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.RecipeUtils;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
-import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Iterator;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -38,6 +30,13 @@ import org.bukkit.potion.PotionEffect;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Iterator;
+
+import static com.gmail.nossr50.util.ItemMetadataUtils.isLegacyAbilityTool;
+import static com.gmail.nossr50.util.ItemMetadataUtils.isSuperAbilityBoosted;
+import static com.gmail.nossr50.util.ItemMetadataUtils.removeBonusDigSpeedOnSuperAbilityTool;
+import static com.gmail.nossr50.util.PotionEffectUtil.getHastePotionEffectType;
+
 public final class SkillUtils {
     /**
      * This is a static utility class, therefore we don't want any instances of this class. Making
@@ -47,12 +46,12 @@ public final class SkillUtils {
     }
 
     public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp,
-            XPGainReason xpGainReason) {
+                                   XPGainReason xpGainReason) {
         mmoPlayer.beginXpGain(skill, xp, xpGainReason, XPGainSource.SELF);
     }
 
     public static void applyXpGain(McMMOPlayer mmoPlayer, PrimarySkillType skill, float xp,
-            XPGainReason xpGainReason, XPGainSource xpGainSource) {
+                                   XPGainReason xpGainReason, XPGainSource xpGainSource) {
         mmoPlayer.beginXpGain(skill, xp, xpGainReason, xpGainSource);
     }
 
@@ -66,7 +65,7 @@ public final class SkillUtils {
      */
     @Deprecated(forRemoval = true, since = "2.3.000")
     public static String[] calculateLengthDisplayValues(Player player, float skillValue,
-            PrimarySkillType skill) {
+                                                        PrimarySkillType skill) {
         int maxLength = mcMMO.p.getSkillTools()
                 .getSuperAbilityMaxLength(mcMMO.p.getSkillTools().getSuperAbility(skill));
         int abilityLengthVar = mcMMO.p.getAdvancedConfig().getAbilityLength();
@@ -94,7 +93,7 @@ public final class SkillUtils {
      */
 
     public static int handleFoodSkills(Player player, int eventFoodLevel,
-            SubSkillType subSkillType) {
+                                       SubSkillType subSkillType) {
         int curRank = RankUtils.getRank(player, subSkillType);
 
         int currentFoodLevel = player.getFoodLevel();
@@ -109,8 +108,8 @@ public final class SkillUtils {
      * Calculate the time remaining until the cooldown expires.
      *
      * @param deactivatedTimeStamp Time of deactivation
-     * @param cooldown The length of the cooldown
-     * @param player The Player to check for cooldown perks
+     * @param cooldown             The length of the cooldown
+     * @param player               The Player to check for cooldown perks
      * @return the number of seconds remaining before the cooldown expires
      */
     public static int calculateTimeLeft(long deactivatedTimeStamp, int cooldown, Player player) {
@@ -123,7 +122,7 @@ public final class SkillUtils {
      * Check if the cooldown has expired. This does NOT account for cooldown perks!
      *
      * @param deactivatedTimeStamp Time of deactivation in seconds
-     * @param cooldown The length of the cooldown in seconds
+     * @param cooldown             The length of the cooldown in seconds
      * @return true if the cooldown is expired
      */
     public static boolean cooldownExpired(long deactivatedTimeStamp, int cooldown) {
@@ -144,7 +143,7 @@ public final class SkillUtils {
     }
 
     public static void sendSkillMessage(Player player, NotificationType notificationType,
-            String key) {
+                                        String key) {
         Location location = player.getLocation();
 
         for (Player otherPlayer : player.getWorld().getPlayers()) {
@@ -265,12 +264,12 @@ public final class SkillUtils {
      * Modify the durability of an ItemStack, using Tools specific formula for unbreaking enchant
      * damage reduction
      *
-     * @param itemStack The ItemStack which durability should be modified
+     * @param itemStack          The ItemStack which durability should be modified
      * @param durabilityModifier the amount to modify the durability by
-     * @param maxDamageModifier the amount to adjust the max damage by
+     * @param maxDamageModifier  the amount to adjust the max damage by
      */
     public static void handleDurabilityChange(ItemStack itemStack, double durabilityModifier,
-            double maxDamageModifier) {
+                                              double maxDamageModifier) {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().isUnbreakable()) {
             return;
         }
@@ -282,19 +281,19 @@ public final class SkillUtils {
 
         final int currentDamage = ItemUtils.getItemDamage(itemStack);
         ItemUtils.setItemDamage(itemStack,
-            (int) Math.min(currentDamage + durabilityModifier, maxDurability));
+                (int) Math.min(currentDamage + durabilityModifier, maxDurability));
     }
 
     /**
      * Modify the durability of an ItemStack, using Armor specific formula for unbreaking enchant
      * damage reduction
      *
-     * @param itemStack The ItemStack which durability should be modified
+     * @param itemStack          The ItemStack which durability should be modified
      * @param durabilityModifier the amount to modify the durability by
-     * @param maxDamageModifier the amount to adjust the max damage by
+     * @param maxDamageModifier  the amount to adjust the max damage by
      */
     public static void handleArmorDurabilityChange(ItemStack itemStack, double durabilityModifier,
-            double maxDamageModifier) {
+                                                   double maxDamageModifier) {
         if (itemStack.hasItemMeta() && itemStack.getItemMeta().isUnbreakable()) {
             return;
         }
@@ -306,7 +305,7 @@ public final class SkillUtils {
 
         final int currentDamage = ItemUtils.getItemDamage(itemStack);
         ItemUtils.setItemDamage(itemStack,
-            (int) Math.min(currentDamage + durabilityModifier, maxDurability));
+                (int) Math.min(currentDamage + durabilityModifier, maxDurability));
     }
 
     @Nullable
@@ -339,7 +338,7 @@ public final class SkillUtils {
     }
 
     public static int getRepairAndSalvageQuantities(Material itemMaterial,
-            Material recipeMaterial) {
+                                                    Material recipeMaterial) {
         int quantity = 0;
 
         if (mcMMO.getMaterialMapStore().isPrismarineTool(itemMaterial)) {
@@ -355,8 +354,8 @@ public final class SkillUtils {
         final ItemStack recipeItem = recipeMaterial != null ? new ItemStack(recipeMaterial) : null;
 
         for (final Iterator<Recipe> recipeIterator =
-                RecipeUtils.safeRecipeIterator(Bukkit.getServer(), mcMMO.p.getLogger());
-                recipeIterator.hasNext(); ) {
+             RecipeUtils.safeRecipeIterator(Bukkit.getServer(), mcMMO.p.getLogger());
+             recipeIterator.hasNext(); ) {
             final Recipe bukkitRecipe = recipeIterator.next();
 
             if (bukkitRecipe.getResult().getType() != itemMaterial) {
@@ -385,7 +384,7 @@ public final class SkillUtils {
     /**
      * Checks if a player can use a skill
      *
-     * @param player target player
+     * @param player       target player
      * @param subSkillType target subskill
      * @return true if the player has permission and has the skill unlocked
      */

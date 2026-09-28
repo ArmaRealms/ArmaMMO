@@ -6,6 +6,10 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
+import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -15,9 +19,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Immutable-snapshot cache for leaderboard PlaceholderAPI lookups.
@@ -36,14 +37,14 @@ public class LeaderboardPlaceholderCache {
     private final AtomicReference<CachedLeaderboards> snapshot;
     // Single-flight guard to avoid overlapping rebuild work.
     private final AtomicBoolean refreshInProgress = new AtomicBoolean(false);
-    // Set by placeholder lookups, read-and-cleared by refreshNow(). When no placeholder was
-    // resolved during a whole refresh interval there is nobody to serve fresh data to, so the
-    // periodic refresh skips its backend read. Starts true so the startup warm-up always runs.
-    private volatile boolean lookedUpSinceRefresh = true;
     // Flips true when a periodic refresh was skipped for idleness; the first lookup afterwards
     // schedules one immediate async refresh so freshness recovers without waiting out the rest
     // of the timer interval.
     private final AtomicBoolean idle = new AtomicBoolean(false);
+    // Set by placeholder lookups, read-and-cleared by refreshNow(). When no placeholder was
+    // resolved during a whole refresh interval there is nobody to serve fresh data to, so the
+    // periodic refresh skips its backend read. Starts true so the startup warm-up always runs.
+    private volatile boolean lookedUpSinceRefresh = true;
     private volatile @Nullable WrappedTask refreshTask;
     // Once stopped, late-firing refreshes become no-ops so they cannot race database shutdown
     // during plugin disable.
@@ -52,12 +53,12 @@ public class LeaderboardPlaceholderCache {
     /**
      * Constructor.
      *
-     * @param plugin Plugin reference for scheduler + logger access.
-     * @param maxTrackedRank Highest rank position to keep cached.
+     * @param plugin               Plugin reference for scheduler + logger access.
+     * @param maxTrackedRank       Highest rank position to keep cached.
      * @param refreshIntervalTicks Periodic async refresh interval in ticks.
      */
     public LeaderboardPlaceholderCache(@NotNull mcMMO plugin, int maxTrackedRank,
-            long refreshIntervalTicks) {
+                                       long refreshIntervalTicks) {
         // readLeaderboardSnapshot propagates backend failures, so a refresh during a database
         // outage keeps the last good snapshot instead of swapping in empty results.
         this(maxTrackedRank, perScopeLimit -> mcMMO.getDatabaseManager()
@@ -66,13 +67,13 @@ public class LeaderboardPlaceholderCache {
     }
 
     LeaderboardPlaceholderCache(int maxTrackedRank, @NotNull LeaderboardDataSource dataSource,
-            @NotNull Logger logger) {
+                                @NotNull Logger logger) {
         this(maxTrackedRank, dataSource, logger, null, 0);
     }
 
     private LeaderboardPlaceholderCache(int maxTrackedRank,
-            @NotNull LeaderboardDataSource dataSource, @NotNull Logger logger,
-            @Nullable mcMMO plugin, long refreshIntervalTicks) {
+                                        @NotNull LeaderboardDataSource dataSource, @NotNull Logger logger,
+                                        @Nullable mcMMO plugin, long refreshIntervalTicks) {
         this.maxTrackedRank = Math.max(maxTrackedRank, 1);
         this.dataSource = dataSource;
         this.logger = logger;
@@ -138,7 +139,7 @@ public class LeaderboardPlaceholderCache {
     }
 
     /**
-     * @param skill Skill scope, or {@code null} for overall leaderboard.
+     * @param skill    Skill scope, or {@code null} for overall leaderboard.
      * @param position 1-based leaderboard position.
      * @return Cached player name for the position, or empty string when unavailable.
      */
@@ -148,7 +149,7 @@ public class LeaderboardPlaceholderCache {
     }
 
     /**
-     * @param skill Skill scope, or {@code null} for overall leaderboard.
+     * @param skill    Skill scope, or {@code null} for overall leaderboard.
      * @param position 1-based leaderboard position.
      * @return Cached numeric value for the position, or empty string when unavailable.
      */

@@ -1,11 +1,12 @@
 package com.gmail.nossr50.skills.acrobatics;
 
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import org.bukkit.entity.Mob;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
+
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Limits how many Dodge XP rewards a single mob can hand out so players cannot farm unlimited
@@ -28,12 +29,6 @@ public final class DodgeXpTracker {
     private static final ConcurrentHashMap<UUID, DodgeRewards> REWARDS_BY_MOB =
             new ConcurrentHashMap<>();
     private static final AtomicLong LAST_SWEEP_TIME = new AtomicLong();
-
-    private record DodgeRewards(int count, long lastDodgeTime) {
-        boolean isStale(long now) {
-            return now - lastDodgeTime >= IDLE_RESET_MILLIS;
-        }
-    }
 
     private DodgeXpTracker() {
     }
@@ -88,5 +83,11 @@ public final class DodgeXpTracker {
     static void clearAll() {
         REWARDS_BY_MOB.clear();
         LAST_SWEEP_TIME.set(0);
+    }
+
+    private record DodgeRewards(int count, long lastDodgeTime) {
+        boolean isStale(long now) {
+            return now - lastDodgeTime >= IDLE_RESET_MILLIS;
+        }
     }
 }

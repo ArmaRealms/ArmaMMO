@@ -1,21 +1,11 @@
 package com.gmail.nossr50.config;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.database.SQLDatabaseManager.PoolIdentifier;
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.party.PartyFeature;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
@@ -24,9 +14,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class GeneralConfig extends BukkitConfig {
     // Floor for how often leaderboards may rebuild; shared with FlatFileDatabaseManager's
@@ -37,24 +33,21 @@ public class GeneralConfig extends BukkitConfig {
     // use and periodic database load.
     private static final int MIN_PAPI_LEADERBOARD_TRACKED_RANK = 10;
     private static final int MAX_PAPI_LEADERBOARD_TRACKED_RANK = 1000;
-
-    private @Nullable Material repairAnvilMaterial;
-    private @Nullable Material salvageAnvilMaterial;
-
-    /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
-    private @Nullable Integer powerLevelCap;
     private final Map<PrimarySkillType, Integer> levelCaps = new EnumMap<>(
             PrimarySkillType.class);
-
+    private final Map<PrimarySkillType, Map<Material, Boolean>> doubleDropsEnabled =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<Material, Boolean> woodcuttingDoubleDropsEnabled = new HashMap<>();
+    private final Map<String, Material> tamingCOTWMaterials = new HashMap<>();
+    private @Nullable Material repairAnvilMaterial;
+    private @Nullable Material salvageAnvilMaterial;
+    /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
+    private @Nullable Integer powerLevelCap;
     /* Values resolved once and reused on hot event paths; reset by loadKeys() */
     private @Nullable Boolean abilitiesEnabled;
     private @Nullable Boolean abilityMessagesEnabled;
     private @Nullable Boolean abilitiesOnlyActivateWhenSneaking;
     private @Nullable Boolean abilitiesGateEnabled;
-    private final Map<PrimarySkillType, Map<Material, Boolean>> doubleDropsEnabled =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<Material, Boolean> woodcuttingDoubleDropsEnabled = new HashMap<>();
-    private final Map<String, Material> tamingCOTWMaterials = new HashMap<>();
 
     public GeneralConfig(@NotNull File dataFolder) {
         super("config.yml", dataFolder);

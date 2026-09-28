@@ -1,7 +1,5 @@
 package com.gmail.nossr50.commands.skills;
 
-import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
-
 import com.gmail.nossr50.config.treasure.FishingTreasureConfig;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -18,6 +16,8 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
 
 public class FishingCommand extends SkillCommand {
     private int lootTier;

@@ -32,7 +32,7 @@ public class DatabaseManagerFactory {
         return mcMMO.p.getGeneralConfig().getUseMySQL()
                 ? new SQLDatabaseManager(logger, MYSQL_DRIVER)
                 : new FlatFileDatabaseManager(userFilePath, logger, purgeTime, startingLevel,
-                        flatFileLeaderboardRefreshIntervalMillis());
+                flatFileLeaderboardRefreshIntervalMillis());
     }
 
     private static long flatFileLeaderboardRefreshIntervalMillis() {

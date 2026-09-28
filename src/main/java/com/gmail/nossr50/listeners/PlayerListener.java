@@ -37,11 +37,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.text.StringUtils;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -82,6 +77,12 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class PlayerListener implements Listener {
     // Marks commands that match an English skill name and must be left untouched
     private static final String KEEP_COMMAND = "";
@@ -95,12 +96,45 @@ public class PlayerListener implements Listener {
         this.plugin = plugin;
     }
 
+    static ItemStack getItemInEventHand(Player player, EquipmentSlot hand) {
+        if (hand == EquipmentSlot.HAND) {
+            return player.getInventory().getItemInMainHand();
+        }
+
+        if (hand == EquipmentSlot.OFF_HAND) {
+            return player.getInventory().getItemInOffHand();
+        }
+
+        return null;
+    }
+
+    static boolean isFishingRod(ItemStack itemStack) {
+        return itemStack != null && itemStack.getType() == Material.FISHING_ROD;
+    }
+
     /**
-     * Localized-skill-command lookup derived from the loaded locale; rebuilt whenever the
-     * locale generation changes (e.g. after /mcmmoreloadlocale).
+     * Tells a player which Salvage requirements they are missing for the held item. Scrap
+     * Collector is always locked on this path; the item's configured minimum level is only
+     * mentioned when the player has not reached it either.
      */
-    private record SkillCommandAliasCache(int localeGeneration,
-            Map<String, String> replacementByCommand) {
+    private static void sendSalvageLockedRequirements(Player player, McMMOPlayer mmoPlayer,
+                                                      ItemStack heldItem) {
+        final String scrapCollectorUnlockLevel = String.valueOf(
+                RankUtils.getRankUnlockLevel(SubSkillType.SALVAGE_SCRAP_COLLECTOR, 1));
+        final Salvageable salvageable = mcMMO.getSalvageableManager()
+                .getSalvageable(heldItem.getType());
+        final int itemMinimumLevel = salvageable == null ? 0 : salvageable.getMinimumLevel();
+
+        // Chat rather than the action bar; these messages are too long for the action bar
+        if (mmoPlayer.getSkillLevel(PrimarySkillType.SALVAGE) < itemMinimumLevel) {
+            NotificationManager.sendPlayerInformationChatOnly(player,
+                    "Salvage.Skills.ScrapCollector.LockedAndItem", scrapCollectorUnlockLevel,
+                    String.valueOf(itemMinimumLevel),
+                    StringUtils.getPrettyMaterialString(heldItem.getType()));
+        } else {
+            NotificationManager.sendPlayerInformationChatOnly(player,
+                    "Salvage.Skills.ScrapCollector.Locked", scrapCollectorUnlockLevel);
+        }
     }
 
     /**
@@ -510,54 +544,13 @@ public class PlayerListener implements Listener {
         }
     }
 
-    static ItemStack getItemInEventHand(Player player, EquipmentSlot hand) {
-        if (hand == EquipmentSlot.HAND) {
-            return player.getInventory().getItemInMainHand();
-        }
-
-        if (hand == EquipmentSlot.OFF_HAND) {
-            return player.getInventory().getItemInOffHand();
-        }
-
-        return null;
-    }
-
-    static boolean isFishingRod(ItemStack itemStack) {
-        return itemStack != null && itemStack.getType() == Material.FISHING_ROD;
-    }
-
-    /**
-     * Tells a player which Salvage requirements they are missing for the held item. Scrap
-     * Collector is always locked on this path; the item's configured minimum level is only
-     * mentioned when the player has not reached it either.
-     */
-    private static void sendSalvageLockedRequirements(Player player, McMMOPlayer mmoPlayer,
-            ItemStack heldItem) {
-        final String scrapCollectorUnlockLevel = String.valueOf(
-                RankUtils.getRankUnlockLevel(SubSkillType.SALVAGE_SCRAP_COLLECTOR, 1));
-        final Salvageable salvageable = mcMMO.getSalvageableManager()
-                .getSalvageable(heldItem.getType());
-        final int itemMinimumLevel = salvageable == null ? 0 : salvageable.getMinimumLevel();
-
-        // Chat rather than the action bar; these messages are too long for the action bar
-        if (mmoPlayer.getSkillLevel(PrimarySkillType.SALVAGE) < itemMinimumLevel) {
-            NotificationManager.sendPlayerInformationChatOnly(player,
-                    "Salvage.Skills.ScrapCollector.LockedAndItem", scrapCollectorUnlockLevel,
-                    String.valueOf(itemMinimumLevel),
-                    StringUtils.getPrettyMaterialString(heldItem.getType()));
-        } else {
-            NotificationManager.sendPlayerInformationChatOnly(player,
-                    "Salvage.Skills.ScrapCollector.Locked", scrapCollectorUnlockLevel);
-        }
-    }
-
     /**
      * Decides whether a click on the given block is a repair or salvage anvil use. The perform
      * path (right click) additionally requires a single held item and the Scrap Collector rank
      * for salvage; the cancel-confirmation path (left click) does not.
      */
     private AnvilInteraction.Use resolveAnvilUse(Player player, Material clickedType,
-            ItemStack heldItem, boolean performingUse) {
+                                                 ItemStack heldItem, boolean performingUse) {
         return AnvilInteraction.resolve(clickedType,
                 mcMMO.p.getGeneralConfig().getRepairAnvilMaterial(),
                 mcMMO.p.getGeneralConfig().getSalvageAnvilMaterial(),
@@ -894,11 +887,11 @@ public class PlayerListener implements Listener {
     /**
      * Deny using the held item while a salvage or repair confirmation is pending for it.
      *
-     * @param event The event to modify
+     * @param event  The event to modify
      * @param player The interacting player
      */
     private void denyItemUseWhileAnvilConfirmationPending(PlayerInteractEvent event,
-            Player player) {
+                                                          Player player) {
         if (event.getHand() != EquipmentSlot.HAND || !UserManager.hasPlayerDataKey(player)
                 || player.getGameMode() == GameMode.CREATIVE) {
             return;
@@ -1236,5 +1229,13 @@ public class PlayerListener implements Listener {
     public void onPlayerSwapHandItems(PlayerSwapHandItemsEvent event) {
         SkillUtils.removeAbilityBuff(event.getMainHandItem());
         SkillUtils.removeAbilityBuff(event.getOffHandItem());
+    }
+
+    /**
+     * Localized-skill-command lookup derived from the loaded locale; rebuilt whenever the
+     * locale generation changes (e.g. after /mcmmoreloadlocale).
+     */
+    private record SkillCommandAliasCache(int localeGeneration,
+                                          Map<String, String> replacementByCommand) {
     }
 }

@@ -19,9 +19,6 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import java.util.concurrent.DelayQueue;
 
 public class PlayerProfile {
     private final String playerName;
@@ -249,17 +246,17 @@ public class PlayerProfile {
         return uniquePlayerData.get(UniqueDataType.CHIMAERA_WING_DATS);
     }
 
+    protected void setChimaeraWingDATS(int DATS) {
+        markProfileDirty();
+        uniquePlayerData.put(UniqueDataType.CHIMAERA_WING_DATS, DATS);
+    }
+
     /**
      * @deprecated misspelled, use {@link #getChimaeraWingDATS()} instead
      */
     @Deprecated(forRemoval = true, since = "2.3.000")
     public int getChimaerWingDATS() {
         return getChimaeraWingDATS();
-    }
-
-    protected void setChimaeraWingDATS(int DATS) {
-        markProfileDirty();
-        uniquePlayerData.put(UniqueDataType.CHIMAERA_WING_DATS, DATS);
     }
 
     public void setUniqueData(final UniqueDataType uniqueDataType, final int newData) {

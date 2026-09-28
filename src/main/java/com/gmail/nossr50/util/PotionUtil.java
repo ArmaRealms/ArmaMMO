@@ -14,11 +14,10 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class PotionUtil {
-    // Some of the old potion types got renamed, our configs can still contain these old names
-    private static final Map<String, String> legacyPotionTypes = new HashMap<>();
-
     public static final String STRONG = "STRONG";
     public static final String LONG = "LONG";
+    // Some of the old potion types got renamed, our configs can still contain these old names
+    private static final Map<String, String> legacyPotionTypes = new HashMap<>();
 
     static {
         // Uncraftable doesn't exist in modern versions

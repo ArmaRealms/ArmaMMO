@@ -1,15 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.PersistentDataConfig;
@@ -20,9 +10,6 @@ import com.gmail.nossr50.metadata.MobMetaFlagType;
 import com.gmail.nossr50.util.AttributeMapper;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.MobMetadataUtils;
-import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Enderman;
@@ -40,6 +27,20 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
+
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CombatUtilsTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = getLogger(
@@ -79,7 +80,7 @@ class CombatUtilsTest extends MMOTestEnvironment {
                 "false, MACE, MACES",
         })
         void resolveMeleeSkillShouldFollowPredicateOrder(boolean isDamageTypeSpear,
-                Material heldItemType, PrimarySkillType expectedSkill) {
+                                                         Material heldItemType, PrimarySkillType expectedSkill) {
             // Given - a held item of the given type
             when(heldItem.getType()).thenReturn(heldItemType);
 
@@ -525,7 +526,7 @@ class CombatUtilsTest extends MMOTestEnvironment {
             // load it under a mocked PersistentDataConfig to keep the static block off disk
             when(mcMMO.p.getName()).thenReturn("mcMMO");
             try (final MockedStatic<PersistentDataConfig> mockedPersistentData =
-                    mockStatic(PersistentDataConfig.class)) {
+                         mockStatic(PersistentDataConfig.class)) {
                 mockedPersistentData.when(PersistentDataConfig::getInstance)
                         .thenReturn(mock(PersistentDataConfig.class));
                 Class.forName("com.gmail.nossr50.util.MobMetadataUtils");
@@ -542,9 +543,9 @@ class CombatUtilsTest extends MMOTestEnvironment {
             when(experienceConfigInstance.getCombatXP(EntityType.ENDERMAN)).thenReturn(2.0);
 
             try (final MockedStatic<MobMetadataUtils> mockedMobMetadata =
-                    mockStatic(MobMetadataUtils.class)) {
+                         mockStatic(MobMetadataUtils.class)) {
                 mockedMobMetadata.when(
-                        () -> hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))
+                                () -> hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))
                         .thenReturn(true);
 
                 // When - PvE base XP is calculated for the flagged enderman
@@ -563,12 +564,12 @@ class CombatUtilsTest extends MMOTestEnvironment {
             when(experienceConfigInstance.getCombatXP(EntityType.ENDERMAN)).thenReturn(2.0);
 
             try (final MockedStatic<MobMetadataUtils> mockedMobMetadata =
-                    mockStatic(MobMetadataUtils.class)) {
+                         mockStatic(MobMetadataUtils.class)) {
                 mockedMobMetadata.when(
-                        () -> hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))
+                                () -> hasMobFlag(MobMetaFlagType.EXPLOITED_ENDERMEN, enderman))
                         .thenReturn(true);
                 mockedMobMetadata.when(
-                        () -> hasMobFlag(MobMetaFlagType.MOB_SPAWNER_MOB, enderman))
+                                () -> hasMobFlag(MobMetaFlagType.MOB_SPAWNER_MOB, enderman))
                         .thenReturn(true);
 
                 // When - PvE base XP is calculated
@@ -588,7 +589,7 @@ class CombatUtilsTest extends MMOTestEnvironment {
             when(experienceConfigInstance.getCombatXP(EntityType.ENDERMAN)).thenReturn(2.0);
 
             try (final MockedStatic<MobMetadataUtils> mockedMobMetadata =
-                    mockStatic(MobMetadataUtils.class)) {
+                         mockStatic(MobMetadataUtils.class)) {
                 // When - PvE base XP is calculated with every flag absent
                 final double baseXP = invokeCalculatePveBaseXp(enderman);
 

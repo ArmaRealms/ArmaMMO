@@ -1,20 +1,5 @@
 package com.gmail.nossr50.skills.herbalism;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -33,8 +18,6 @@ import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -52,6 +35,24 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Herbalism abilities not exercised by the Green Thumb consumption and
@@ -100,6 +101,18 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         final Material shelfMushroom = mock(Material.class);
         when(shelfMushroom.getKey()).thenReturn(NamespacedKey.minecraft("shelf_mushroom"));
         return mockAgeable(shelfMushroom, age, 1);
+    }
+
+    @Test
+    void farmersDietShouldDelegateToTheSharedFoodSkill() {
+        try (MockedStatic<SkillUtils> skillUtils = mockStatic(SkillUtils.class)) {
+            // Given - the shared food skill handler boosts the hunger restored
+            skillUtils.when(() -> SkillUtils.handleFoodSkills(player, 4,
+                    SubSkillType.HERBALISM_FARMERS_DIET)).thenReturn(6);
+
+            // When / Then - Farmer's Diet returns the boosted value
+            assertThat(herbalismManager.farmersDiet(4)).isEqualTo(6);
+        }
     }
 
     @Nested
@@ -173,18 +186,6 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
 
             doReturn(true).when(mmoPlayer).getToolPreparationMode(ToolType.HOE);
             assertThat(herbalismManager.canActivateAbility()).isTrue();
-        }
-    }
-
-    @Test
-    void farmersDietShouldDelegateToTheSharedFoodSkill() {
-        try (MockedStatic<SkillUtils> skillUtils = mockStatic(SkillUtils.class)) {
-            // Given - the shared food skill handler boosts the hunger restored
-            skillUtils.when(() -> SkillUtils.handleFoodSkills(player, 4,
-                    SubSkillType.HERBALISM_FARMERS_DIET)).thenReturn(6);
-
-            // When / Then - Farmer's Diet returns the boosted value
-            assertThat(herbalismManager.farmersDiet(4)).isEqualTo(6);
         }
     }
 
@@ -347,7 +348,7 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void greenTerraShouldAlwaysMarkTripleDrops() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
                 // Given - an active Green Terra
                 doReturn(true).when(mmoPlayer).getAbilityMode(SuperAbilityType.GREEN_TERRA);
 
@@ -362,8 +363,8 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void verdantBountyWinsShouldMarkTripleDrops() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> probabilityUtil =
-                            mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> probabilityUtil =
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a winning Verdant Bounty roll without Green Terra
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.HERBALISM_VERDANT_BOUNTY, mmoPlayer)).thenReturn(true);
@@ -379,7 +380,7 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void ordinaryRollsShouldMarkDoubleDrops() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
                 // Given - no Green Terra and a losing Verdant Bounty roll (mock default)
                 // When - the plant is marked
                 herbalismManager.markForBonusDrops(plant);
@@ -407,7 +408,7 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void naturalMatureCropsShouldRollForBonusDrops() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
                 // Given - a natural, fully mature wheat crop whose double drop roll wins
                 final Ageable matureWheat = mockAgeable(Material.WHEAT, 7, 7);
                 when(plantState.getBlockData()).thenReturn(matureWheat);
@@ -442,7 +443,7 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void playerPlacedMatureCropsShouldMarkWithoutARoll() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
                 // Given - a player-placed crop that has fully grown back
                 when(chunkManager.isIneligible(plant)).thenReturn(true);
                 final Ageable regrownWheat = mockAgeable(Material.WHEAT, 7, 7);
@@ -466,7 +467,7 @@ class HerbalismManagerAbilitiesTest extends MMOTestEnvironment {
         @Test
         void naturalShelfMushroomsShouldRollForBonusDrops() {
             try (MockedStatic<BlockUtils> blockUtils = mockStatic(BlockUtils.class);
-                    MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
+                 MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class)) {
                 // Given - a natural small shelf mushroom whose double drop roll wins
                 final Ageable smallShelfMushroom = mockShelfMushroom(0);
                 when(plantState.getBlockData()).thenReturn(smallShelfMushroom);

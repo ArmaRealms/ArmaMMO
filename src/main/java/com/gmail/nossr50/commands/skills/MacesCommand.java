@@ -1,7 +1,5 @@
 package com.gmail.nossr50.commands.skills;
 
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_CRIPPLE;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_MACES_LIMIT_BREAK;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
@@ -16,6 +14,9 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_CRIPPLE;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.MACES_MACES_LIMIT_BREAK;
 
 public class MacesCommand extends SkillCommand {
 

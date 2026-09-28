@@ -1,15 +1,16 @@
 package com.gmail.nossr50.util.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Cross-checks the commands declared in plugin.yml against the executors the plugin actually
@@ -25,6 +26,18 @@ class CommandRegistrationManagerTest {
      */
     private static final Set<String> ACF_REGISTERED_COMMANDS =
             Set.of("mmopower", "adminchat", "partychat");
+
+    private static Set<String> declaredCommands() throws Exception {
+        try (InputStream in = CommandRegistrationManagerTest.class
+                .getResourceAsStream("/plugin.yml")) {
+            assertThat(in).as("plugin.yml on the test classpath").isNotNull();
+            final YamlConfiguration pluginYml = YamlConfiguration.loadConfiguration(
+                    new InputStreamReader(in, StandardCharsets.UTF_8));
+            final ConfigurationSection commands = pluginYml.getConfigurationSection("commands");
+            assertThat(commands).as("commands section in plugin.yml").isNotNull();
+            return commands.getKeys(false);
+        }
+    }
 
     @Test
     void everyDeclaredCommandShouldHaveARegisteredExecutor() throws Exception {
@@ -49,17 +62,5 @@ class CommandRegistrationManagerTest {
         assertThat(wiredWithoutDeclaration)
                 .as("commands registered in code but not declared in plugin.yml")
                 .isEmpty();
-    }
-
-    private static Set<String> declaredCommands() throws Exception {
-        try (InputStream in = CommandRegistrationManagerTest.class
-                .getResourceAsStream("/plugin.yml")) {
-            assertThat(in).as("plugin.yml on the test classpath").isNotNull();
-            final YamlConfiguration pluginYml = YamlConfiguration.loadConfiguration(
-                    new InputStreamReader(in, StandardCharsets.UTF_8));
-            final ConfigurationSection commands = pluginYml.getConfigurationSection("commands");
-            assertThat(commands).as("commands section in plugin.yml").isNotNull();
-            return commands.getKeys(false);
-        }
     }
 }

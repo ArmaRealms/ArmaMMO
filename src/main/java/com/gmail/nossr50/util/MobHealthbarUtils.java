@@ -1,13 +1,9 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
-import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
-
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.meta.HealthbarSnapshot;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.MobHealthDisplayUpdaterTask;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,6 +12,11 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+import static com.gmail.nossr50.listeners.EntityListener.isArmorStandEntity;
+import static com.gmail.nossr50.listeners.EntityListener.isMannequinEntity;
 
 public final class MobHealthbarUtils {
     private MobHealthbarUtils() {
@@ -36,10 +37,10 @@ public final class MobHealthbarUtils {
      * fallback for any healthbar characters that may have slipped through.
      *
      * @param deathMessage The original death message
-     * @param player The player who died
+     * @param player       The player who died
      * @return the fixed death message
      * @deprecated Prefer proactively calling {@link #restoreNameFromSnapshot} on the attacker
-     *     before the death message fires rather than fixing the message string after the fact.
+     * before the death message fires rather than fixing the message string after the fact.
      */
     @Deprecated
     public static String fixDeathMessage(String deathMessage, Player player) {
@@ -175,7 +176,7 @@ public final class MobHealthbarUtils {
     }
 
     private static String createHealthDisplay(MobHealthbarType mobHealthbarType,
-            LivingEntity entity, double damage) {
+                                              LivingEntity entity, double damage) {
         double maxHealth = entity.getMaxHealth();
         double currentHealth = Math.max(entity.getHealth() - damage, 0);
         double healthPercentage = (currentHealth / maxHealth) * 100.0D;

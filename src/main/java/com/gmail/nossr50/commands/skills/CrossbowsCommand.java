@@ -1,8 +1,5 @@
 package com.gmail.nossr50.commands.skills;
 
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_POWERED_SHOT;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_TRICK_SHOT;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.CombatUtils;
@@ -13,6 +10,10 @@ import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_CROSSBOWS_LIMIT_BREAK;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_POWERED_SHOT;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.CROSSBOWS_TRICK_SHOT;
 
 public class CrossbowsCommand extends SkillCommand {
     private boolean canTrickShot;

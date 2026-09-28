@@ -1,14 +1,15 @@
 package com.gmail.nossr50.util.skills;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
 import static com.gmail.nossr50.util.skills.SkillUnlockNotificationPacer.SLOT_SPACING_MILLIS;
 import static com.gmail.nossr50.util.skills.SkillUnlockNotificationPacer.SWEEP_INTERVAL_MILLIS;
 import static com.gmail.nossr50.util.skills.SkillUnlockNotificationPacer.reserveSlotDelayTicks;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * Covers the per-player pacing schedule for skill unlock notifications: every notification is

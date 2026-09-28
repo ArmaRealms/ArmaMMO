@@ -6,22 +6,22 @@ import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.mining.BlastMining;
 import org.bukkit.ChatColor;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import org.jetbrains.annotations.Nullable;
 
 public class AdvancedConfig extends BukkitConfig {
+    private final Map<SubSkillType, Integer> maxBonusLevel = new EnumMap<>(SubSkillType.class);
+    private final Map<SubSkillType, Double> maximumProbability = new EnumMap<>(SubSkillType.class);
     int[] defaultCrippleValues = new int[]{10, 15, 20, 25};
     int[] defaultMomentumValues = new int[]{5, 10, 15, 20, 25, 30, 35, 40, 45, 50};
-
     /* Values resolved once and reused on hot combat/RNG paths; reset by loadKeys() */
     private @Nullable Boolean adjustSkillsForAttackCooldown;
     private @Nullable Double archeryForceMultiplier;
-    private final Map<SubSkillType, Integer> maxBonusLevel = new EnumMap<>(SubSkillType.class);
-    private final Map<SubSkillType, Double> maximumProbability = new EnumMap<>(SubSkillType.class);
 
     public AdvancedConfig(File dataFolder) {
         super("advanced.yml", dataFolder);

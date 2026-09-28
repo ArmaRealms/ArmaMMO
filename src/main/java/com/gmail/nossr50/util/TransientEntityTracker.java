@@ -40,7 +40,7 @@ public class TransientEntityTracker {
     }
 
     public int getActiveSummonsForPlayerOfType(@NotNull UUID playerUUID,
-            @NotNull CallOfTheWildType callOfTheWildType) {
+                                               @NotNull CallOfTheWildType callOfTheWildType) {
         final Set<TrackedTamingEntity> entities = playerSummonedEntityTracker.get(playerUUID);
         if (entities == null) {
             return 0;

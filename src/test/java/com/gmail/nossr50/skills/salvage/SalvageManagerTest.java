@@ -1,11 +1,5 @@
 package com.gmail.nossr50.skills.salvage;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.ItemSpawnReason;
@@ -23,8 +17,6 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
-import java.util.Map;
-import java.util.stream.Stream;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -43,46 +35,20 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+
 class SalvageManagerTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = getLogger(
             SalvageManagerTest.class.getName());
 
     private SalvageManager salvageManager;
-
-    @BeforeEach
-    void setUp() throws InvalidSkillException {
-        mockBaseEnvironment(logger);
-        TestRegistryBootstrap.bootstrap(mockedBukkit);
-        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(5);
-        salvageManager = new SalvageManager(mmoPlayer);
-    }
-
-    @AfterEach
-    void tearDown() {
-        cleanUpStaticMocks();
-    }
-
-    @ParameterizedTest(name = "cap={0}, enchantLevel={1} -> {2}")
-    @MethodSource("arcaneSalvageCapCases")
-    void arcaneSalvageShouldRespectConfiguredCap(int maxEnchantLevel, int enchantLevel,
-            int expectedLevel) {
-        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(maxEnchantLevel);
-        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments()).thenReturn(false);
-
-        assertEquals(expectedLevel, salvageManager.getArcaneSalvageEnchantLevel(enchantLevel));
-    }
-
-    @ParameterizedTest(name = "unsafe={0}, cap={1}, enchantLevel={2} -> {3}")
-    @MethodSource("arcaneSalvageUnsafeCases")
-    void arcaneSalvageShouldIgnoreConfiguredCapWhenUnsafeEnchantmentsAreAllowed(
-            boolean unsafeEnchantments, int maxEnchantLevel, int enchantLevel,
-            int expectedLevel) {
-        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(maxEnchantLevel);
-        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments())
-                .thenReturn(unsafeEnchantments);
-
-        assertEquals(expectedLevel, salvageManager.getArcaneSalvageEnchantLevel(enchantLevel));
-    }
 
     private static Stream<Arguments> arcaneSalvageCapCases() {
         return Stream.of(
@@ -101,6 +67,41 @@ class SalvageManagerTest extends MMOTestEnvironment {
                 Arguments.of(true, 0, 15, 15),
                 Arguments.of(false, 10, 15, 10)
         );
+    }
+
+    @BeforeEach
+    void setUp() throws InvalidSkillException {
+        mockBaseEnvironment(logger);
+        TestRegistryBootstrap.bootstrap(mockedBukkit);
+        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(5);
+        salvageManager = new SalvageManager(mmoPlayer);
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanUpStaticMocks();
+    }
+
+    @ParameterizedTest(name = "cap={0}, enchantLevel={1} -> {2}")
+    @MethodSource("arcaneSalvageCapCases")
+    void arcaneSalvageShouldRespectConfiguredCap(int maxEnchantLevel, int enchantLevel,
+                                                 int expectedLevel) {
+        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(maxEnchantLevel);
+        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments()).thenReturn(false);
+
+        assertEquals(expectedLevel, salvageManager.getArcaneSalvageEnchantLevel(enchantLevel));
+    }
+
+    @ParameterizedTest(name = "unsafe={0}, cap={1}, enchantLevel={2} -> {3}")
+    @MethodSource("arcaneSalvageUnsafeCases")
+    void arcaneSalvageShouldIgnoreConfiguredCapWhenUnsafeEnchantmentsAreAllowed(
+            boolean unsafeEnchantments, int maxEnchantLevel, int enchantLevel,
+            int expectedLevel) {
+        Mockito.when(advancedConfig.getArcaneSalvageMaxEnchantLevel()).thenReturn(maxEnchantLevel);
+        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments())
+                .thenReturn(unsafeEnchantments);
+
+        assertEquals(expectedLevel, salvageManager.getArcaneSalvageEnchantLevel(enchantLevel));
     }
 
     private ItemStack mockConfirmableItem() {
@@ -312,8 +313,8 @@ class SalvageManagerTest extends MMOTestEnvironment {
         @Test
         void successfulSalvageShouldPayMaterialsAndEmptyTheHand() {
             try (MockedStatic<ItemUtils> itemUtils = Mockito.mockStatic(ItemUtils.class);
-                    MockedConstruction<ItemStack> constructedStacks =
-                            Mockito.mockConstruction(ItemStack.class)) {
+                 MockedConstruction<ItemStack> constructedStacks =
+                         Mockito.mockConstruction(ItemStack.class)) {
                 // When - an undamaged helmet is salvaged
                 salvageManager.handleSalvage(anvilLocation, helmet);
 
@@ -343,8 +344,8 @@ class SalvageManagerTest extends MMOTestEnvironment {
         @Test
         void lockedArcaneSalvageShouldLoseTheEnchantsButStillPayMaterials() {
             try (MockedStatic<ItemUtils> itemUtils = Mockito.mockStatic(ItemUtils.class);
-                    MockedConstruction<ItemStack> ignored =
-                            Mockito.mockConstruction(ItemStack.class)) {
+                 MockedConstruction<ItemStack> ignored =
+                         Mockito.mockConstruction(ItemStack.class)) {
                 // Given - an enchanted helmet but no Arcane Salvage unlock
                 final Enchantment protection = Mockito.mock(Enchantment.class);
                 Mockito.when(helmet.getEnchantments()).thenReturn(Map.of(protection, 3));
@@ -371,13 +372,13 @@ class SalvageManagerTest extends MMOTestEnvironment {
             final EnchantmentStorageMeta bookMeta =
                     Mockito.mock(EnchantmentStorageMeta.class);
             try (MockedStatic<ItemUtils> itemUtils = Mockito.mockStatic(ItemUtils.class);
-                    MockedConstruction<ItemStack> constructedStacks = Mockito.mockConstruction(
-                            ItemStack.class, (mock, context) -> {
-                                if (!context.arguments().isEmpty() && context.arguments()
-                                        .get(0) == Material.ENCHANTED_BOOK) {
-                                    Mockito.when(mock.getItemMeta()).thenReturn(bookMeta);
-                                }
-                            })) {
+                 MockedConstruction<ItemStack> constructedStacks = Mockito.mockConstruction(
+                         ItemStack.class, (mock, context) -> {
+                             if (!context.arguments().isEmpty() && context.arguments()
+                                     .get(0) == Material.ENCHANTED_BOOK) {
+                                 Mockito.when(mock.getItemMeta()).thenReturn(bookMeta);
+                             }
+                         })) {
                 // Given - an enchanted helmet, Arcane Salvage unlocked, and the bypass perk
                 // guaranteeing full extraction
                 final Enchantment protection = Mockito.mock(Enchantment.class);

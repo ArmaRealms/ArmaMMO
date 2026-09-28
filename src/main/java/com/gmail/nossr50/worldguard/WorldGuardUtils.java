@@ -1,6 +1,5 @@
 package com.gmail.nossr50.worldguard;
 
-import static org.bukkit.Bukkit.getServer;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.sk89q.worldguard.WorldGuard;
@@ -9,6 +8,8 @@ import com.sk89q.worldguard.protection.flags.registry.SimpleFlagRegistry;
 import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
+
+import static org.bukkit.Bukkit.getServer;
 
 public class WorldGuardUtils {
     private static final ArrayList<String> WGClassList;

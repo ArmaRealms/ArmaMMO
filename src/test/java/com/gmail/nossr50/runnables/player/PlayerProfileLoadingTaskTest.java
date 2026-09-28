@@ -1,5 +1,31 @@
 package com.gmail.nossr50.runnables.player;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.database.DatabaseManager;
+import com.gmail.nossr50.database.DatabaseManagerFactory;
+import com.gmail.nossr50.datatypes.database.DatabaseType;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
+import com.gmail.nossr50.datatypes.player.PlayerProfile;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.player.UserManager;
+import com.tcoded.folialib.impl.PlatformScheduler;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BERSERK;
 import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
 import static java.util.UUID.randomUUID;
@@ -13,31 +39,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.api.exceptions.InvalidSkillException;
-import com.gmail.nossr50.database.DatabaseManager;
-import com.gmail.nossr50.database.DatabaseManagerFactory;
-import com.gmail.nossr50.datatypes.database.DatabaseType;
-import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.player.UserManager;
-import com.tcoded.folialib.impl.PlatformScheduler;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentCaptor;
-
 /**
  * Runs the login profile load against a real FlatFile database. When a player's profile fails
  * to load they must not be handed a new one: its first save would overwrite their stored row
@@ -47,10 +48,14 @@ class PlayerProfileLoadingTaskTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(PlayerProfileLoadingTaskTest.class.getName());
     private static final String PLAYER_NAME = "nossr50";
     private static final int STORED_MINING_LEVEL = 42;
-    /** A failed first attempt retries after 100 ticks plus 100 per attempt made. */
+    /**
+     * A failed first attempt retries after 100 ticks plus 100 per attempt made.
+     */
     private static final long FIRST_RETRY_DELAY_TICKS = 200L;
 
-    /** JUnit deletes this folder, and the users file inside it, after each test. */
+    /**
+     * JUnit deletes this folder, and the users file inside it, after each test.
+     */
     @TempDir
     Path flatFileDirectory;
 
@@ -82,7 +87,9 @@ class PlayerProfileLoadingTaskTest extends MMOTestEnvironment {
         assertThat(databaseManager.saveUser(storedProfile)).isTrue();
     }
 
-    /** Replaces one field of the player's row, the way a damaged file would have it. */
+    /**
+     * Replaces one field of the player's row, the way a damaged file would have it.
+     */
     private void damageStoredRow(int fieldIndex, String value) throws IOException {
         final List<String> damagedRows = Files.readAllLines(usersFile, Charset.defaultCharset())
                 .stream()
@@ -122,7 +129,9 @@ class PlayerProfileLoadingTaskTest extends MMOTestEnvironment {
         return trackedPlayer.getValue().getProfile();
     }
 
-    /** Saves whatever profiles the player was handed, as the autosave and logout would. */
+    /**
+     * Saves whatever profiles the player was handed, as the autosave and logout would.
+     */
     private void saveAppliedProfiles() {
         final ArgumentCaptor<McMMOPlayer> trackedPlayers =
                 ArgumentCaptor.forClass(McMMOPlayer.class);

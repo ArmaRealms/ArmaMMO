@@ -65,7 +65,7 @@ public class SwordsManager extends SkillManager {
     /**
      * Check for Bleed effect.
      *
-     * @param target The defending entity
+     * @param target              The defending entity
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void processRupture(@NotNull LivingEntity target, double attackStrengthScale) {
@@ -161,12 +161,12 @@ public class SwordsManager extends SkillManager {
     /**
      * Handle the effects of the Serrated Strikes ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param target              The {@link LivingEntity} being affected by the ability
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void serratedStrikes(@NotNull LivingEntity target, double damage,
-            double attackStrengthScale) {
+                                double attackStrengthScale) {
         CombatUtils.applyAbilityAoE(getPlayer(), target, damage / Swords.serratedStrikesModifier,
                 attackStrengthScale, skill);
     }

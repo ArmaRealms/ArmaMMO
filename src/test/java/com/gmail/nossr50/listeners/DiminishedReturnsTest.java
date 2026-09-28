@@ -1,11 +1,11 @@
 package com.gmail.nossr50.listeners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 /**
  * Contract coverage for the diminished-returns XP math. Gains under the (modified) threshold
@@ -27,7 +27,7 @@ class DiminishedReturnsTest {
             "750,  1000, 1.0, 0.5, 0,    true,  50",  // global multiplier halves the threshold
     })
     void applyShouldMatchTheDiminishedReturnsContract(float registeredXp, int threshold,
-            double modifier, double global, float cap, boolean expectChanged, float expectedXp) {
+                                                      double modifier, double global, float cap, boolean expectChanged, float expectedXp) {
         // Given - a 100 XP gain against the configured diminished-returns state
         // When - the formula is applied
         final DiminishedReturns.Result result = DiminishedReturns.apply(100F, registeredXp,

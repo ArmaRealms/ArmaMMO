@@ -51,71 +51,42 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.text.StringUtils;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.PluginCommand;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.PluginCommand;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class CommandRegistrationManager {
     private static final String permissionsMessage = LocaleLoader.getString("mcMMO.NoPermission");
-
-    private CommandRegistrationManager() {
-    }
-
-    /**
-     * Everything needed to wire one plugin.yml command declaration to its executor. Description
-     * and usage lines are suppliers so the table can be built without touching the locale or a
-     * running plugin instance.
-     */
-    private record CommandSpec(@NotNull String name, @NotNull Supplier<String> description,
-            @Nullable String permission, @NotNull Supplier<List<String>> usageLines,
-            @NotNull Supplier<? extends CommandExecutor> executor, @NotNull List<String> aliases,
-            boolean requiresParty) {
-    }
-
-    private static @NotNull CommandSpec spec(@NotNull String name, @Nullable String permission,
-            @NotNull Supplier<List<String>> usageLines,
-            @NotNull Supplier<? extends CommandExecutor> executor) {
-        return spec(name, () -> LocaleLoader.getString("Commands.Description." + name),
-                permission, usageLines, executor);
-    }
-
-    private static @NotNull CommandSpec spec(@NotNull String name,
-            @NotNull Supplier<String> description, @Nullable String permission,
-            @NotNull Supplier<List<String>> usageLines,
-            @NotNull Supplier<? extends CommandExecutor> executor) {
-        return new CommandSpec(name, description, permission, usageLines, executor, List.of(),
-                false);
-    }
-
     private static final List<CommandSpec> COMMAND_SPECS = List.of(
             // Generic Commands
             spec("mmoxpbar", null, () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mmoxpbar", "<reset | disable>"),
-                    LocaleLoader.getString("Commands.Usage.2", "mmoxpbar",
-                            "<show | hide | disable>", "<skillname>")),
+                            LocaleLoader.getString("Commands.Usage.1", "mmoxpbar", "<reset | disable>"),
+                            LocaleLoader.getString("Commands.Usage.2", "mmoxpbar",
+                                    "<show | hide | disable>", "<skillname>")),
                     XPBarCommand::new),
             spec("mmoinfo", "mcmmo.commands.mmoinfo", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mmoinfo",
-                            "[" + LocaleLoader.getString("Commands.Usage.SubSkill") + "]")),
+                            LocaleLoader.getString("Commands.Usage.1", "mmoinfo",
+                                    "[" + LocaleLoader.getString("Commands.Usage.SubSkill") + "]")),
                     MmoInfoCommand::new),
             // No permission required on mmodebug to save support headaches
             spec("mmodebug", null, () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mmodebug")),
+                            LocaleLoader.getString("Commands.Usage.0", "mmodebug")),
                     PlayerDebugCommand::new),
             spec("mcability", "mcmmo.commands.mcability;mcmmo.commands.mcability.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcability",
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McabilityCommand::new),
             spec("mcgod", "mcmmo.commands.mcgod;mcmmo.commands.mcgod.others", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mcgod",
-                            "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
+                            LocaleLoader.getString("Commands.Usage.1", "mcgod",
+                                    "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McgodCommand::new),
             spec("mcchatspy", "mcmmo.commands.mcchatspy;mcmmo.commands.mcchatspy.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcchatspy",
@@ -126,10 +97,10 @@ public final class CommandRegistrationManager {
                             LocaleLoader.getString("Commands.Usage.1", "mcmmo", "help")),
                     McmmoCommand::new),
             spec("mcnotify", "mcmmo.commands.mcnotify", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mcnotify")),
+                            LocaleLoader.getString("Commands.Usage.0", "mcnotify")),
                     McnotifyCommand::new),
             spec("mclevelupsound", "mcmmo.commands.mclevelupsound", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mclevelupsound")),
+                            LocaleLoader.getString("Commands.Usage.0", "mclevelupsound")),
                     McLevelUpSoundCommand::new),
             spec("mcrefresh", "mcmmo.commands.mcrefresh;mcmmo.commands.mcrefresh.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.1", "mcrefresh",
@@ -158,15 +129,15 @@ public final class CommandRegistrationManager {
 
             // Database Commands
             spec("mcpurge", () -> LocaleLoader.getString("Commands.Description.mcpurge",
-                    mcMMO.p.getGeneralConfig().getOldUsersCutoff()), "mcmmo.commands.mcpurge",
+                            mcMMO.p.getGeneralConfig().getOldUsersCutoff()), "mcmmo.commands.mcpurge",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.0", "mcpurge")),
                     McpurgeCommand::new),
             spec("mcremove", "mcmmo.commands.mcremove", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.1", "mcremove",
-                            "<" + LocaleLoader.getString("Commands.Usage.Player") + ">")),
+                            LocaleLoader.getString("Commands.Usage.1", "mcremove",
+                                    "<" + LocaleLoader.getString("Commands.Usage.Player") + ">")),
                     McremoveCommand::new),
             spec("mmoshowdb", "mcmmo.commands.mmoshowdb", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mmoshowdb")),
+                            LocaleLoader.getString("Commands.Usage.0", "mmoshowdb")),
                     MmoshowdbCommand::new),
             spec("mcconvert",
                     "mcmmo.commands.mcconvert;mcmmo.commands.mcconvert.experience;"
@@ -185,10 +156,10 @@ public final class CommandRegistrationManager {
                             "<" + LocaleLoader.getString("Commands.Usage.Level") + ">")),
                     AddlevelsCommand::new),
             spec("addxp", "mcmmo.commands.addxp;mcmmo.commands.addxp.others", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.3.XP", "addxp",
-                            "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
-                            "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
-                            "<" + LocaleLoader.getString("Commands.Usage.XP") + ">")),
+                            LocaleLoader.getString("Commands.Usage.3.XP", "addxp",
+                                    "[" + LocaleLoader.getString("Commands.Usage.Player") + "]",
+                                    "<" + LocaleLoader.getString("Commands.Usage.Skill") + ">",
+                                    "<" + LocaleLoader.getString("Commands.Usage.XP") + ">")),
                     AddxpCommand::new),
             spec("mmoedit", "mcmmo.commands.mmoedit;mcmmo.commands.mmoedit.others",
                     () -> List.of(LocaleLoader.getString("Commands.Usage.3.XP", "mmoedit",
@@ -230,7 +201,7 @@ public final class CommandRegistrationManager {
                             "<" + LocaleLoader.getString("Commands.Usage.Player") + ">")),
                     InspectCommand::new),
             spec("mccooldown", "mcmmo.commands.mccooldown", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mccooldowns")),
+                            LocaleLoader.getString("Commands.Usage.0", "mccooldowns")),
                     MccooldownCommand::new),
             spec("mcrank",
                     "mcmmo.commands.mcrank;mcmmo.commands.mcrank.others;"
@@ -240,13 +211,13 @@ public final class CommandRegistrationManager {
                             "[" + LocaleLoader.getString("Commands.Usage.Player") + "]")),
                     McRankCommand::new),
             spec("mcstats", "mcmmo.commands.mcstats", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.0", "mcstats")),
+                            LocaleLoader.getString("Commands.Usage.0", "mcstats")),
                     McstatsCommand::new),
             // Only the main mctop permission node is needed, not the per-skill ones
             spec("mctop", "mcmmo.commands.mctop", () -> List.of(
-                    LocaleLoader.getString("Commands.Usage.2", "mctop",
-                            "[" + LocaleLoader.getString("Commands.Usage.Skill") + "]",
-                            "[" + LocaleLoader.getString("Commands.Usage.Page") + "]")),
+                            LocaleLoader.getString("Commands.Usage.2", "mctop",
+                                    "[" + LocaleLoader.getString("Commands.Usage.Skill") + "]",
+                                    "[" + LocaleLoader.getString("Commands.Usage.Page") + "]")),
                     McTopCommand::new),
 
             // Admin commands
@@ -255,6 +226,24 @@ public final class CommandRegistrationManager {
                             LocaleLoader.getString("Commands.Usage.0", "mcmmoreloadlocale")),
                     McmmoReloadLocaleCommand::new)
     );
+
+    private CommandRegistrationManager() {
+    }
+
+    private static @NotNull CommandSpec spec(@NotNull String name, @Nullable String permission,
+                                             @NotNull Supplier<List<String>> usageLines,
+                                             @NotNull Supplier<? extends CommandExecutor> executor) {
+        return spec(name, () -> LocaleLoader.getString("Commands.Description." + name),
+                permission, usageLines, executor);
+    }
+
+    private static @NotNull CommandSpec spec(@NotNull String name,
+                                             @NotNull Supplier<String> description, @Nullable String permission,
+                                             @NotNull Supplier<List<String>> usageLines,
+                                             @NotNull Supplier<? extends CommandExecutor> executor) {
+        return new CommandSpec(name, description, permission, usageLines, executor, List.of(),
+                false);
+    }
 
     /**
      * Command names wired by the spec table. Package-private so the registration coverage test
@@ -361,5 +350,16 @@ public final class CommandRegistrationManager {
 
         // Skill Commands
         registerSkillCommands(permissionMessage);
+    }
+
+    /**
+     * Everything needed to wire one plugin.yml command declaration to its executor. Description
+     * and usage lines are suppliers so the table can be built without touching the locale or a
+     * running plugin instance.
+     */
+    private record CommandSpec(@NotNull String name, @NotNull Supplier<String> description,
+                               @Nullable String permission, @NotNull Supplier<List<String>> usageLines,
+                               @NotNull Supplier<? extends CommandExecutor> executor, @NotNull List<String> aliases,
+                               boolean requiresParty) {
     }
 }

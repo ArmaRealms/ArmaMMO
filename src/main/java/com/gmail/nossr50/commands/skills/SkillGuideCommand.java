@@ -4,12 +4,13 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SkillGuideCommand implements CommandExecutor {
     private final String header;
@@ -25,7 +26,7 @@ public class SkillGuideCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         switch (args.length) {
             case 1:
                 if (!args[0].equals("?")) {

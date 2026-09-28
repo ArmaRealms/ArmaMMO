@@ -1,6 +1,5 @@
 package com.gmail.nossr50.runnables.skills;
 
-import static com.gmail.nossr50.skills.alchemy.AlchemyPotionBrewer.isValidBrew;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.skills.alchemy.Alchemy;
 import com.gmail.nossr50.util.CancellableRunnable;
@@ -15,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+
+import static com.gmail.nossr50.skills.alchemy.AlchemyPotionBrewer.isValidBrew;
 
 public class AlchemyBrewCheckTask extends CancellableRunnable {
     private final BrewingStand brewingStand;

@@ -6,8 +6,6 @@ import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
-
 public class EnchantmentMapper {
     private final mcMMO pluginRef;
     private final Enchantment efficiency;

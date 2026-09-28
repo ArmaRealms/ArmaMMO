@@ -1,8 +1,5 @@
 package com.gmail.nossr50.util;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import com.gmail.nossr50.datatypes.skills.ItemType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -10,6 +7,9 @@ import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.permissions.Permissible;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Pins the exact permission node strings queried by the parameterized permission checks, so the

@@ -10,14 +10,15 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Map;
-import java.util.TreeMap;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * PlaceholderAPI expansion entrypoint for mcMMO placeholders.
@@ -168,7 +169,6 @@ public class PapiExpansion extends PlaceholderExpansion {
 
         return user.getSkillXpLevel(skill);
     }
-
 
     public Integer getExpRemaining(PrimarySkillType skill, Player player) {
         final McMMOPlayer user = UserManager.getPlayer(player);

@@ -1,16 +1,17 @@
 package com.gmail.nossr50.skills.salvage;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers {@link Salvage#calculateSalvageableAmount(int, short, int)}. The yield deliberately
@@ -20,56 +21,6 @@ import org.junit.jupiter.params.provider.MethodSource;
  */
 class SalvageTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = getLogger(SalvageTest.class.getName());
-
-    @BeforeEach
-    void setUp() throws InvalidSkillException {
-        mockBaseEnvironment(logger);
-    }
-
-    @AfterEach
-    void tearDown() {
-        cleanUpStaticMocks();
-    }
-
-    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2}")
-    @MethodSource("yieldFlooredToZeroCases")
-    void salvageableAmountShouldBeZeroWhenDamageFloorsYieldBelowOneMaterial(int damage,
-            int maxDurability, int maxQuantity) {
-        // Given - a damaged item whose proportional yield is less than one whole material
-        // When - the salvageable amount is calculated
-        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
-                maxQuantity);
-
-        // Then - nothing is salvageable; a guaranteed material would allow re-crafting a
-        // brand-new item from a nearly broken one
-        assertThat(yield).isZero();
-    }
-
-    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2} -> {3}")
-    @MethodSource("proportionalYieldCases")
-    void salvageableAmountShouldScaleWithRemainingDurability(int damage, int maxDurability,
-            int maxQuantity, int expectedYield) {
-        // Given - a salvageable item with a known damage value and configured maximum quantity
-        // When - the salvageable amount is calculated
-        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
-                maxQuantity);
-
-        // Then - the yield scales down with lost durability, full yield only at full durability
-        assertThat(yield).isEqualTo(expectedYield);
-    }
-
-    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2}")
-    @MethodSource("fullyBrokenCases")
-    void salvageableAmountShouldBeZeroWhenItemHasNoDurabilityLeft(int damage, int maxDurability,
-            int maxQuantity) {
-        // Given - an item with no durability remaining
-        // When - the salvageable amount is calculated
-        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
-                maxQuantity);
-
-        // Then - nothing is salvageable, so the "too damaged" failure path still applies
-        assertThat(yield).isZero();
-    }
 
     // Rows where damage scales the proportional yield below one material, including any damage
     // at all on MaximumQuantity 1 items such as wooden shovels
@@ -103,5 +54,55 @@ class SalvageTest extends MMOTestEnvironment {
                 Arguments.of(250, 250, 2),
                 Arguments.of(300, 250, 4)
         );
+    }
+
+    @BeforeEach
+    void setUp() throws InvalidSkillException {
+        mockBaseEnvironment(logger);
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanUpStaticMocks();
+    }
+
+    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2}")
+    @MethodSource("yieldFlooredToZeroCases")
+    void salvageableAmountShouldBeZeroWhenDamageFloorsYieldBelowOneMaterial(int damage,
+                                                                            int maxDurability, int maxQuantity) {
+        // Given - a damaged item whose proportional yield is less than one whole material
+        // When - the salvageable amount is calculated
+        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
+                maxQuantity);
+
+        // Then - nothing is salvageable; a guaranteed material would allow re-crafting a
+        // brand-new item from a nearly broken one
+        assertThat(yield).isZero();
+    }
+
+    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2} -> {3}")
+    @MethodSource("proportionalYieldCases")
+    void salvageableAmountShouldScaleWithRemainingDurability(int damage, int maxDurability,
+                                                             int maxQuantity, int expectedYield) {
+        // Given - a salvageable item with a known damage value and configured maximum quantity
+        // When - the salvageable amount is calculated
+        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
+                maxQuantity);
+
+        // Then - the yield scales down with lost durability, full yield only at full durability
+        assertThat(yield).isEqualTo(expectedYield);
+    }
+
+    @ParameterizedTest(name = "damage={0}/{1}, maxQuantity={2}")
+    @MethodSource("fullyBrokenCases")
+    void salvageableAmountShouldBeZeroWhenItemHasNoDurabilityLeft(int damage, int maxDurability,
+                                                                  int maxQuantity) {
+        // Given - an item with no durability remaining
+        // When - the salvageable amount is calculated
+        final int yield = Salvage.calculateSalvageableAmount(damage, (short) maxDurability,
+                maxQuantity);
+
+        // Then - nothing is salvageable, so the "too damaged" failure path still applies
+        assertThat(yield).isZero();
     }
 }

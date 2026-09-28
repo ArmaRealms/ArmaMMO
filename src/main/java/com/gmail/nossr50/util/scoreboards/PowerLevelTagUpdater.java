@@ -31,12 +31,12 @@ final class PowerLevelTagUpdater {
      * @param pendingPlayerNames names of players whose power level tag needs a refresh
      * @param powerLevelResolver resolves a player's current power level, or null while the
      *                           player's profile has not loaded
-     * @param onlineCheck whether the named player is still online
-     * @param powerLevelWriter writes a resolved power level to the scoreboard backend
+     * @param onlineCheck        whether the named player is still online
+     * @param powerLevelWriter   writes a resolved power level to the scoreboard backend
      */
     static void applyPending(final Set<String> pendingPlayerNames,
-            final Function<String, Integer> powerLevelResolver, final Predicate<String> onlineCheck,
-            final ObjIntConsumer<String> powerLevelWriter) {
+                             final Function<String, Integer> powerLevelResolver, final Predicate<String> onlineCheck,
+                             final ObjIntConsumer<String> powerLevelWriter) {
         for (final Iterator<String> it = pendingPlayerNames.iterator(); it.hasNext(); ) {
             final String playerName = it.next();
             it.remove();

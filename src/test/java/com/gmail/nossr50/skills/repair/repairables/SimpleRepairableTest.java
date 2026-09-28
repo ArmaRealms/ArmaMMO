@@ -1,19 +1,9 @@
 package com.gmail.nossr50.skills.repair.repairables;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.ItemType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.Recipe;
@@ -26,10 +16,37 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class SimpleRepairableTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(SimpleRepairableTest.class.getName());
     private static final short DIAMOND_PICKAXE_DURABILITY = 1561;
     private static final int NOT_CONFIGURED = -1;
+
+    private static SimpleRepairable diamondPickaxeRepairable(int configuredMinimumQuantity) {
+        return new SimpleRepairable(Material.DIAMOND_PICKAXE, Material.DIAMOND, "Diamond", 0,
+                DIAMOND_PICKAXE_DURABILITY, ItemType.TOOL, MaterialType.DIAMOND, 1.0,
+                configuredMinimumQuantity);
+    }
+
+    private static ShapedRecipe diamondPickaxeRecipe() {
+        final RecipeChoice diamond = new RecipeChoice.MaterialChoice(Material.DIAMOND);
+        final RecipeChoice stick = new RecipeChoice.MaterialChoice(Material.STICK);
+        final ShapedRecipe pickaxeRecipe = mock(ShapedRecipe.class);
+        when(pickaxeRecipe.getResult()).thenReturn(new ItemStack(Material.DIAMOND_PICKAXE));
+        when(pickaxeRecipe.getChoiceMap()).thenReturn(
+                Map.of('a', diamond, 'b', diamond, 'c', diamond, 'd', stick, 'e', stick));
+        return pickaxeRecipe;
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -41,25 +58,11 @@ class SimpleRepairableTest extends MMOTestEnvironment {
         cleanUpStaticMocks();
     }
 
-    private static SimpleRepairable diamondPickaxeRepairable(int configuredMinimumQuantity) {
-        return new SimpleRepairable(Material.DIAMOND_PICKAXE, Material.DIAMOND, "Diamond", 0,
-                DIAMOND_PICKAXE_DURABILITY, ItemType.TOOL, MaterialType.DIAMOND, 1.0,
-                configuredMinimumQuantity);
-    }
-
-    /** Serves a fresh iterator per walk, the way a real server does. */
+    /**
+     * Serves a fresh iterator per walk, the way a real server does.
+     */
     private void serverRecipesAre(List<Recipe> recipes) {
         when(server.recipeIterator()).thenAnswer(invocation -> recipes.iterator());
-    }
-
-    private static ShapedRecipe diamondPickaxeRecipe() {
-        final RecipeChoice diamond = new RecipeChoice.MaterialChoice(Material.DIAMOND);
-        final RecipeChoice stick = new RecipeChoice.MaterialChoice(Material.STICK);
-        final ShapedRecipe pickaxeRecipe = mock(ShapedRecipe.class);
-        when(pickaxeRecipe.getResult()).thenReturn(new ItemStack(Material.DIAMOND_PICKAXE));
-        when(pickaxeRecipe.getChoiceMap()).thenReturn(
-                Map.of('a', diamond, 'b', diamond, 'c', diamond, 'd', stick, 'e', stick));
-        return pickaxeRecipe;
     }
 
     /**

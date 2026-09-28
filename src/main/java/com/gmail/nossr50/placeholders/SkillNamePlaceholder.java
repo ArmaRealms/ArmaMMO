@@ -2,8 +2,9 @@ package com.gmail.nossr50.placeholders;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
-import java.util.Locale;
 import org.bukkit.entity.Player;
+
+import java.util.Locale;
 
 /**
  * Localized skill name placeholders. The plain form returns the skill name used in messages

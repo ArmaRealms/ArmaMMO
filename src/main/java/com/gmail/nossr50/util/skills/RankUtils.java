@@ -11,12 +11,11 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.skills.SkillUnlockNotificationTask;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RankUtils {
     // Unlock levels per subskill indexed by rank - 1, loaded from the rank config once and

@@ -1,73 +1,20 @@
 package com.gmail.nossr50.database;
 
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BERSERK;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_BLAST_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_CHIMAERA_WING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_GIGA_DRILL_BREAKER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_GREEN_TERRA;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SERRATED_STRIKES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SKULL_SPLITTER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SUPER_BREAKER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_SUPER_SHOTGUN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_TREE_FELLER;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.COOLDOWN_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.DATA_ENTRY_COUNT;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ACROBATICS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ALCHEMY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_AXES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_CROSSBOWS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_EXCAVATION;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_FISHING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_HERBALISM;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_REPAIR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_SWORDS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_TAMING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_UNARMED;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.EXP_WOODCUTTING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.HEALTHBAR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.LEGACY_LAST_LOGIN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.OVERHAUL_LAST_LOGIN;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SCOREBOARD_TIPS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ACROBATICS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ALCHEMY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_ARCHERY;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_AXES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_CROSSBOWS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_EXCAVATION;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_FISHING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_HERBALISM;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_MACES;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_MINING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_REPAIR;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SPEARS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_SWORDS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_TAMING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_TRIDENTS;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_UNARMED;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.SKILLS_WOODCUTTING;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.USERNAME_INDEX;
-import static com.gmail.nossr50.database.FlatFileDatabaseManager.UUID_INDEX;
-import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
-
 import com.gmail.nossr50.database.flatfile.FlatFileDataBuilder;
 import com.gmail.nossr50.database.flatfile.FlatFileDataContainer;
 import com.gmail.nossr50.database.flatfile.FlatFileDataUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static com.gmail.nossr50.database.FlatFileDatabaseManager.*;
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
 
 public class FlatFileDataProcessor {
     private final @NotNull List<FlatFileDataContainer> flatFileDataContainers;
@@ -75,8 +22,8 @@ public class FlatFileDataProcessor {
     private final @NotNull Logger logger;
     private final HashSet<String> names;
     private final HashSet<UUID> uuids;
-    private int uniqueProcessingID; //TODO: Not being used, should we use it?
     boolean corruptDataFound;
+    private int uniqueProcessingID; //TODO: Not being used, should we use it?
 
     public FlatFileDataProcessor(@NotNull Logger logger) {
         this.logger = logger;
@@ -85,6 +32,35 @@ public class FlatFileDataProcessor {
         names = new HashSet<>();
         uuids = new HashSet<>();
         uniqueProcessingID = 0;
+    }
+
+    public static @NotNull ExpectedType getExpectedValueType(int dataIndex)
+            throws IndexOutOfBoundsException {
+        return switch (dataIndex) {
+            case USERNAME_INDEX -> ExpectedType.STRING;
+            //Assumption: Used to be used for something, no longer used
+            case 2, 3, 23, 33, HEALTHBAR, LEGACY_LAST_LOGIN -> ExpectedType.IGNORED;
+            case SKILLS_MINING, SKILLS_REPAIR, SKILLS_UNARMED, SKILLS_HERBALISM, SKILLS_EXCAVATION,
+                 SKILLS_ARCHERY,
+                 SKILLS_SWORDS, SKILLS_AXES, SKILLS_WOODCUTTING, SKILLS_ACROBATICS, SKILLS_TAMING,
+                 SKILLS_FISHING,
+                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS,
+                 COOLDOWN_BERSERK,
+                 COOLDOWN_GIGA_DRILL_BREAKER, COOLDOWN_TREE_FELLER, COOLDOWN_GREEN_TERRA,
+                 COOLDOWN_SERRATED_STRIKES,
+                 COOLDOWN_SKULL_SPLITTER, COOLDOWN_SUPER_BREAKER, COOLDOWN_BLAST_MINING,
+                 SCOREBOARD_TIPS,
+                 COOLDOWN_CHIMAERA_WING, COOLDOWN_SUPER_SHOTGUN, COOLDOWN_TRIDENTS,
+                 COOLDOWN_ARCHERY, COOLDOWN_MACES, COOLDOWN_SPEARS -> ExpectedType.INTEGER;
+            case EXP_MINING, EXP_WOODCUTTING, EXP_REPAIR, EXP_UNARMED, EXP_HERBALISM,
+                 EXP_EXCAVATION, EXP_ARCHERY,
+                 EXP_SWORDS, EXP_AXES, EXP_ACROBATICS, EXP_TAMING, EXP_FISHING, EXP_ALCHEMY,
+                 EXP_CROSSBOWS,
+                 EXP_TRIDENTS, EXP_MACES, EXP_SPEARS -> ExpectedType.FLOAT;
+            case UUID_INDEX -> ExpectedType.UUID;
+            case OVERHAUL_LAST_LOGIN -> ExpectedType.LONG;
+            default -> throw new IndexOutOfBoundsException();
+        };
     }
 
     public void processData(@NotNull String lineData) {
@@ -225,7 +201,7 @@ public class FlatFileDataProcessor {
     }
 
     public @NotNull String[] isDataSchemaUpToDate(@NotNull String[] splitDataLine,
-            @NotNull FlatFileDataBuilder builder, boolean[] badDataValues) {
+                                                  @NotNull FlatFileDataBuilder builder, boolean[] badDataValues) {
         assert splitDataLine.length <= DATA_ENTRY_COUNT; //should NEVER be higher
 
         if (splitDataLine.length < DATA_ENTRY_COUNT) {
@@ -243,7 +219,6 @@ public class FlatFileDataProcessor {
         }
         return splitDataLine;
     }
-
 
     public boolean shouldNotBeEmpty(@Nullable String data, int index) {
         if (getExpectedValueType(index) == ExpectedType.IGNORED) {
@@ -314,36 +289,6 @@ public class FlatFileDataProcessor {
         if (flatFileDataContainer.getDataFlags() != null) {
             flatFileDataFlags.addAll(flatFileDataContainer.getDataFlags());
         }
-    }
-
-    public static @NotNull ExpectedType getExpectedValueType(int dataIndex)
-            throws IndexOutOfBoundsException {
-        return switch (dataIndex) {
-            case USERNAME_INDEX ->
-                    ExpectedType.STRING;
-            //Assumption: Used to be used for something, no longer used
-            case 2, 3, 23, 33, HEALTHBAR, LEGACY_LAST_LOGIN -> ExpectedType.IGNORED;
-            case SKILLS_MINING, SKILLS_REPAIR, SKILLS_UNARMED, SKILLS_HERBALISM, SKILLS_EXCAVATION,
-                 SKILLS_ARCHERY,
-                 SKILLS_SWORDS, SKILLS_AXES, SKILLS_WOODCUTTING, SKILLS_ACROBATICS, SKILLS_TAMING,
-                 SKILLS_FISHING,
-                 SKILLS_ALCHEMY, SKILLS_CROSSBOWS, SKILLS_TRIDENTS, SKILLS_MACES, SKILLS_SPEARS,
-                 COOLDOWN_BERSERK,
-                 COOLDOWN_GIGA_DRILL_BREAKER, COOLDOWN_TREE_FELLER, COOLDOWN_GREEN_TERRA,
-                 COOLDOWN_SERRATED_STRIKES,
-                 COOLDOWN_SKULL_SPLITTER, COOLDOWN_SUPER_BREAKER, COOLDOWN_BLAST_MINING,
-                 SCOREBOARD_TIPS,
-                 COOLDOWN_CHIMAERA_WING, COOLDOWN_SUPER_SHOTGUN, COOLDOWN_TRIDENTS,
-                 COOLDOWN_ARCHERY, COOLDOWN_MACES, COOLDOWN_SPEARS -> ExpectedType.INTEGER;
-            case EXP_MINING, EXP_WOODCUTTING, EXP_REPAIR, EXP_UNARMED, EXP_HERBALISM,
-                 EXP_EXCAVATION, EXP_ARCHERY,
-                 EXP_SWORDS, EXP_AXES, EXP_ACROBATICS, EXP_TAMING, EXP_FISHING, EXP_ALCHEMY,
-                 EXP_CROSSBOWS,
-                 EXP_TRIDENTS, EXP_MACES, EXP_SPEARS -> ExpectedType.FLOAT;
-            case UUID_INDEX -> ExpectedType.UUID;
-            case OVERHAUL_LAST_LOGIN -> ExpectedType.LONG;
-            default -> throw new IndexOutOfBoundsException();
-        };
     }
 
     public @NotNull List<FlatFileDataContainer> getFlatFileDataContainers() {

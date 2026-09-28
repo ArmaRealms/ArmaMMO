@@ -23,45 +23,6 @@ public final class XPBoostAmount {
     public static final XPBoostAmount ONE_AND_ONE_QUARTER = new XPBoostAmount(1.25, "mcmmo.perks.xp.25percentboost.%s");
     public static final XPBoostAmount ONE_AND_ONE_TENTH = new XPBoostAmount(1.1, "mcmmo.perks.xp.10percentboost.%s");
     public static final XPBoostAmount CUSTOM = new XPBoostAmount(ExperienceConfig.getInstance().getCustomXpPerkBoost(), "mcmmo.perks.xp.customboost.%s");
-
-
-    private String FIELD_NAME;
-    private final double multiplier;
-    private final String permissionNode;
-
-    public XPBoostAmount(double multiplier, String permissionNode) {
-        this.multiplier = multiplier;
-        this.permissionNode = permissionNode;
-    }
-
-    public double getMultiplier() {
-        return multiplier;
-    }
-
-    public String getPermissionNode() {
-        return permissionNode;
-    }
-
-
-
-    public boolean hasBoostPermission(Permissible permissible, PrimarySkillType skill) {
-        return permissible.hasPermission(String.format(permissionNode, "all")) ||
-                permissible.hasPermission(String.format(permissionNode, "*")) ||
-                permissible.hasPermission(String.format(permissionNode, skill.toString().toLowerCase(Locale.ENGLISH)));
-    }
-
-
-    // Make this class work like an enum
-
-    @Override
-    public String toString() {
-        return FIELD_NAME;
-    }
-
-    public String name() {
-        return FIELD_NAME;
-    }
-
     public static final Map<String, XPBoostAmount> VALUES = new HashMap<>();
     public static final List<XPBoostAmount> VALUES_SORTED_BY_MULTIPLIER = new ArrayList<>(); // Faster to just sort once since mcMMO doesn't have any reloading anyway
 
@@ -81,6 +42,17 @@ public final class XPBoostAmount {
         VALUES_SORTED_BY_MULTIPLIER.addAll(VALUES.values().stream().sorted((a, b) -> Double.compare(b.getMultiplier(), a.getMultiplier())).toList());
     }
 
+    private final double multiplier;
+    private final String permissionNode;
+    private String FIELD_NAME;
+
+    public XPBoostAmount(double multiplier, String permissionNode) {
+        this.multiplier = multiplier;
+        this.permissionNode = permissionNode;
+    }
+
+    // Make this class work like an enum
+
     public static XPBoostAmount valueOf(String name) {
         XPBoostAmount value = VALUES.get(name);
         if (value == null) {
@@ -95,5 +67,28 @@ public final class XPBoostAmount {
 
     public static List<XPBoostAmount> getByHighestMultiplier() {
         return VALUES_SORTED_BY_MULTIPLIER;
+    }
+
+    public double getMultiplier() {
+        return multiplier;
+    }
+
+    public String getPermissionNode() {
+        return permissionNode;
+    }
+
+    public boolean hasBoostPermission(Permissible permissible, PrimarySkillType skill) {
+        return permissible.hasPermission(String.format(permissionNode, "all")) ||
+                permissible.hasPermission(String.format(permissionNode, "*")) ||
+                permissible.hasPermission(String.format(permissionNode, skill.toString().toLowerCase(Locale.ENGLISH)));
+    }
+
+    @Override
+    public String toString() {
+        return FIELD_NAME;
+    }
+
+    public String name() {
+        return FIELD_NAME;
     }
 }

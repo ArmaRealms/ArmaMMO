@@ -1,31 +1,22 @@
 package com.gmail.nossr50.util.skills;
 
 import com.gmail.nossr50.config.experience.ExperienceConfig;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.events.skills.SkillActivationPerkEvent;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.List;
-import java.util.function.BiPredicate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 
+import java.util.List;
+import java.util.function.BiPredicate;
+
 public final class PerksUtils {
     private static final int LUCKY_SKILL_ACTIVATION_CHANCE = 75;
     private static final int NORMAL_SKILL_ACTIVATION_CHANCE = 100;
-
-    /**
-     * One fixed-multiplier XP perk tier; tiers are checked strongest-first and the first one
-     * the player holds wins.
-     */
-    private record XpPerkTier(double modifier,
-            BiPredicate<Permissible, PrimarySkillType> permissionCheck) {
-    }
-
     private static final List<XpPerkTier> XP_PERK_TIERS = List.of(
             new XpPerkTier(4, Permissions::quadrupleXp),
             new XpPerkTier(3, Permissions::tripleXp),
@@ -145,5 +136,13 @@ public final class PerksUtils {
         }
 
         return NORMAL_SKILL_ACTIVATION_CHANCE;
+    }
+
+    /**
+     * One fixed-multiplier XP perk tier; tiers are checked strongest-first and the first one
+     * the player holds wins.
+     */
+    private record XpPerkTier(double modifier,
+                              BiPredicate<Permissible, PrimarySkillType> permissionCheck) {
     }
 }

@@ -1,8 +1,5 @@
 package com.gmail.nossr50.listeners;
 
-import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
-import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_EXCAVATION_TREASURE_ROLL;
-
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.config.WorldBlacklist;
@@ -26,15 +23,12 @@ import com.gmail.nossr50.util.BlockUtils;
 import com.gmail.nossr50.util.ContainerMetadataUtils;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.ItemUtils;
-import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -66,9 +60,11 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_EXCAVATION_TREASURE_ROLL;
 
 public class BlockListener implements Listener {
     private final mcMMO plugin;
@@ -596,7 +592,7 @@ public class BlockListener implements Listener {
      * trigger checks before preparation deterministic.
      */
     private void processAbilityPreparation(BlockDamageEvent event, Player player,
-            McMMOPlayer mmoPlayer, Block block) {
+                                           McMMOPlayer mmoPlayer, Block block) {
         /*
          * ABILITY PREPARATION CHECKS
          *

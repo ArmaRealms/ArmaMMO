@@ -1,5 +1,30 @@
 package com.gmail.nossr50.skills.spears;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.TestRegistryBootstrap;
+import com.gmail.nossr50.datatypes.interactions.NotificationType;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import com.gmail.nossr50.util.Permissions;
+import com.gmail.nossr50.util.player.NotificationManager;
+import com.gmail.nossr50.util.random.ProbabilityUtil;
+import com.gmail.nossr50.util.skills.RankUtils;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockedStatic;
+
+import java.lang.reflect.Field;
+import java.util.logging.Logger;
+
 import static java.util.logging.Logger.getLogger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -12,30 +37,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.TestRegistryBootstrap;
-import com.gmail.nossr50.datatypes.interactions.NotificationType;
-import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import com.gmail.nossr50.util.Permissions;
-import com.gmail.nossr50.util.player.NotificationManager;
-import com.gmail.nossr50.util.random.ProbabilityUtil;
-import com.gmail.nossr50.util.skills.RankUtils;
-import java.lang.reflect.Field;
-import java.util.logging.Logger;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.MockedStatic;
 
 /**
  * Covers the Spears manager: the Momentum swiftness buff (lazy effect type resolution,
@@ -86,6 +87,30 @@ class SpearsManagerTest extends MMOTestEnvironment {
         return TestRegistryBootstrap.registryFor(PotionEffectType.class);
     }
 
+    /**
+     * Momentum grants two seconds of swiftness per rank (40 ticks), at a fixed amplifier.
+     */
+    @ParameterizedTest
+    @CsvSource({
+            "1, 40",
+            "3, 120",
+            "5, 200",
+    })
+    void momentumDurationShouldScaleWithRank(int rank, int expectedTicks) {
+        assertThat(SpearsManager.getMomentumTickDuration(rank)).isEqualTo(expectedTicks);
+    }
+
+    @Test
+    void spearMasteryBonusShouldScaleWithRank() {
+        // Given - Spear Mastery rank 4 with a 1.5 damage-per-rank multiplier
+        when(advancedConfig.getSpearMasteryRankDamageMultiplier()).thenReturn(1.5);
+        when(RankUtils.getRank(player, SubSkillType.SPEARS_SPEAR_MASTERY)).thenReturn(4);
+
+        // When - the bonus damage is computed
+        // Then - it is the multiplier times the rank
+        assertThat(spearsManager.getSpearMasteryBonusDamage()).isCloseTo(6.0, within(1e-9));
+    }
+
     @Nested
     class Momentum {
         @Test
@@ -104,7 +129,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void speedEffectTypeShouldResolveLazilyFromTheRegistry() {
             try (final MockedStatic<ProbabilityUtil> ignored =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the effect type has not been resolved yet
                 try {
                     setResolvedSwiftnessType(null);
@@ -125,7 +150,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void successfulMomentumShouldApplyTheSwiftnessBuff() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a full-strength hit that wins the Momentum roll
                 mockedProbability.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
                                 PrimarySkillType.SPEARS, mmoPlayer,
@@ -152,7 +177,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void failedRollShouldApplyNothing() {
             try (final MockedStatic<ProbabilityUtil> ignored =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a Momentum roll that fails (unstubbed RNG rolls false)
                 // When - momentum processing runs
                 spearsManager.potentiallyApplyMomentum(1.0);
@@ -170,9 +195,9 @@ class SpearsManagerTest extends MMOTestEnvironment {
                 "1.5, 20.0",
         })
         void attackStrengthShouldScaleTheOddsAndClampAtFull(double attackStrength,
-                double expectedOdds) {
+                                                            double expectedOdds) {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a hit at the given committed attack strength
                 // When - momentum processing runs
                 spearsManager.potentiallyApplyMomentum(attackStrength);
@@ -187,7 +212,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void strongerExistingSwiftnessShouldNotBeDowngraded() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the player already has a stronger swiftness buff (amplifier above
                 // Momentum's fixed strength)
                 final PotionEffect strongerBuff = mock(PotionEffect.class);
@@ -199,7 +224,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
 
                 // Then - momentum never even rolls
                 mockedProbability.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
+                                any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
                         never());
                 verify(player, never()).addPotionEffect(any());
             }
@@ -208,7 +233,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void longerExistingSwiftnessShouldNotBeCutShort() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - an equal-strength buff that outlasts what Momentum would grant
                 final PotionEffect longerBuff = mock(PotionEffect.class);
                 when(longerBuff.getAmplifier())
@@ -222,7 +247,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
 
                 // Then - momentum never rolls
                 mockedProbability.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
+                                any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
                         never());
             }
         }
@@ -230,7 +255,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void weakerExistingSwiftnessShouldBeReplaceable() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a weaker, shorter swiftness buff than Momentum grants
                 final PotionEffect weakerBuff = mock(PotionEffect.class);
                 when(weakerBuff.getAmplifier()).thenReturn(1);
@@ -249,7 +274,7 @@ class SpearsManagerTest extends MMOTestEnvironment {
         @Test
         void missingPermissionShouldBlockMomentum() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a player without the Momentum permission
                 when(Permissions.canUseSubSkill(player, SubSkillType.SPEARS_MOMENTUM))
                         .thenReturn(false);
@@ -259,33 +284,9 @@ class SpearsManagerTest extends MMOTestEnvironment {
 
                 // Then - momentum never rolls
                 mockedProbability.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
+                                any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
                         never());
             }
         }
-    }
-
-    /**
-     * Momentum grants two seconds of swiftness per rank (40 ticks), at a fixed amplifier.
-     */
-    @ParameterizedTest
-    @CsvSource({
-            "1, 40",
-            "3, 120",
-            "5, 200",
-    })
-    void momentumDurationShouldScaleWithRank(int rank, int expectedTicks) {
-        assertThat(SpearsManager.getMomentumTickDuration(rank)).isEqualTo(expectedTicks);
-    }
-
-    @Test
-    void spearMasteryBonusShouldScaleWithRank() {
-        // Given - Spear Mastery rank 4 with a 1.5 damage-per-rank multiplier
-        when(advancedConfig.getSpearMasteryRankDamageMultiplier()).thenReturn(1.5);
-        when(RankUtils.getRank(player, SubSkillType.SPEARS_SPEAR_MASTERY)).thenReturn(4);
-
-        // When - the bonus damage is computed
-        // Then - it is the multiplier times the rank
-        assertThat(spearsManager.getSpearMasteryBonusDamage()).isCloseTo(6.0, within(1e-9));
     }
 }

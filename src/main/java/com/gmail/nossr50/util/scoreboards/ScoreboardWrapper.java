@@ -38,62 +38,28 @@ public class ScoreboardWrapper {
     public final String playerName;
     public final Player player;
     private final PlayerBoard playerBoard;
-    private boolean tippedKeep = false;
-    private boolean tippedClear = false;
-    private Scoreboard oldBoard = null;
-
-    // Internal usage variables (should exist)
-    private SidebarType sidebarType;
-
     // Parameter variables (May be null / invalid)
     public String targetPlayer = null;
     public PrimarySkillType targetSkill = null;
-    private PlayerProfile targetProfile = null;
     public int leaderboardPage = -1;
-
+    private boolean tippedKeep = false;
+    private boolean tippedClear = false;
+    private Scoreboard oldBoard = null;
+    // Internal usage variables (should exist)
+    private SidebarType sidebarType;
+    private PlayerProfile targetProfile = null;
     // Data supplied by the manager for RANK/TOP boards, consumed by render()
     private Map<PrimarySkillType, Integer> rankData = null;
     private List<PlayerStat> leaderboardData = null;
+    private WrappedTask updateTask = null;
+    private WrappedTask revertTask = null;
+    private WrappedTask cooldownTask = null;
 
     public ScoreboardWrapper(Player player, PlayerBoard playerBoard) {
         this.player = player;
         this.playerName = player.getName();
         this.sidebarType = SidebarType.NONE;
         this.playerBoard = playerBoard;
-    }
-
-    private WrappedTask updateTask = null;
-
-    private class ScoreboardQuickUpdate implements Runnable {
-        @Override
-        public void run() {
-            render();
-            updateTask = null;
-        }
-    }
-
-    private WrappedTask revertTask = null;
-
-    private class ScoreboardChangeTask implements Runnable {
-        @Override
-        public void run() {
-            tryRevertBoard();
-            revertTask = null;
-        }
-    }
-
-    private WrappedTask cooldownTask = null;
-
-    private class ScoreboardCooldownTask implements Runnable {
-        @Override
-        public void run() {
-            // Stop updating if it's no longer something displaying cooldowns
-            if (isBoardShown() && (isSkillScoreboard() || isCooldownScoreboard())) {
-                doSidebarUpdateSoon();
-            } else {
-                stopCooldownUpdating();
-            }
-        }
     }
 
     public void doSidebarUpdateSoon() {
@@ -293,8 +259,6 @@ public class ScoreboardWrapper {
         }
     }
 
-    // Board Type Changing 'API' methods
-
     public void setTypeNone() {
         this.sidebarType = SidebarType.NONE;
 
@@ -327,6 +291,8 @@ public class ScoreboardWrapper {
 
         loadObjective(ScoreboardManager.getHeaderStats());
     }
+
+    // Board Type Changing 'API' methods
 
     public void setTypeInspectStats(PlayerProfile profile) {
         this.sidebarType = SidebarType.STATS_BOARD;
@@ -644,5 +610,33 @@ public class ScoreboardWrapper {
     public void acceptLeaderboardData(@NotNull List<PlayerStat> leaderboardData) {
         this.leaderboardData = leaderboardData;
         render();
+    }
+
+    private class ScoreboardQuickUpdate implements Runnable {
+        @Override
+        public void run() {
+            render();
+            updateTask = null;
+        }
+    }
+
+    private class ScoreboardChangeTask implements Runnable {
+        @Override
+        public void run() {
+            tryRevertBoard();
+            revertTask = null;
+        }
+    }
+
+    private class ScoreboardCooldownTask implements Runnable {
+        @Override
+        public void run() {
+            // Stop updating if it's no longer something displaying cooldowns
+            if (isBoardShown() && (isSkillScoreboard() || isCooldownScoreboard())) {
+                doSidebarUpdateSoon();
+            } else {
+                stopCooldownUpdating();
+            }
+        }
     }
 }

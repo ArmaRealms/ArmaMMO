@@ -33,11 +33,6 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -60,15 +55,21 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class FishingManager extends SkillManager {
+    private final int masterAnglerMinWaitLowerBound;
+    private final int masterAnglerMaxWaitLowerBound;
     protected long lastFishCaughtTimestamp = 0L;
     protected long lastWarned = 0L;
     private BoundingBox lastFishingBoundingBox;
     private boolean sameTarget;
     private boolean fishingTooOften;
     private int fishCaughtCounter = 1;
-    private final int masterAnglerMinWaitLowerBound;
-    private final int masterAnglerMaxWaitLowerBound;
 
     public FishingManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.FISHING);
@@ -79,6 +80,13 @@ public class FishingManager extends SkillManager {
         this.masterAnglerMinWaitLowerBound = Math.max(bonusCapMin, 0);
         this.masterAnglerMaxWaitLowerBound = Math.max(bonusCapMax,
                 masterAnglerMinWaitLowerBound + 40);
+    }
+
+    public static BoundingBox makeBoundingBox(Vector centerOfCastVector) {
+        int exploitingRange = ExperienceConfig.getInstance().getFishingExploitingOptionMoveRange();
+        return BoundingBox.of(centerOfCastVector,
+                (double) exploitingRange / 2, 1,
+                (double) exploitingRange / 2);
     }
 
     public boolean canShake(Entity target) {
@@ -151,10 +159,10 @@ public class FishingManager extends SkillManager {
      * a future version.
      *
      * @param centerOfCastVector unused
+     * @return true if the player is exploiting fishing, false otherwise
      * @deprecated since 2.2.050, the parameter is no longer used and will be removed in
      * a future version. The method now relies on internal state to determine if the player
      * is exploiting fishing.
-     * @return true if the player is exploiting fishing, false otherwise
      */
     @Deprecated(forRemoval = true, since = "2.2.050")
     public boolean isExploitingFishing(Vector centerOfCastVector) {
@@ -171,13 +179,6 @@ public class FishingManager extends SkillManager {
     public boolean isExploitingFishing() {
         return this.sameTarget && fishCaughtCounter >= ExperienceConfig.getInstance()
                 .getFishingExploitingOptionOverFishLimit();
-    }
-
-    public static BoundingBox makeBoundingBox(Vector centerOfCastVector) {
-        int exploitingRange = ExperienceConfig.getInstance().getFishingExploitingOptionMoveRange();
-        return BoundingBox.of(centerOfCastVector,
-                (double) exploitingRange / 2, 1,
-                (double) exploitingRange / 2);
     }
 
     public void setFishingTarget() {
@@ -368,7 +369,7 @@ public class FishingManager extends SkillManager {
     }
 
     public int getMasterAnglerTickMaxWaitReduction(int masterAnglerRank, boolean boatBonus,
-            int emulatedLureBonus) {
+                                                   int emulatedLureBonus) {
         int totalBonus =
                 mcMMO.p.getAdvancedConfig().getFishingReductionMaxWaitTicks() * masterAnglerRank;
 
@@ -411,7 +412,7 @@ public class FishingManager extends SkillManager {
      * Process the results from a successful fishing trip.
      *
      * @param fishingCatch The {@link Item} initially caught
-     * @param fishingHand The hand associated with the fish event, when available
+     * @param fishingHand  The hand associated with the fish event, when available
      */
     public void processFishing(@NotNull Item fishingCatch, @Nullable EquipmentSlot fishingHand) {
         int fishXp = ExperienceConfig.getInstance()

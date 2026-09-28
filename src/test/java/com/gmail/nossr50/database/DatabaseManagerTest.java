@@ -1,16 +1,19 @@
 package com.gmail.nossr50.database;
 
+import com.gmail.nossr50.datatypes.database.PlayerNameAndUUID;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
-import com.gmail.nossr50.datatypes.database.PlayerNameAndUUID;
-import java.util.List;
-import org.junit.jupiter.api.Test;
-
-/** What a database manager from another plugin gets for the methods it does not override. */
+/**
+ * What a database manager from another plugin gets for the methods it does not override.
+ */
 class DatabaseManagerTest {
     @Test
     void storedUsersWithUUIDsShouldDefaultToTheStoredNamesWithoutUuids() {

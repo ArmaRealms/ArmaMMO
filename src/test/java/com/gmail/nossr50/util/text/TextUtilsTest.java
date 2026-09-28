@@ -1,14 +1,15 @@
 package com.gmail.nossr50.util.text;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This Unit Test checks if Adventure was set up correctly and works as expected. Normally, we can
@@ -104,7 +105,9 @@ class TextUtilsTest {
             assertThat(groups[2][1]).isNull();
         }
 
-        /** Guard: the group size of three used by the skill hover display keeps working. */
+        /**
+         * Guard: the group size of three used by the skill hover display keeps working.
+         */
         @Test
         void shouldSplitIntoGroupsOfThree() {
             // Given - four components split into groups of three

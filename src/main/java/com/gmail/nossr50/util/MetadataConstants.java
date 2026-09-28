@@ -1,15 +1,20 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Stores our constants related to metadata
  */
 public class MetadataConstants {
+    public static final @NotNull String METADATA_KEY_REPLANT = "mcMMO: Recently Replanted";
+    public static final @NotNull String METADATA_KEY_SPAWNED_ARROW = "mcMMO: Spawned Arrow";
+    public static final @NotNull String METADATA_KEY_BOUNCE_COUNT = "mcMMO: Arrow Bounce Count";
+    public static final @NotNull String METADATA_KEY_EXPLOSION_FROM_RUPTURE = "mcMMO: Rupture Explosion";
     /**
      * Bukkit-metadata keys swept from a mob during entity cleanup. Mob spawn-tracking flags are
      * not listed here because {@link MobMetadataUtils#removeMobFlags} owns them in whichever
@@ -19,7 +24,17 @@ public class MetadataConstants {
     public static final @NotNull Set<String> MOB_METADATA_KEYS = Set.of(
             MetadataConstants.METADATA_KEY_EXPLOSION_FROM_RUPTURE
     );
-
+    public static final @NotNull String METADATA_KEY_CUSTOM_DAMAGE = "mcMMO: Custom Damage";
+    public static final @NotNull String METADATA_KEY_TRAVELING_BLOCK = "mcMMO: Traveling Block";
+    public static final @NotNull String METADATA_KEY_TRACKED_TNT = "mcMMO: Tracked TNT";
+    /**
+     * Single key storing a {@link com.gmail.nossr50.datatypes.meta.HealthbarSnapshot} before mcMMO applies a healthbar display.
+     */
+    public static final @NotNull String METADATA_KEY_HEALTHBAR_SNAPSHOT = "mcmmo_healthbar_snapshot";
+    public static final @NotNull String METADATA_KEY_INF_ARROW = "mcMMO: Infinite Arrow";
+    public static final @NotNull String METADATA_KEY_TRACKED_ARROW = "mcMMO: Tracked Arrow";
+    public static final @NotNull String METADATA_KEY_BOW_FORCE = "mcMMO: Bow Force";
+    public static final @NotNull String METADATA_KEY_ARROW_DISTANCE = "mcMMO: Arrow Distance";
     public static final @NotNull List<String> ARROW_METADATA_KEYS = List.of(
             MetadataConstants.METADATA_KEY_INF_ARROW,
             MetadataConstants.METADATA_KEY_BOW_FORCE,
@@ -27,21 +42,6 @@ public class MetadataConstants {
             MetadataConstants.METADATA_KEY_SPAWNED_ARROW,
             MetadataConstants.METADATA_KEY_BOUNCE_COUNT
     );
-
-    public static final @NotNull String METADATA_KEY_REPLANT = "mcMMO: Recently Replanted";
-    public static final @NotNull String METADATA_KEY_SPAWNED_ARROW = "mcMMO: Spawned Arrow";
-
-    public static final @NotNull String METADATA_KEY_BOUNCE_COUNT = "mcMMO: Arrow Bounce Count";
-    public static final @NotNull String METADATA_KEY_EXPLOSION_FROM_RUPTURE = "mcMMO: Rupture Explosion";
-    public static final @NotNull String METADATA_KEY_CUSTOM_DAMAGE = "mcMMO: Custom Damage";
-    public static final @NotNull String METADATA_KEY_TRAVELING_BLOCK = "mcMMO: Traveling Block";
-    public static final @NotNull String METADATA_KEY_TRACKED_TNT = "mcMMO: Tracked TNT";
-    /** Single key storing a {@link com.gmail.nossr50.datatypes.meta.HealthbarSnapshot} before mcMMO applies a healthbar display. */
-    public static final @NotNull String METADATA_KEY_HEALTHBAR_SNAPSHOT = "mcmmo_healthbar_snapshot";
-    public static final @NotNull String METADATA_KEY_INF_ARROW = "mcMMO: Infinite Arrow";
-    public static final @NotNull String METADATA_KEY_TRACKED_ARROW = "mcMMO: Tracked Arrow";
-    public static final @NotNull String METADATA_KEY_BOW_FORCE = "mcMMO: Bow Force";
-    public static final @NotNull String METADATA_KEY_ARROW_DISTANCE = "mcMMO: Arrow Distance";
     public static final @NotNull String METADATA_KEY_BONUS_DROPS = "mcMMO: Double Drops";
     /**
      * Set on a block in BlockBreakEvent (only when the block passed the natural-block check) to

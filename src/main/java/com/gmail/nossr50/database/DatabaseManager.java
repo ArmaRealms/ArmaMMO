@@ -8,15 +8,12 @@ import com.gmail.nossr50.datatypes.database.PlayerStat;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -121,7 +118,7 @@ public interface DatabaseManager {
      * UUID, and return an unloaded profile for one without.
      *
      * @param playerName The name of the player to be added to the database
-     * @param uuid The uuid of the player to be added to the database
+     * @param uuid       The uuid of the player to be added to the database
      * @return the new player's profile, unloaded when they were not added
      */
     @NotNull PlayerProfile newUser(String playerName, UUID uuid);

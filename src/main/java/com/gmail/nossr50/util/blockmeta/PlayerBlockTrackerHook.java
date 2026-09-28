@@ -6,7 +6,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.jetbrains.annotations.NotNull;
 
-
 public class PlayerBlockTrackerHook implements ChunkManager {
 
     /**

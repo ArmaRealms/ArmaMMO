@@ -8,8 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
-import java.util.Arrays;
-
 public class ChunkListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = org.bukkit.event.EventPriority.MONITOR)

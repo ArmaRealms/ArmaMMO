@@ -1,13 +1,12 @@
 package com.gmail.nossr50.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.bukkit.Server;
+import org.bukkit.inventory.Recipe;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,13 +15,15 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.bukkit.Server;
-import org.bukkit.inventory.Recipe;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Spigot 26.3 throws AbstractMethodError out of its recipe iterator for every data-driven brewing
@@ -50,7 +51,9 @@ class RecipeUtilsTest {
         return drained;
     }
 
-    /** A {@code null} in the server list is a recipe the server fails to convert. */
+    /**
+     * A {@code null} in the server list is a recipe the server fails to convert.
+     */
     static Stream<Arguments> recipeLists() {
         return Stream.of(
                 Arguments.of("no recipes at all", List.of(), List.of()),
@@ -69,7 +72,7 @@ class RecipeUtilsTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("recipeLists")
     void safeRecipeIteratorShouldSkipRecipesTheServerCannotConvert(String scenario,
-            List<Recipe> serverRecipes, List<Recipe> expectedRecipes) {
+                                                                   List<Recipe> serverRecipes, List<Recipe> expectedRecipes) {
         // Given - a server whose recipe iterator throws for some of its recipes
         final Server server = serverWithRecipes(serverRecipes);
 

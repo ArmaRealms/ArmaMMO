@@ -1,9 +1,10 @@
 package com.gmail.nossr50.datatypes.experience;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.DelayQueue;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Thread-safe container for a player's Diminished Returns tracking data.
@@ -67,7 +68,7 @@ public final class DiminishedReturnsState {
      * Records an XP gain for DR tracking and advances the latest-expiry ceiling accordingly.
      *
      * @param skill the skill that gained XP
-     * @param xp   the amount of XP gained
+     * @param xp    the amount of XP gained
      */
     public void registerXpGain(@NotNull final PrimarySkillType skill, final float xp) {
         final SkillXpGain gain = new SkillXpGain(skill, xp);

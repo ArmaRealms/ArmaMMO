@@ -15,8 +15,6 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.McMMOMessageType;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.time.LocalDate;
-import java.util.function.Predicate;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
@@ -34,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Predicate;
 
 public class NotificationManager {
 
@@ -50,7 +49,7 @@ public class NotificationManager {
      * @param key              the locale key for the notifications defined message
      */
     public static void sendPlayerInformation(Player player, NotificationType notificationType,
-            String key) {
+                                             String key) {
         if (!doesPlayerUseNotifications(player)) {
             return;
         }
@@ -64,7 +63,6 @@ public class NotificationManager {
         sendNotification(player, customEvent);
     }
 
-
     public static boolean doesPlayerUseNotifications(Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         return mmoPlayer != null && mmoPlayer.useChatNotifications();
@@ -76,15 +74,15 @@ public class NotificationManager {
      *
      * @param targetPlayer     the recipient player for this message
      * @param notificationType type of notification
-     * @param key Locale Key for the string to use with this event
-     * @param values values to be injected into the locale string
+     * @param key              Locale Key for the string to use with this event
+     * @param values           values to be injected into the locale string
      * @deprecated Use {@link #sendPlayerInformation(Player, NotificationType, String,
      * String...)} directly; despite the name this never messaged nearby players.
      */
     @Deprecated(forRemoval = true, since = "2.3.000")
     public static void sendNearbyPlayersInformation(Player targetPlayer,
-            NotificationType notificationType, String key,
-            String... values) {
+                                                    NotificationType notificationType, String key,
+                                                    String... values) {
         sendPlayerInformation(targetPlayer, notificationType, key, values);
     }
 
@@ -98,7 +96,7 @@ public class NotificationManager {
     }
 
     public static void sendPlayerInformationChatOnlyPrefixed(Player player, String key,
-            String... values) {
+                                                             String... values) {
         if (!doesPlayerUseNotifications(player)) {
             return;
         }
@@ -110,8 +108,8 @@ public class NotificationManager {
     }
 
     public static void sendPlayerInformation(Player player, NotificationType notificationType,
-            String key,
-            String... values) {
+                                             String key,
+                                             String... values) {
         if (!doesPlayerUseNotifications(player)) {
             return;
         }
@@ -159,9 +157,9 @@ public class NotificationManager {
     }
 
     private static McMMOPlayerNotificationEvent checkNotificationEvent(Player player,
-            NotificationType notificationType,
-            McMMOMessageType destination,
-            Component message) {
+                                                                       NotificationType notificationType,
+                                                                       McMMOMessageType destination,
+                                                                       Component message) {
         //Init event
         final McMMOPlayerNotificationEvent customEvent = new McMMOPlayerNotificationEvent(player,
                 notificationType, message, destination,
@@ -208,7 +206,7 @@ public class NotificationManager {
     }
 
     public static void sendPlayerUnlockNotification(McMMOPlayer mmoPlayer,
-            SubSkillType subSkillType) {
+                                                    SubSkillType subSkillType) {
         sendPlayerUnlockNotification(mmoPlayer, subSkillType, true);
     }
 
@@ -217,12 +215,12 @@ public class NotificationManager {
      * unlock notifications only request the sound for the first notification of the batch,
      * so mass level changes do not play a long stream of unlock sounds.
      *
-     * @param mmoPlayer target player
+     * @param mmoPlayer    target player
      * @param subSkillType the sub-skill that unlocked
-     * @param playSound whether to play the unlock sound with the message
+     * @param playSound    whether to play the unlock sound with the message
      */
     public static void sendPlayerUnlockNotification(McMMOPlayer mmoPlayer,
-            SubSkillType subSkillType, boolean playSound) {
+                                                    SubSkillType subSkillType, boolean playSound) {
         if (!mmoPlayer.useChatNotifications()) {
             return;
         }
@@ -249,16 +247,16 @@ public class NotificationManager {
      * Sends a message to all admins with the admin notification formatting from the locale Admins
      * are currently players with either Operator status or Admin Chat permission
      *
-     * @param msg message fetched from locale, built with the sender's plain name
-     * @param consoleMsg console variant of msg with the sender's UUID inline, since the console
-     * cannot show the hover
-     * @param senderName plain name of the command sender shown in the message, or null when the
-     * message has no sender to decorate
+     * @param msg             message fetched from locale, built with the sender's plain name
+     * @param consoleMsg      console variant of msg with the sender's UUID inline, since the console
+     *                        cannot show the hover
+     * @param senderName      plain name of the command sender shown in the message, or null when the
+     *                        message has no sender to decorate
      * @param senderUuidHover hover contents identifying the sender, attached to senderName in the
-     * chat message, or null to send the message undecorated
+     *                        chat message, or null to send the message undecorated
      */
     private static void sendAdminNotification(String msg, String consoleMsg,
-            @Nullable String senderName, @Nullable Component senderUuidHover) {
+                                              @Nullable String senderName, @Nullable Component senderUuidHover) {
         //If its not enabled exit
         if (!mcMMO.p.getGeneralConfig().adminNotifications()) {
             return;
@@ -389,7 +387,7 @@ public class NotificationManager {
 
     //TODO: Fix broadcasts being skipped for situations where a player skips over the milestone like with the addlevels command
     public static void processLevelUpBroadcasting(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull PrimarySkillType primarySkillType, int level) {
+                                                  @NotNull PrimarySkillType primarySkillType, int level) {
         if (level <= 0 || !mcMMO.p.getGeneralConfig().shouldLevelUpBroadcasts()
                 || !Permissions.levelUpBroadcast(mmoPlayer.getPlayer())
                 || level % mcMMO.p.getGeneralConfig().getLevelUpBroadcastInterval() != 0) {
@@ -405,7 +403,7 @@ public class NotificationManager {
 
     //TODO: Fix broadcasts being skipped for situations where a player skips over the milestone like with the addlevels command
     public static void processPowerLevelUpBroadcasting(@NotNull McMMOPlayer mmoPlayer,
-            int powerLevel) {
+                                                       int powerLevel) {
         if (powerLevel <= 0 || !mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcasts()
                 || !Permissions.levelUpBroadcast(mmoPlayer.getPlayer())
                 || powerLevel % mcMMO.p.getGeneralConfig().getPowerLevelUpBroadcastInterval()
@@ -420,8 +418,8 @@ public class NotificationManager {
     }
 
     private static void broadcastMilestone(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull Predicate<CommandSender> broadcastPredicate, @NotNull String hoverSummary,
-            @NotNull String localeMessage) {
+                                           @NotNull Predicate<CommandSender> broadcastPredicate, @NotNull String hoverSummary,
+                                           @NotNull String localeMessage) {
         //Grab appropriate audience
         final Audience audience = mcMMO.getAudiences().filter(broadcastPredicate);
         //TODO: Make prettier

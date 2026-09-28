@@ -1,10 +1,10 @@
 package com.gmail.nossr50.util.adapter;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-
 import org.bukkit.block.Biome;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class BiomeAdapterTest {
 
@@ -23,7 +23,9 @@ class BiomeAdapterTest {
                 .doesNotThrowAnyException();
     }
 
-    /** Guard: the resolvable cold biomes must still be collected at class load. */
+    /**
+     * Guard: the resolvable cold biomes must still be collected at class load.
+     */
     @Test
     void knownColdBiomesShouldBeCollected() {
         // Given / When - the ICE_BIOMES set built when the class loads

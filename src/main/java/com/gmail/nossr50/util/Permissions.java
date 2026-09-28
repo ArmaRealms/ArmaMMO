@@ -8,11 +8,6 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.EnumMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -25,7 +20,11 @@ import org.bukkit.plugin.PluginManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public final class Permissions {
     private static final Map<PrimarySkillType, String> SKILL_ENABLED_NODES =
@@ -90,7 +89,7 @@ public final class Permissions {
     }
 
     private static <T extends Enum<T>> Map<T, String> perEnumNodes(Class<T> enumClass,
-            Function<T, String> nodeBuilder) {
+                                                                   Function<T, String> nodeBuilder) {
         final Map<T, String> nodes = new EnumMap<>(enumClass);
 
         for (T constant : enumClass.getEnumConstants()) {
@@ -512,7 +511,7 @@ public final class Permissions {
     }
 
     public static boolean repairMaterialType(Permissible permissible,
-            MaterialType repairMaterialType) {
+                                             MaterialType repairMaterialType) {
         return permissible.hasPermission(REPAIR_MATERIAL_TYPE_NODES.get(repairMaterialType));
     }
 
@@ -526,7 +525,7 @@ public final class Permissions {
     }
 
     public static boolean salvageMaterialType(Permissible permissible,
-            MaterialType salvageMaterialType) {
+                                              MaterialType salvageMaterialType) {
         return permissible.hasPermission(SALVAGE_MATERIAL_TYPE_NODES.get(salvageMaterialType));
     }
 

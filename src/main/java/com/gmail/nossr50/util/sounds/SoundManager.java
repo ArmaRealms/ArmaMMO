@@ -4,12 +4,6 @@ import com.gmail.nossr50.config.SoundConfig;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.ReflectionUtils;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -21,26 +15,20 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 public class SoundManager {
 
     private static final Map<SoundType, Sound> soundCache = new ConcurrentHashMap<>();
     private static final Set<SoundType> unresolvedSoundTypes = ConcurrentHashMap.newKeySet();
     private static final String NULL_FALLBACK_ID = null;
-    private static Sound crippleSound;
-    private static boolean crippleSoundResolved;
     private static final String ITEM_MACE_SMASH_GROUND = "ITEM_MACE_SMASH_GROUND";
     private static final String ORG_BUKKIT_SOUND = "org.bukkit.Sound";
+    private static Sound crippleSound;
+    private static boolean crippleSoundResolved;
     private static Sound CRIPPLE_SOUND;
-
-    /**
-     * Receives the resolved sound and final volume/pitch when a sound is enabled and resolvable.
-     */
-    @FunctionalInterface
-    private interface SoundDispatch {
-        void play(Sound sound, float volume, float pitch);
-    }
 
     /**
      * Shared funnel for every send method: checks the enabled toggle, resolves the sound, and
@@ -48,7 +36,7 @@ public class SoundManager {
      * are only rolled when the sound actually plays.
      */
     private static void playIfEnabled(SoundType soundType, Supplier<Float> pitch,
-            SoundDispatch dispatch) {
+                                      SoundDispatch dispatch) {
         if (!SoundConfig.getInstance().getIsEnabled(soundType)) {
             return;
         }
@@ -66,7 +54,7 @@ public class SoundManager {
     }
 
     private static @NotNull Supplier<Float> modifiedPitch(SoundType soundType,
-            float pitchModifier) {
+                                                          float pitchModifier) {
         return () -> Math.min(2.0F, getPitch(soundType) + pitchModifier);
     }
 
@@ -81,7 +69,7 @@ public class SoundManager {
     }
 
     public static void sendCategorizedSound(Location location, SoundType soundType,
-            SoundCategory soundCategory) {
+                                            SoundCategory soundCategory) {
         playIfEnabled(soundType, (sound, volume, pitch) -> {
             final World world = location.getWorld();
             if (world != null) {
@@ -91,7 +79,7 @@ public class SoundManager {
     }
 
     public static void sendCategorizedSound(Location location, SoundType soundType,
-            SoundCategory soundCategory, float pitchModifier) {
+                                            SoundCategory soundCategory, float pitchModifier) {
         playIfEnabled(soundType, modifiedPitch(soundType, pitchModifier),
                 (sound, volume, pitch) -> {
                     final World world = location.getWorld();
@@ -102,13 +90,13 @@ public class SoundManager {
     }
 
     public static void sendCategorizedSound(Player player, Location location,
-            SoundType soundType, SoundCategory soundCategory) {
+                                            SoundType soundType, SoundCategory soundCategory) {
         playIfEnabled(soundType, (sound, volume, pitch) ->
                 player.playSound(location, sound, soundCategory, volume, pitch));
     }
 
     public static void sendCategorizedSound(Player player, Location location,
-            SoundType soundType, SoundCategory soundCategory, float pitchModifier) {
+                                            SoundType soundType, SoundCategory soundCategory, float pitchModifier) {
         playIfEnabled(soundType, modifiedPitch(soundType, pitchModifier),
                 (sound, volume, pitch) ->
                         player.playSound(location, sound, soundCategory, volume, pitch));
@@ -254,5 +242,13 @@ public class SoundManager {
 
     public static float getPopPitch() {
         return ((Misc.getRandom().nextFloat() - Misc.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F;
+    }
+
+    /**
+     * Receives the resolved sound and final volume/pitch when a sound is enabled and resolvable.
+     */
+    @FunctionalInterface
+    private interface SoundDispatch {
+        void play(Sound sound, float volume, float pitch);
     }
 }

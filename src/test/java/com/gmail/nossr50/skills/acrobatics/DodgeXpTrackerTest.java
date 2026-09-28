@@ -1,11 +1,12 @@
 package com.gmail.nossr50.skills.acrobatics;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Pure unit tests for the per-mob Dodge XP reward tracker, using injected timestamps so the

@@ -1,27 +1,7 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertChunkStoreEquals;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertEqualIgnoreMinMax;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.serializeChunkStore;
-import static com.gmail.nossr50.util.blockmeta.UserBlockTrackerTest.recursiveDelete;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.bukkit.Bukkit.getWorld;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 import com.gmail.nossr50.mcMMO;
 import com.google.common.io.Files;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.junit.jupiter.api.AfterAll;
@@ -39,7 +19,23 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
+
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertChunkStoreEquals;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.assertEqualIgnoreMinMax;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.serializeChunkStore;
+import static com.gmail.nossr50.util.blockmeta.UserBlockTrackerTest.recursiveDelete;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.bukkit.Bukkit.getWorld;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class BitSetChunkStoreTest {
     private static File tempDir;
@@ -55,6 +51,26 @@ class BitSetChunkStoreTest {
     @AfterAll
     public static void tearDownClass() {
         recursiveDelete(tempDir);
+    }
+
+    private static Stream<Arguments> shrunkenWorldHeightCases() {
+        return Stream.of(
+                // World max shrinks: -64..320 becomes -64..128
+                Arguments.of(-64, 320, -64, 128,
+                        new int[][]{{14, -64, 12}, {5, 100, 5}, {0, 127, 0}},
+                        new int[][]{{1, 128, 1}, {14, 319, 12}}),
+                // World min rises to zero: -64..320 becomes 0..320
+                Arguments.of(-64, 320, 0, 320,
+                        new int[][]{{14, 0, 12}, {5, 100, 5}, {3, 319, 3}},
+                        new int[][]{{2, -1, 2}, {14, -64, 12}}),
+                // World min rises but stays negative: -64..320 becomes -32..320
+                Arguments.of(-64, 320, -32, 320,
+                        new int[][]{{5, -32, 5}, {6, 0, 6}},
+                        new int[][]{{7, -64, 7}, {8, -33, 8}}),
+                // Both ends shrink: -64..320 becomes 0..128
+                Arguments.of(-64, 320, 0, 128,
+                        new int[][]{{0, 0, 0}, {5, 100, 5}, {1, 127, 1}},
+                        new int[][]{{2, -64, 2}, {3, -1, 3}, {4, 128, 4}, {14, 319, 12}}));
     }
 
     @BeforeEach
@@ -147,7 +163,7 @@ class BitSetChunkStoreTest {
     @ParameterizedTest
     @MethodSource("shrunkenWorldHeightCases")
     void deserializeShouldDropOnlyOutOfRangeMarkersWhenWorldHeightShrinks(int oldMin, int oldMax,
-            int newMin, int newMax, int[][] inRange, int[][] outOfRange) throws IOException {
+                                                                          int newMin, int newMax, int[][] inRange, int[][] outOfRange) throws IOException {
         // Given - a chunk store serialized under the old world height with markers both inside
         // and outside the shrunken bounds
         when(mockWorld.getMinHeight()).thenReturn(oldMin);
@@ -183,25 +199,5 @@ class BitSetChunkStoreTest {
                 }
             }
         }
-    }
-
-    private static Stream<Arguments> shrunkenWorldHeightCases() {
-        return Stream.of(
-                // World max shrinks: -64..320 becomes -64..128
-                Arguments.of(-64, 320, -64, 128,
-                        new int[][] {{14, -64, 12}, {5, 100, 5}, {0, 127, 0}},
-                        new int[][] {{1, 128, 1}, {14, 319, 12}}),
-                // World min rises to zero: -64..320 becomes 0..320
-                Arguments.of(-64, 320, 0, 320,
-                        new int[][] {{14, 0, 12}, {5, 100, 5}, {3, 319, 3}},
-                        new int[][] {{2, -1, 2}, {14, -64, 12}}),
-                // World min rises but stays negative: -64..320 becomes -32..320
-                Arguments.of(-64, 320, -32, 320,
-                        new int[][] {{5, -32, 5}, {6, 0, 6}},
-                        new int[][] {{7, -64, 7}, {8, -33, 8}}),
-                // Both ends shrink: -64..320 becomes 0..128
-                Arguments.of(-64, 320, 0, 128,
-                        new int[][] {{0, 0, 0}, {5, 100, 5}, {1, 127, 1}},
-                        new int[][] {{2, -64, 2}, {3, -1, 3}, {4, 128, 4}, {14, 319, 12}}));
     }
 }

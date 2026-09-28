@@ -101,7 +101,7 @@ public class SmeltingManager extends SkillManager {
      */
     public int getVanillaXpMultiplier() {
         int rank = Math.max(1,
-            RankUtils.getRank(getPlayer(), SubSkillType.SMELTING_UNDERSTANDING_THE_ART));
+                RankUtils.getRank(getPlayer(), SubSkillType.SMELTING_UNDERSTANDING_THE_ART));
         return Math.max(1, mcMMO.p.getAdvancedConfig().getSmeltingVanillaXPModifier(rank));
     }
 }

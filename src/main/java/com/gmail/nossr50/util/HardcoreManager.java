@@ -10,11 +10,10 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.HashMap;
-import java.util.function.Predicate;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
+import java.util.function.Predicate;
 
 public final class HardcoreManager {
     private HardcoreManager() {
@@ -149,7 +148,7 @@ public final class HardcoreManager {
     }
 
     private static void putNoChange(HashMap<String, Integer> levelChanged,
-            HashMap<String, Float> experienceChanged, PrimarySkillType primarySkillType) {
+                                    HashMap<String, Float> experienceChanged, PrimarySkillType primarySkillType) {
         levelChanged.put(primarySkillType.toString(), 0);
         experienceChanged.put(primarySkillType.toString(), 0F);
     }

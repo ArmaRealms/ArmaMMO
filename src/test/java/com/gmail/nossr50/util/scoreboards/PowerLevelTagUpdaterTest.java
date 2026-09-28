@@ -1,6 +1,9 @@
 package com.gmail.nossr50.util.scoreboards;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,10 +11,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers the pending power level tag refresh pass that runs on the power level heartbeat.
@@ -26,6 +27,12 @@ class PowerLevelTagUpdaterTest {
         final Set<String> pending = ConcurrentHashMap.newKeySet();
         pending.addAll(java.util.List.of(names));
         return pending;
+    }
+
+    private static Stream<Arguments> unresolvedPlayerCases() {
+        return Stream.of(
+                Arguments.of(true, true),
+                Arguments.of(false, false));
     }
 
     @Test
@@ -51,7 +58,7 @@ class PowerLevelTagUpdaterTest {
     @ParameterizedTest
     @MethodSource("unresolvedPlayerCases")
     void applyPendingShouldOnlyDropUnresolvedPlayersWhenOffline(final boolean online,
-            final boolean expectedStillPending) {
+                                                                final boolean expectedStillPending) {
         // Given - a pending player whose profile has not loaded yet
         final Set<String> pending = pendingSetOf("SlowLoader");
         final Map<String, Integer> written = new HashMap<>();
@@ -62,12 +69,6 @@ class PowerLevelTagUpdaterTest {
         // Then - nothing is written, and the refresh survives only while the player is online
         assertThat(written).isEmpty();
         assertThat(pending.contains("SlowLoader")).isEqualTo(expectedStillPending);
-    }
-
-    private static Stream<Arguments> unresolvedPlayerCases() {
-        return Stream.of(
-                Arguments.of(true, true),
-                Arguments.of(false, false));
     }
 
     /**

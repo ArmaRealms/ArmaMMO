@@ -1,25 +1,8 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.bukkit.Bukkit.getWorld;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.BlockUtils;
 import com.google.common.io.Files;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -33,9 +16,24 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Arrays;
 import java.util.UUID;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.bukkit.Bukkit.getWorld;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Could be a lot better. But some tests are better than none! Tests the major things, still kinda
@@ -64,6 +62,34 @@ class UserBlockTrackerTest {
             }
         }
         directoryToBeDeleted.delete();
+    }
+
+    private static byte[] payload(int size, byte fill) {
+        final byte[] data = new byte[size];
+        Arrays.fill(data, fill);
+        // Vary the tail so compression cannot collapse payloads into identical streams
+        for (int i = 0; i < Math.min(size, 32); i++) {
+            data[size - 1 - i] = (byte) (fill + i);
+        }
+        return data;
+    }
+
+    private static void writeChunkPayload(McMMOSimpleRegionFile region, int cx, int cz,
+                                          byte[] payload) throws IOException {
+        try (DataOutputStream out = region.getOutputStream(cx, cz)) {
+            out.writeInt(payload.length);
+            out.write(payload);
+        }
+    }
+
+    private static byte[] readChunkPayload(McMMOSimpleRegionFile region, int cx, int cz)
+            throws IOException {
+        try (DataInputStream in = region.getInputStream(cx, cz)) {
+            Assertions.assertNotNull(in, "expected chunk data at (" + cx + ", " + cz + ")");
+            final byte[] data = new byte[in.readInt()];
+            in.readFully(data);
+            return data;
+        }
     }
 
     @BeforeEach
@@ -343,34 +369,6 @@ class UserBlockTrackerTest {
 
         // Then - the corrupt data reads as empty instead of throwing
         assertFalse(hashChunkManager.isIneligible(block));
-    }
-
-    private static byte[] payload(int size, byte fill) {
-        final byte[] data = new byte[size];
-        Arrays.fill(data, fill);
-        // Vary the tail so compression cannot collapse payloads into identical streams
-        for (int i = 0; i < Math.min(size, 32); i++) {
-            data[size - 1 - i] = (byte) (fill + i);
-        }
-        return data;
-    }
-
-    private static void writeChunkPayload(McMMOSimpleRegionFile region, int cx, int cz,
-            byte[] payload) throws IOException {
-        try (DataOutputStream out = region.getOutputStream(cx, cz)) {
-            out.writeInt(payload.length);
-            out.write(payload);
-        }
-    }
-
-    private static byte[] readChunkPayload(McMMOSimpleRegionFile region, int cx, int cz)
-            throws IOException {
-        try (DataInputStream in = region.getInputStream(cx, cz)) {
-            Assertions.assertNotNull(in, "expected chunk data at (" + cx + ", " + cz + ")");
-            final byte[] data = new byte[in.readInt()];
-            in.readFully(data);
-            return data;
-        }
     }
 
     @NotNull

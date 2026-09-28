@@ -1,8 +1,5 @@
 package com.gmail.nossr50.api;
 
-import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVE;
-import static com.gmail.nossr50.datatypes.experience.XPGainSource.CUSTOM;
-import static com.gmail.nossr50.datatypes.experience.XPGainSource.SELF;
 import com.gmail.nossr50.api.exceptions.InvalidFormulaTypeException;
 import com.gmail.nossr50.api.exceptions.InvalidPlayerException;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -26,6 +23,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.UUID;
+
+import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVE;
+import static com.gmail.nossr50.datatypes.experience.XPGainSource.CUSTOM;
+import static com.gmail.nossr50.datatypes.experience.XPGainSource.SELF;
 
 public final class ExperienceAPI {
     private ExperienceAPI() {
@@ -226,7 +227,7 @@ public final class ExperienceAPI {
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
     public static void addMultipliedXP(Player player, String skillType, int XP,
-            String xpGainReason) {
+                                       String xpGainReason) {
         final PrimarySkillType skill = getSkillType(skillType);
         getPlayer(player).applyXpGain(
                 skill,

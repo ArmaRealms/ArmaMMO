@@ -1,12 +1,5 @@
 package com.gmail.nossr50.datatypes.party;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
@@ -20,6 +13,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PartyTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(PartyTest.class.getName());

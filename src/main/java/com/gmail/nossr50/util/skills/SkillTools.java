@@ -13,6 +13,13 @@ import com.gmail.nossr50.util.text.StringUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,53 +30,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.entity.Tameable;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
 
 public class SkillTools {
-    private final mcMMO pluginRef;
-
-    // TODO: Java has immutable types now, switch to those
-    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
-    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
-    /**
-     * @deprecated No remaining callers; scheduled for removal.
-     */
-    @Deprecated(forRemoval = true, since = "2.3.000")
-    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
-    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
-    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
     public static final @NotNull ImmutableList<PrimarySkillType> NON_CHILD_SKILLS;
     public static final @NotNull ImmutableList<PrimarySkillType> SALVAGE_PARENTS;
     public static final @NotNull ImmutableList<PrimarySkillType> SMELTING_PARENTS;
-    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
-    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
-
-    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
-    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
-    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
-
-    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
-    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
-
-    /**
-     * Successful name-to-skill matches for the loaded locale; replaced wholesale when the
-     * locale generation changes (e.g. after /mcreloadlocale). A lookup racing a reload puts
-     * into its own generation's map, which the swap makes unreachable, so a match computed
-     * against an older locale can never outlive the reload. Failed lookups are not cached
-     * to keep the map bounded to real skill names.
-     */
-    private record MatchSkillCache(int localeGeneration,
-            ConcurrentHashMap<String, PrimarySkillType> matchByName) {
-    }
-
-    private volatile MatchSkillCache matchSkillCache = new MatchSkillCache(-1,
-            new ConcurrentHashMap<>());
 
     static {
         // Build NON_CHILD_SKILLS once from the enum values
@@ -90,6 +55,28 @@ public class SkillTools {
                 PrimarySkillType.REPAIR
         );
     }
+
+    // TODO: Java has immutable types now, switch to those
+    // TODO: Figure out which ones we don't need, this was copy pasted from a diff branch
+    public final @NotNull ImmutableList<String> LOCALIZED_SKILL_NAMES;
+    /**
+     * @deprecated No remaining callers; scheduled for removal.
+     */
+    @Deprecated(forRemoval = true, since = "2.3.000")
+    public final @NotNull ImmutableList<String> FORMATTED_SUBSKILL_NAMES;
+    public final @NotNull ImmutableSet<String> EXACT_SUBSKILL_NAMES;
+    public final @NotNull ImmutableList<PrimarySkillType> CHILD_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> COMBAT_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> GATHERING_SKILLS;
+    public final @NotNull ImmutableList<PrimarySkillType> MISC_SKILLS;
+    private final mcMMO pluginRef;
+    private final @NotNull ImmutableMap<SubSkillType, PrimarySkillType> subSkillParentRelationshipMap;
+    private final @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap;
+    private final @NotNull ImmutableMap<PrimarySkillType, Set<SubSkillType>> primarySkillChildrenMap;
+    private final ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap;
+    private final ImmutableMap<PrimarySkillType, ToolType> primarySkillToolMap;
+    private volatile MatchSkillCache matchSkillCache = new MatchSkillCache(-1,
+            new ConcurrentHashMap<>());
 
     public SkillTools(@NotNull mcMMO pluginRef) {
         this.pluginRef = pluginRef;
@@ -147,6 +134,13 @@ public class SkillTools {
         this.LOCALIZED_SKILL_NAMES = ImmutableList.copyOf(buildLocalizedPrimarySkillNames());
         this.FORMATTED_SUBSKILL_NAMES = ImmutableList.copyOf(buildFormattedSubSkillNameList());
         this.EXACT_SUBSKILL_NAMES = ImmutableSet.copyOf(buildExactSubSkillNameList());
+    }
+
+    public static boolean isChildSkill(PrimarySkillType primarySkillType) {
+        return switch (primarySkillType) {
+            case SALVAGE, SMELTING -> true;
+            default -> false;
+        };
     }
 
     @VisibleForTesting
@@ -216,15 +210,6 @@ public class SkillTools {
         tempToolMap.put(PrimarySkillType.MINING, ToolType.PICKAXE);
 
         return ImmutableMap.copyOf(tempToolMap);
-    }
-
-    /**
-     * Holder for the two super ability maps, so we can build them in one pass.
-     */
-    @VisibleForTesting
-    record SuperAbilityMaps(
-            @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap,
-            @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap) {
     }
 
     @VisibleForTesting
@@ -509,13 +494,6 @@ public class SkillTools {
         return ExperienceConfig.getInstance().getFormulaSkillModifier(primarySkillType);
     }
 
-    public static boolean isChildSkill(PrimarySkillType primarySkillType) {
-        return switch (primarySkillType) {
-            case SALVAGE, SMELTING -> true;
-            default -> false;
-        };
-    }
-
     /**
      * The localized skill name meant for messages sent to players, from the locale's
      * {@code Overhaul.Name} keys. In the English locales this is nicely capitalized (like
@@ -576,7 +554,7 @@ public class SkillTools {
     /**
      * Get the permissions for this ability.
      *
-     * @param player Player to check permissions for
+     * @param player           Player to check permissions for
      * @param superAbilityType target super ability
      * @return true if the player has permissions, false otherwise
      */
@@ -612,5 +590,25 @@ public class SkillTools {
             default -> throw new IllegalArgumentException(
                     "Skill " + childSkill + " is not a child skill");
         };
+    }
+
+    /**
+     * Successful name-to-skill matches for the loaded locale; replaced wholesale when the
+     * locale generation changes (e.g. after /mcreloadlocale). A lookup racing a reload puts
+     * into its own generation's map, which the swap makes unreachable, so a match computed
+     * against an older locale can never outlive the reload. Failed lookups are not cached
+     * to keep the map bounded to real skill names.
+     */
+    private record MatchSkillCache(int localeGeneration,
+                                   ConcurrentHashMap<String, PrimarySkillType> matchByName) {
+    }
+
+    /**
+     * Holder for the two super ability maps, so we can build them in one pass.
+     */
+    @VisibleForTesting
+    record SuperAbilityMaps(
+            @NotNull ImmutableMap<SuperAbilityType, PrimarySkillType> superAbilityParentRelationshipMap,
+            @NotNull ImmutableMap<PrimarySkillType, SuperAbilityType> mainActivatedAbilityChildMap) {
     }
 }

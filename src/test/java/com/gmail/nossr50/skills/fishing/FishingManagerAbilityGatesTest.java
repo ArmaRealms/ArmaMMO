@@ -1,18 +1,11 @@
 package com.gmail.nossr50.skills.fishing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -25,6 +18,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the eligibility gates for the Fishing subskills: Shake, Master Angler, Magic Hunter,
@@ -134,8 +135,8 @@ class FishingManagerAbilityGatesTest extends MMOTestEnvironment {
                 "true, true, true, false, false",
         })
         void requiresBothSubskillsUnlockedAndPermitted(boolean magicHunterUnlocked,
-                boolean treasureHunterUnlocked, boolean magicHunterPermitted,
-                boolean treasureHunterPermitted, boolean expected) {
+                                                       boolean treasureHunterUnlocked, boolean magicHunterPermitted,
+                                                       boolean treasureHunterPermitted, boolean expected) {
             // Given - Magic Hunter piggybacks on Treasure Hunter, so both subskills must be
             // unlocked and permitted before enchanted finds can roll
             when(RankUtils.hasUnlockedSubskill(player, SubSkillType.FISHING_MAGIC_HUNTER))

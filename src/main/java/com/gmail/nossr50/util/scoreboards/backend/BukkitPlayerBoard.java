@@ -1,15 +1,12 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.events.scoreboard.McMMOScoreboardObjectiveEvent;
 import com.gmail.nossr50.events.scoreboard.ScoreboardEventReason;
 import com.gmail.nossr50.events.scoreboard.ScoreboardObjectiveEventReason;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.player.UserManager;
-import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -18,14 +15,18 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public class BukkitPlayerBoard implements PlayerBoard {
     private static final String SIDEBAR_OBJECTIVE = "mcmmo_sidebar";
     private static final String SIDE_OBJECTIVE = "mcMMO_sideObjective";
     private static final String POWER_OBJECTIVE = BukkitScoreboardBackend.POWER_OBJECTIVE;
 
     private final @NotNull Player owner;
-    private @NotNull Scoreboard scoreboard;
     private final Set<String> renderedEntries;
+    private @NotNull Scoreboard scoreboard;
     private @Nullable Objective sidebarObjective;
     private @Nullable Objective powerObjective;
 

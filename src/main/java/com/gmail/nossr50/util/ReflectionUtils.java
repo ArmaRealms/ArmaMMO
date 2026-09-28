@@ -1,8 +1,9 @@
 package com.gmail.nossr50.util;
 
-import java.lang.reflect.Method;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.lang.reflect.Method;
 
 /**
  * Small helpers for the version-compatibility shims that need reflection. Shims must degrade
@@ -19,7 +20,7 @@ public final class ReflectionUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> @Nullable T staticValueOf(@NotNull String className,
-            @NotNull String constantName) {
+                                                @NotNull String constantName) {
         try {
             final Class<?> clazz = Class.forName(className);
             final Method valueOf = clazz.getMethod("valueOf", String.class);

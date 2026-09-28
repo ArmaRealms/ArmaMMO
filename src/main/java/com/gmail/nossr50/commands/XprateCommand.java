@@ -11,12 +11,6 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.text.StringUtils;
 import com.google.common.collect.ImmutableList;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.TreeSet;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,6 +18,13 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
 
 public class XprateCommand implements TabExecutor {
     // The token that targets the global rate in the skill argument position
@@ -68,9 +69,92 @@ public class XprateCommand implements TabExecutor {
                 DecimalFormatSymbols.getInstance(Locale.US)).format(xpRate);
     }
 
+    /**
+     * Formats a duration as its two most significant units, like "2d 4h" or "5m 32s".
+     */
+    static String formatDuration(long durationMillis) {
+        final long totalSeconds = Math.max(0, durationMillis / 1000);
+        final long days = totalSeconds / 86_400;
+        final long hours = (totalSeconds % 86_400) / 3_600;
+        final long minutes = (totalSeconds % 3_600) / 60;
+        final long seconds = totalSeconds % 60;
+
+        if (days > 0) {
+            return days + "d " + hours + "h";
+        }
+        if (hours > 0) {
+            return hours + "h " + minutes + "m";
+        }
+        if (minutes > 0) {
+            return minutes + "m " + seconds + "s";
+        }
+        return seconds + "s";
+    }
+
+    /**
+     * Clears per-skill rates the new global rate covers. The higher rate wins, so a rate at or
+     * below the new global one can never apply again and keeping it around would only clutter
+     * /xprate output and survive into a lower future global rate by surprise.
+     */
+    private static void clearSkillRatesCoveredByGlobal(CommandSender sender, double globalRate) {
+        final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
+        final List<String> clearedSkills = new ArrayList<>();
+
+        experienceConfig.getExperienceGainsSkillMultiplierOverrides()
+                .forEach((skill, rate) -> {
+                    if (rate <= globalRate) {
+                        experienceConfig.clearExperienceGainsSkillMultiplier(skill);
+                        clearedSkills.add(displaySkillName(skill));
+                    }
+                });
+
+        if (!clearedSkills.isEmpty()) {
+            sender.sendMessage(LocaleLoader.getString("Commands.xprate.skill.cleared",
+                    String.join(", ", clearedSkills)));
+        }
+    }
+
+    private static @Nullable Boolean parseXpEventToggle(String argument) {
+        if (CommandUtils.shouldEnableToggle(argument)) {
+            return Boolean.TRUE;
+        }
+
+        if (CommandUtils.shouldDisableToggle(argument)) {
+            return Boolean.FALSE;
+        }
+
+        return null;
+    }
+
+    /**
+     * Announces a rate change. Event changes get the event banner and title fanfare; quiet
+     * changes ('false') are announced as a plain rate line so nothing reads like an event
+     * starting or ending.
+     */
+    private static void broadcastRateChange(boolean xpEvent, String xpRateLine,
+                                            @Nullable String followUpLine) {
+        if (xpEvent && mcMMO.p.getAdvancedConfig().useTitlesForXPEvent()) {
+            NotificationManager.broadcastTitle(mcMMO.p.getServer(),
+                    LocaleLoader.getString("Commands.Event.Start"), xpRateLine, 10, 10 * 20, 20);
+        }
+
+        if (mcMMO.p.getGeneralConfig().broadcastEventMessages()) {
+            if (xpEvent) {
+                mcMMO.p.getServer()
+                        .broadcastMessage(LocaleLoader.getString("Commands.Event.Start"));
+            }
+
+            mcMMO.p.getServer().broadcastMessage(xpRateLine);
+
+            if (followUpLine != null) {
+                mcMMO.p.getServer().broadcastMessage(followUpLine);
+            }
+        }
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         switch (args.length) {
             case 0:
                 return showCurrentRates(sender, command);
@@ -150,28 +234,6 @@ public class XprateCommand implements TabExecutor {
         return true;
     }
 
-    /**
-     * Formats a duration as its two most significant units, like "2d 4h" or "5m 32s".
-     */
-    static String formatDuration(long durationMillis) {
-        final long totalSeconds = Math.max(0, durationMillis / 1000);
-        final long days = totalSeconds / 86_400;
-        final long hours = (totalSeconds % 86_400) / 3_600;
-        final long minutes = (totalSeconds % 3_600) / 60;
-        final long seconds = totalSeconds % 60;
-
-        if (days > 0) {
-            return days + "d " + hours + "h";
-        }
-        if (hours > 0) {
-            return hours + "h " + minutes + "m";
-        }
-        if (minutes > 0) {
-            return minutes + "m " + seconds + "s";
-        }
-        return seconds + "s";
-    }
-
     private boolean resetXpRates(CommandSender sender, Command command) {
         if (!Permissions.xprateReset(sender)) {
             sender.sendMessage(command.getPermissionMessage());
@@ -206,7 +268,7 @@ public class XprateCommand implements TabExecutor {
     }
 
     private boolean setGlobalXpRate(CommandSender sender, Command command, String rateArgument,
-            boolean xpEvent) {
+                                    boolean xpEvent) {
         if (!Permissions.xprateSet(sender)) {
             sender.sendMessage(command.getPermissionMessage());
             return true;
@@ -233,7 +295,7 @@ public class XprateCommand implements TabExecutor {
     }
 
     private boolean setSkillXpRate(CommandSender sender, Command command, String skillArgument,
-            String rateArgument, boolean xpEvent) {
+                                   String rateArgument, boolean xpEvent) {
         if (skillArgument.equalsIgnoreCase(ALL_SKILLS_TOKEN)) {
             return setGlobalXpRate(sender, command, rateArgument, xpEvent);
         }
@@ -291,29 +353,6 @@ public class XprateCommand implements TabExecutor {
     }
 
     /**
-     * Clears per-skill rates the new global rate covers. The higher rate wins, so a rate at or
-     * below the new global one can never apply again and keeping it around would only clutter
-     * /xprate output and survive into a lower future global rate by surprise.
-     */
-    private static void clearSkillRatesCoveredByGlobal(CommandSender sender, double globalRate) {
-        final ExperienceConfig experienceConfig = ExperienceConfig.getInstance();
-        final List<String> clearedSkills = new ArrayList<>();
-
-        experienceConfig.getExperienceGainsSkillMultiplierOverrides()
-                .forEach((skill, rate) -> {
-                    if (rate <= globalRate) {
-                        experienceConfig.clearExperienceGainsSkillMultiplier(skill);
-                        clearedSkills.add(displaySkillName(skill));
-                    }
-                });
-
-        if (!clearedSkills.isEmpty()) {
-            sender.sendMessage(LocaleLoader.getString("Commands.xprate.skill.cleared",
-                    String.join(", ", clearedSkills)));
-        }
-    }
-
-    /**
      * Validates and parses a rate argument, messaging the sender when it is unusable. Rates
      * below the configured baseline are rejected because /xprate rates never reduce XP below
      * what the config files grant; such a rate would be a silent no-op at best.
@@ -348,47 +387,9 @@ public class XprateCommand implements TabExecutor {
         return xpRate;
     }
 
-    private static @Nullable Boolean parseXpEventToggle(String argument) {
-        if (CommandUtils.shouldEnableToggle(argument)) {
-            return Boolean.TRUE;
-        }
-
-        if (CommandUtils.shouldDisableToggle(argument)) {
-            return Boolean.FALSE;
-        }
-
-        return null;
-    }
-
-    /**
-     * Announces a rate change. Event changes get the event banner and title fanfare; quiet
-     * changes ('false') are announced as a plain rate line so nothing reads like an event
-     * starting or ending.
-     */
-    private static void broadcastRateChange(boolean xpEvent, String xpRateLine,
-            @Nullable String followUpLine) {
-        if (xpEvent && mcMMO.p.getAdvancedConfig().useTitlesForXPEvent()) {
-            NotificationManager.broadcastTitle(mcMMO.p.getServer(),
-                    LocaleLoader.getString("Commands.Event.Start"), xpRateLine, 10, 10 * 20, 20);
-        }
-
-        if (mcMMO.p.getGeneralConfig().broadcastEventMessages()) {
-            if (xpEvent) {
-                mcMMO.p.getServer()
-                        .broadcastMessage(LocaleLoader.getString("Commands.Event.Start"));
-            }
-
-            mcMMO.p.getServer().broadcastMessage(xpRateLine);
-
-            if (followUpLine != null) {
-                mcMMO.p.getServer().broadcastMessage(followUpLine);
-            }
-        }
-    }
-
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+                                      @NotNull String alias, String[] args) {
         switch (args.length) {
             case 1:
                 if (StringUtils.isDouble(args[0])) {

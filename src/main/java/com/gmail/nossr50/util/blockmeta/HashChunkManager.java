@@ -1,6 +1,13 @@
 package com.gmail.nossr50.util.blockmeta;
 
 import com.gmail.nossr50.mcMMO;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -10,17 +17,40 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class HashChunkManager implements ChunkManager {
     private final HashMap<CoordinateKey, McMMOSimpleRegionFile> regionMap = new HashMap<>(); // Tracks active regions
     private final HashMap<CoordinateKey, HashSet<CoordinateKey>> chunkUsageMap = new HashMap<>(); // Tracks active chunks by region
     private final HashMap<CoordinateKey, ChunkStore> chunkMap = new HashMap<>(); // Tracks active chunks
+
+    private static void logChunkSaveFailure(int cx, int cz, @NotNull String worldName,
+                                            @NotNull Exception e) {
+        mcMMO.p.getLogger().warning("Failed to save placed-block data for chunk (" + cx + ", "
+                + cz + ") in world '" + worldName + "': " + e);
+    }
+
+    private static void closeQuietly(@Nullable McMMOSimpleRegionFile regionFile) {
+        if (regionFile == null) {
+            return;
+        }
+        try {
+            regionFile.close();
+        } catch (Exception e) {
+            mcMMO.p.getLogger().warning("Failed to close placed-block region file: " + e);
+        }
+    }
+
+    /**
+     * Maps a world coordinate to this plugin's chunk-local index.
+     *
+     * <p>The mirrored mapping for negative coordinates (Math.abs instead of a proper floor
+     * modulo) is load-bearing for on-disk compatibility: every existing region file was written
+     * with it. Changing it to the mathematically correct {@code coordinate & 0xF} would
+     * silently corrupt the stored markers of every chunk with negative coordinates.
+     */
+    private static int toChunkLocal(int worldCoordinate) {
+        return Math.abs(worldCoordinate) % 16;
+    }
 
     @Override
     public synchronized void closeAll() {
@@ -48,23 +78,6 @@ public class HashChunkManager implements ChunkManager {
             closeQuietly(rf);
         }
         regionMap.clear();
-    }
-
-    private static void logChunkSaveFailure(int cx, int cz, @NotNull String worldName,
-            @NotNull Exception e) {
-        mcMMO.p.getLogger().warning("Failed to save placed-block data for chunk (" + cx + ", "
-                + cz + ") in world '" + worldName + "': " + e);
-    }
-
-    private static void closeQuietly(@Nullable McMMOSimpleRegionFile regionFile) {
-        if (regionFile == null) {
-            return;
-        }
-        try {
-            regionFile.close();
-        } catch (Exception e) {
-            mcMMO.p.getLogger().warning("Failed to close placed-block region file: " + e);
-        }
     }
 
     private synchronized @Nullable ChunkStore readChunkStore(@NotNull World world, int cx, int cz)
@@ -219,7 +232,7 @@ public class HashChunkManager implements ChunkManager {
      * absent, and marks the chunk in-use for region file tracking.
      */
     private @NotNull ChunkStore getOrLoadChunkStore(@NotNull World world,
-            @NotNull CoordinateKey chunkKey) {
+                                                    @NotNull CoordinateKey chunkKey) {
         return chunkMap.computeIfAbsent(chunkKey, k -> {
             // Mark chunk in-use for region tracking
             chunkUsageMap.computeIfAbsent(
@@ -230,18 +243,6 @@ public class HashChunkManager implements ChunkManager {
             return loaded != null ? loaded
                     : new BitSetChunkStore(world, chunkKey.x(), chunkKey.z());
         });
-    }
-
-    /**
-     * Maps a world coordinate to this plugin's chunk-local index.
-     *
-     * <p>The mirrored mapping for negative coordinates (Math.abs instead of a proper floor
-     * modulo) is load-bearing for on-disk compatibility: every existing region file was written
-     * with it. Changing it to the mathematically correct {@code coordinate & 0xF} would
-     * silently corrupt the stored markers of every chunk with negative coordinates.
-     */
-    private static int toChunkLocal(int worldCoordinate) {
-        return Math.abs(worldCoordinate) % 16;
     }
 
     private synchronized boolean isIneligible(int x, int y, int z, @NotNull World world) {
@@ -300,7 +301,7 @@ public class HashChunkManager implements ChunkManager {
     }
 
     private @NotNull CoordinateKey blockCoordinateToChunkKey(@NotNull UUID worldUid, int x, int y,
-            int z) {
+                                                             int z) {
         return toChunkKey(worldUid, x >> 4, z >> 4);
     }
 

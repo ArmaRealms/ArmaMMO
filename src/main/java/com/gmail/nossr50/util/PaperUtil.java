@@ -1,10 +1,11 @@
 package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Reflection-based access to Paper-only APIs. All reflection is resolved once at class load and
@@ -18,10 +19,14 @@ public final class PaperUtil {
     private static final boolean IS_FOLIA;
     private static final boolean IS_PAPER;
 
-    /** Cached: {@code Player.lookAt(double, double, double, LookAnchor)} */
+    /**
+     * Cached: {@code Player.lookAt(double, double, double, LookAnchor)}
+     */
     private static final Method LOOK_AT_METHOD;
 
-    /** Cached: {@code LookAnchor.EYES} enum constant */
+    /**
+     * Cached: {@code LookAnchor.EYES} enum constant
+     */
     private static final Object LOOK_ANCHOR_EYES;
 
     static {
@@ -69,7 +74,7 @@ public final class PaperUtil {
 
     /**
      * @return {@code true} if we can call {@link #lookAt(Player, double, double, double)}
-     *         successfully (Paper or any Paper fork, including Folia)
+     * successfully (Paper or any Paper fork, including Folia)
      */
     public static boolean canLookAt() {
         return IS_PAPER && LOOK_AT_METHOD != null;
@@ -88,7 +93,7 @@ public final class PaperUtil {
      * @param z      target Z coordinate
      */
     public static void lookAt(final @NotNull Player player,
-            final double x, final double y, final double z) {
+                              final double x, final double y, final double z) {
         if (LOOK_AT_METHOD == null || LOOK_ANCHOR_EYES == null) {
             return;
         }

@@ -16,7 +16,9 @@ record TreasureLoadTally(int loaded, int incompatible, int invalid) {
                 invalid + other.invalid);
     }
 
-    /** Number of entries that were expected to load: those that loaded plus those that were invalid. */
+    /**
+     * Number of entries that were expected to load: those that loaded plus those that were invalid.
+     */
     int attempted() {
         return loaded + invalid;
     }

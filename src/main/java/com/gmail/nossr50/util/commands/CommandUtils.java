@@ -106,10 +106,10 @@ public final class CommandUtils {
      * given it must not act on whichever of them the database finds first.
      *
      * @return true, after telling the sender no such player exists, when the name is the
-     *         placeholder
+     * placeholder
      */
     public static boolean isInvalidOldUsername(@NotNull CommandSender sender,
-            @Nullable String playerName) {
+                                               @Nullable String playerName) {
         if (!UsernamePlaceholder.isInvalidOldUsername(playerName)) {
             return false;
         }

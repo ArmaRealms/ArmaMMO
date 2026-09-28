@@ -1,20 +1,5 @@
 package com.gmail.nossr50.config.skills.salvage;
 
-import static com.gmail.nossr50.util.ItemUtils.isCopperArmor;
-import static com.gmail.nossr50.util.ItemUtils.isCopperTool;
-import static com.gmail.nossr50.util.ItemUtils.isDiamondArmor;
-import static com.gmail.nossr50.util.ItemUtils.isDiamondTool;
-import static com.gmail.nossr50.util.ItemUtils.isGoldArmor;
-import static com.gmail.nossr50.util.ItemUtils.isGoldTool;
-import static com.gmail.nossr50.util.ItemUtils.isIronArmor;
-import static com.gmail.nossr50.util.ItemUtils.isIronTool;
-import static com.gmail.nossr50.util.ItemUtils.isLeatherArmor;
-import static com.gmail.nossr50.util.ItemUtils.isNetheriteArmor;
-import static com.gmail.nossr50.util.ItemUtils.isNetheriteTool;
-import static com.gmail.nossr50.util.ItemUtils.isPrismarineTool;
-import static com.gmail.nossr50.util.ItemUtils.isStoneTool;
-import static com.gmail.nossr50.util.ItemUtils.isStringTool;
-import static com.gmail.nossr50.util.ItemUtils.isWoodTool;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.datatypes.skills.ItemType;
@@ -38,6 +23,22 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
+
+import static com.gmail.nossr50.util.ItemUtils.isCopperArmor;
+import static com.gmail.nossr50.util.ItemUtils.isCopperTool;
+import static com.gmail.nossr50.util.ItemUtils.isDiamondArmor;
+import static com.gmail.nossr50.util.ItemUtils.isDiamondTool;
+import static com.gmail.nossr50.util.ItemUtils.isGoldArmor;
+import static com.gmail.nossr50.util.ItemUtils.isGoldTool;
+import static com.gmail.nossr50.util.ItemUtils.isIronArmor;
+import static com.gmail.nossr50.util.ItemUtils.isIronTool;
+import static com.gmail.nossr50.util.ItemUtils.isLeatherArmor;
+import static com.gmail.nossr50.util.ItemUtils.isNetheriteArmor;
+import static com.gmail.nossr50.util.ItemUtils.isNetheriteTool;
+import static com.gmail.nossr50.util.ItemUtils.isPrismarineTool;
+import static com.gmail.nossr50.util.ItemUtils.isStoneTool;
+import static com.gmail.nossr50.util.ItemUtils.isStringTool;
+import static com.gmail.nossr50.util.ItemUtils.isWoodTool;
 
 public class SalvageConfig extends BukkitConfig {
     private final HashSet<String> notSupported;

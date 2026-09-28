@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @deprecated XP for multi-block plants, chorus trees included, is verified and awarded by
- *         {@link PlantCollapseXpTask}
+ * {@link PlantCollapseXpTask}
  */
 @Deprecated(forRemoval = true, since = "2.3.000")
 public class DelayedHerbalismXPCheckTask extends CancellableRunnable {

@@ -6,12 +6,11 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.jetbrains.annotations.VisibleForTesting;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.VisibleForTesting;
 
 public class FormulaManager {
     private static final File formulaFile = new File(mcMMO.getFlatFileDirectory() + "formula.yml");

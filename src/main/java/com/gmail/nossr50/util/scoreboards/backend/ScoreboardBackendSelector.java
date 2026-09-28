@@ -1,8 +1,9 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
-import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public final class ScoreboardBackendSelector {
     // Highest Minecraft release line verified against the bundled scoreboard-library version.
@@ -17,7 +18,7 @@ public final class ScoreboardBackendSelector {
     }
 
     public static @NotNull ScoreboardBackendType select(final boolean isFolia,
-            final @NotNull MinecraftGameVersion version) {
+                                                        final @NotNull MinecraftGameVersion version) {
         final MinecraftGameVersion gameVersion = Objects.requireNonNull(version,
                 "version cannot be null");
 

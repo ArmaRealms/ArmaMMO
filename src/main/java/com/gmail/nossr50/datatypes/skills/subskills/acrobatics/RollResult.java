@@ -1,7 +1,8 @@
 package com.gmail.nossr50.datatypes.skills.subskills.acrobatics;
 
-import static java.util.Objects.requireNonNull;
 import org.bukkit.event.entity.EntityDamageEvent;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Immutable class representing the result of a roll action in acrobatics.

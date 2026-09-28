@@ -1,6 +1,5 @@
 package com.gmail.nossr50.runnables.items;
 
-import static com.gmail.nossr50.util.ChimaeraWing.expendChimaeraWing;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
@@ -17,6 +16,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+
+import static com.gmail.nossr50.util.ChimaeraWing.expendChimaeraWing;
 
 public class ChimaeraWingWarmup extends CancellableRunnable {
     private final McMMOPlayer mmoPlayer;

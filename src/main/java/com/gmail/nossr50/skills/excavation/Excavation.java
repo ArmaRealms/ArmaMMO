@@ -1,14 +1,14 @@
 package com.gmail.nossr50.skills.excavation;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.treasure.TreasureConfig;
 import com.gmail.nossr50.datatypes.treasure.ExcavationTreasure;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class Excavation {
     /**

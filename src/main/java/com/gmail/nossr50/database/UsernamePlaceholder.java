@@ -10,7 +10,9 @@ import org.jetbrains.annotations.Nullable;
 public final class UsernamePlaceholder {
     public static final String INVALID_OLD_USERNAME = "_INVALID_OLD_USERNAME_";
 
-    /** The spelling FlatFile wrote before both databases shared one placeholder. */
+    /**
+     * The spelling FlatFile wrote before both databases shared one placeholder.
+     */
     static final String LEGACY_FLATFILE_INVALID_OLD_USERNAME = "_INVALID_OLD_USERNAME_'";
 
     private UsernamePlaceholder() {
@@ -18,7 +20,7 @@ public final class UsernamePlaceholder {
 
     /**
      * @return true for either spelling of the placeholder, ignoring case, since names are
-     *         matched ignoring case everywhere else
+     * matched ignoring case everywhere else
      */
     public static boolean isInvalidOldUsername(@Nullable String playerName) {
         return INVALID_OLD_USERNAME.equalsIgnoreCase(playerName)

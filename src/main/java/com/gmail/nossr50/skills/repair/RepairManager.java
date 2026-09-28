@@ -279,7 +279,7 @@ public class RepairManager extends SkillManager {
      * prompt (for example through vanilla armor quick-equipping) starts a new confirmation
      * instead of being repaired.
      *
-     * @param item the item the player is attempting to repair
+     * @param item      the item the player is attempting to repair
      * @param actualize whether to start a new confirmation when none applies to the item
      * @return true if the player has confirmed repairing the given item
      */
@@ -446,7 +446,7 @@ public class RepairManager extends SkillManager {
             int enchantLevel = getArcaneForgingEnchantLevel(enchant.getValue());
 
             if (!ExperienceConfig.getInstance().allowUnsafeEnchantments()
-                && enchantLevel > enchant.getKey().getMaxLevel()) {
+                    && enchantLevel > enchant.getKey().getMaxLevel()) {
                 item.addUnsafeEnchantment(enchant.getKey(), enchantLevel);
             }
 

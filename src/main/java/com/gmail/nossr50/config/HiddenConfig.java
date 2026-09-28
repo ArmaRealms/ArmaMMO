@@ -32,7 +32,6 @@ public class HiddenConfig {
         }
     }
 
-
     public boolean useEnchantmentBuffs() {
         return useEnchantmentBuffs;
     }

@@ -1,6 +1,5 @@
 package com.gmail.nossr50.runnables.skills;
 
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.events.skills.rupture.McMMOEntityDamageByRuptureEvent;
 import com.gmail.nossr50.mcMMO;
@@ -9,15 +8,18 @@ import com.gmail.nossr50.util.MobHealthbarUtils;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
 
 public class RuptureTask extends CancellableRunnable {
 
@@ -59,20 +61,6 @@ public class RuptureTask extends CancellableRunnable {
         this.pureTickDamage = pureTickDamage;
     }
 
-    public static @Nullable RuptureTask getActive(@NotNull Entity target) {
-        return ACTIVE_RUPTURES.get(target.getUniqueId());
-    }
-
-    /**
-     * Registers this rupture as the target's active bleed and starts it ticking.
-     * The task removes itself from the registry when it is cancelled; on Folia the
-     * retired callback covers entities that are removed before the next tick.
-     */
-    public void schedule() {
-        ACTIVE_RUPTURES.put(targetEntity.getUniqueId(), this);
-        mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(targetEntity, this, this::cancel, 1, 1);
-    }
-
     /**
      * Deprecated constructor for the RuptureTask class.
      *
@@ -88,6 +76,20 @@ public class RuptureTask extends CancellableRunnable {
     public RuptureTask(@NotNull final McMMOPlayer ruptureSource, @NotNull final LivingEntity targetEntity,
                        final double pureTickDamage, final double ignored) {
         this(ruptureSource, targetEntity, pureTickDamage);
+    }
+
+    public static @Nullable RuptureTask getActive(@NotNull Entity target) {
+        return ACTIVE_RUPTURES.get(target.getUniqueId());
+    }
+
+    /**
+     * Registers this rupture as the target's active bleed and starts it ticking.
+     * The task removes itself from the registry when it is cancelled; on Folia the
+     * retired callback covers entities that are removed before the next tick.
+     */
+    public void schedule() {
+        ACTIVE_RUPTURES.put(targetEntity.getUniqueId(), this);
+        mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(targetEntity, this, this::cancel, 1, 1);
     }
 
     @Override

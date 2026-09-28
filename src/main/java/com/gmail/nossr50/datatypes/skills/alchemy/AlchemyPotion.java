@@ -1,8 +1,6 @@
 package com.gmail.nossr50.datatypes.skills.alchemy;
 
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.PotionUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class AlchemyPotion {
     private final @NotNull String potionConfigName;

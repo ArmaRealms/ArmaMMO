@@ -1,6 +1,5 @@
 package com.gmail.nossr50.util.text;
 
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -11,6 +10,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Utility class for String operations, including formatting and caching deterministic results to
@@ -32,6 +33,7 @@ public class StringUtils {
     private static final Map<EntityType, String> formattedEntityStrings = new ConcurrentHashMap<>();
     private static final Map<SuperAbilityType, String> formattedSuperAbilityStrings = new ConcurrentHashMap<>();
     private static final Map<Material, String> formattedMaterialStrings = new ConcurrentHashMap<>();
+
     /**
      * Gets a capitalized version of the target string. Results are cached to improve performance.
      *

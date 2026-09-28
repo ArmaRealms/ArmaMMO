@@ -1,8 +1,6 @@
 package com.gmail.nossr50.util.text;
 
-import com.gmail.nossr50.mcMMO;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;

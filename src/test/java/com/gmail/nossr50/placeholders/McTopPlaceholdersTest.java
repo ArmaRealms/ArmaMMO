@@ -1,14 +1,15 @@
 package com.gmail.nossr50.placeholders;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.gmail.nossr50.datatypes.database.LeaderboardSnapshot;
 import com.gmail.nossr50.datatypes.database.PlayerStat;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class McTopPlaceholdersTest {
     @Test

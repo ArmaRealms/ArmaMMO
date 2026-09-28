@@ -1,15 +1,16 @@
 package com.gmail.nossr50.util.sounds;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
 import static com.gmail.nossr50.util.sounds.SkillUnlockSoundThrottle.QUIET_WINDOW_MILLIS;
 import static com.gmail.nossr50.util.sounds.SkillUnlockSoundThrottle.clearAll;
 import static com.gmail.nossr50.util.sounds.SkillUnlockSoundThrottle.trackedPlayerCount;
 import static com.gmail.nossr50.util.sounds.SkillUnlockSoundThrottle.tryPlaySound;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 /**
  * Covers the quiet window logic keeping batched unlock notifications from spamming the
@@ -17,9 +18,13 @@ import org.junit.jupiter.api.Test;
  * seconds apart stays quiet end to end no matter how long it runs.
  */
 class SkillUnlockSoundThrottleTest {
-    /** Far enough from zero that the first opportunistic sweep gate always opens. */
+    /**
+     * Far enough from zero that the first opportunistic sweep gate always opens.
+     */
     private static final long START = 1_000_000L;
-    /** The scheduler staggers batched unlock notifications this far apart. */
+    /**
+     * The scheduler staggers batched unlock notifications this far apart.
+     */
     private static final long BATCH_STAGGER_MILLIS = 5_000L;
 
     private final UUID playerId = UUID.randomUUID();

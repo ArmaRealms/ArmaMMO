@@ -1,25 +1,11 @@
 package com.gmail.nossr50.config.treasure;
 
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.applyCustomNameAndLore;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.buildPotionItem;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.isPotionTypeResolvable;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logIncompatibleSummary;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logInvalidTreasure;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logLoadSummary;
-import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.parseData;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.treasure.ExcavationTreasure;
 import com.gmail.nossr50.datatypes.treasure.HylianTreasure;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.BlockUtils;
 import com.gmail.nossr50.util.LogUtils;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.configuration.ConfigurationSection;
@@ -31,6 +17,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.applyCustomNameAndLore;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.buildPotionItem;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.isPotionTypeResolvable;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logIncompatibleSummary;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logInvalidTreasure;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.logLoadSummary;
+import static com.gmail.nossr50.config.treasure.TreasureEntryLoader.parseData;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class TreasureConfig extends BukkitConfig {
 
@@ -58,6 +55,76 @@ public class TreasureConfig extends BukkitConfig {
         }
 
         return instance;
+    }
+
+    /**
+     * Classifies a single treasure entry without mutating state or building an {@link ItemStack},
+     * so it can be unit-tested directly against a {@link YamlConfiguration}.
+     *
+     * @param config       the loaded treasure configuration
+     * @param type         the treasure section (for example {@code Excavation})
+     * @param treasureName the entry key, optionally suffixed with {@code |data}
+     * @param retroMode    whether the server is running in Retro mode
+     * @param logger       logger used to report skipped entries
+     * @return whether the entry is loadable, incompatible with this MC version, or invalid
+     */
+    static @NotNull TreasureLoadResult classifyExcavationTreasure(
+            final @NotNull YamlConfiguration config, final @NotNull String type,
+            final @NotNull String treasureName, final boolean retroMode,
+            final @NotNull Logger logger) {
+        final String materialName = treasureName.split("[|]")[0];
+        final Material material = Material.matchMaterial(materialName);
+
+        if (material == null) {
+            LogUtils.debug(logger, "Skipping treasure '" + treasureName + "' in " + FILENAME
+                    + " because material '" + materialName
+                    + "' does not exist in this Minecraft version");
+            return TreasureLoadResult.INCOMPATIBLE;
+        }
+
+        final String base = type + "." + treasureName;
+
+        if (materialName.contains("POTION") && !isPotionTypeResolvable(config, base)) {
+            LogUtils.debug(logger, "Skipping treasure '" + treasureName + "' in " + FILENAME
+                    + " because its potion type does not exist in this Minecraft version");
+            return TreasureLoadResult.INCOMPATIBLE;
+        }
+
+        final short data;
+        try {
+            data = parseData(treasureName, config, base);
+        } catch (NumberFormatException e) {
+            logInvalidTreasure(logger, FILENAME, treasureName, "data suffix '"
+                    + treasureName.split("[|]")[1] + "' is not a number");
+            return TreasureLoadResult.INVALID;
+        }
+
+        if (material.isBlock() && (data > Byte.MAX_VALUE || data < Byte.MIN_VALUE)) {
+            logInvalidTreasure(logger, FILENAME, treasureName, "data value " + data + " is out of range");
+            return TreasureLoadResult.INVALID;
+        }
+
+        final int dropLevel = retroMode
+                ? config.getInt(base + LEVEL_REQUIREMENT_RETRO_MODE, -1)
+                : config.getInt(base + LEVEL_REQUIREMENT_STANDARD_MODE, -1);
+        if (dropLevel < 0) {
+            logInvalidTreasure(logger, FILENAME, treasureName, "missing or invalid Level_Requirement");
+            return TreasureLoadResult.INVALID;
+        }
+
+        final int xp = config.getInt(base + ".XP");
+        if (xp < 0) {
+            logInvalidTreasure(logger, FILENAME, treasureName, "XP value " + xp + " is negative");
+            return TreasureLoadResult.INVALID;
+        }
+
+        final double dropChance = config.getDouble(base + ".Drop_Chance");
+        if (dropChance < 0.0D) {
+            logInvalidTreasure(logger, FILENAME, treasureName, "Drop_Chance " + dropChance + " is negative");
+            return TreasureLoadResult.INVALID;
+        }
+
+        return TreasureLoadResult.LOADED;
     }
 
     @Override
@@ -131,79 +198,9 @@ public class TreasureConfig extends BukkitConfig {
         return new TreasureLoadTally(loaded, incompatibleNames.size(), invalid);
     }
 
-    /**
-     * Classifies a single treasure entry without mutating state or building an {@link ItemStack},
-     * so it can be unit-tested directly against a {@link YamlConfiguration}.
-     *
-     * @param config      the loaded treasure configuration
-     * @param type        the treasure section (for example {@code Excavation})
-     * @param treasureName the entry key, optionally suffixed with {@code |data}
-     * @param retroMode   whether the server is running in Retro mode
-     * @param logger      logger used to report skipped entries
-     * @return whether the entry is loadable, incompatible with this MC version, or invalid
-     */
-    static @NotNull TreasureLoadResult classifyExcavationTreasure(
-            final @NotNull YamlConfiguration config, final @NotNull String type,
-            final @NotNull String treasureName, final boolean retroMode,
-            final @NotNull Logger logger) {
-        final String materialName = treasureName.split("[|]")[0];
-        final Material material = Material.matchMaterial(materialName);
-
-        if (material == null) {
-            LogUtils.debug(logger, "Skipping treasure '" + treasureName + "' in " + FILENAME
-                    + " because material '" + materialName
-                    + "' does not exist in this Minecraft version");
-            return TreasureLoadResult.INCOMPATIBLE;
-        }
-
-        final String base = type + "." + treasureName;
-
-        if (materialName.contains("POTION") && !isPotionTypeResolvable(config, base)) {
-            LogUtils.debug(logger, "Skipping treasure '" + treasureName + "' in " + FILENAME
-                    + " because its potion type does not exist in this Minecraft version");
-            return TreasureLoadResult.INCOMPATIBLE;
-        }
-
-        final short data;
-        try {
-            data = parseData(treasureName, config, base);
-        } catch (NumberFormatException e) {
-            logInvalidTreasure(logger, FILENAME, treasureName, "data suffix '"
-                    + treasureName.split("[|]")[1] + "' is not a number");
-            return TreasureLoadResult.INVALID;
-        }
-
-        if (material.isBlock() && (data > Byte.MAX_VALUE || data < Byte.MIN_VALUE)) {
-            logInvalidTreasure(logger, FILENAME, treasureName, "data value " + data + " is out of range");
-            return TreasureLoadResult.INVALID;
-        }
-
-        final int dropLevel = retroMode
-                ? config.getInt(base + LEVEL_REQUIREMENT_RETRO_MODE, -1)
-                : config.getInt(base + LEVEL_REQUIREMENT_STANDARD_MODE, -1);
-        if (dropLevel < 0) {
-            logInvalidTreasure(logger, FILENAME, treasureName, "missing or invalid Level_Requirement");
-            return TreasureLoadResult.INVALID;
-        }
-
-        final int xp = config.getInt(base + ".XP");
-        if (xp < 0) {
-            logInvalidTreasure(logger, FILENAME, treasureName, "XP value " + xp + " is negative");
-            return TreasureLoadResult.INVALID;
-        }
-
-        final double dropChance = config.getDouble(base + ".Drop_Chance");
-        if (dropChance < 0.0D) {
-            logInvalidTreasure(logger, FILENAME, treasureName, "Drop_Chance " + dropChance + " is negative");
-            return TreasureLoadResult.INVALID;
-        }
-
-        return TreasureLoadResult.LOADED;
-    }
-
     private boolean buildAndRegisterTreasure(final @NotNull String type,
-            final @NotNull String treasureName, final boolean isExcavation,
-            final boolean isHylian) {
+                                             final @NotNull String treasureName, final boolean isExcavation,
+                                             final boolean isHylian) {
         final String base = type + "." + treasureName;
         final String materialName = treasureName.split("[|]")[0];
         final Material material = Material.matchMaterial(materialName);
@@ -238,8 +235,8 @@ public class TreasureConfig extends BukkitConfig {
     }
 
     private ItemStack buildItem(final @NotNull String type, final @NotNull String treasureName,
-            final @NotNull String materialName, final @NotNull Material material, final int amount,
-            final short data) {
+                                final @NotNull String materialName, final @NotNull Material material, final int amount,
+                                final short data) {
         if (materialName.contains("POTION")) {
             return buildPotionItem(config, type, treasureName, material, amount, data, FILENAME,
                     mcMMO.p.getLogger());
@@ -251,7 +248,7 @@ public class TreasureConfig extends BukkitConfig {
     }
 
     private void registerHylianDrops(final @NotNull String base,
-            final @NotNull HylianTreasure treasure) {
+                                     final @NotNull HylianTreasure treasure) {
         for (final String dropper : config.getStringList(base + ".Drops_From")) {
             switch (dropper) {
                 case "Bushes" -> {
@@ -284,7 +281,7 @@ public class TreasureConfig extends BukkitConfig {
     }
 
     private boolean migrateLegacyDropLevel(final @NotNull String type,
-            final @NotNull String treasureName) {
+                                           final @NotNull String treasureName) {
         boolean updated = false;
 
         // Legacy Drop_Level, needs to be converted

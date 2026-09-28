@@ -3,9 +3,10 @@ package com.gmail.nossr50.runnables;
 import com.gmail.nossr50.datatypes.meta.HealthbarSnapshot;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.MobHealthbarUtils;
-import java.util.function.LongSupplier;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.LongSupplier;
 
 public class MobHealthDisplayUpdaterTask extends CancellableRunnable {
 
@@ -37,9 +38,11 @@ public class MobHealthDisplayUpdaterTask extends CancellableRunnable {
         this(target, displayTimeMs, System::currentTimeMillis);
     }
 
-    /** Package-private — allows unit tests to inject a controllable time source. */
+    /**
+     * Package-private — allows unit tests to inject a controllable time source.
+     */
     MobHealthDisplayUpdaterTask(@NotNull LivingEntity target, long displayTimeMs,
-            @NotNull LongSupplier timeSource) {
+                                @NotNull LongSupplier timeSource) {
         this.target = target;
         this.displayTimeMs = displayTimeMs;
         this.timeSource = timeSource;

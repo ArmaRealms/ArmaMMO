@@ -1,6 +1,5 @@
 package com.gmail.nossr50.util;
 
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.meta.BonusDropMeta;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -20,6 +19,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+
+import static java.util.Objects.requireNonNull;
 
 public final class BlockUtils {
 

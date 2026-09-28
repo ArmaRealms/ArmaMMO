@@ -1,24 +1,25 @@
 package com.gmail.nossr50.commands.levelup;
 
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.placeholders.PapiPlaceholders;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
+
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Runs configured commands when a {@link LevelUpCondition} matches a level up. Commands run
@@ -35,12 +36,6 @@ import org.jetbrains.annotations.VisibleForTesting;
  */
 public final class LevelUpCommand implements LevelUpAction {
 
-    /** Who executes the configured commands. */
-    public enum RunAs {
-        CONSOLE,
-        PLAYER
-    }
-
     private static final String POWER_LEVEL_TOKEN = "{@power_level}";
     private static final Map<PrimarySkillType, String> SKILL_LEVEL_TOKENS;
 
@@ -56,9 +51,8 @@ public final class LevelUpCommand implements LevelUpAction {
     private final @NotNull LevelUpCondition condition;
     private final @NotNull List<String> commands;
     private final @NotNull RunAs runAs;
-
     public LevelUpCommand(@NotNull LevelUpCondition condition, @NotNull List<String> commands,
-            @NotNull RunAs runAs) {
+                          @NotNull RunAs runAs) {
         this.condition = requireNonNull(condition, "condition must not be null");
         this.commands = List.copyOf(requireNonNull(commands, "commands must not be null"));
         this.runAs = requireNonNull(runAs, "runAs must not be null");
@@ -71,44 +65,10 @@ public final class LevelUpCommand implements LevelUpAction {
         return new LevelUpCommandBuilder();
     }
 
-    @Override
-    public void onLevelUp(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull PrimarySkillType primarySkillType, @NotNull Set<Integer> levelsGained,
-            @NotNull Set<Integer> powerLevelsGained) {
-        for (int matchedLevel : condition.matchedSkillLevels(primarySkillType, levelsGained)) {
-            executeCommands(mmoPlayer, primarySkillType, matchedLevel, null);
-        }
-        for (int matchedPowerLevel : condition.matchedPowerLevels(powerLevelsGained)) {
-            executeCommands(mmoPlayer, null, null, matchedPowerLevel);
-        }
-    }
-
-    @VisibleForTesting
-    void executeCommands(@NotNull McMMOPlayer mmoPlayer, @Nullable PrimarySkillType skill,
-            @Nullable Integer matchedLevel, @Nullable Integer matchedPowerLevel) {
-        for (String command : commands) {
-            final String injected = PapiPlaceholders.replace(mmoPlayer.getPlayer(),
-                    injectPlaceholders(command, mmoPlayer, skill, matchedLevel,
-                            matchedPowerLevel));
-            LogUtils.debug(mcMMO.p.getLogger(), "Executing level up command: " + injected);
-            dispatch(mmoPlayer.getPlayer(), injected);
-        }
-    }
-
-    private void dispatch(@NotNull Player player, @NotNull String commandLine) {
-        if (runAs == RunAs.PLAYER) {
-            mcMMO.p.getFoliaLib().getScheduler().runAtEntity(player,
-                    task -> Bukkit.dispatchCommand(player, commandLine));
-        } else {
-            mcMMO.p.getFoliaLib().getScheduler().runNextTick(
-                    task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandLine));
-        }
-    }
-
     @VisibleForTesting
     static @NotNull String injectPlaceholders(@NotNull String command,
-            @NotNull McMMOPlayer mmoPlayer, @Nullable PrimarySkillType skill,
-            @Nullable Integer matchedLevel, @Nullable Integer matchedPowerLevel) {
+                                              @NotNull McMMOPlayer mmoPlayer, @Nullable PrimarySkillType skill,
+                                              @Nullable Integer matchedLevel, @Nullable Integer matchedPowerLevel) {
         final StringBuilder builder = new StringBuilder(command);
         replaceAll(builder, "{@player}", mmoPlayer.getPlayer().getName());
 
@@ -141,6 +101,40 @@ public final class LevelUpCommand implements LevelUpAction {
         while (index != -1) {
             builder.replace(index, index + from.length(), to);
             index = builder.indexOf(from, index + to.length());
+        }
+    }
+
+    @Override
+    public void onLevelUp(@NotNull McMMOPlayer mmoPlayer,
+                          @NotNull PrimarySkillType primarySkillType, @NotNull Set<Integer> levelsGained,
+                          @NotNull Set<Integer> powerLevelsGained) {
+        for (int matchedLevel : condition.matchedSkillLevels(primarySkillType, levelsGained)) {
+            executeCommands(mmoPlayer, primarySkillType, matchedLevel, null);
+        }
+        for (int matchedPowerLevel : condition.matchedPowerLevels(powerLevelsGained)) {
+            executeCommands(mmoPlayer, null, null, matchedPowerLevel);
+        }
+    }
+
+    @VisibleForTesting
+    void executeCommands(@NotNull McMMOPlayer mmoPlayer, @Nullable PrimarySkillType skill,
+                         @Nullable Integer matchedLevel, @Nullable Integer matchedPowerLevel) {
+        for (String command : commands) {
+            final String injected = PapiPlaceholders.replace(mmoPlayer.getPlayer(),
+                    injectPlaceholders(command, mmoPlayer, skill, matchedLevel,
+                            matchedPowerLevel));
+            LogUtils.debug(mcMMO.p.getLogger(), "Executing level up command: " + injected);
+            dispatch(mmoPlayer.getPlayer(), injected);
+        }
+    }
+
+    private void dispatch(@NotNull Player player, @NotNull String commandLine) {
+        if (runAs == RunAs.PLAYER) {
+            mcMMO.p.getFoliaLib().getScheduler().runAtEntity(player,
+                    task -> Bukkit.dispatchCommand(player, commandLine));
+        } else {
+            mcMMO.p.getFoliaLib().getScheduler().runNextTick(
+                    task -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandLine));
         }
     }
 
@@ -178,5 +172,13 @@ public final class LevelUpCommand implements LevelUpAction {
     public String toString() {
         return "LevelUpCommand{condition=" + condition + ", commands=" + commands
                 + ", runAs=" + runAs + '}';
+    }
+
+    /**
+     * Who executes the configured commands.
+     */
+    public enum RunAs {
+        CONSOLE,
+        PLAYER
     }
 }

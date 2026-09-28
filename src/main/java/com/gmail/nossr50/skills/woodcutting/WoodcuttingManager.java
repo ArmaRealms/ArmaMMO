@@ -124,6 +124,46 @@ public class WoodcuttingManager extends SkillManager {
         return ExperienceConfig.getInstance().getXp(PrimarySkillType.WOODCUTTING, block.getType());
     }
 
+    /**
+     * Handles the durability loss
+     *
+     * @param treeFellerBlocks List of blocks to be removed
+     * @param inHand           tool being used
+     * @param player           the player holding the item
+     * @return True if the tool can sustain the durability loss
+     */
+    private static boolean handleDurabilityLoss(@NotNull Set<Block> treeFellerBlocks,
+                                                @NotNull ItemStack inHand, @NotNull Player player) {
+        //Treat the NBT tag for unbreakable and the durability enchant differently
+        ItemMeta meta = inHand.getItemMeta();
+
+        if (meta != null && meta.isUnbreakable()) {
+            return true;
+        }
+
+        int durabilityLoss = 0;
+
+        for (Block block : treeFellerBlocks) {
+            if (BlockUtils.hasWoodcuttingXP(block)) {
+                durabilityLoss += mcMMO.p.getGeneralConfig().getAbilityToolDamage();
+            }
+        }
+
+        // Call PlayerItemDamageEvent first to make sure it's not cancelled
+        //TODO: Put this event stuff in handleDurabilityChange
+        final PlayerItemDamageEvent event = new PlayerItemDamageEvent(player, inHand,
+                durabilityLoss);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return true;
+        }
+
+        // Plugins may reduce the damage instead of cancelling (custom durability systems)
+        SkillUtils.handleDurabilityChange(inHand, event.getDamage());
+        return ItemUtils.getItemDamage(inHand) < ItemUtils.getItemMaxDamage(inHand);
+    }
+
     public boolean canUseLeafBlower(final ItemStack heldItem) {
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.WOODCUTTING_LEAF_BLOWER)
                 && hasUnlockedSubskill(getPlayer(), SubSkillType.WOODCUTTING_LEAF_BLOWER)
@@ -328,46 +368,6 @@ public class WoodcuttingManager extends SkillManager {
     }
 
     /**
-     * Handles the durability loss
-     *
-     * @param treeFellerBlocks List of blocks to be removed
-     * @param inHand tool being used
-     * @param player the player holding the item
-     * @return True if the tool can sustain the durability loss
-     */
-    private static boolean handleDurabilityLoss(@NotNull Set<Block> treeFellerBlocks,
-            @NotNull ItemStack inHand, @NotNull Player player) {
-        //Treat the NBT tag for unbreakable and the durability enchant differently
-        ItemMeta meta = inHand.getItemMeta();
-
-        if (meta != null && meta.isUnbreakable()) {
-            return true;
-        }
-
-        int durabilityLoss = 0;
-
-        for (Block block : treeFellerBlocks) {
-            if (BlockUtils.hasWoodcuttingXP(block)) {
-                durabilityLoss += mcMMO.p.getGeneralConfig().getAbilityToolDamage();
-            }
-        }
-
-        // Call PlayerItemDamageEvent first to make sure it's not cancelled
-        //TODO: Put this event stuff in handleDurabilityChange
-        final PlayerItemDamageEvent event = new PlayerItemDamageEvent(player, inHand,
-                durabilityLoss);
-        Bukkit.getPluginManager().callEvent(event);
-
-        if (event.isCancelled()) {
-            return true;
-        }
-
-        // Plugins may reduce the damage instead of cancelling (custom durability systems)
-        SkillUtils.handleDurabilityChange(inHand, event.getDamage());
-        return ItemUtils.getItemDamage(inHand) < ItemUtils.getItemMaxDamage(inHand);
-    }
-
-    /**
      * Handle a block addition to the list of blocks to be removed and to the list of blocks used
      * for future recursive calls of 'processTree()'
      *
@@ -464,7 +464,7 @@ public class WoodcuttingManager extends SkillManager {
                         if (ProbabilityUtil.isStaticSkillRNGSuccessful(
                                 PrimarySkillType.WOODCUTTING, mmoPlayer, 10)) {
                             final int randOrbCount = Math.max(1, Misc.getRandom().nextInt(100));
-                                Misc.spawnExperienceOrb(block.getLocation(), randOrbCount);
+                            Misc.spawnExperienceOrb(block.getLocation(), randOrbCount);
 
                         }
                     }
@@ -508,7 +508,7 @@ public class WoodcuttingManager extends SkillManager {
      * {@code BlockDropItemEvent}.
      *
      * @deprecated Use {@link com.gmail.nossr50.util.BlockUtils#markDropsAsBonus} for non-Tree
-     *     Feller breaks so drops are routed through {@code BlockDropItemEvent}.
+     * Feller breaks so drops are routed through {@code BlockDropItemEvent}.
      */
     @Deprecated(since = "2.2.052")
     void spawnHarvestLumberBonusDrops(@NotNull final Block block) {

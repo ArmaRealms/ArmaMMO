@@ -1,9 +1,10 @@
 package com.gmail.nossr50.listeners;
 
-import java.util.function.Predicate;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Predicate;
 
 /**
  * Pure mapping from eaten food to the diet sub-skill that boosts it, extracted from the food
@@ -12,12 +13,6 @@ import org.jetbrains.annotations.Nullable;
  * treatment today, so the split is not preserved here.
  */
 final class DietFoods {
-
-    enum Diet {
-        FARMERS,
-        FISHERMANS,
-        NONE
-    }
 
     private DietFoods() {
     }
@@ -55,7 +50,7 @@ final class DietFoods {
      * @return the eaten food material, or null when neither hand holds food
      */
     static @Nullable Material eatenFood(@NotNull Material mainHand, @NotNull Material offHand,
-            @NotNull Predicate<Material> isFood) {
+                                        @NotNull Predicate<Material> isFood) {
         if (isFood.test(mainHand)) {
             return mainHand;
         }
@@ -65,5 +60,11 @@ final class DietFoods {
         }
 
         return null;
+    }
+
+    enum Diet {
+        FARMERS,
+        FISHERMANS,
+        NONE
     }
 }

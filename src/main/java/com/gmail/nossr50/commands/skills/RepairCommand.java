@@ -68,7 +68,7 @@ public class RepairCommand extends SkillCommand {
                     ((mcMMO.p.getAdvancedConfig().getRepairMasteryMaxBonus() / mcMMO.p.getAdvancedConfig()
                             .getMaxBonusLevel(SubSkillType.REPAIR_REPAIR_MASTERY))
                             * skillValue), mcMMO.p.getAdvancedConfig()
-                                    .getRepairMasteryMaxBonus()) / 100D);
+                            .getRepairMasteryMaxBonus()) / 100D);
         }
 
         // SUPER REPAIR
@@ -111,7 +111,7 @@ public class RepairCommand extends SkillCommand {
 
             if (mcMMO.p.getAdvancedConfig()
                     .getArcaneForgingEnchantLossEnabled() || mcMMO.p.getAdvancedConfig()
-                            .getArcaneForgingDowngradeEnabled()) {
+                    .getArcaneForgingDowngradeEnabled()) {
                 messages.add(getStatMessage(true, true, SubSkillType.REPAIR_ARCANE_FORGING,
                         String.valueOf(arcaneBypass ? 100 : repairManager.getKeepEnchantChance()),
                         String.valueOf(arcaneBypass ? 0

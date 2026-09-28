@@ -1,10 +1,11 @@
 package com.gmail.nossr50.util.sounds;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
+
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
 
 /**
  * Decides whether a sub-skill unlock notification may play the unlock sound. Mass level

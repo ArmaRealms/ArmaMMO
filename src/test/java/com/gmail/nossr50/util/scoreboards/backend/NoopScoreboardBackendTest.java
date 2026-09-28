@@ -1,13 +1,13 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
-import org.junit.jupiter.api.Test;
 
 class NoopScoreboardBackendTest {
     @Test

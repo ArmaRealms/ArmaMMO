@@ -15,13 +15,14 @@ import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class SelfListener implements Listener {
     //Used in task scheduling and other things

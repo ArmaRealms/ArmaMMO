@@ -1,8 +1,9 @@
 package com.gmail.nossr50.placeholders;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import java.util.Locale;
 import org.bukkit.entity.Player;
+
+import java.util.Locale;
 
 public class SkillExpPlaceholder implements Placeholder {
     private final PapiExpansion papiExpansion;
@@ -12,7 +13,6 @@ public class SkillExpPlaceholder implements Placeholder {
         this.papiExpansion = papiExpansion;
         this.skill = skill;
     }
-
 
     @Override
     public String process(Player player, String params) {

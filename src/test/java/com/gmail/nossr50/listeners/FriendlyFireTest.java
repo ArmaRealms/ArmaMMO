@@ -1,9 +1,9 @@
 package com.gmail.nossr50.listeners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Contract coverage for the pure friendly-fire decision. The outcome drives both the damage
@@ -25,8 +25,8 @@ class FriendlyFireTest {
             "false, true,  true,  false, true,  false, CANCEL_FRIENDLY_FIRE",
     })
     void resolveShouldMatchTheFriendlyFireContract(boolean samePlayer, boolean partyEnabled,
-            boolean dataLoaded, boolean ffAllowed, boolean samePartyOrAllied, boolean bothPerms,
-            FriendlyFire.Outcome expected) {
+                                                   boolean dataLoaded, boolean ffAllowed, boolean samePartyOrAllied, boolean bothPerms,
+                                                   FriendlyFire.Outcome expected) {
         // Given - a combination of friendly-fire inputs
         // When - the outcome is resolved
         final FriendlyFire.Outcome outcome = FriendlyFire.resolve(samePlayer, partyEnabled,

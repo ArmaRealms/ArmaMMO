@@ -1,7 +1,5 @@
 package com.gmail.nossr50.skills.axes;
 
-import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
-import static com.gmail.nossr50.util.skills.SkillUtils.handleArmorDurabilityChange;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -22,6 +20,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
+import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
+import static com.gmail.nossr50.util.skills.SkillUtils.handleArmorDurabilityChange;
 
 public class AxesManager extends SkillManager {
     public AxesManager(final McMMOPlayer mmoPlayer) {
@@ -105,8 +106,8 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Critical Hit ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param target              The {@link LivingEntity} being affected by the ability
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public double criticalHit(LivingEntity target, double damage, double attackStrengthScale) {
@@ -152,7 +153,7 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Impact ability
      *
-     * @param target The {@link LivingEntity} being affected by Impact
+     * @param target              The {@link LivingEntity} being affected by Impact
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void impactCheck(@NotNull LivingEntity target, double attackStrengthScale) {
@@ -193,7 +194,7 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Greater Impact ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
+     * @param target              The {@link LivingEntity} being affected by the ability
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public double greaterImpact(@NotNull LivingEntity target, double attackStrengthScale) {
@@ -242,12 +243,12 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Skull Splitter ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param target              The {@link LivingEntity} being affected by the ability
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void skullSplitterCheck(@NotNull LivingEntity target, double damage,
-            double attackStrengthScale) {
+                                   double attackStrengthScale) {
         CombatUtils.applyAbilityAoE(getPlayer(), target,
                 (damage / Axes.skullSplitterModifier) * attackStrengthScale, attackStrengthScale,
                 skill);

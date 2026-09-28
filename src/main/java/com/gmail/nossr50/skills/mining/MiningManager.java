@@ -1,8 +1,5 @@
 package com.gmail.nossr50.skills.mining;
 
-import static com.gmail.nossr50.util.ItemUtils.isPickaxe;
-import static com.gmail.nossr50.util.Misc.getBlockCenter;
-
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -44,6 +41,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import static com.gmail.nossr50.util.ItemUtils.isPickaxe;
+import static com.gmail.nossr50.util.Misc.getBlockCenter;
+
 public class MiningManager extends SkillManager {
 
     private static final String BUDDING_AMETHYST = "budding_amethyst";
@@ -63,6 +63,27 @@ public class MiningManager extends SkillManager {
     private static boolean isDetonatorInHand(final Player player) {
         return player.getInventory().getItemInMainHand().getType() == mcMMO.p.getGeneralConfig()
                 .getDetonatorItem();
+    }
+
+    @Deprecated(since = "2.2.017", forRemoval = true)
+    public static double getOreBonus(int rank) {
+        return mcMMO.p.getAdvancedConfig().getOreBonus(rank);
+    }
+
+    /**
+     * @deprecated This value is no longer used by Blast Mining.
+     */
+    @Deprecated(forRemoval = true)
+    public static double getDebrisReduction(int rank) {
+        return mcMMO.p.getAdvancedConfig().getDebrisReduction(rank);
+    }
+
+    /**
+     * @deprecated This value is no longer used by Blast Mining.
+     */
+    @Deprecated(forRemoval = true)
+    public static int getDropMultiplier(int rank) {
+        return mcMMO.p.getAdvancedConfig().getDropMultiplier(rank);
     }
 
     public boolean canUseDemolitionsExpertise() {
@@ -348,19 +369,6 @@ public class MiningManager extends SkillManager {
         return (float) (mcMMO.p.getAdvancedConfig().getOreBonus(getBlastMiningTier()) / 100F);
     }
 
-    @Deprecated(since = "2.2.017", forRemoval = true)
-    public static double getOreBonus(int rank) {
-        return mcMMO.p.getAdvancedConfig().getOreBonus(rank);
-    }
-
-    /**
-     * @deprecated This value is no longer used by Blast Mining.
-     */
-    @Deprecated(forRemoval = true)
-    public static double getDebrisReduction(int rank) {
-        return mcMMO.p.getAdvancedConfig().getDebrisReduction(rank);
-    }
-
     /**
      * Gets the debris reduction for the player's Blast Mining tier.
      *
@@ -370,14 +378,6 @@ public class MiningManager extends SkillManager {
     @Deprecated(forRemoval = true)
     public double getDebrisReduction() {
         return getDebrisReduction(getBlastMiningTier());
-    }
-
-    /**
-     * @deprecated This value is no longer used by Blast Mining.
-     */
-    @Deprecated(forRemoval = true)
-    public static int getDropMultiplier(int rank) {
-        return mcMMO.p.getAdvancedConfig().getDropMultiplier(rank);
     }
 
     /**

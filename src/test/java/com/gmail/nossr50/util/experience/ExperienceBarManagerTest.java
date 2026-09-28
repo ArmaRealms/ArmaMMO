@@ -1,18 +1,19 @@
 package com.gmail.nossr50.util.experience;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.experience.ExperienceBarManager.XPBarSettingTarget;
 import com.gmail.nossr50.util.player.NotificationManager;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.logging.Logger;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 /**
  * Covers the chat feedback sent by XP bar setting changes. '/mmoxpbar disable' toggles every
@@ -47,7 +48,7 @@ class ExperienceBarManagerTest extends MMOTestEnvironment {
         notificationManager.verify(() -> NotificationManager.sendPlayerInformationChatOnlyPrefixed(
                 player, "Commands.XPBar.DisableAll"), times(1));
         notificationManager.verify(() -> NotificationManager.sendPlayerInformationChatOnlyPrefixed(
-                eq(player), eq("Commands.XPBar.SettingChanged"), any(String[].class)),
+                        eq(player), eq("Commands.XPBar.SettingChanged"), any(String[].class)),
                 never());
     }
 
@@ -60,7 +61,7 @@ class ExperienceBarManagerTest extends MMOTestEnvironment {
 
         // Then - the per-skill confirmation is still sent
         notificationManager.verify(() -> NotificationManager.sendPlayerInformationChatOnlyPrefixed(
-                eq(player), eq("Commands.XPBar.SettingChanged"), any(String[].class)),
+                        eq(player), eq("Commands.XPBar.SettingChanged"), any(String[].class)),
                 times(1));
     }
 }

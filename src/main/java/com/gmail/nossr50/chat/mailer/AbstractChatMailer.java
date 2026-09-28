@@ -2,16 +2,21 @@ package com.gmail.nossr50.chat.mailer;
 
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.util.text.TextUtils;
-import java.util.UUID;
 import net.kyori.adventure.text.TextComponent;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public abstract class AbstractChatMailer implements ChatMailer {
     protected final @NotNull Plugin pluginRef;
 
     public AbstractChatMailer(@NotNull final Plugin pluginRef) {
         this.pluginRef = pluginRef;
+    }
+
+    private static @NotNull String createLiteralMessageMarker(@NotNull String markerRole) {
+        return "\u0002MCMMO_" + markerRole + "_" + UUID.randomUUID() + "\u0003";
     }
 
     protected final @NotNull TextComponent formatLocaleStyleWithLiteralMessage(
@@ -25,9 +30,5 @@ public abstract class AbstractChatMailer implements ChatMailer {
 
         return TextUtils.insertLiteralTextAtMarkers(formattedTemplate, messageStartMarker,
                 messageEndMarker, literalMessage);
-    }
-
-    private static @NotNull String createLiteralMessageMarker(@NotNull String markerRole) {
-        return "\u0002MCMMO_" + markerRole + "_" + UUID.randomUUID() + "\u0003";
     }
 }

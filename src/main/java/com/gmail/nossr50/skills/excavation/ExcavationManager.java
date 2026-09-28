@@ -1,6 +1,5 @@
 package com.gmail.nossr50.skills.excavation;
 
-import static java.util.Objects.requireNonNull;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -18,8 +17,6 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -29,7 +26,10 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public class ExcavationManager extends SkillManager {
 
@@ -98,8 +98,8 @@ public class ExcavationManager extends SkillManager {
 
     /**
      * @deprecated Use {@link #rollAndCollectTreasureDrops(Block, Material)} instead. When called
-     *     during {@link org.bukkit.event.block.BlockDropItemEvent}, {@code block.getType()}
-     *     returns AIR, causing treasure lookup to fail silently.
+     * during {@link org.bukkit.event.block.BlockDropItemEvent}, {@code block.getType()}
+     * returns AIR, causing treasure lookup to fail silently.
      */
     @Deprecated(forRemoval = true, since = "2.2.053")
     public @NotNull List<ItemStack> rollAndCollectTreasureDrops(@NotNull final Block block) {
@@ -149,9 +149,9 @@ public class ExcavationManager extends SkillManager {
 
     /**
      * @deprecated Treasure drops are now handled via
-     *     {@link #rollAndCollectTreasureDrops(Block)} inside
-     *     {@link org.bukkit.event.block.BlockDropItemEvent} so they are visible to
-     *     Telekinesis-style enchant plugins.
+     * {@link #rollAndCollectTreasureDrops(Block)} inside
+     * {@link org.bukkit.event.block.BlockDropItemEvent} so they are visible to
+     * Telekinesis-style enchant plugins.
      */
     public void processExcavationBonusesOnBlock(final ExcavationTreasure treasure, final Location location) {
         //Spawn Vanilla XP orbs if a dice roll succeeds

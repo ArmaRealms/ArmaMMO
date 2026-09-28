@@ -1,5 +1,20 @@
 package com.gmail.nossr50.util.random;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import com.gmail.nossr50.events.skills.secondaryabilities.SubSkillEvent;
+import com.gmail.nossr50.util.Permissions;
+import org.bukkit.event.Event;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.HERBALISM;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
@@ -20,22 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import com.gmail.nossr50.events.skills.secondaryabilities.SubSkillEvent;
-import com.gmail.nossr50.util.Permissions;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import org.bukkit.event.Event;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 class ProbabilityUtilTest extends MMOTestEnvironment {
     final static double impactChance = 11D;
@@ -68,6 +67,95 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 Arguments.of(1000, 0, 0, 1000, 0.0),
                 // 1% chance at skill level 1000
                 Arguments.of(1000, 0, 1, 1000, 0.01)
+        );
+    }
+
+    /**
+     * Skill levels reported in issue #5210, where the Dodge chance on one server displayed
+     * values climbing past 100% between levels 201 and 850. Boundary levels around the
+     * reported "fixes itself" point and the max bonus level are included as well.
+     */
+    private static Stream<Arguments> reportedDodgeSkillLevels() {
+        return Stream.of(
+                Arguments.of(201),
+                Arguments.of(202),
+                Arguments.of(203),
+                Arguments.of(204),
+                Arguments.of(251),
+                Arguments.of(252),
+                Arguments.of(253),
+                Arguments.of(254),
+                Arguments.of(301),
+                Arguments.of(302),
+                Arguments.of(303),
+                Arguments.of(304),
+                Arguments.of(351),
+                Arguments.of(352),
+                Arguments.of(353),
+                Arguments.of(354),
+                Arguments.of(401),
+                Arguments.of(402),
+                Arguments.of(403),
+                Arguments.of(404),
+                Arguments.of(451),
+                Arguments.of(452),
+                Arguments.of(453),
+                Arguments.of(454),
+                Arguments.of(501),
+                Arguments.of(502),
+                Arguments.of(503),
+                Arguments.of(504),
+                Arguments.of(551),
+                Arguments.of(552),
+                Arguments.of(553),
+                Arguments.of(554),
+                Arguments.of(601),
+                Arguments.of(602),
+                Arguments.of(603),
+                Arguments.of(604),
+                Arguments.of(651),
+                Arguments.of(652),
+                Arguments.of(653),
+                Arguments.of(654),
+                Arguments.of(701),
+                Arguments.of(702),
+                Arguments.of(703),
+                Arguments.of(704),
+                Arguments.of(751),
+                Arguments.of(752),
+                Arguments.of(753),
+                Arguments.of(754),
+                Arguments.of(801),
+                Arguments.of(802),
+                Arguments.of(803),
+                Arguments.of(804),
+                Arguments.of(850),
+                Arguments.of(851),
+                Arguments.of(1000),
+                Arguments.of(1001),
+                Arguments.of(1500)
+        );
+    }
+
+    private static Stream<Arguments> greenThumbGuaranteedRollCases() {
+        return Stream.of(
+                // isLucky, herbalismLevel (ceiling 100% at level 100)
+                // Max bonus level without the lucky perk is a plain 100% chance
+                Arguments.of(false, 100),
+                // Max bonus level with the lucky perk is 100% * 1.333
+                Arguments.of(true, 100),
+                // 76% base chance with the lucky perk is 76% * 1.333 = 101.308%
+                Arguments.of(true, 76)
+        );
+    }
+
+    private static Stream<Arguments> probabilityMultiplierCases() {
+        return Stream.of(
+                // isLucky, probabilityMultiplier, shouldAlwaysSucceed
+                Arguments.of(false, 0.0D, false),
+                Arguments.of(true, 0.0D, false),
+                Arguments.of(false, 1.0D, true),
+                Arguments.of(true, 1.0D, true)
         );
     }
 
@@ -155,73 +243,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
         final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
                 ACROBATICS_DODGE);
         assertEquals("0.00%", rngDisplayValues[0]);
-    }
-
-    /**
-     * Skill levels reported in issue #5210, where the Dodge chance on one server displayed
-     * values climbing past 100% between levels 201 and 850. Boundary levels around the
-     * reported "fixes itself" point and the max bonus level are included as well.
-     */
-    private static Stream<Arguments> reportedDodgeSkillLevels() {
-        return Stream.of(
-                Arguments.of(201),
-                Arguments.of(202),
-                Arguments.of(203),
-                Arguments.of(204),
-                Arguments.of(251),
-                Arguments.of(252),
-                Arguments.of(253),
-                Arguments.of(254),
-                Arguments.of(301),
-                Arguments.of(302),
-                Arguments.of(303),
-                Arguments.of(304),
-                Arguments.of(351),
-                Arguments.of(352),
-                Arguments.of(353),
-                Arguments.of(354),
-                Arguments.of(401),
-                Arguments.of(402),
-                Arguments.of(403),
-                Arguments.of(404),
-                Arguments.of(451),
-                Arguments.of(452),
-                Arguments.of(453),
-                Arguments.of(454),
-                Arguments.of(501),
-                Arguments.of(502),
-                Arguments.of(503),
-                Arguments.of(504),
-                Arguments.of(551),
-                Arguments.of(552),
-                Arguments.of(553),
-                Arguments.of(554),
-                Arguments.of(601),
-                Arguments.of(602),
-                Arguments.of(603),
-                Arguments.of(604),
-                Arguments.of(651),
-                Arguments.of(652),
-                Arguments.of(653),
-                Arguments.of(654),
-                Arguments.of(701),
-                Arguments.of(702),
-                Arguments.of(703),
-                Arguments.of(704),
-                Arguments.of(751),
-                Arguments.of(752),
-                Arguments.of(753),
-                Arguments.of(754),
-                Arguments.of(801),
-                Arguments.of(802),
-                Arguments.of(803),
-                Arguments.of(804),
-                Arguments.of(850),
-                Arguments.of(851),
-                Arguments.of(1000),
-                Arguments.of(1001),
-                Arguments.of(1500)
-        );
     }
 
     /**
@@ -347,18 +368,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
         assertThat(probability.value()).isEqualTo(1.0D);
     }
 
-    private static Stream<Arguments> greenThumbGuaranteedRollCases() {
-        return Stream.of(
-                // isLucky, herbalismLevel (ceiling 100% at level 100)
-                // Max bonus level without the lucky perk is a plain 100% chance
-                Arguments.of(false, 100),
-                // Max bonus level with the lucky perk is 100% * 1.333
-                Arguments.of(true, 100),
-                // 76% base chance with the lucky perk is 76% * 1.333 = 101.308%
-                Arguments.of(true, 76)
-        );
-    }
-
     /**
      * Regression coverage for GitHub issue #4365. When the effective Green Thumb chance is at
      * or above 100% (with or without the lucky perk), the skill RNG must never fail.
@@ -366,7 +375,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     @ParameterizedTest
     @MethodSource("greenThumbGuaranteedRollCases")
     void greenThumbRollShouldNeverFailWhenChanceIsHundredPercent(boolean isLucky,
-            int herbalismLevel) {
+                                                                 int herbalismLevel) {
         // Given - Green Thumb is configured with a 100% ceiling reached at level 100
         when(advancedConfig.getMaximumProbability(HERBALISM_GREEN_THUMB)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(HERBALISM_GREEN_THUMB)).thenReturn(100);
@@ -451,16 +460,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
         assertThat(probability.value()).isCloseTo(0.1D, within(1.0E-12));
     }
 
-    private static Stream<Arguments> probabilityMultiplierCases() {
-        return Stream.of(
-                // isLucky, probabilityMultiplier, shouldAlwaysSucceed
-                Arguments.of(false, 0.0D, false),
-                Arguments.of(true, 0.0D, false),
-                Arguments.of(false, 1.0D, true),
-                Arguments.of(true, 1.0D, true)
-        );
-    }
-
     /**
      * Regression coverage for the probability-multiplier overload: the multiplier must apply to
      * players without the lucky perk too. It was previously discarded on the non-lucky branch,
@@ -469,7 +468,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     @ParameterizedTest
     @MethodSource("probabilityMultiplierCases")
     void skillRNGShouldApplyProbabilityMultiplierRegardlessOfLuck(boolean isLucky,
-            double probabilityMultiplier, boolean shouldAlwaysSucceed) {
+                                                                  double probabilityMultiplier, boolean shouldAlwaysSucceed) {
         // Given - Green Thumb is a guaranteed 100% chance at max bonus level
         when(advancedConfig.getMaximumProbability(HERBALISM_GREEN_THUMB)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(HERBALISM_GREEN_THUMB)).thenReturn(100);

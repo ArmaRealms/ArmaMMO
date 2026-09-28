@@ -1,5 +1,21 @@
 package com.gmail.nossr50.datatypes.experience;
 
+import com.gmail.nossr50.config.experience.ExperienceConfig;
+import com.gmail.nossr50.datatypes.player.PlayerProfile;
+import com.gmail.nossr50.datatypes.player.UniqueDataType;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import java.lang.reflect.Field;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,21 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.config.experience.ExperienceConfig;
-import com.gmail.nossr50.datatypes.player.PlayerProfile;
-import com.gmail.nossr50.datatypes.player.UniqueDataType;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
-import java.lang.reflect.Field;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.UUID;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 /**
  * Unit tests for {@link DiminishedReturnsCache}.
@@ -36,6 +37,18 @@ class DiminishedReturnsCacheTest {
 
     private MockedStatic<ExperienceConfig> mockedExperienceConfig;
     private ExperienceConfig experienceConfigMock;
+
+    /**
+     * Uses reflection to force the {@code latestExpiryTimeMillis} field to an arbitrary value.
+     * This lets tests drive the {@code hasActiveEntries()} return value without waiting for real
+     * time to elapse or calling into ExperienceConfig.
+     */
+    private static void setLatestExpiry(final DiminishedReturnsState state, final long epochMillis)
+            throws Exception {
+        final Field field = DiminishedReturnsState.class.getDeclaredField("latestExpiryTimeMillis");
+        field.setAccessible(true);
+        field.setLong(state, epochMillis);
+    }
 
     @BeforeEach
     void setupMocks() {
@@ -50,18 +63,6 @@ class DiminishedReturnsCacheTest {
     void teardown() {
         mockedExperienceConfig.close();
         DiminishedReturnsCache.clearAll();
-    }
-
-    /**
-     * Uses reflection to force the {@code latestExpiryTimeMillis} field to an arbitrary value.
-     * This lets tests drive the {@code hasActiveEntries()} return value without waiting for real
-     * time to elapse or calling into ExperienceConfig.
-     */
-    private static void setLatestExpiry(final DiminishedReturnsState state, final long epochMillis)
-            throws Exception {
-        final Field field = DiminishedReturnsState.class.getDeclaredField("latestExpiryTimeMillis");
-        field.setAccessible(true);
-        field.setLong(state, epochMillis);
     }
 
     @Nested

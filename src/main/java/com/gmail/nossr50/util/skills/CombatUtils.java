@@ -1,10 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
-
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -31,7 +26,6 @@ import com.gmail.nossr50.util.MobHealthbarUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
@@ -58,11 +52,18 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVP;
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.Permissions.canUseSubSkill;
+
 public final class CombatUtils {
 
     private static final ThreadLocal<Boolean> IN_MCMMO_DAMAGE
             = ThreadLocal.withInitial(() -> false);
 
+    private CombatUtils() {
+    }
 
     public static void safeDealDamage(@NotNull LivingEntity target, double amount) {
         safeDealDamage(target, amount, null);
@@ -71,12 +72,12 @@ public final class CombatUtils {
     /**
      * Safely deals damage to a target entity, preventing recursive mcMMO damage calls.
      *
-     * @param target The {@link LivingEntity} to damage.
-     * @param amount The amount of damage to deal.
+     * @param target   The {@link LivingEntity} to damage.
+     * @param amount   The amount of damage to deal.
      * @param attacker The {@link Entity} responsible for the damage, or null if none.
      */
     public static void safeDealDamage(@NotNull LivingEntity target, double amount,
-            @Nullable Entity attacker) {
+                                      @Nullable Entity attacker) {
         boolean prev = IN_MCMMO_DAMAGE.get();
 
         if (prev || target.isDead()) {
@@ -102,9 +103,6 @@ public final class CombatUtils {
         }
     }
 
-    private CombatUtils() {
-    }
-
     /**
      * Computes the attack strength scale for a melee hit by back-deriving it from the
      * raw event damage ({@link org.bukkit.event.entity.EntityDamageEvent#getDamage()})
@@ -126,10 +124,10 @@ public final class CombatUtils {
      * @param player the attacking player
      * @param event  the damage event, read before any mcMMO modifications are applied
      * @return a scale in {@code [0.0, 1.0]} representing the committed attack strength,
-     *         or {@code 1.0} when the {@code useAttackCooldown} config option is disabled
+     * or {@code 1.0} when the {@code useAttackCooldown} config option is disabled
      */
     static double computeAttackStrengthScale(@NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event) {
+                                             @NotNull EntityDamageByEntityEvent event) {
         if (!mcMMO.p.getAdvancedConfig().useAttackCooldown()) {
             return 1.0;
         }
@@ -170,7 +168,7 @@ public final class CombatUtils {
     }
 
     private static void processSwordCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                           @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -216,7 +214,7 @@ public final class CombatUtils {
     }
 
     private static void printFinalDamageDebug(@NotNull Player player, @NotNull EntityDamageByEntityEvent event,
-            @NotNull McMMOPlayer mmoPlayer, @Nullable String @Nullable ... extraInfoLines) {
+                                              @NotNull McMMOPlayer mmoPlayer, @Nullable String @Nullable ... extraInfoLines) {
         if (mmoPlayer.isDebugMode()) {
             player.sendMessage(
                     "Final Damage value after mcMMO modifiers: " + event.getFinalDamage());
@@ -231,7 +229,7 @@ public final class CombatUtils {
     }
 
     private static void printFinalDamageDebug(@NotNull Player player, @NotNull EntityDamageByEntityEvent event,
-            @NotNull McMMOPlayer mmoPlayer, double attackStrengthScale, @Nullable String @Nullable ... extraInfoLines) {
+                                              @NotNull McMMOPlayer mmoPlayer, double attackStrengthScale, @Nullable String @Nullable ... extraInfoLines) {
         if (mmoPlayer.isDebugMode()) {
             player.sendMessage(
                     "Final Damage value after mcMMO modifiers: " + event.getFinalDamage());
@@ -247,8 +245,8 @@ public final class CombatUtils {
     }
 
     private static void processTridentCombatMelee(@NotNull LivingEntity target,
-            @NotNull Player player, @NotNull EntityDamageByEntityEvent event,
-            double attackStrengthScale) {
+                                                  @NotNull Player player, @NotNull EntityDamageByEntityEvent event,
+                                                  double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -285,7 +283,7 @@ public final class CombatUtils {
     }
 
     private static void processTridentCombatRanged(@NotNull Trident trident, @NotNull LivingEntity target,
-            @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
+                                                   @NotNull Player player, @NotNull EntityDamageByEntityEvent event) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -317,7 +315,7 @@ public final class CombatUtils {
     }
 
     private static void processCrossbowsCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
+                                               @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
         double initialDamage = event.getDamage();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
@@ -358,7 +356,7 @@ public final class CombatUtils {
     }
 
     private static void processMacesCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                           @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -396,7 +394,7 @@ public final class CombatUtils {
     }
 
     private static void processSpearsCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -424,7 +422,6 @@ public final class CombatUtils {
                     * attackStrengthScale);
         }
 
-
         event.setDamage(boostedDamage);
 
         // Apply any non-damage effects here
@@ -435,7 +432,7 @@ public final class CombatUtils {
     }
 
     private static void processAxeCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                         @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -488,7 +485,7 @@ public final class CombatUtils {
     }
 
     private static void processUnarmedCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                             @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         if (event.getCause() == DamageCause.THORNS) {
             return;
         }
@@ -535,7 +532,7 @@ public final class CombatUtils {
     }
 
     private static void processTamingCombat(@NotNull LivingEntity target, @Nullable Player master,
-            @NotNull Wolf wolf, @NotNull EntityDamageByEntityEvent event) {
+                                            @NotNull Wolf wolf, @NotNull EntityDamageByEntityEvent event) {
         double initialDamage = event.getDamage();
         double boostedDamage = initialDamage;
 
@@ -570,7 +567,7 @@ public final class CombatUtils {
     }
 
     private static void processArcheryCombat(@NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
+                                             @NotNull EntityDamageByEntityEvent event, @NotNull AbstractArrow arrow) {
         double initialDamage = event.getDamage();
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
@@ -637,12 +634,12 @@ public final class CombatUtils {
      * unarmed, trident, and mace.
      *
      * @param isDamageTypeSpear whether the hit carries the spear damage type
-     * @param heldItem the attacker's main hand item
+     * @param heldItem          the attacker's main hand item
      * @return the melee skill for the hit, or null when no melee skill claims it
      */
     @VisibleForTesting
     static @Nullable PrimarySkillType resolveMeleeSkill(boolean isDamageTypeSpear,
-            @NotNull ItemStack heldItem) {
+                                                        @NotNull ItemStack heldItem) {
         if (isDamageTypeSpear) {
             return PrimarySkillType.SPEARS;
         } else if (ItemUtils.isSword(heldItem)) {
@@ -661,8 +658,8 @@ public final class CombatUtils {
     }
 
     private static void processMeleeCombat(@NotNull PrimarySkillType meleeSkill,
-            @NotNull LivingEntity target, @NotNull Player player,
-            @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
+                                           @NotNull LivingEntity target, @NotNull Player player,
+                                           @NotNull EntityDamageByEntityEvent event, double attackStrengthScale) {
         switch (meleeSkill) {
             case SPEARS -> processSpearsCombat(target, player, event, attackStrengthScale);
             case SWORDS -> processSwordCombat(target, player, event, attackStrengthScale);
@@ -677,7 +674,7 @@ public final class CombatUtils {
     }
 
     public static void processCombatAttack(@NotNull EntityDamageByEntityEvent event, @NotNull Entity painSourceRoot,
-            @NotNull LivingEntity target) {
+                                           @NotNull LivingEntity target) {
         final Entity painSource = event.getDamager();
         final EntityType entityType = painSource.getType();
         final String damageType = event.getDamageSource().getDamageType().getKey().getKey();
@@ -823,7 +820,7 @@ public final class CombatUtils {
      *
      * @param entity target entity
      * @deprecated Use {@link com.gmail.nossr50.util.MobHealthbarUtils#restoreNameFromSnapshot}
-     *     directly.
+     * directly.
      */
     @Deprecated
     public static void fixNames(@NotNull LivingEntity entity) {
@@ -855,13 +852,13 @@ public final class CombatUtils {
     /**
      * Calculate and return the RAW damage bonus from Limit Break before reductions
      *
-     * @param attacker attacking player
-     * @param defender defending living entity
+     * @param attacker     attacking player
+     * @param defender     defending living entity
      * @param subSkillType the specific limit break skill for calculations
      * @return the RAW damage bonus from Limit Break which is applied before reductions
      */
     public static int getLimitBreakDamage(@NotNull Player attacker, @NotNull LivingEntity defender,
-            @NotNull SubSkillType subSkillType) {
+                                          @NotNull SubSkillType subSkillType) {
         if (defender instanceof Player playerDefender) {
             return getLimitBreakDamageAgainstQuality(attacker, subSkillType,
                     getArmorQualityLevel(playerDefender));
@@ -874,13 +871,13 @@ public final class CombatUtils {
      * Calculate the RAW daamge value of limit break based on the armor quality of the target PVE
      * mobs are passed in with a value of 1000 for armor quality, hacky... I'll change it later
      *
-     * @param attacker Living entity attacker
-     * @param subSkillType Target limit break
+     * @param attacker          Living entity attacker
+     * @param subSkillType      Target limit break
      * @param armorQualityLevel Armor quality level
      * @return the RAW damage boost after its been mutated by armor quality
      */
     public static int getLimitBreakDamageAgainstQuality(@NotNull Player attacker, @NotNull SubSkillType subSkillType,
-            int armorQualityLevel) {
+                                                        int armorQualityLevel) {
         float rawDamageBoost = RankUtils.getRank(attacker, subSkillType);
 
         if (armorQualityLevel <= 4) {
@@ -929,7 +926,7 @@ public final class CombatUtils {
      * @return true if the player has access to the limit break
      */
     public static boolean canUseLimitBreak(@NotNull Player player, LivingEntity target,
-            @NotNull SubSkillType subSkillType) {
+                                           @NotNull SubSkillType subSkillType) {
         if (target instanceof Player || mcMMO.p.getAdvancedConfig().canApplyLimitBreakPVE()) {
             return RankUtils.hasUnlockedSubskill(player, subSkillType)
                     && Permissions.isSubSkillEnabled(player, subSkillType);
@@ -953,14 +950,14 @@ public final class CombatUtils {
     /**
      * Attempt to damage target for value dmg with reason ENTITY_ATTACK with damager attacker
      *
-     * @param target the entity to attempt to damage
-     * @param damage Amount of damage to attempt to do
+     * @param target   the entity to attempt to damage
+     * @param damage   Amount of damage to attempt to do
      * @param attacker the responsible entity (nullable)
      * @deprecated use {@link #safeDealDamage(LivingEntity, double, Entity)} instead
      */
     @Deprecated(since = "2.2.039")
     public static void dealDamage(@NotNull LivingEntity target, double damage,
-            @Nullable Entity attacker) {
+                                  @Nullable Entity attacker) {
         safeDealDamage(target, damage, attacker);
     }
 
@@ -981,16 +978,16 @@ public final class CombatUtils {
      * Apply Area-of-Effect ability actions.
      *
      * @param attacker The attacking player
-     * @param target The defending entity
-     * @param damage The initial damage amount
-     * @param type The type of skill being used
+     * @param target   The defending entity
+     * @param damage   The initial damage amount
+     * @param type     The type of skill being used
      * @deprecated use {@link #applyAbilityAoE(Player, LivingEntity, double, double,
      * PrimarySkillType)} instead; this overload reads the live attack cooldown, which is
      * unreliable during damage events on Paper 26.1.2+
      */
     @Deprecated(forRemoval = true, since = "2.3.000")
     public static void applyAbilityAoE(@NotNull Player attacker, @NotNull LivingEntity target,
-            double damage, @NotNull PrimarySkillType type) {
+                                       double damage, @NotNull PrimarySkillType type) {
         final McMMOPlayer mmoAttacker = UserManager.getPlayer(attacker);
         applyAbilityAoE(attacker, target, damage,
                 mmoAttacker != null ? mmoAttacker.getAttackStrength() : 1.0, type);
@@ -999,14 +996,14 @@ public final class CombatUtils {
     /**
      * Apply Area-of-Effect ability actions.
      *
-     * @param attacker The attacking player
-     * @param target The defending entity
-     * @param damage The initial damage amount
+     * @param attacker            The attacking player
+     * @param target              The defending entity
+     * @param damage              The initial damage amount
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
-     * @param type The type of skill being used
+     * @param type                The type of skill being used
      */
     public static void applyAbilityAoE(@NotNull Player attacker, @NotNull LivingEntity target,
-            double damage, double attackStrengthScale, @NotNull PrimarySkillType type) {
+                                       double damage, double attackStrengthScale, @NotNull PrimarySkillType type) {
         int numberOfTargets = getTier(attacker.getInventory()
                 .getItemInMainHand()); // The higher the weapon tier, the more targets you hit
         double damageAmount = Math.max(damage, 1);
@@ -1061,25 +1058,25 @@ public final class CombatUtils {
     /**
      * Start the task that gives combat XP.
      *
-     * @param mmoPlayer The attacking player
-     * @param target The defending entity
+     * @param mmoPlayer        The attacking player
+     * @param target           The defending entity
      * @param primarySkillType The skill being used
      */
     public static void processCombatXP(@NotNull McMMOPlayer mmoPlayer, @NotNull LivingEntity target,
-            @NotNull PrimarySkillType primarySkillType) {
+                                       @NotNull PrimarySkillType primarySkillType) {
         processCombatXP(mmoPlayer, target, primarySkillType, 1.0);
     }
 
     /**
      * Start the task that gives combat XP.
      *
-     * @param mmoPlayer The attacking player
-     * @param target The defending entity
+     * @param mmoPlayer        The attacking player
+     * @param target           The defending entity
      * @param primarySkillType The skill being used
-     * @param multiplier final XP result will be multiplied by this
+     * @param multiplier       final XP result will be multiplied by this
      */
     public static void processCombatXP(@NotNull McMMOPlayer mmoPlayer, @NotNull LivingEntity target,
-            @NotNull PrimarySkillType primarySkillType, double multiplier) {
+                                       @NotNull PrimarySkillType primarySkillType, double multiplier) {
         final double baseXP;
         final XPGainReason xpGainReason;
 
@@ -1105,7 +1102,7 @@ public final class CombatUtils {
     }
 
     private static boolean isPvpXpIneligible(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull Player defender) {
+                                             @NotNull Player defender) {
         return defender.equals(mmoPlayer.getPlayer())
                 || !ExperienceConfig.getInstance().getExperienceGainsPlayerVersusPlayerEnabled()
                 || (mcMMO.p.getPartyConfig().isPartyEnabled()
@@ -1113,7 +1110,7 @@ public final class CombatUtils {
     }
 
     private static double calculatePvpBaseXP(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull Player defender) {
+                                             @NotNull Player defender) {
         if (defender.isOnline() && SkillUtils.cooldownExpired(mmoPlayer.getRespawnATS(),
                 Misc.PLAYER_RESPAWN_COOLDOWN_SECONDS)) {
             return 20 * ExperienceConfig.getInstance().getPlayerVersusPlayerXP();
@@ -1214,7 +1211,7 @@ public final class CombatUtils {
     /**
      * Checks to see if an entity is currently invincible.
      *
-     * @param entity The {@link LivingEntity} to check
+     * @param entity      The {@link LivingEntity} to check
      * @param eventDamage The damage from the event the entity is involved in
      * @return true if the entity is invincible, false otherwise
      */
@@ -1231,7 +1228,7 @@ public final class CombatUtils {
      * Checks to see if an entity is currently friendly toward a given player.
      *
      * @param attacker The player to check.
-     * @param pet The entity to check.
+     * @param pet      The entity to check.
      * @return true if the entity is friendly, false otherwise
      */
     public static boolean isFriendlyPet(@NotNull Player attacker, @NotNull Tameable pet) {
@@ -1276,7 +1273,7 @@ public final class CombatUtils {
     }
 
     public static void handleHealthbars(@NotNull Entity attacker, @NotNull LivingEntity target,
-            double damage, @NotNull mcMMO plugin) {
+                                        double damage, @NotNull mcMMO plugin) {
         if (!(attacker instanceof Player player)) {
             return;
         }

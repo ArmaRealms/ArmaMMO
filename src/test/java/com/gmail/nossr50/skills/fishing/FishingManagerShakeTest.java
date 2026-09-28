@@ -1,17 +1,5 @@
 package com.gmail.nossr50.skills.fishing;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -26,10 +14,6 @@ import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.CombatUtils;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
@@ -47,6 +31,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.logging.Logger;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Shake ability: the RNG gate, drop selection, the per-mob special cases (sheep
@@ -99,7 +100,7 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
     }
 
     private <T extends LivingEntity> T mockShakeTarget(Class<T> entityClass,
-            EntityType entityType, double maxHealth) {
+                                                       EntityType entityType, double maxHealth) {
         final T target = mock(entityClass);
         when(target.getType()).thenReturn(entityType);
         when(target.getMaxHealth()).thenReturn(maxHealth);
@@ -109,7 +110,7 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
 
     private void stubSuccessfulShakeRoll(MockedStatic<ProbabilityUtil> probabilityUtil) {
         probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                eq(PrimarySkillType.FISHING), any(McMMOPlayer.class), anyDouble()))
+                        eq(PrimarySkillType.FISHING), any(McMMOPlayer.class), anyDouble()))
                 .thenReturn(true);
     }
 
@@ -155,15 +156,15 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
             "60, 10",
     })
     void successfulShakeShouldSpawnTheDropDamageTheMobAndPayXp(double maxHealth,
-            double expectedDamage) {
+                                                               double expectedDamage) {
         // Given - a shakeable mob with a guaranteed drop
         configureShakeDrop(EntityType.COW, Material.LEATHER);
         final LivingEntity target =
                 mockShakeTarget(LivingEntity.class, EntityType.COW, maxHealth);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -186,8 +187,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         when(sheep.isSheared()).thenReturn(true);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -208,8 +209,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         when(sheep.isSheared()).thenReturn(false);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -231,8 +232,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         when(shakeDrop.getItemMeta()).thenReturn(skullMeta);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -253,8 +254,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         final LivingEntity target = mockShakeTarget(LivingEntity.class, EntityType.COW, 8);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -279,8 +280,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         }).when(pluginManager).callEvent(any(Event.class));
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -310,8 +311,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         }).when(pluginManager).callEvent(any(Event.class));
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds
@@ -339,8 +340,8 @@ class FishingManagerShakeTest extends MMOTestEnvironment {
         when(targetInventory.getItem(0)).thenReturn(stolenStack);
 
         try (MockedStatic<ProbabilityUtil> probabilityUtil = mockStatic(ProbabilityUtil.class);
-                MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
-                MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+             MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class);
+             MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
             stubSuccessfulShakeRoll(probabilityUtil);
 
             // When - the shake roll succeeds

@@ -6,16 +6,17 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Verifies that the connected blocks of a multi-block plant (bamboo, sugar cane, kelp, cactus,
@@ -67,8 +68,8 @@ public class PlantCollapseXpTask extends CancellableRunnable {
 
     /**
      * @param mmoPlayer the player who broke the plant
-     * @param xpBudget the most XP this task may pay out in total, after the origin block's
-     * immediate reward is accounted for (tall-plant XP limits)
+     * @param xpBudget  the most XP this task may pay out in total, after the origin block's
+     *                  immediate reward is accounted for (tall-plant XP limits)
      */
     public PlantCollapseXpTask(@NotNull McMMOPlayer mmoPlayer, int xpBudget) {
         this.mmoPlayer = mmoPlayer;
@@ -76,12 +77,37 @@ public class PlantCollapseXpTask extends CancellableRunnable {
     }
 
     /**
+     * Revokes any pending claim on a position. Called when a new BlockBreakEvent breaks the
+     * position directly, making that event the authoritative source of rewards for it.
+     *
+     * @param block the block being broken by an event
+     */
+    public static void revokeClaim(@NotNull Block block) {
+        PENDING_VERIFICATIONS.remove(BlockPosition.of(block));
+    }
+
+    /**
+     * Drops every pending claim. Called on plugin disable so reloads never leave stale
+     * world references behind; also used by tests.
+     */
+    public static void clearPendingVerifications() {
+        PENDING_VERIFICATIONS.clear();
+    }
+
+    private static boolean isBlockGone(Material material) {
+        // Waterlogged plants like kelp and tall seagrass leave water behind instead of air,
+        // or a bubble column when they break above magma or soul sand
+        return material.isAir() || material == Material.WATER
+                || material == Material.BUBBLE_COLUMN;
+    }
+
+    /**
      * Claims a plant block for collapse verification. The claim fails when another task is
      * already watching the position, which prevents rapid re-breaks from collecting XP for the
      * same blocks more than once.
      *
-     * @param block the plant block expected to break on an upcoming tick
-     * @param xp the XP this block pays if it actually breaks
+     * @param block         the plant block expected to break on an upcoming tick
+     * @param xp            the XP this block pays if it actually breaks
      * @param wasIneligible whether the block tracker had the position marked as player-placed
      * @return true if this task now owns the position
      */
@@ -108,24 +134,6 @@ public class PlantCollapseXpTask extends CancellableRunnable {
     public void schedule(@NotNull Location originLocation) {
         maxRuns = pendingBlocks.size() + SETTLE_GRACE_TICKS;
         mcMMO.p.getFoliaLib().getScheduler().runAtLocationTimer(originLocation, this, 1, 1);
-    }
-
-    /**
-     * Revokes any pending claim on a position. Called when a new BlockBreakEvent breaks the
-     * position directly, making that event the authoritative source of rewards for it.
-     *
-     * @param block the block being broken by an event
-     */
-    public static void revokeClaim(@NotNull Block block) {
-        PENDING_VERIFICATIONS.remove(BlockPosition.of(block));
-    }
-
-    /**
-     * Drops every pending claim. Called on plugin disable so reloads never leave stale
-     * world references behind; also used by tests.
-     */
-    public static void clearPendingVerifications() {
-        PENDING_VERIFICATIONS.clear();
     }
 
     @Override
@@ -194,13 +202,6 @@ public class PlantCollapseXpTask extends CancellableRunnable {
         }
     }
 
-    private static boolean isBlockGone(Material material) {
-        // Waterlogged plants like kelp and tall seagrass leave water behind instead of air,
-        // or a bubble column when they break above magma or soul sand
-        return material.isAir() || material == Material.WATER
-                || material == Material.BUBBLE_COLUMN;
-    }
-
     /**
      * Immutable registry key for a claimed position. Deliberately built from the world UUID
      * instead of holding World or Location references, so pending claims never retain a world
@@ -214,6 +215,6 @@ public class PlantCollapseXpTask extends CancellableRunnable {
     }
 
     private record PendingPlantBlock(Block block, BlockPosition position, int xp,
-            boolean wasIneligible) {
+                                     boolean wasIneligible) {
     }
 }

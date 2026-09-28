@@ -1,6 +1,5 @@
 package com.gmail.nossr50.skills.alchemy;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -14,6 +13,8 @@ import com.gmail.nossr50.util.skills.RankUtils;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class AlchemyManager extends SkillManager {
     private static final double LUCKY_MODIFIER = 4.0 / 3.0;

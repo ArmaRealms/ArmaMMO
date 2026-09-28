@@ -1,17 +1,5 @@
 package com.gmail.nossr50.database;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.AdvancedConfig;
 import com.gmail.nossr50.config.GeneralConfig;
@@ -28,6 +16,29 @@ import com.gmail.nossr50.util.TestFileCleanup;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.upgrade.UpgradeManager;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Server;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.mariadb.MariaDBContainer;
+import org.testcontainers.mysql.MySQLContainer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -46,28 +57,18 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Server;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.junit.jupiter.api.Tag;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.mariadb.MariaDBContainer;
-import org.testcontainers.mysql.MySQLContainer;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Tag("docker")
 @TestInstance(Lifecycle.PER_CLASS)
@@ -78,7 +79,13 @@ class SQLDatabaseManagerTest {
     private static final MySQLContainer MYSQL_CONTAINER = SharedSqlContainers.MYSQL_CONTAINER;
     private static final MariaDBContainer MARIADB_CONTAINER =
             SharedSqlContainers.MARIADB_CONTAINER;
-
+    /**
+     * Every non-child skill column, plus {@code total}, that {@code readLeaderboard} sorts on and
+     * therefore must be indexed. Taken straight from production so these tests always cover the
+     * exact columns the schema and index migration maintain.
+     */
+    private static final List<String> LEADERBOARD_INDEX_COLUMNS =
+            SQLDatabaseManager.leaderboardIndexColumns();
     private static MockedStatic<mcMMO> mockedMcMMO;
     private static MockedStatic<ExperienceConfig> mockedExperienceConfig;
     private static GeneralConfig generalConfig;
@@ -88,56 +95,8 @@ class SQLDatabaseManagerTest {
     private static MinecraftGameVersion minecraftGameVersion;
     private static File testDataFolder;
 
-    // --- DB flavors you support ---
-    enum DbFlavor {
-        MYSQL,
-        MARIADB
-    }
-
     static Stream<DbFlavor> dbFlavors() {
         return Stream.of(DbFlavor.MYSQL, DbFlavor.MARIADB);
-    }
-
-    @BeforeAll
-    void setUpAll() {
-        // GIVEN a fully mocked mcMMO environment
-        minecraftGameVersion = mock(MinecraftGameVersion.class);
-        when(minecraftGameVersion.isAtLeast(anyInt(), anyInt(), anyInt())).thenReturn(true);
-
-        mockedMcMMO = Mockito.mockStatic(mcMMO.class);
-        mcMMO.p = Mockito.mock(mcMMO.class);
-        when(mcMMO.p.getLogger()).thenReturn(logger);
-        try {
-            testDataFolder = java.nio.file.Files.createTempDirectory("mcmmo-sql-test-data-").toFile();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to create temp test data folder", e);
-        }
-        when(mcMMO.p.getDataFolder()).thenReturn(testDataFolder);
-        when(mcMMO.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
-
-        mockGeneralConfigBase();
-
-        advancedConfig = Mockito.mock(AdvancedConfig.class);
-        when(mcMMO.p.getAdvancedConfig()).thenReturn(advancedConfig);
-        when(mcMMO.p.getAdvancedConfig().getStartingLevel()).thenReturn(0);
-
-        ExperienceConfig experienceConfig = Mockito.mock(ExperienceConfig.class);
-        when(experienceConfig.getDiminishedReturnsEnabled()).thenReturn(false);
-        mockedExperienceConfig = Mockito.mockStatic(ExperienceConfig.class);
-        mockedExperienceConfig.when(ExperienceConfig::getInstance).thenReturn(experienceConfig);
-
-        skillTools = new SkillTools(mcMMO.p);
-        when(mcMMO.p.getSkillTools()).thenReturn(skillTools);
-
-        upgradeManager = Mockito.mock(UpgradeManager.class);
-        when(mcMMO.getUpgradeManager()).thenReturn(upgradeManager);
-        when(mcMMO.getUpgradeManager().shouldUpgrade(any())).thenReturn(false);
-
-        // Null player lookup, shouldn't affect tests
-        Server server = mock(Server.class);
-        when(mcMMO.p.getServer()).thenReturn(server);
-        when(server.getPlayerExact(anyString()))
-                .thenReturn(null);
     }
 
     @AfterAll
@@ -187,6 +146,59 @@ class SQLDatabaseManagerTest {
         when(generalConfig.getMobHealthbarDefault()).thenReturn(MobHealthbarType.HEARTS);
     }
 
+    /**
+     * A player who is online, the only one whose name replaces the stored one.
+     */
+    private static Player onlinePlayer(String name, UUID uuid) {
+        final Player player = Mockito.mock(Player.class);
+        when(player.getName()).thenReturn(name);
+        when(player.getUniqueId()).thenReturn(uuid);
+        when(player.isOnline()).thenReturn(true);
+        return player;
+    }
+
+    @BeforeAll
+    void setUpAll() {
+        // GIVEN a fully mocked mcMMO environment
+        minecraftGameVersion = mock(MinecraftGameVersion.class);
+        when(minecraftGameVersion.isAtLeast(anyInt(), anyInt(), anyInt())).thenReturn(true);
+
+        mockedMcMMO = Mockito.mockStatic(mcMMO.class);
+        mcMMO.p = Mockito.mock(mcMMO.class);
+        when(mcMMO.p.getLogger()).thenReturn(logger);
+        try {
+            testDataFolder = java.nio.file.Files.createTempDirectory("mcmmo-sql-test-data-").toFile();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create temp test data folder", e);
+        }
+        when(mcMMO.p.getDataFolder()).thenReturn(testDataFolder);
+        when(mcMMO.getMinecraftGameVersion()).thenReturn(minecraftGameVersion);
+
+        mockGeneralConfigBase();
+
+        advancedConfig = Mockito.mock(AdvancedConfig.class);
+        when(mcMMO.p.getAdvancedConfig()).thenReturn(advancedConfig);
+        when(mcMMO.p.getAdvancedConfig().getStartingLevel()).thenReturn(0);
+
+        ExperienceConfig experienceConfig = Mockito.mock(ExperienceConfig.class);
+        when(experienceConfig.getDiminishedReturnsEnabled()).thenReturn(false);
+        mockedExperienceConfig = Mockito.mockStatic(ExperienceConfig.class);
+        mockedExperienceConfig.when(ExperienceConfig::getInstance).thenReturn(experienceConfig);
+
+        skillTools = new SkillTools(mcMMO.p);
+        when(mcMMO.p.getSkillTools()).thenReturn(skillTools);
+
+        upgradeManager = Mockito.mock(UpgradeManager.class);
+        when(mcMMO.getUpgradeManager()).thenReturn(upgradeManager);
+        when(mcMMO.getUpgradeManager().shouldUpgrade(any())).thenReturn(false);
+
+        // Null player lookup, shouldn't affect tests
+        Server server = mock(Server.class);
+        when(mcMMO.p.getServer()).thenReturn(server);
+        when(server.getPlayerExact(anyString()))
+                .thenReturn(null);
+    }
+
     private JdbcDatabaseContainer<?> containerFor(DbFlavor flavor) {
         return switch (flavor) {
             case MYSQL -> MYSQL_CONTAINER;
@@ -215,6 +227,10 @@ class SQLDatabaseManagerTest {
         return new SQLDatabaseManager(managerLogger, "com.mysql.cj.jdbc.Driver");
     }
 
+    // ------------------------------------------------------------------------
+    // Connection / basic wiring
+    // ------------------------------------------------------------------------
+
     /**
      * Helper to wipe all core mcMMO SQL tables for a given DB flavor.
      * This keeps tests isolated.
@@ -222,7 +238,7 @@ class SQLDatabaseManagerTest {
     private void truncateAllCoreTables(DbFlavor flavor) {
         SQLDatabaseManager databaseManager = createManagerFor(flavor);
         try (Connection connection = databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             // Order matters because of foreign key constraints in some setups
             // noinspection SqlWithoutWhere
@@ -243,7 +259,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // Connection / basic wiring
+    // New user creation & initialization
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - getConnection for all pool identifiers")
@@ -268,7 +284,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // New user creation & initialization
+    // Saving skill levels / XP
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - newUser initializes skill levels and XP")
@@ -301,10 +317,6 @@ class SQLDatabaseManagerTest {
             databaseManager.onDisable();
         }
     }
-
-    // ------------------------------------------------------------------------
-    // Saving skill levels / XP
-    // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - saveUser persists skill level values")
     @MethodSource("dbFlavors")
@@ -355,6 +367,10 @@ class SQLDatabaseManagerTest {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Schema upgrades
+    // ------------------------------------------------------------------------
+
     @ParameterizedTest(name = "{0} - saveUser persists skill XP values")
     @MethodSource("dbFlavors")
     void whenSavingSkillXpValuesShouldPersistToDatabase(DbFlavor flavor) {
@@ -403,10 +419,6 @@ class SQLDatabaseManagerTest {
             databaseManager.onDisable();
         }
     }
-
-    // ------------------------------------------------------------------------
-    // Schema upgrades
-    // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - upgrades legacy schema to add spears columns")
     @MethodSource("dbFlavors")
@@ -468,6 +480,10 @@ class SQLDatabaseManagerTest {
         when(upgradeManager.shouldUpgrade(any(UpgradeType.class))).thenReturn(false);
     }
 
+    // ------------------------------------------------------------------------
+    // New user -> rows in all core tables
+    // ------------------------------------------------------------------------
+
     @ParameterizedTest(name = "{0} - when all upgrades are required, all upgrade helpers execute")
     @MethodSource("dbFlavors")
     void whenAllUpgradesRequiredShouldExecuteAllUpgradeHelpers(DbFlavor flavor) {
@@ -492,7 +508,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // New user -> rows in all core tables
+    // getStoredUsers
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - newUser creates rows in all tables")
@@ -515,7 +531,7 @@ class SQLDatabaseManagerTest {
             JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    Statement statement = connection.createStatement()) {
+                 Statement statement = connection.createStatement()) {
 
                 // THEN one row exists in mcmmo_users
                 try (ResultSet resultSet = statement.executeQuery(
@@ -562,7 +578,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // getStoredUsers
+    // saveUserUUID / saveUserUUIDs
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - getStoredUsers returns usernames")
@@ -593,10 +609,6 @@ class SQLDatabaseManagerTest {
         }
     }
 
-    // ------------------------------------------------------------------------
-    // saveUserUUID / saveUserUUIDs
-    // ------------------------------------------------------------------------
-
     @ParameterizedTest(name = "{0} - saveUserUUID updates uuid column and lookup")
     @MethodSource("dbFlavors")
     void whenSavingSingleUserUuidShouldUpdateUuidColumnAndLookupBehavior(DbFlavor flavor) throws Exception {
@@ -623,9 +635,9 @@ class SQLDatabaseManagerTest {
             JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    Statement statement = connection.createStatement();
-                    ResultSet resultSet = statement.executeQuery(
-                            "SELECT uuid FROM mcmmo_users WHERE user = '" + username + "'")) {
+                 Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery(
+                         "SELECT uuid FROM mcmmo_users WHERE user = '" + username + "'")) {
 
                 assertThat(resultSet.next()).isTrue();
                 assertThat(resultSet.getString(1)).isEqualTo(newUuid.toString());
@@ -643,6 +655,10 @@ class SQLDatabaseManagerTest {
             databaseManager.onDisable();
         }
     }
+
+    // ------------------------------------------------------------------------
+    // purgePowerlessUsers
+    // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - saveUserUUIDs bulk updates multiple rows")
     @MethodSource("dbFlavors")
@@ -681,7 +697,7 @@ class SQLDatabaseManagerTest {
             JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    Statement statement = connection.createStatement()) {
+                 Statement statement = connection.createStatement()) {
 
                 try (ResultSet resultSet = statement.executeQuery(
                         "SELECT user, uuid FROM mcmmo_users WHERE user IN ('" + firstUsername + "','" +
@@ -711,7 +727,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // purgePowerlessUsers
+    // purgeOldUsers
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - purgePowerlessUsers removes only zero-skill users")
@@ -745,7 +761,7 @@ class SQLDatabaseManagerTest {
         JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             // AND powerless user should be gone
             try (ResultSet resultSet = statement.executeQuery(
@@ -766,7 +782,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // purgeOldUsers
+    // Missing user / fallback behavior
     // ------------------------------------------------------------------------
 
     /**
@@ -797,8 +813,8 @@ class SQLDatabaseManagerTest {
         // AND the inactive user last logged in one year ago (in unix seconds)
         final long oneYearInSeconds = 365L * 24L * 60L * 60L;
         try (Connection connection =
-                databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+                     databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
+             Statement statement = connection.createStatement()) {
 
             statement.executeUpdate("UPDATE mcmmo_users SET lastlogin = (UNIX_TIMESTAMP() - "
                     + oneYearInSeconds + ") WHERE user = '" + inactivePlayer.getName() + "'");
@@ -810,7 +826,7 @@ class SQLDatabaseManagerTest {
         JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             // THEN the long-inactive user should be purged
             try (ResultSet resultSet = statement.executeQuery(
@@ -837,7 +853,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // Missing user / fallback behavior
+    // Mob health HUD reset
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - loadPlayerProfile(missing name) returns empty profile with zero skills")
@@ -866,7 +882,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // Mob health HUD reset
+    // loadPlayerProfile by name / UUID / Player
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - resetMobHealthSettings sets mobhealthbar to default for all users")
@@ -880,7 +896,7 @@ class SQLDatabaseManagerTest {
         databaseManager.newUser("hudguy2_" + flavor.name().toLowerCase(), UUID.randomUUID());
 
         try (Connection connection = databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             statement.executeUpdate("UPDATE mcmmo_huds SET mobhealthbar = 'SOMETHING_ELSE'");
         }
@@ -891,8 +907,8 @@ class SQLDatabaseManagerTest {
 
             // THEN all HUD rows should have the default mobhealthbar type
             try (Connection connection = databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                    Statement statement = connection.createStatement();
-                    ResultSet resultSet = statement.executeQuery("SELECT DISTINCT mobhealthbar FROM mcmmo_huds")) {
+                 Statement statement = connection.createStatement();
+                 ResultSet resultSet = statement.executeQuery("SELECT DISTINCT mobhealthbar FROM mcmmo_huds")) {
 
                 assertThat(resultSet.next()).isTrue();
                 assertThat(resultSet.getString(1)).isEqualTo(MobHealthbarType.HEARTS.name());
@@ -904,10 +920,6 @@ class SQLDatabaseManagerTest {
             databaseManager.onDisable();
         }
     }
-
-    // ------------------------------------------------------------------------
-    // loadPlayerProfile by name / UUID / Player
-    // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - loadPlayerProfile(name)")
     @MethodSource("dbFlavors")
@@ -935,7 +947,9 @@ class SQLDatabaseManagerTest {
         }
     }
 
-    /** Names are matched ignoring case, and the profile carries the name as it is stored. */
+    /**
+     * Names are matched ignoring case, and the profile carries the name as it is stored.
+     */
     @ParameterizedTest(name = "{0}")
     @MethodSource("dbFlavors")
     void whenLoadingByNameInOtherCapitalsShouldReturnTheStoredName(DbFlavor flavor) {
@@ -1028,6 +1042,10 @@ class SQLDatabaseManagerTest {
         }
     }
 
+    // ------------------------------------------------------------------------
+    // removeUser
+    // ------------------------------------------------------------------------
+
     @ParameterizedTest(name = "{0} - loadPlayerProfile(name) data not found")
     @MethodSource("dbFlavors")
     void whenLoadingNonExistentPlayerByNameShouldReturnUnloadedProfile(DbFlavor flavor) {
@@ -1047,7 +1065,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // removeUser
+    // purgeOldUsers
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - removeUser")
@@ -1089,7 +1107,7 @@ class SQLDatabaseManagerTest {
     }
 
     // ------------------------------------------------------------------------
-    // purgeOldUsers
+    // readRank
     // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - purgeOldUsers")
@@ -1110,7 +1128,7 @@ class SQLDatabaseManagerTest {
         databaseManager.newUser(recentName, recentUuid);
 
         try (Connection connection = databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             statement.executeUpdate("UPDATE mcmmo_users SET lastlogin = 0 WHERE `user` = '" + oldName + "'");
             statement.executeUpdate(
@@ -1136,10 +1154,6 @@ class SQLDatabaseManagerTest {
             databaseManager.onDisable();
         }
     }
-
-    // ------------------------------------------------------------------------
-    // readRank
-    // ------------------------------------------------------------------------
 
     @ParameterizedTest(name = "{0} - readRank")
     @MethodSource("dbFlavors")
@@ -1325,14 +1339,6 @@ class SQLDatabaseManagerTest {
     }
 
     /**
-     * Every non-child skill column, plus {@code total}, that {@code readLeaderboard} sorts on and
-     * therefore must be indexed. Taken straight from production so these tests always cover the
-     * exact columns the schema and index migration maintain.
-     */
-    private static final List<String> LEADERBOARD_INDEX_COLUMNS =
-            SQLDatabaseManager.leaderboardIndexColumns();
-
-    /**
      * The derived column list drives both the index migration and the coverage assertions in this
      * class; a skill silently falling out of it would lose its leaderboard index everywhere, so
      * pin the expected contents here.
@@ -1482,8 +1488,8 @@ class SQLDatabaseManagerTest {
             final String explainSql = "EXPLAIN " + databaseManager.leaderboardQuery("mining");
             final List<String> extras = new ArrayList<>();
             try (Connection connection =
-                    databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
-                    PreparedStatement statement = connection.prepareStatement(explainSql)) {
+                         databaseManager.getConnection(SQLDatabaseManager.PoolIdentifier.MISC);
+                 PreparedStatement statement = connection.prepareStatement(explainSql)) {
                 final int limitIndex = SQLDatabaseManager.bindInvalidOldUsernames(statement, 1);
                 statement.setInt(limitIndex, 0);
                 statement.setInt(limitIndex + 1, 10);
@@ -1521,7 +1527,7 @@ class SQLDatabaseManagerTest {
         final JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.executeUpdate(
                     "ALTER TABLE mcmmo_skills ADD INDEX idx_composite_mining (user_id, mining)");
         }
@@ -1549,7 +1555,7 @@ class SQLDatabaseManagerTest {
         } finally {
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    Statement statement = connection.createStatement()) {
+                 Statement statement = connection.createStatement()) {
                 statement.executeUpdate("ALTER TABLE mcmmo_skills DROP INDEX idx_composite_mining");
             }
             databaseManager.onDisable();
@@ -1575,7 +1581,7 @@ class SQLDatabaseManagerTest {
         final JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.executeUpdate("ALTER TABLE mcmmo_skills ADD INDEX idx_mining (taming)");
         }
 
@@ -2023,7 +2029,6 @@ class SQLDatabaseManagerTest {
         sourceManager.onDisable();
     }
 
-
     // ------------------------------------------------------------------------
     // Helpers for legacy schema tests
     // ------------------------------------------------------------------------
@@ -2037,7 +2042,7 @@ class SQLDatabaseManagerTest {
 
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             // Clean slate
             statement.executeUpdate("DROP TABLE IF EXISTS mcmmo_cooldowns");
@@ -2146,7 +2151,7 @@ class SQLDatabaseManagerTest {
         JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                ResultSet resultSet = connection.getMetaData().getColumns(null, null, tableName, columnName)) {
+             ResultSet resultSet = connection.getMetaData().getColumns(null, null, tableName, columnName)) {
             return resultSet.next();
         }
     }
@@ -2166,8 +2171,8 @@ class SQLDatabaseManagerTest {
 
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(query)) {
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
             return resultSet.next() && resultSet.getInt(1) > 0;
         }
     }
@@ -2180,7 +2185,7 @@ class SQLDatabaseManagerTest {
         final JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             for (final String column : LEADERBOARD_INDEX_COLUMNS) {
                 if (leaderboardIndexExists(flavor, column)) {
                     statement.executeUpdate("ALTER TABLE mcmmo_skills DROP INDEX idx_" + column);
@@ -2196,7 +2201,7 @@ class SQLDatabaseManagerTest {
         final JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
             statement.executeUpdate("DROP TABLE IF EXISTS mcmmo_cooldowns");
             statement.executeUpdate("DROP TABLE IF EXISTS mcmmo_experience");
             statement.executeUpdate("DROP TABLE IF EXISTS mcmmo_skills");
@@ -2210,9 +2215,9 @@ class SQLDatabaseManagerTest {
     // ------------------------------------------------------------------------
 
     private void createUserWithUniformNonChildSkills(SQLDatabaseManager manager,
-            String name,
-            UUID uuid,
-            int level) {
+                                                     String name,
+                                                     UUID uuid,
+                                                     int level) {
         manager.newUser(name, uuid);
         PlayerProfile profile = manager.loadPlayerProfile(uuid);
         for (PrimarySkillType type : PrimarySkillType.values()) {
@@ -2242,8 +2247,8 @@ class SQLDatabaseManagerTest {
         final JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
                 container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                PreparedStatement statement = connection.prepareStatement(
-                        "UPDATE mcmmo_users SET `user` = ? WHERE `user` = ?")) {
+             PreparedStatement statement = connection.prepareStatement(
+                     "UPDATE mcmmo_users SET `user` = ? WHERE `user` = ?")) {
             statement.setString(1, newName);
             statement.setString(2, userName);
             assertThat(statement.executeUpdate())
@@ -2252,19 +2257,10 @@ class SQLDatabaseManagerTest {
         }
     }
 
-    /** A player who is online, the only one whose name replaces the stored one. */
-    private static Player onlinePlayer(String name, UUID uuid) {
-        final Player player = Mockito.mock(Player.class);
-        when(player.getName()).thenReturn(name);
-        when(player.getUniqueId()).thenReturn(uuid);
-        when(player.isOnline()).thenReturn(true);
-        return player;
-    }
-
     private void createUserWithSkills(SQLDatabaseManager manager,
-            String name,
-            UUID uuid,
-            Map<PrimarySkillType, Integer> levels) {
+                                      String name,
+                                      UUID uuid,
+                                      Map<PrimarySkillType, Integer> levels) {
         manager.newUser(name, uuid);
         PlayerProfile profile = manager.loadPlayerProfile(uuid);
         for (Map.Entry<PrimarySkillType, Integer> e : levels.entrySet()) {
@@ -2272,6 +2268,12 @@ class SQLDatabaseManagerTest {
             profile.modifySkill(e.getKey(), e.getValue());
         }
         assertThat(manager.saveUser(profile)).isTrue();
+    }
+
+    // --- DB flavors you support ---
+    enum DbFlavor {
+        MYSQL,
+        MARIADB
     }
 
     /**
@@ -2292,16 +2294,67 @@ class SQLDatabaseManagerTest {
         private final UUID nameLostUuid = UUID.randomUUID();
         private final UUID nameLostBeforeTheSpellingChangedUuid = UUID.randomUUID();
 
-        /** A stored player as the database holds them, read without going through a manager. */
-        private record StoredRow(String name, @Nullable String uuid, int miningLevel) {
-        }
-
         static Stream<Arguments> flavorsAndPlaceholderSpellings() {
             return dbFlavors().flatMap(flavor -> UsernamePlaceholderTest.placeholderSpellings()
                     .map(placeholder -> Arguments.of(flavor, placeholder)));
         }
 
-        /** Stores one player who lost their name under each spelling of the placeholder. */
+        static Stream<Arguments> flavorsAndLoadsWhileNotOnline() {
+            final Map<String, LoadWhileNotOnline> loads = Map.of(
+                    "an offline player", (databaseManager, uuid, playerName) -> {
+                        final OfflinePlayer offlinePlayer = mock(OfflinePlayer.class);
+                        when(offlinePlayer.getName()).thenReturn(playerName);
+                        when(offlinePlayer.getUniqueId()).thenReturn(uuid);
+                        return databaseManager.loadPlayerProfile(offlinePlayer);
+                    },
+                    "a player who logged out", (databaseManager, uuid, playerName) -> {
+                        final Player playerWhoLoggedOut = onlinePlayer(playerName, uuid);
+                        when(playerWhoLoggedOut.isOnline()).thenReturn(false);
+                        return databaseManager.loadPlayerProfile(playerWhoLoggedOut);
+                    },
+                    "a UUID and a name", SQLDatabaseManager::loadPlayerProfile);
+            return dbFlavors().flatMap(flavor -> loads.entrySet().stream()
+                    .map(load -> Arguments.of(flavor, load.getKey(), load.getValue())));
+        }
+
+        private static List<StoredRow> flatFileRows(FlatFileDatabaseManager databaseManager)
+                throws IOException {
+            return java.nio.file.Files.readAllLines(databaseManager.getUsersFile().toPath())
+                    .stream()
+                    .filter(line -> !line.startsWith("#"))
+                    .map(line -> line.split(":"))
+                    .map(fields -> new StoredRow(fields[FlatFileDatabaseManager.USERNAME_INDEX],
+                            fields[FlatFileDatabaseManager.UUID_INDEX],
+                            Integer.parseInt(fields[FlatFileDatabaseManager.SKILLS_MINING])))
+                    .toList();
+        }
+
+        private static PlayerProfile profileFor(StoredRow storedRow) {
+            final PlayerProfile profile = new PlayerProfile(storedRow.name(),
+                    storedRow.uuid() == null ? null : UUID.fromString(storedRow.uuid()), true, 0);
+            profile.modifySkill(PrimarySkillType.MINING, storedRow.miningLevel());
+            return profile;
+        }
+
+        static Stream<Arguments> flavorsAndNamesToRejoinUnder() {
+            return dbFlavors().flatMap(flavor -> Stream.of(
+                    Arguments.of(flavor, LEGACY_PLAYER_NAME),
+                    Arguments.of(flavor, "renamed_legacy_player")));
+        }
+
+        /**
+         * A name nobody holds, a legacy player's name, and every spelling of the placeholder.
+         */
+        static Stream<Arguments> flavorsAndNamesForAProfileWithoutAUuid() {
+            return dbFlavors().flatMap(flavor -> Stream.concat(
+                            Stream.of("nobody_holds_this_name", LEGACY_PLAYER_NAME),
+                            UsernamePlaceholderTest.placeholderSpellings())
+                    .map(savedName -> Arguments.of(flavor, savedName)));
+        }
+
+        /**
+         * Stores one player who lost their name under each spelling of the placeholder.
+         */
         private SQLDatabaseManager databaseWithPlayersWhoLostTheirNames(DbFlavor flavor)
                 throws SQLException {
             truncateAllCoreTables(flavor);
@@ -2319,9 +2372,11 @@ class SQLDatabaseManagerTest {
             return databaseManager;
         }
 
-        /** Stores a player from before mcMMO kept UUIDs, who then lost their name. */
+        /**
+         * Stores a player from before mcMMO kept UUIDs, who then lost their name.
+         */
         private void storePlayerWhoLostTheirNameWithoutAUuid(DbFlavor flavor,
-                SQLDatabaseManager databaseManager) throws SQLException {
+                                                             SQLDatabaseManager databaseManager) throws SQLException {
             final String playerName = "no_uuid_" + flavor.name().toLowerCase(Locale.ROOT);
             storePlayerWithoutAUuid(flavor, databaseManager, playerName,
                     NAME_LOST_WITHOUT_A_UUID_MINING_LEVEL);
@@ -2333,7 +2388,7 @@ class SQLDatabaseManagerTest {
          * player without a UUID, so the row is stored with one and the column cleared after.
          */
         private void storePlayerWithoutAUuid(DbFlavor flavor, SQLDatabaseManager databaseManager,
-                String playerName, int miningLevel) throws SQLException {
+                                             String playerName, int miningLevel) throws SQLException {
             final UUID uuidToClear = UUID.randomUUID();
             createUserWithSkills(databaseManager, playerName, uuidToClear,
                     Map.of(PrimarySkillType.MINING, miningLevel));
@@ -2341,7 +2396,9 @@ class SQLDatabaseManagerTest {
             databaseManager.cleanupUser(uuidToClear);
         }
 
-        /** Stores users rows alone, without skills, and refreshes the table's statistics. */
+        /**
+         * Stores users rows alone, without skills, and refreshes the table's statistics.
+         */
         private void storeNamesWithoutAUuid(DbFlavor flavor, int count) throws SQLException {
             final JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
@@ -2365,36 +2422,12 @@ class SQLDatabaseManagerTest {
             final JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    PreparedStatement statement = connection.prepareStatement(
-                            "UPDATE mcmmo_users SET lastlogin = ? WHERE uuid = ?")) {
+                 PreparedStatement statement = connection.prepareStatement(
+                         "UPDATE mcmmo_users SET lastlogin = ? WHERE uuid = ?")) {
                 statement.setLong(1, lastLoginSeconds);
                 statement.setString(2, uuid.toString());
                 assertThat(statement.executeUpdate()).isEqualTo(1);
             }
-        }
-
-        /** Loads a player under a name the way everything but their login does. */
-        @FunctionalInterface
-        private interface LoadWhileNotOnline {
-            PlayerProfile load(SQLDatabaseManager databaseManager, UUID uuid, String playerName);
-        }
-
-        static Stream<Arguments> flavorsAndLoadsWhileNotOnline() {
-            final Map<String, LoadWhileNotOnline> loads = Map.of(
-                    "an offline player", (databaseManager, uuid, playerName) -> {
-                        final OfflinePlayer offlinePlayer = mock(OfflinePlayer.class);
-                        when(offlinePlayer.getName()).thenReturn(playerName);
-                        when(offlinePlayer.getUniqueId()).thenReturn(uuid);
-                        return databaseManager.loadPlayerProfile(offlinePlayer);
-                    },
-                    "a player who logged out", (databaseManager, uuid, playerName) -> {
-                        final Player playerWhoLoggedOut = onlinePlayer(playerName, uuid);
-                        when(playerWhoLoggedOut.isOnline()).thenReturn(false);
-                        return databaseManager.loadPlayerProfile(playerWhoLoggedOut);
-                    },
-                    "a UUID and a name", SQLDatabaseManager::loadPlayerProfile);
-            return dbFlavors().flatMap(flavor -> loads.entrySet().stream()
-                    .map(load -> Arguments.of(flavor, load.getKey(), load.getValue())));
         }
 
         private StoredRow nameLostRow() {
@@ -2434,14 +2467,14 @@ class SQLDatabaseManagerTest {
          * finds a row whose uuid was overwritten.
          */
         private List<StoredRow> storedRows(DbFlavor flavor, String whereClause,
-                String... parameters) throws SQLException {
+                                           String... parameters) throws SQLException {
             final JdbcDatabaseContainer<?> container = containerFor(flavor);
             final List<StoredRow> rows = new ArrayList<>();
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    PreparedStatement statement = connection.prepareStatement(
-                            "SELECT u.`user`, u.uuid, s.mining FROM mcmmo_users u"
-                                    + " JOIN mcmmo_skills s ON s.user_id = u.id" + whereClause)) {
+                 PreparedStatement statement = connection.prepareStatement(
+                         "SELECT u.`user`, u.uuid, s.mining FROM mcmmo_users u"
+                                 + " JOIN mcmmo_skills s ON s.user_id = u.id" + whereClause)) {
                 for (int index = 0; index < parameters.length; index++) {
                     statement.setString(index + 1, parameters[index]);
                 }
@@ -2453,25 +2486,6 @@ class SQLDatabaseManagerTest {
                 }
             }
             return rows;
-        }
-
-        private static List<StoredRow> flatFileRows(FlatFileDatabaseManager databaseManager)
-                throws IOException {
-            return java.nio.file.Files.readAllLines(databaseManager.getUsersFile().toPath())
-                    .stream()
-                    .filter(line -> !line.startsWith("#"))
-                    .map(line -> line.split(":"))
-                    .map(fields -> new StoredRow(fields[FlatFileDatabaseManager.USERNAME_INDEX],
-                            fields[FlatFileDatabaseManager.UUID_INDEX],
-                            Integer.parseInt(fields[FlatFileDatabaseManager.SKILLS_MINING])))
-                    .toList();
-        }
-
-        private static PlayerProfile profileFor(StoredRow storedRow) {
-            final PlayerProfile profile = new PlayerProfile(storedRow.name(),
-                    storedRow.uuid() == null ? null : UUID.fromString(storedRow.uuid()), true, 0);
-            profile.modifySkill(PrimarySkillType.MINING, storedRow.miningLevel());
-            return profile;
         }
 
         @ParameterizedTest(name = "{0} - looked up as {1}")
@@ -2631,7 +2645,9 @@ class SQLDatabaseManagerTest {
             }
         }
 
-        /** A new player takes a name from whoever is stored under it, as a returning one does. */
+        /**
+         * A new player takes a name from whoever is stored under it, as a returning one does.
+         */
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void newPlayerTakingANameShouldMoveItsHolderToThePlaceholder(DbFlavor flavor)
@@ -2740,7 +2756,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0} - loaded as {1}")
         @MethodSource("flavorsAndLoadsWhileNotOnline")
         void loadingAPlayerWhoIsNotOnlineShouldLeaveTheStoredNamesAlone(DbFlavor flavor,
-                String description, LoadWhileNotOnline load) throws SQLException {
+                                                                        String description, LoadWhileNotOnline load) throws SQLException {
             // Given - a player who lost their name to the player holding it now
             truncateAllCoreTables(flavor);
             final SQLDatabaseManager databaseManager = createManagerFor(flavor);
@@ -2855,12 +2871,6 @@ class SQLDatabaseManagerTest {
             }
         }
 
-        static Stream<Arguments> flavorsAndNamesToRejoinUnder() {
-            return dbFlavors().flatMap(flavor -> Stream.of(
-                    Arguments.of(flavor, LEGACY_PLAYER_NAME),
-                    Arguments.of(flavor, "renamed_legacy_player")));
-        }
-
         /**
          * The whole life of a player stored before mcMMO kept UUIDs, from their first login after
          * this update to the one after it. The first login is the last time their row is found
@@ -2870,7 +2880,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0} - rejoins as {1}")
         @MethodSource("flavorsAndNamesToRejoinUnder")
         void playerStoredWithoutAUuidShouldBeFoundByUuidFromTheirFirstLoginOn(DbFlavor flavor,
-                String rejoinName) throws SQLException {
+                                                                              String rejoinName) throws SQLException {
             // Given - a player stored before mcMMO kept UUIDs: their row holds their name and
             // progress but no UUID, since the upgrade that added UUIDs could not look theirs up
             truncateAllCoreTables(flavor);
@@ -2944,7 +2954,9 @@ class SQLDatabaseManagerTest {
             }
         }
 
-        /** The UUID is all that tells apart players who lost their names. */
+        /**
+         * The UUID is all that tells apart players who lost their names.
+         */
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void storedUsersShouldListEachPlayerWithTheirUuid(DbFlavor flavor) throws SQLException {
@@ -2998,20 +3010,12 @@ class SQLDatabaseManagerTest {
             final JdbcDatabaseContainer<?> container = containerFor(flavor);
             try (Connection connection = DriverManager.getConnection(
                     container.getJdbcUrl(), container.getUsername(), container.getPassword());
-                    PreparedStatement statement = connection.prepareStatement(
-                            "UPDATE mcmmo_users SET uuid = ? WHERE `user` = ?")) {
+                 PreparedStatement statement = connection.prepareStatement(
+                         "UPDATE mcmmo_users SET uuid = ? WHERE `user` = ?")) {
                 statement.setString(1, uuid);
                 statement.setString(2, playerName);
                 assertThat(statement.executeUpdate()).isEqualTo(1);
             }
-        }
-
-        /** A name nobody holds, a legacy player's name, and every spelling of the placeholder. */
-        static Stream<Arguments> flavorsAndNamesForAProfileWithoutAUuid() {
-            return dbFlavors().flatMap(flavor -> Stream.concat(
-                            Stream.of("nobody_holds_this_name", LEGACY_PLAYER_NAME),
-                            UsernamePlaceholderTest.placeholderSpellings())
-                    .map(savedName -> Arguments.of(flavor, savedName)));
         }
 
         /**
@@ -3158,7 +3162,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void convertingToFlatFileShouldCarryOverEachPlayerWhoLostTheirName(DbFlavor flavor,
-                @TempDir Path flatFileFolder) throws IOException, SQLException {
+                                                                           @TempDir Path flatFileFolder) throws IOException, SQLException {
             // Given - players who lost their names, two of them under the same spelling
             final SQLDatabaseManager databaseManager = databaseWithPlayersWhoLostTheirNames(
                     flavor);
@@ -3200,7 +3204,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void convertingToFlatFileShouldLeaveOutAndLogAPlayerWithoutAUuid(DbFlavor flavor,
-                @TempDir Path flatFileFolder) throws IOException, SQLException {
+                                                                         @TempDir Path flatFileFolder) throws IOException, SQLException {
             // Given - a player stored before mcMMO kept UUIDs, and a player with a UUID
             truncateAllCoreTables(flavor);
             final RecordingHandler logRecords = new RecordingHandler();
@@ -3243,7 +3247,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void convertingToFlatFileShouldLeaveASharedNameWithWhoeverLoggedInLast(DbFlavor flavor,
-                @TempDir Path flatFileFolder) throws IOException, SQLException {
+                                                                               @TempDir Path flatFileFolder) throws IOException, SQLException {
             // Given - two players stored under the same name, the one stored first having logged
             // in last
             truncateAllCoreTables(flavor);
@@ -3285,7 +3289,7 @@ class SQLDatabaseManagerTest {
         @ParameterizedTest(name = "{0}")
         @MethodSource("com.gmail.nossr50.database.SQLDatabaseManagerTest#dbFlavors")
         void convertingFromFlatFileShouldCarryOverEachPlayerWhoLostTheirName(DbFlavor flavor,
-                @TempDir Path flatFileFolder) throws IOException, SQLException {
+                                                                             @TempDir Path flatFileFolder) throws IOException, SQLException {
             // Given - a FlatFile database with players who lost their names, two of them under
             // the same spelling
             final List<StoredRow> flatFileRows = List.of(nameLostRow(),
@@ -3314,6 +3318,20 @@ class SQLDatabaseManagerTest {
             } finally {
                 destination.onDisable();
             }
+        }
+
+        /**
+         * Loads a player under a name the way everything but their login does.
+         */
+        @FunctionalInterface
+        private interface LoadWhileNotOnline {
+            PlayerProfile load(SQLDatabaseManager databaseManager, UUID uuid, String playerName);
+        }
+
+        /**
+         * A stored player as the database holds them, read without going through a manager.
+         */
+        private record StoredRow(String name, @Nullable String uuid, int miningLevel) {
         }
     }
 

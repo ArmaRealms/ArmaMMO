@@ -1,15 +1,5 @@
 package com.gmail.nossr50.skills.smelting;
 
-import static java.util.logging.Logger.getLogger;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -19,7 +9,6 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.stream.Stream;
 import org.bukkit.Material;
 import org.bukkit.block.Furnace;
 import org.bukkit.entity.Player;
@@ -37,11 +26,44 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class SmeltingManagerTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = getLogger(
             SmeltingManagerTest.class.getName());
 
     private SmeltingManager smeltingManager;
+
+    private static Stream<Arguments> vanillaXpMultiplierCases() {
+        return Stream.of(
+                Arguments.of(1, 1, 1),
+                Arguments.of(2, 2, 2),
+                Arguments.of(5, 4, 4),
+                Arguments.of(8, 5, 5),
+                Arguments.of(0, 1, 1),
+                Arguments.of(3, 0, 1)
+        );
+    }
+
+    private static Stream<Arguments> vanillaXpBoostCases() {
+        return Stream.of(
+                Arguments.of(5, 1, 1, 5),
+                Arguments.of(5, 2, 2, 10),
+                Arguments.of(7, 5, 4, 28),
+                Arguments.of(6, 8, 5, 30),
+                Arguments.of(4, 0, 1, 4)
+        );
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -108,27 +130,6 @@ class SmeltingManagerTest extends MMOTestEnvironment {
 
         // Then
         assertEquals(expectedBoostedVanillaExperience, actualBoostedVanillaExperience);
-    }
-
-    private static Stream<Arguments> vanillaXpMultiplierCases() {
-        return Stream.of(
-                Arguments.of(1, 1, 1),
-                Arguments.of(2, 2, 2),
-                Arguments.of(5, 4, 4),
-                Arguments.of(8, 5, 5),
-                Arguments.of(0, 1, 1),
-                Arguments.of(3, 0, 1)
-        );
-    }
-
-    private static Stream<Arguments> vanillaXpBoostCases() {
-        return Stream.of(
-                Arguments.of(5, 1, 1, 5),
-                Arguments.of(5, 2, 2, 10),
-                Arguments.of(7, 5, 4, 28),
-                Arguments.of(6, 8, 5, 30),
-                Arguments.of(4, 0, 1, 4)
-        );
     }
 
     /**
@@ -220,7 +221,7 @@ class SmeltingManagerTest extends MMOTestEnvironment {
         @Test
         void winningSecondSmeltShouldAddOneToTheResult() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a winning second smelt roll and an empty furnace result slot
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.SMELTING_SECOND_SMELT, mmoPlayer)).thenReturn(true);
@@ -239,7 +240,7 @@ class SmeltingManagerTest extends MMOTestEnvironment {
         @Test
         void nearlyFullResultSlotShouldBlockTheSecondSmelt() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a furnace result slot too full to take an extra ingot safely
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.SMELTING_SECOND_SMELT, mmoPlayer)).thenReturn(true);

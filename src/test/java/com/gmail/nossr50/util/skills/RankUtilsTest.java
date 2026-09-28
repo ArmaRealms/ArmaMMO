@@ -1,11 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.config.RankConfig;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -13,9 +7,6 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
-import java.io.File;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +15,16 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
+
+import java.io.File;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Pins the observable getRank behavior (rank table, rankless skills, unloaded players) so the
@@ -37,6 +38,22 @@ class RankUtilsTest {
     private MockedStatic<com.gmail.nossr50.util.player.UserManager> userManagerMock;
     private Player player;
     private McMMOPlayer mmoPlayer;
+
+    private static Stream<Arguments> ruptureRankTable() {
+        return Stream.of(
+                // skillLevel, expectedRank (unlock levels: 5, 10, 20, 50)
+                Arguments.of(0, 0),
+                Arguments.of(4, 0),
+                Arguments.of(5, 1),
+                Arguments.of(9, 1),
+                Arguments.of(10, 2),
+                Arguments.of(19, 2),
+                Arguments.of(20, 3),
+                Arguments.of(49, 3),
+                Arguments.of(50, 4),
+                Arguments.of(1000, 4)
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -69,7 +86,7 @@ class RankUtilsTest {
         mmoPlayer = mock(McMMOPlayer.class);
         userManagerMock = mockStatic(com.gmail.nossr50.util.player.UserManager.class);
         userManagerMock.when(
-                () -> com.gmail.nossr50.util.player.UserManager.getPlayer(player))
+                        () -> com.gmail.nossr50.util.player.UserManager.getPlayer(player))
                 .thenReturn(mmoPlayer);
     }
 
@@ -84,22 +101,6 @@ class RankUtilsTest {
         if (mcMMOMock != null) {
             mcMMOMock.close();
         }
-    }
-
-    private static Stream<Arguments> ruptureRankTable() {
-        return Stream.of(
-                // skillLevel, expectedRank (unlock levels: 5, 10, 20, 50)
-                Arguments.of(0, 0),
-                Arguments.of(4, 0),
-                Arguments.of(5, 1),
-                Arguments.of(9, 1),
-                Arguments.of(10, 2),
-                Arguments.of(19, 2),
-                Arguments.of(20, 3),
-                Arguments.of(49, 3),
-                Arguments.of(50, 4),
-                Arguments.of(1000, 4)
-        );
     }
 
     @ParameterizedTest

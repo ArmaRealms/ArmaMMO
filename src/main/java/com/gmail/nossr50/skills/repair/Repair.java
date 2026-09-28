@@ -7,6 +7,7 @@ import org.bukkit.Material;
 public class Repair {
     /**
      * No longer used by mcMMO internally, use the config calls instead.
+     *
      * @see com.gmail.nossr50.config.AdvancedConfig
      */
     @Deprecated(since = "2.2.052", forRemoval = true)
@@ -15,6 +16,7 @@ public class Repair {
 
     /**
      * No longer used by mcMMO internally, use the config calls instead.
+     *
      * @see com.gmail.nossr50.config.AdvancedConfig
      */
     @Deprecated(since = "2.2.052", forRemoval = true)

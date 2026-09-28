@@ -1,9 +1,5 @@
 package com.gmail.nossr50.datatypes.skills.subskills.acrobatics;
 
-import static com.gmail.nossr50.util.player.NotificationManager.sendPlayerInformation;
-import static com.gmail.nossr50.util.random.ProbabilityUtil.getSubSkillProbability;
-import static com.gmail.nossr50.util.skills.SkillUtils.applyXpGain;
-import static com.gmail.nossr50.util.sounds.SoundManager.sendCategorizedSound;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -34,6 +30,11 @@ import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.Locale;
 
+import static com.gmail.nossr50.util.player.NotificationManager.sendPlayerInformation;
+import static com.gmail.nossr50.util.random.ProbabilityUtil.getSubSkillProbability;
+import static com.gmail.nossr50.util.skills.SkillUtils.applyXpGain;
+import static com.gmail.nossr50.util.sounds.SoundManager.sendCategorizedSound;
+
 public class Roll extends AcrobaticsSubSkill {
 
     public static final String GRACEFUL_ROLL_ACTIVATED_LOCALE_STR_KEY = "Acrobatics.Ability.Proc";
@@ -54,6 +55,11 @@ public class Roll extends AcrobaticsSubSkill {
         final double gracefulOdds = getSubSkillProbability(SubSkillType.ACROBATICS_ROLL,
                 mmoPlayer).value();
         return Probability.ofValue(gracefulOdds);
+    }
+
+    @VisibleForTesting
+    public static double calculateModifiedRollDamage(double damage, double damageThreshold) {
+        return Math.max(damage - damageThreshold, 0.0);
     }
 
     /**
@@ -347,11 +353,6 @@ public class Roll extends AcrobaticsSubSkill {
         }
 
         return xp;
-    }
-
-    @VisibleForTesting
-    public static double calculateModifiedRollDamage(double damage, double damageThreshold) {
-        return Math.max(damage - damageThreshold, 0.0);
     }
 
     private boolean isFatal(McMMOPlayer mmoPlayer, double damage) {

@@ -1,19 +1,5 @@
 package com.gmail.nossr50.skills.acrobatics;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -25,9 +11,6 @@ import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
 import com.gmail.nossr50.datatypes.skills.subskills.acrobatics.Roll;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.UUID;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.bukkit.Location;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.Mob;
@@ -43,8 +26,70 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
+import java.util.UUID;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class AcrobaticsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(AcrobaticsTest.class.getName());
+
+    static Stream<Arguments> calculateModifiedRollDamageArgs() {
+        return Stream.of(
+                Arguments.of(10.0, 7.0, 3.0),   // normal case: 10 - 7 = 3 remaining
+                Arguments.of(5.0, 7.0, 0.0),    // damage < threshold: clamped to 0
+                Arguments.of(14.0, 14.0, 0.0),  // exactly at threshold: clamped to 0
+                Arguments.of(20.0, 3.0, 17.0),  // large damage, small threshold
+                Arguments.of(0.0, 7.0, 0.0)     // zero base damage: stays 0
+        );
+    }
+
+    static Stream<Arguments> normalRollThresholdArgs() {
+        // A normal roll negates up to getRollDamageThreshold() with no doubling
+        return Stream.of(
+                // shipped default: threshold 7 negates 7 of 10 damage, 3 remains
+                Arguments.of(7.0, 10.0, 3.0),
+                // threshold 3 negates 3 of 10 damage, 7 remains
+                Arguments.of(3.0, 10.0, 7.0),
+                // threshold 4 negates 4 of 15 damage, 11 remains
+                Arguments.of(4.0, 15.0, 11.0)
+        );
+    }
+
+    static Stream<Arguments> gracefulRollThresholdArgs() {
+        // A graceful roll negates up to getGracefulRollDamageThreshold()
+        return Stream.of(
+                // shipped default: threshold 14 fully negates 10 damage
+                Arguments.of(14.0, 10.0, 0.0),
+                // threshold 14 negates 14 of 20 damage, 6 remains
+                Arguments.of(14.0, 20.0, 6.0),
+                // threshold 8 negates 8 of 15 damage, 7 remains
+                Arguments.of(8.0, 15.0, 7.0)
+        );
+    }
+
+    static Stream<Arguments> acrobaticsLevels() {
+        return Stream.of(
+                Arguments.of(1),
+                Arguments.of(100),
+                Arguments.of(500),
+                Arguments.of(999),
+                Arguments.of(1000)
+        );
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -125,16 +170,6 @@ class AcrobaticsTest extends MMOTestEnvironment {
         assertThat(Roll.calculateModifiedRollDamage(baseDamage, threshold)).isEqualTo(expected);
     }
 
-    static Stream<Arguments> calculateModifiedRollDamageArgs() {
-        return Stream.of(
-                Arguments.of(10.0, 7.0, 3.0),   // normal case: 10 - 7 = 3 remaining
-                Arguments.of(5.0, 7.0, 0.0),    // damage < threshold: clamped to 0
-                Arguments.of(14.0, 14.0, 0.0),  // exactly at threshold: clamped to 0
-                Arguments.of(20.0, 3.0, 17.0),  // large damage, small threshold
-                Arguments.of(0.0, 7.0, 0.0)     // zero base damage: stays 0
-        );
-    }
-
     /**
      * A normal (non-sneaking) roll must negate up to the configured Roll DamageThreshold and no
      * more. Regression test for the bug where rollCheck applied getRollDamageThreshold() * 2 to
@@ -165,18 +200,6 @@ class AcrobaticsTest extends MMOTestEnvironment {
                 eq(expectedMagicDamage));
     }
 
-    static Stream<Arguments> normalRollThresholdArgs() {
-        // A normal roll negates up to getRollDamageThreshold() with no doubling
-        return Stream.of(
-                // shipped default: threshold 7 negates 7 of 10 damage, 3 remains
-                Arguments.of(7.0, 10.0, 3.0),
-                // threshold 3 negates 3 of 10 damage, 7 remains
-                Arguments.of(3.0, 10.0, 7.0),
-                // threshold 4 negates 4 of 15 damage, 11 remains
-                Arguments.of(4.0, 15.0, 11.0)
-        );
-    }
-
     /**
      * A graceful (sneaking) roll must negate up to the configured GracefulRoll DamageThreshold,
      * the separate and larger cap that previously went unused by gameplay entirely.
@@ -202,18 +225,6 @@ class AcrobaticsTest extends MMOTestEnvironment {
         // Then - only the damage beyond the graceful roll threshold remains
         verify(mockEvent).setDamage(eq(EntityDamageEvent.DamageModifier.MAGIC),
                 eq(expectedMagicDamage));
-    }
-
-    static Stream<Arguments> gracefulRollThresholdArgs() {
-        // A graceful roll negates up to getGracefulRollDamageThreshold()
-        return Stream.of(
-                // shipped default: threshold 14 fully negates 10 damage
-                Arguments.of(14.0, 10.0, 0.0),
-                // threshold 14 negates 14 of 20 damage, 6 remains
-                Arguments.of(14.0, 20.0, 6.0),
-                // threshold 8 negates 8 of 15 damage, 7 remains
-                Arguments.of(8.0, 15.0, 7.0)
-        );
     }
 
     /**
@@ -244,16 +255,6 @@ class AcrobaticsTest extends MMOTestEnvironment {
         final double gracefulOdds = Roll.getGracefulProbability(mmoPlayer).value();
 
         assertThat(gracefulOdds).isGreaterThanOrEqualTo(1.0);
-    }
-
-    static Stream<Arguments> acrobaticsLevels() {
-        return Stream.of(
-                Arguments.of(1),
-                Arguments.of(100),
-                Arguments.of(500),
-                Arguments.of(999),
-                Arguments.of(1000)
-        );
     }
 
     /**
@@ -347,6 +348,18 @@ class AcrobaticsTest extends MMOTestEnvironment {
         final Mob mob = mock(Mob.class);
         when(mob.getUniqueId()).thenReturn(UUID.randomUUID());
         return mob;
+    }
+
+    private @NotNull EntityDamageEvent mockEntityDamageEvent(double damage) {
+        final EntityDamageEvent mockEvent = mock(EntityDamageEvent.class);
+        when(mockEvent.isApplicable(any(EntityDamageEvent.DamageModifier.class))).thenReturn(true);
+        when(mockEvent.getCause()).thenReturn(EntityDamageEvent.DamageCause.FALL);
+        when(mockEvent.getFinalDamage()).thenReturn(damage);
+        when(mockEvent.getDamage(any(EntityDamageEvent.DamageModifier.class))).thenReturn(damage);
+        when(mockEvent.getDamage()).thenReturn(damage);
+        when(mockEvent.isCancelled()).thenReturn(false);
+        when(mockEvent.getEntity()).thenReturn(player);
+        return mockEvent;
     }
 
     @Nested
@@ -459,17 +472,5 @@ class AcrobaticsTest extends MMOTestEnvironment {
             acrobaticsManager.addLocationToFallMap(fallSpot);
             assertThat(acrobaticsManager.hasFallenInLocationBefore(fallSpot)).isTrue();
         }
-    }
-
-    private @NotNull EntityDamageEvent mockEntityDamageEvent(double damage) {
-        final EntityDamageEvent mockEvent = mock(EntityDamageEvent.class);
-        when(mockEvent.isApplicable(any(EntityDamageEvent.DamageModifier.class))).thenReturn(true);
-        when(mockEvent.getCause()).thenReturn(EntityDamageEvent.DamageCause.FALL);
-        when(mockEvent.getFinalDamage()).thenReturn(damage);
-        when(mockEvent.getDamage(any(EntityDamageEvent.DamageModifier.class))).thenReturn(damage);
-        when(mockEvent.getDamage()).thenReturn(damage);
-        when(mockEvent.isCancelled()).thenReturn(false);
-        when(mockEvent.getEntity()).thenReturn(player);
-        return mockEvent;
     }
 }

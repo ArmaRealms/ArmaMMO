@@ -1,20 +1,21 @@
 package com.gmail.nossr50.commands.levelup;
 
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.HERBALISM;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.WOODCUTTING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Unit tests for {@link LevelUpCondition} matching and validation. The condition is the heart
@@ -22,18 +23,6 @@ import org.junit.jupiter.params.provider.MethodSource;
  * rather than silently never firing.
  */
 class LevelUpConditionTest {
-
-    @ParameterizedTest(name = "skills={0}, levels={1}, powerLevels={2}")
-    @MethodSource("invalidTriggerCombinations")
-    void conditionShouldThrowWhenTriggerIsIncomplete(final List<String> skillNames,
-            final List<Integer> levels, final List<Integer> powerLevels) {
-        // Given - an incomplete trigger definition
-        final var skills = skillNames.stream().map(PrimarySkillType::valueOf).toList();
-
-        // When / Then - construction is rejected
-        assertThatThrownBy(() -> LevelUpCondition.of(skills, levels, powerLevels))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
 
     static Stream<Arguments> invalidTriggerCombinations() {
         return Stream.of(
@@ -46,6 +35,38 @@ class LevelUpConditionTest {
                 // power levels alone are fine, but skills without levels still are not
                 Arguments.of(List.of("MINING"), List.of(), List.of(100))
         );
+    }
+
+    static Stream<Arguments> unmatchableSkillLevelUps() {
+        return Stream.of(
+                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
+                        WOODCUTTING, Set.of(10), "skill not listed"),
+                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
+                        MINING, Set.of(9, 11), "no listed level reached"),
+                Arguments.of(LevelUpCondition.powerLevels(Set.of(100)),
+                        HERBALISM, Set.of(100), "power level only condition")
+        );
+    }
+
+    static Stream<Arguments> unmatchablePowerLevelUps() {
+        return Stream.of(
+                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
+                        Set.of(100), "no power levels configured"),
+                Arguments.of(LevelUpCondition.powerLevels(Set.of(100)),
+                        Set.of(99, 101), "no listed power level reached")
+        );
+    }
+
+    @ParameterizedTest(name = "skills={0}, levels={1}, powerLevels={2}")
+    @MethodSource("invalidTriggerCombinations")
+    void conditionShouldThrowWhenTriggerIsIncomplete(final List<String> skillNames,
+                                                     final List<Integer> levels, final List<Integer> powerLevels) {
+        // Given - an incomplete trigger definition
+        final var skills = skillNames.stream().map(PrimarySkillType::valueOf).toList();
+
+        // When / Then - construction is rejected
+        assertThatThrownBy(() -> LevelUpCondition.of(skills, levels, powerLevels))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -112,17 +133,6 @@ class LevelUpConditionTest {
         assertThat(matched).isSameAs(Collections.emptySortedSet());
     }
 
-    static Stream<Arguments> unmatchableSkillLevelUps() {
-        return Stream.of(
-                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
-                        WOODCUTTING, Set.of(10), "skill not listed"),
-                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
-                        MINING, Set.of(9, 11), "no listed level reached"),
-                Arguments.of(LevelUpCondition.powerLevels(Set.of(100)),
-                        HERBALISM, Set.of(100), "power level only condition")
-        );
-    }
-
     @ParameterizedTest(name = "{2}")
     @MethodSource("unmatchablePowerLevelUps")
     void matchedPowerLevelsShouldReturnSharedEmptySetWhenNothingMatches(
@@ -135,15 +145,6 @@ class LevelUpConditionTest {
 
         // Then - the shared immutable empty set comes back, no per-event set is allocated
         assertThat(matched).isSameAs(Collections.emptySortedSet());
-    }
-
-    static Stream<Arguments> unmatchablePowerLevelUps() {
-        return Stream.of(
-                Arguments.of(LevelUpCondition.skillLevels(Set.of(MINING), Set.of(10)),
-                        Set.of(100), "no power levels configured"),
-                Arguments.of(LevelUpCondition.powerLevels(Set.of(100)),
-                        Set.of(99, 101), "no listed power level reached")
-        );
     }
 
     @Test
