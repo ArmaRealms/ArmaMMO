@@ -22,6 +22,7 @@ import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.skills.RankUtils;
+import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import java.util.Map;
@@ -250,6 +251,7 @@ class SalvageManagerTest extends MMOTestEnvironment {
 
         @BeforeEach
         void wireSalvageableHelmet() {
+            Mockito.when(playerInventory.getContents()).thenReturn(new ItemStack[0]);
             helmet = Mockito.mock(ItemStack.class);
             helmetMeta = Mockito.mock(Damageable.class);
             Mockito.when(helmet.getType()).thenReturn(Material.DIAMOND_HELMET);
@@ -351,11 +353,13 @@ class SalvageManagerTest extends MMOTestEnvironment {
         @Test
         void successfulSalvageShouldPayMaterialsAndEmptyTheHand() {
             try (MockedStatic<ItemUtils> itemUtils = Mockito.mockStatic(ItemUtils.class);
+                    MockedStatic<SkillUtils> skillUtils = Mockito.mockStatic(SkillUtils.class, Mockito.CALLS_REAL_METHODS);
                     MockedConstruction<ItemStack> constructedStacks =
                             Mockito.mockConstruction(ItemStack.class)) {
                 // When - an undamaged helmet is salvaged
                 salvageManager.handleSalvage(anvilLocation, helmet);
 
+                skillUtils.verify(() -> SkillUtils.removeAbilityBoostsFromInventory(player));
                 // Then - the salvage materials fly toward the player
                 itemUtils.verify(() -> ItemUtils.spawnItemTowardsLocation(Mockito.eq(player),
                         Mockito.any(Location.class), Mockito.any(Location.class),
