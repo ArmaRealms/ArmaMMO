@@ -1,15 +1,16 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.util.MetadataService.NSK_SUPER_ABILITY_BOOSTED_ITEM;
-
 import com.gmail.nossr50.mcMMO;
-import java.util.List;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+import static com.gmail.nossr50.util.MetadataService.NSK_SUPER_ABILITY_BOOSTED_ITEM;
 
 public final class ItemMetadataUtils {
 
@@ -20,7 +21,7 @@ public final class ItemMetadataUtils {
     }
 
     public static void setSuperAbilityBoostedItem(@NotNull ItemStack itemStack,
-            int originalDigSpeed) {
+                                                  int originalDigSpeed) {
         final ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta == null) {
@@ -51,7 +52,7 @@ public final class ItemMetadataUtils {
         return dataContainer.has(NSK_SUPER_ABILITY_BOOSTED_ITEM, PersistentDataType.INTEGER);
     }
 
-    public static int getSuperAbilityToolOriginalDigSpeed(@NotNull ItemStack itemStack) {
+    public static int getSuperAbilityToolOriginalDigSpeed(@NotNull final ItemStack itemStack) {
         //Get container from entity
         final ItemMeta itemMeta = itemStack.getItemMeta();
 
@@ -103,14 +104,14 @@ public final class ItemMetadataUtils {
         itemStack.setItemMeta(itemMeta);
     }
 
-    public static boolean isLegacyAbilityTool(@NotNull ItemStack itemStack) {
-        ItemMeta itemMeta = itemStack.getItemMeta();
+    public static boolean isLegacyAbilityTool(@NotNull final ItemStack itemStack) {
+        final ItemMeta itemMeta = itemStack.getItemMeta();
 
         if (itemMeta == null) {
             return false;
         }
 
-        List<String> lore = itemMeta.getLore();
+        final List<String> lore = itemMeta.getLore();
 
         if (lore == null || lore.isEmpty()) {
             return false;

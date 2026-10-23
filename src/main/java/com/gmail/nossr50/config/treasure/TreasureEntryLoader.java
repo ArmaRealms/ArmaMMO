@@ -2,9 +2,6 @@ package com.gmail.nossr50.config.treasure;
 
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.PotionUtil;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -14,6 +11,10 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Loading logic shared by {@link TreasureConfig} and {@link FishingTreasureConfig}, which read
@@ -33,7 +34,7 @@ final class TreasureEntryLoader {
      * @throws NumberFormatException when the key suffix does not parse as a short
      */
     static short parseData(final @NotNull String treasureName,
-            final @NotNull YamlConfiguration config, final @NotNull String base) {
+                           final @NotNull YamlConfiguration config, final @NotNull String base) {
         final String[] parts = treasureName.split("[|]");
         return (parts.length == 2)
                 ? Short.parseShort(parts[1])
@@ -41,7 +42,7 @@ final class TreasureEntryLoader {
     }
 
     static void logInvalidTreasure(final @NotNull Logger logger, final @NotNull String fileName,
-            final @NotNull String treasureName, final @NotNull String detail) {
+                                   final @NotNull String treasureName, final @NotNull String detail) {
         logger.warning("Skipping invalid treasure '" + treasureName + "' in " + fileName + ": "
                 + detail);
     }
@@ -53,7 +54,7 @@ final class TreasureEntryLoader {
      * and shipped configs may reference them; admins on older versions must not be warned over it.
      */
     static boolean isPotionTypeResolvable(final @NotNull YamlConfiguration config,
-            final @NotNull String base) {
+                                          final @NotNull String base) {
         final String potionTypeStr = config.getString(base + ".PotionData.PotionType", "WATER");
         final boolean extended = config.getBoolean(base + ".PotionData.Extended", false);
         final boolean upgraded = config.getBoolean(base + ".PotionData.Upgraded", false);
@@ -66,8 +67,8 @@ final class TreasureEntryLoader {
      * servers these skips are normal and must not read as errors.
      */
     static void logIncompatibleSummary(final @NotNull Logger logger,
-            final @NotNull String fileName, final @NotNull String type,
-            final @NotNull List<String> skippedNames) {
+                                       final @NotNull String fileName, final @NotNull String type,
+                                       final @NotNull List<String> skippedNames) {
         if (skippedNames.isEmpty()) {
             return;
         }
@@ -82,9 +83,9 @@ final class TreasureEntryLoader {
      * metadata or potion type cannot be resolved.
      */
     static @Nullable ItemStack buildPotionItem(final @NotNull YamlConfiguration config,
-            final @NotNull String type, final @NotNull String treasureName,
-            final @NotNull Material material, final int amount, final short data,
-            final @NotNull String fileName, final @NotNull Logger logger) {
+                                               final @NotNull String type, final @NotNull String treasureName,
+                                               final @NotNull Material material, final int amount, final short data,
+                                               final @NotNull String fileName, final @NotNull Logger logger) {
         final ItemStack item = new ItemStack(material, amount, data);
         final PotionMeta potionMeta = (PotionMeta) item.getItemMeta();
 
@@ -127,8 +128,8 @@ final class TreasureEntryLoader {
     }
 
     static void applyCustomNameAndLore(final @NotNull YamlConfiguration config,
-            final @NotNull String type, final @NotNull String treasureName,
-            final @NotNull ItemStack item) {
+                                       final @NotNull String type, final @NotNull String treasureName,
+                                       final @NotNull ItemStack item) {
         final String base = type + "." + treasureName;
         final boolean hasCustomName = config.contains(base + ".Custom_Name");
         final boolean hasLore = config.contains(base + ".Lore");
@@ -160,7 +161,7 @@ final class TreasureEntryLoader {
     }
 
     static void logLoadSummary(final @NotNull Logger logger, final @NotNull String fileName,
-            final @NotNull String type, final @NotNull TreasureLoadTally tally) {
+                               final @NotNull String type, final @NotNull TreasureLoadTally tally) {
         logger.info("Loaded " + tally.loaded() + " of " + tally.attempted() + " " + type
                 + " treasures from " + fileName + ".");
 

@@ -1,5 +1,23 @@
 package com.gmail.nossr50.util;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.experience.XPGainSource;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import com.gmail.nossr50.events.experience.McMMOPlayerLevelDownEvent;
+import com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent;
+import com.gmail.nossr50.mcMMO;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.Event;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
 import static java.util.logging.Logger.getLogger;
@@ -9,23 +27,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.experience.XPGainReason;
-import com.gmail.nossr50.datatypes.experience.XPGainSource;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import com.gmail.nossr50.events.experience.McMMOPlayerLevelDownEvent;
-import com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent;
-import com.gmail.nossr50.mcMMO;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 
 class EventUtilsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(EventUtilsTest.class.getName());
@@ -40,7 +41,9 @@ class EventUtilsTest extends MMOTestEnvironment {
         cleanUpStaticMocks();
     }
 
-    /** Simulates another plugin cancelling every mcMMO level event. */
+    /**
+     * Simulates another plugin cancelling every mcMMO level event.
+     */
     private void cancelLevelEvents() {
         doAnswer(invocation -> {
             final Object event = invocation.getArgument(0);
@@ -205,7 +208,9 @@ class EventUtilsTest extends MMOTestEnvironment {
             mockedMcMMO.when(mcMMO::isRetroModeEnabled).thenReturn(true);
         }
 
-        /** Cancels only the level-up event; XP gain events still go through. */
+        /**
+         * Cancels only the level-up event; XP gain events still go through.
+         */
         private void cancelOnlyLevelUpEvents() {
             doAnswer(invocation -> {
                 final Object event = invocation.getArgument(0);

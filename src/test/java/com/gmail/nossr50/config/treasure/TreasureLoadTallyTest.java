@@ -1,8 +1,8 @@
 package com.gmail.nossr50.config.treasure;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link TreasureLoadTally}, which aggregates per-section load counts so that many

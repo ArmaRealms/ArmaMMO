@@ -19,6 +19,9 @@
  */
 package com.gmail.nossr50.util.blockmeta;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -29,8 +32,6 @@ import java.io.RandomAccessFile;
 import java.util.BitSet;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * File format: bytes 0-4096 contain 1024 integer values representing the segment index of each
@@ -69,7 +70,7 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
     private final int rx;
     private final int rz;
 
-    public McMMOSimpleRegionFile(@NotNull File f, int rx, int rz) {
+    public McMMOSimpleRegionFile(@NotNull final File f, final int rx, final int rz) {
         this.rx = rx;
         this.rz = rz;
         this.parent = f;
@@ -90,7 +91,7 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
             this.segmentMask = (1 << segmentExponent) - 1;
 
             // Mark reserved segments reserved
-            int reservedSegments = this.bytesToSegments(RESERVED_HEADER_BYTES);
+            final int reservedSegments = this.bytesToSegments(RESERVED_HEADER_BYTES);
             segments.set(0, reservedSegments, true);
 
             // Read chunk header data
@@ -125,32 +126,16 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         }
     }
 
-    public synchronized @NotNull DataOutputStream getOutputStream(int x, int z) {
-        int index = getChunkIndex(x, z); // Get chunk index
+    public synchronized @NotNull DataOutputStream getOutputStream(final int x, final int z) {
+        final int index = getChunkIndex(x, z); // Get chunk index
         return new DataOutputStream(
                 new DeflaterOutputStream(new McMMOSimpleChunkBuffer(this, index)));
     }
 
-    private static class McMMOSimpleChunkBuffer extends ByteArrayOutputStream {
-        final McMMOSimpleRegionFile rf;
-        final int index;
-
-        McMMOSimpleChunkBuffer(McMMOSimpleRegionFile rf, int index) {
-            super(DEFAULT_SEGMENT_SIZE);
-            this.rf = rf;
-            this.index = index;
-        }
-
-        @Override
-        public void close() throws IOException {
-            rf.write(index, buf, count);
-        }
-    }
-
-    private synchronized void write(int index, byte[] buffer, int size) throws IOException {
-        int oldSegmentIndex = chunkSegmentIndex[index]; // Get current segment index
+    private synchronized void write(final int index, final byte[] buffer, final int size) throws IOException {
+        final int oldSegmentIndex = chunkSegmentIndex[index]; // Get current segment index
         markChunkSegments(index, false); // Clear our old segments
-        int newSegmentIndex = findContiguousSegments(oldSegmentIndex,
+        final int newSegmentIndex = findContiguousSegments(oldSegmentIndex,
                 size); // Find contiguous segments to save to
         file.seek((long) newSegmentIndex << segmentExponent); // Seek to file location
         file.write(buffer, 0, size); // Write data
@@ -167,9 +152,9 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         file.writeInt(chunkNumBytes[index]);
     }
 
-    public synchronized @Nullable DataInputStream getInputStream(int x, int z) throws IOException {
-        int index = getChunkIndex(x, z); // Get chunk index
-        int byteLength = chunkNumBytes[index]; // Get byte length of data
+    public synchronized @Nullable DataInputStream getInputStream(final int x, final int z) throws IOException {
+        final int index = getChunkIndex(x, z); // Get chunk index
+        final int byteLength = chunkNumBytes[index]; // Get byte length of data
 
         // No bytes
         if (byteLength == 0) {
@@ -197,18 +182,18 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         }
     }
 
-    private synchronized void markChunkSegments(int index, boolean inUse) {
+    private synchronized void markChunkSegments(final int index, final boolean inUse) {
         // No bytes used
         if (chunkNumBytes[index] == 0) {
             return;
         }
 
-        int start = chunkSegmentIndex[index];
-        int end = start + chunkNumSegments[index];
+        final int start = chunkSegmentIndex[index];
+        final int end = start + chunkNumSegments[index];
 
         // If we are writing, assert we don't write over any in-use segments
         if (inUse) {
-            int nextSetBit = segments.nextSetBit(start);
+            final int nextSetBit = segments.nextSetBit(start);
             if (nextSetBit != -1 && nextSetBit < end) {
                 throw new IllegalStateException("Attempting to overwrite an in-use segment");
             }
@@ -218,8 +203,8 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
     }
 
     private synchronized void fixFileLength() throws IOException {
-        int fileLength = (int) file.length();
-        int extend = -fileLength
+        final int fileLength = (int) file.length();
+        final int extend = -fileLength
                 & segmentMask; // how many bytes do we need to be divisible by segment size
 
         // Go to end of file
@@ -228,12 +213,12 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         file.write(new byte[extend], 0, extend);
     }
 
-    private synchronized int findContiguousSegments(int hint, int size) {
+    private synchronized int findContiguousSegments(final int hint, final int size) {
         if (size == 0) {
             return 0; // Zero byte data will not claim any chunks anyways
         }
 
-        int segments = bytesToSegments(size); // Number of segments we need
+        final int segments = bytesToSegments(size); // Number of segments we need
 
         // Check the hinted location (previous location of chunk) most of the time we can fit where we were.
         boolean oldFree = true;
@@ -254,7 +239,7 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         int current = 0;
 
         while (current < this.segments.size()) {
-            boolean segmentInUse = this.segments.get(current); // check if segment is in use
+            final boolean segmentInUse = this.segments.get(current); // check if segment is in use
             current++; // Move up a segment
 
             // Move up start if the segment was in use
@@ -272,7 +257,7 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         return start;
     }
 
-    private synchronized int bytesToSegments(int bytes) {
+    private synchronized int bytesToSegments(final int bytes) {
         if (bytes <= 0) {
             return 1;
         }
@@ -289,5 +274,21 @@ public class McMMOSimpleRegionFile implements AutoCloseable {
         z = z & 0x1F; // 5 bits (mod 32)
 
         return (x << 5) + z; // x in the upper 5 bits, z in the lower 5 bits
+    }
+
+    private static class McMMOSimpleChunkBuffer extends ByteArrayOutputStream {
+        final McMMOSimpleRegionFile rf;
+        final int index;
+
+        McMMOSimpleChunkBuffer(final McMMOSimpleRegionFile rf, final int index) {
+            super(DEFAULT_SEGMENT_SIZE);
+            this.rf = rf;
+            this.index = index;
+        }
+
+        @Override
+        public void close() throws IOException {
+            rf.write(index, buf, count);
+        }
     }
 }

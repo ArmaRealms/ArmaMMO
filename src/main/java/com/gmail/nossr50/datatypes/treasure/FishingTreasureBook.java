@@ -2,22 +2,23 @@ package com.gmail.nossr50.datatypes.treasure;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public class FishingTreasureBook extends FishingTreasure {
     private final @Nullable Set<Enchantment> blackListedEnchantments;
     private final @Nullable Set<Enchantment> whiteListedEnchantments;
     private final @NotNull List<EnchantmentWrapper> legalEnchantments; //TODO: Make immutable
 
-    public FishingTreasureBook(@NotNull ItemStack enchantedBook, int xp,
-            @Nullable Set<Enchantment> blackListedEnchantments,
-            @Nullable Set<Enchantment> whiteListedEnchantments) {
+    public FishingTreasureBook(@NotNull final ItemStack enchantedBook, final int xp,
+                               @Nullable final Set<Enchantment> blackListedEnchantments,
+                               @Nullable final Set<Enchantment> whiteListedEnchantments) {
         super(enchantedBook, xp);
 
         this.blackListedEnchantments = blackListedEnchantments;
@@ -30,7 +31,7 @@ public class FishingTreasureBook extends FishingTreasure {
     private void initLegalEnchantments() {
         LogUtils.debug(mcMMO.p.getLogger(), "Registering enchantments for Fishing Book...");
 
-        for (Enchantment enchantment : Enchantment.values()) {
+        for (final Enchantment enchantment : Enchantment.values()) {
             if (isEnchantAllowed(enchantment)) {
                 addAllLegalEnchants(enchantment);
             }
@@ -55,19 +56,18 @@ public class FishingTreasureBook extends FishingTreasure {
         return whiteListedEnchantments;
     }
 
-    private void addAllLegalEnchants(@NotNull Enchantment enchantment) {
-        int legalEnchantCap = enchantment.getMaxLevel();
+    private void addAllLegalEnchants(@NotNull final Enchantment enchantment) {
+        final int legalEnchantCap = enchantment.getMaxLevel();
 
         for (int i = 0; i < legalEnchantCap; i++) {
-            int enchantLevel = i + 1;
-            EnchantmentWrapper enchantmentWrapper = new EnchantmentWrapper(enchantment,
-                    enchantLevel);
+            final int enchantLevel = i + 1;
+            final EnchantmentWrapper enchantmentWrapper = new EnchantmentWrapper(enchantment, enchantLevel);
             legalEnchantments.add(enchantmentWrapper);
 //            mcMMO.p.getLogger().info("Fishing treasure book enchantment added: " + enchantmentWrapper);
         }
     }
 
-    private boolean isEnchantAllowed(@NotNull Enchantment enchantment) {
+    private boolean isEnchantAllowed(@NotNull final Enchantment enchantment) {
         if (whiteListedEnchantments != null && !whiteListedEnchantments.isEmpty()) {
             return whiteListedEnchantments.contains(enchantment);
         } else if (blackListedEnchantments != null && !blackListedEnchantments.isEmpty()) {

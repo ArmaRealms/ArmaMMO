@@ -1,6 +1,10 @@
 package com.gmail.nossr50.util.adapter;
 
 import com.gmail.nossr50.util.ReflectionUtils;
+import org.bukkit.block.Biome;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,9 +12,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import org.bukkit.block.Biome;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.VisibleForTesting;
 
 public class BiomeAdapter {
     public static final Set<Biome> ICE_BIOMES;

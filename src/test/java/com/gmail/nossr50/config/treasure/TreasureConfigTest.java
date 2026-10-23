@@ -1,14 +1,15 @@
 package com.gmail.nossr50.config.treasure;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.StringReader;
-import java.util.logging.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.StringReader;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Unit tests for {@link TreasureConfig#classifyExcavationTreasure}. These verify that a treasure
@@ -19,7 +20,9 @@ class TreasureConfigTest {
 
     private static final Logger LOGGER = Logger.getLogger(TreasureConfigTest.class.getName());
 
-    /** Parses a YAML string into a {@link YamlConfiguration} without touching the file system. */
+    /**
+     * Parses a YAML string into a {@link YamlConfiguration} without touching the file system.
+     */
     private static YamlConfiguration loadYaml(final String yaml) {
         return YamlConfiguration.loadConfiguration(new StringReader(yaml));
     }

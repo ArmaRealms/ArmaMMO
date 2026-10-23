@@ -16,7 +16,7 @@ public final class PapiPlaceholders {
      * Replaces PlaceholderAPI placeholders in the given text for the given player.
      *
      * @param player the player providing the placeholder context
-     * @param text the text to resolve
+     * @param text   the text to resolve
      * @return the text with placeholders resolved, or the unchanged text when PlaceholderAPI
      * is not enabled
      */

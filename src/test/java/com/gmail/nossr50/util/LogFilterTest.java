@@ -1,15 +1,16 @@
 package com.gmail.nossr50.util;
 
+import com.gmail.nossr50.mcMMO;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.junit.jupiter.api.Test;
+
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.mcMMO;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.junit.jupiter.api.Test;
 
 class LogFilterTest {
 
@@ -53,7 +54,9 @@ class LogFilterTest {
                 .isTrue();
     }
 
-    /** Regression coverage: log records may carry a null message, which crashed the filter. */
+    /**
+     * Regression coverage: log records may carry a null message, which crashed the filter.
+     */
     @Test
     void nullMessagesShouldBeLoggableInsteadOfCrashing() {
         // Given - verbose logging is off

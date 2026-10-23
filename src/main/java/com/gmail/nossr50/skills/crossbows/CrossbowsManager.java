@@ -1,7 +1,5 @@
 package com.gmail.nossr50.skills.crossbows;
 
-import static com.gmail.nossr50.util.skills.CombatUtils.delayArrowMetaCleanup;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -24,13 +22,15 @@ import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import static com.gmail.nossr50.util.skills.CombatUtils.delayArrowMetaCleanup;
+
 public class CrossbowsManager extends SkillManager {
     public CrossbowsManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.CROSSBOWS);
     }
 
     public void handleRicochet(@NotNull Plugin pluginRef, @NotNull Arrow arrow,
-            @NotNull Vector hitBlockNormal) {
+                               @NotNull Vector hitBlockNormal) {
         if (!arrow.isShotFromCrossbow()) {
             return;
         }
@@ -45,7 +45,7 @@ public class CrossbowsManager extends SkillManager {
     }
 
     private void spawnReflectedArrow(@NotNull Plugin pluginRef, @NotNull Arrow originalArrow,
-            @NotNull Location origin, @NotNull Vector normal) {
+                                     @NotNull Location origin, @NotNull Vector normal) {
         int bounceCount = 0;
 
         if (originalArrow.hasMetadata(MetadataConstants.METADATA_KEY_BOUNCE_COUNT)) {

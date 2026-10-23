@@ -1,10 +1,11 @@
 package com.gmail.nossr50.datatypes.experience;
 
 import com.gmail.nossr50.config.experience.ExperienceConfig;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Server-side cache that keeps {@link DiminishedReturnsState} alive across a player's
@@ -60,24 +61,32 @@ public final class DiminishedReturnsCache {
         cache.values().removeIf(DiminishedReturnsState::isEvictable);
     }
 
-    /** Removes the cache entry for {@code uuid}. For test teardown only. */
+    /**
+     * Removes the cache entry for {@code uuid}. For test teardown only.
+     */
     static void remove(@Nullable final UUID uuid) {
         if (uuid != null) {
             cache.remove(uuid);
         }
     }
 
-    /** Clears every entry from the cache. For test teardown only. */
+    /**
+     * Clears every entry from the cache. For test teardown only.
+     */
     static void clearAll() {
         cache.clear();
     }
 
-    /** Returns the number of entries currently held in the cache. For test assertions only. */
+    /**
+     * Returns the number of entries currently held in the cache. For test assertions only.
+     */
     static int size() {
         return cache.size();
     }
 
-    /** Returns {@code true} if the cache contains an entry for {@code uuid}. For test assertions only. */
+    /**
+     * Returns {@code true} if the cache contains an entry for {@code uuid}. For test assertions only.
+     */
     static boolean contains(@NotNull final UUID uuid) {
         return cache.containsKey(uuid);
     }

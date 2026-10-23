@@ -1,7 +1,5 @@
 package com.gmail.nossr50.runnables.skills;
 
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.events.skills.rupture.McMMOEntityDamageByRuptureEvent;
 import com.gmail.nossr50.mcMMO;
@@ -10,15 +8,18 @@ import com.gmail.nossr50.util.MobHealthbarUtils;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
 
 public class RuptureTask extends CancellableRunnable {
 
@@ -32,24 +33,23 @@ public class RuptureTask extends CancellableRunnable {
     private final @NotNull McMMOPlayer ruptureSource;
     private final @NotNull LivingEntity targetEntity;
     private final int expireTick;
-
+    private final double pureTickDamage;
+    private final int totalTickCeiling;
     private int ruptureTick;
     private int damageTickTracker;
     private int animationTick;
-    private final double pureTickDamage;
     // failsafe to ensure Rupture always exits and does not run forever
     private int totalTicks = 0;
-    private final int totalTickCeiling;
 
     /**
      * Constructor for the RuptureTask class.
      *
-     * @param ruptureSource The McMMOPlayer who is the source of the rupture.
-     * @param targetEntity The LivingEntity that is the target of the rupture.
+     * @param ruptureSource  The McMMOPlayer who is the source of the rupture.
+     * @param targetEntity   The LivingEntity that is the target of the rupture.
      * @param pureTickDamage The amount of damage to be applied per tick.
      */
-    public RuptureTask(@NotNull McMMOPlayer ruptureSource, @NotNull LivingEntity targetEntity,
-            double pureTickDamage) {
+    public RuptureTask(@NotNull final McMMOPlayer ruptureSource, @NotNull final LivingEntity targetEntity,
+                       final double pureTickDamage) {
         this.ruptureSource = ruptureSource;
         this.targetEntity = targetEntity;
         this.expireTick = mcMMO.p.getAdvancedConfig()
@@ -59,6 +59,23 @@ public class RuptureTask extends CancellableRunnable {
         this.damageTickTracker = 0;
         this.animationTick = ANIMATION_TICK_INTERVAL; //Play an animation right away
         this.pureTickDamage = pureTickDamage;
+    }
+
+    /**
+     * Deprecated constructor for the RuptureTask class.
+     *
+     * @param ruptureSource  The McMMOPlayer who is the source of the rupture.
+     * @param targetEntity   The LivingEntity that is the target of the rupture.
+     * @param pureTickDamage The amount of damage to be applied per tick.
+     * @param ignored        This parameter is ignored and should not be used.
+     * @since 2.2.023
+     * @deprecated This constructor is deprecated and will be removed in future versions. Use
+     * {@link #RuptureTask(McMMOPlayer, LivingEntity, double)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "2.2.023")
+    public RuptureTask(@NotNull final McMMOPlayer ruptureSource, @NotNull final LivingEntity targetEntity,
+                       final double pureTickDamage, final double ignored) {
+        this(ruptureSource, targetEntity, pureTickDamage);
     }
 
     public static @Nullable RuptureTask getActive(@NotNull Entity target) {
@@ -73,23 +90,6 @@ public class RuptureTask extends CancellableRunnable {
     public void schedule() {
         ACTIVE_RUPTURES.put(targetEntity.getUniqueId(), this);
         mcMMO.p.getFoliaLib().getScheduler().runAtEntityTimer(targetEntity, this, this::cancel, 1, 1);
-    }
-
-    /**
-     * Deprecated constructor for the RuptureTask class.
-     *
-     * @param ruptureSource The McMMOPlayer who is the source of the rupture.
-     * @param targetEntity The LivingEntity that is the target of the rupture.
-     * @param pureTickDamage The amount of damage to be applied per tick.
-     * @param ignored This parameter is ignored and should not be used.
-     * @since 2.2.023
-     * @deprecated This constructor is deprecated and will be removed in future versions. Use
-     * {@link #RuptureTask(McMMOPlayer, LivingEntity, double)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "2.2.023")
-    public RuptureTask(@NotNull McMMOPlayer ruptureSource, @NotNull LivingEntity targetEntity,
-            double pureTickDamage, double ignored) {
-        this(ruptureSource, targetEntity, pureTickDamage);
     }
 
     @Override
@@ -149,18 +149,18 @@ public class RuptureTask extends CancellableRunnable {
     }
 
     private boolean applyRupture() {
-        double healthBeforeRuptureIsApplied = targetEntity.getHealth();
+        final double healthBeforeRuptureIsApplied = targetEntity.getHealth();
 
         // Ensure victim has health
         if (healthBeforeRuptureIsApplied > 0.01) {
             //Send a fake damage event
-            McMMOEntityDamageByRuptureEvent event =
+            final McMMOEntityDamageByRuptureEvent event =
                     new McMMOEntityDamageByRuptureEvent(ruptureSource, targetEntity,
                             calculateAdjustedTickDamage());
             mcMMO.p.getServer().getPluginManager().callEvent(event);
 
             //Ensure the event wasn't canceled and damage is still greater than 0
-            double damage = event.getDamage(); //Use raw damage for Rupture
+            final double damage = event.getDamage(); //Use raw damage for Rupture
 
             if (event.isCancelled() || damage <= 0 || healthBeforeRuptureIsApplied - damage <= 0) {
                 return true;
@@ -221,8 +221,8 @@ public class RuptureTask extends CancellableRunnable {
     }
 
     @Override
-    public final boolean equals(Object o) {
-        if (!(o instanceof RuptureTask that)) {
+    public final boolean equals(final Object o) {
+        if (!(o instanceof final RuptureTask that)) {
             return false;
         }
 

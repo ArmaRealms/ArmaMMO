@@ -3,6 +3,7 @@ package com.gmail.nossr50.api;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.SkillTools;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

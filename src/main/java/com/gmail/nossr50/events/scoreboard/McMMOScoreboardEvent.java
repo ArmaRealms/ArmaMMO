@@ -11,21 +11,28 @@ import org.jetbrains.annotations.NotNull;
  */
 abstract public class McMMOScoreboardEvent extends Event {
 
-    protected Scoreboard targetBoard; //Scoreboard involved in this event
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final HandlerList handlers = new HandlerList();
     final Scoreboard currentBoard; //Can be null
+    private final ScoreboardEventReason scoreboardEventReason;
+    protected Scoreboard targetBoard; //Scoreboard involved in this event
     protected Player targetPlayer;
 
-    private final ScoreboardEventReason scoreboardEventReason;
+    /* GETTER & SETTER BOILERPLATE **/
 
     public McMMOScoreboardEvent(Scoreboard targetBoard, Scoreboard currentBoard,
-            Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
+                                Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
         this.scoreboardEventReason = scoreboardEventReason;
         this.targetBoard = targetBoard;
         this.currentBoard = currentBoard;
         this.targetPlayer = targetPlayer;
     }
 
-    /* GETTER & SETTER BOILERPLATE **/
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
 
     /**
      * This is the scoreboard the player will be assigned to after this event
@@ -55,6 +62,15 @@ abstract public class McMMOScoreboardEvent extends Event {
     }
 
     /**
+     * Change the target player for this event
+     *
+     * @param targetPlayer the new target for this event
+     */
+    public void setTargetPlayer(Player targetPlayer) {
+        this.targetPlayer = targetPlayer;
+    }
+
+    /**
      * This is the scoreboard the player is currently assigned to at the time the event was fired
      * Grabbed via player.getScoreboard()
      *
@@ -73,26 +89,8 @@ abstract public class McMMOScoreboardEvent extends Event {
         return scoreboardEventReason;
     }
 
-    /**
-     * Change the target player for this event
-     *
-     * @param targetPlayer the new target for this event
-     */
-    public void setTargetPlayer(Player targetPlayer) {
-        this.targetPlayer = targetPlayer;
-    }
-
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 }

@@ -1,7 +1,8 @@
 package com.gmail.nossr50.datatypes.skills.interfaces;
 
-import java.util.Collection;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.Collection;
 
 public interface Toolable {
     /**

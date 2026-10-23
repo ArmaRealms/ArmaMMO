@@ -1,10 +1,10 @@
 package com.gmail.nossr50.util;
 
-import static com.gmail.nossr50.util.MobMetadataUtils.removeMobFlags;
-
 import com.gmail.nossr50.mcMMO;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
+
+import static com.gmail.nossr50.util.MobMetadataUtils.removeMobFlags;
 
 public class TransientMetadataTools {
     private final mcMMO pluginRef;

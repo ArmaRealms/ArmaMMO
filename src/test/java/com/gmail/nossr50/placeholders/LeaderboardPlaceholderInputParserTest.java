@@ -1,11 +1,11 @@
 package com.gmail.nossr50.placeholders;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LeaderboardPlaceholderInputParserTest {
     @ParameterizedTest(name = "\"{0}\" should parse to {1}")

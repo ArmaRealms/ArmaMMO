@@ -1,8 +1,6 @@
 package com.gmail.nossr50.util.text;
 
-import java.util.List;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -11,6 +9,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class TextUtils {
     private static @Nullable LegacyComponentSerializer customLegacySerializer;
@@ -27,7 +27,7 @@ public class TextUtils {
      * @return a component with optional styling built from an array
      */
     static @NotNull Component fromArray(@NotNull Component[] componentsArray,
-            @Nullable Component prefixComponent, @Nullable Component suffixComponent) {
+                                        @Nullable Component prefixComponent, @Nullable Component suffixComponent) {
         TextComponent.Builder componentBuilder = Component.text();
 
         for (Component component : componentsArray) {
@@ -60,7 +60,7 @@ public class TextUtils {
      * @return a 2D array with components split into groups
      */
     static @NotNull Component[][] splitComponentsIntoGroups(@NotNull List<Component> components,
-            int groupsSize) {
+                                                            int groupsSize) {
         int groupCount = (int) Math.ceil((double) components.size() / (double) groupsSize);
 
         Component[][] splitGroups = new Component[groupCount][groupsSize];
@@ -94,7 +94,7 @@ public class TextUtils {
     }
 
     static void addNewHoverComponentToTextComponent(@NotNull TextComponent.Builder textComponent,
-            @NotNull Component baseComponent) {
+                                                    @NotNull Component baseComponent) {
         textComponent.hoverEvent(HoverEvent.showText(baseComponent));
     }
 

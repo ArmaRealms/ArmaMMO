@@ -1,10 +1,11 @@
 package com.gmail.nossr50.listeners;
 
+import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.bukkit.Material;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Pure analysis of a block's dropped materials deciding whether bonus drops can be trusted,
@@ -14,25 +15,17 @@ import org.jetbrains.annotations.NotNull;
  */
 final class BonusDrops {
 
-    /**
-     * @param rewardable whether this break may receive bonus drops at all
-     * @param onlyRewardBlocks whether bonus drops must be limited to block items because the
-     * drop list looks like it contains tile-entity contents
-     */
-    record Analysis(boolean rewardable, boolean onlyRewardBlocks) {
-    }
-
     private BonusDrops() {
     }
 
     /**
      * Analyzes the materials dropped by a broken block.
      *
-     * @param brokenBlockType the type of the block that broke
+     * @param brokenBlockType  the type of the block that broke
      * @param droppedMaterials the materials of every dropped item entity
      */
     static @NotNull Analysis analyze(@NotNull Material brokenBlockType,
-            @NotNull List<Material> droppedMaterials) {
+                                     @NotNull List<Material> droppedMaterials) {
         // beetroot drops two materials legitimately (beetroot + seeds); other plants may need
         // the same tolerance later
         final int tileEntityTolerance = brokenBlockType == Material.BEETROOTS ? 2 : 1;
@@ -54,5 +47,13 @@ final class BonusDrops {
         final boolean rewardable = blockCount <= 1;
 
         return new Analysis(rewardable, onlyRewardBlocks);
+    }
+
+    /**
+     * @param rewardable       whether this break may receive bonus drops at all
+     * @param onlyRewardBlocks whether bonus drops must be limited to block items because the
+     *                         drop list looks like it contains tile-entity contents
+     */
+    record Analysis(boolean rewardable, boolean onlyRewardBlocks) {
     }
 }

@@ -1,17 +1,18 @@
 package com.gmail.nossr50.skills.alchemy;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.runnables.skills.AlchemyBrewTask;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Covers the plugin-disable safety net: every brew that is still in flight must be finished

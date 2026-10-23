@@ -1,8 +1,9 @@
 package com.gmail.nossr50.util;
 
-import java.util.HashMap;
 import org.bukkit.enchantments.Enchantment;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
 
 public class EnchantmentUtils {
 
@@ -47,7 +48,7 @@ public class EnchantmentUtils {
 
     @SuppressWarnings("deprecation")
     private static void addLegacyEnchantmentLookup(String enchantmentName,
-            String legacyBukkitName) {
+                                                   String legacyBukkitName) {
         if (Enchantment.getByName(legacyBukkitName) != null) {
             legacyEnchantments.put(enchantmentName, Enchantment.getByName(legacyBukkitName));
         }

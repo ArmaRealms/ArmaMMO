@@ -1,14 +1,17 @@
 package com.gmail.nossr50.config;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-
 import com.gmail.nossr50.database.SQLDatabaseManager.PoolIdentifier;
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.party.PartyFeature;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.util.text.StringUtils;
+import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -17,11 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import org.bukkit.Material;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigPartyFeatureString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
 
 public class GeneralConfig extends BukkitConfig {
     // Floor for how often leaderboards may rebuild; shared with FlatFileDatabaseManager's
@@ -32,24 +33,21 @@ public class GeneralConfig extends BukkitConfig {
     // use and periodic database load.
     private static final int MIN_PAPI_LEADERBOARD_TRACKED_RANK = 10;
     private static final int MAX_PAPI_LEADERBOARD_TRACKED_RANK = 1000;
-
-    private @Nullable Material repairAnvilMaterial;
-    private @Nullable Material salvageAnvilMaterial;
-
-    /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
-    private @Nullable Integer powerLevelCap;
     private final Map<PrimarySkillType, Integer> levelCaps = new EnumMap<>(
             PrimarySkillType.class);
-
+    private final Map<PrimarySkillType, Map<Material, Boolean>> doubleDropsEnabled =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<Material, Boolean> woodcuttingDoubleDropsEnabled = new HashMap<>();
+    private final Map<String, Material> tamingCOTWMaterials = new HashMap<>();
+    private @Nullable Material repairAnvilMaterial;
+    private @Nullable Material salvageAnvilMaterial;
+    /* Level caps resolved once and reused on the XP hot path; reset by loadKeys() */
+    private @Nullable Integer powerLevelCap;
     /* Values resolved once and reused on hot event paths; reset by loadKeys() */
     private @Nullable Boolean abilitiesEnabled;
     private @Nullable Boolean abilityMessagesEnabled;
     private @Nullable Boolean abilitiesOnlyActivateWhenSneaking;
     private @Nullable Boolean abilitiesGateEnabled;
-    private final Map<PrimarySkillType, Map<Material, Boolean>> doubleDropsEnabled =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<Material, Boolean> woodcuttingDoubleDropsEnabled = new HashMap<>();
-    private final Map<String, Material> tamingCOTWMaterials = new HashMap<>();
 
     public GeneralConfig(@NotNull File dataFolder) {
         super("config.yml", dataFolder);
@@ -77,7 +75,7 @@ public class GeneralConfig extends BukkitConfig {
     @Override
     protected boolean validateKeys() {
         // Validate all the settings!
-        List<String> reason = new ArrayList<>();
+        final List<String> reason = new ArrayList<>();
 
         /* General Settings */
         if (getSaveInterval() <= 0) {
@@ -85,7 +83,7 @@ public class GeneralConfig extends BukkitConfig {
         }
 
         /* MySQL Settings */
-        for (PoolIdentifier identifier : PoolIdentifier.values()) {
+        for (final PoolIdentifier identifier : PoolIdentifier.values()) {
             if (getMySQLMaxConnections(identifier) <= 0) {
                 reason.add("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(
                         identifier.toString()) + " should be greater than 0!");
@@ -165,7 +163,7 @@ public class GeneralConfig extends BukkitConfig {
             reason.add("Party.Leveling.Xp_Curve_Modifier should be at least 1!");
         }
 
-        for (PartyFeature partyFeature : PartyFeature.values()) {
+        for (final PartyFeature partyFeature : PartyFeature.values()) {
             if (getPartyFeatureUnlockLevel(partyFeature) < 0) {
                 reason.add("Party.Leveling." + getConfigPartyFeatureString(
                         partyFeature) + "_UnlockLevel should be at least 0!");
@@ -250,7 +248,6 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("General.Verbose_Logging", false);
     }
 
-
     public boolean getMatchOfflinePlayers() {
         return config.getBoolean("Commands.Generic.Match_OfflinePlayers", false);
     }
@@ -310,7 +307,7 @@ public class GeneralConfig extends BukkitConfig {
             return MobHealthbarType.valueOf(config.getString("Mob_Healthbar.Display_Type", "HEARTS")
                     .toUpperCase(Locale.ENGLISH)
                     .trim());
-        } catch (IllegalArgumentException ex) {
+        } catch (final IllegalArgumentException ex) {
             return MobHealthbarType.HEARTS;
         }
     }
@@ -495,12 +492,12 @@ public class GeneralConfig extends BukkitConfig {
         return getStringIncludingInts("MySQL.Database.User_Password");
     }
 
-    public int getMySQLMaxConnections(PoolIdentifier identifier) {
+    public int getMySQLMaxConnections(final PoolIdentifier identifier) {
         return config.getInt("MySQL.Database.MaxConnections." + StringUtils.getCapitalized(
                 identifier.toString()), 30);
     }
 
-    public int getMySQLMaxPoolSize(PoolIdentifier identifier) {
+    public int getMySQLMaxPoolSize(final PoolIdentifier identifier) {
         return config.getInt(
                 "MySQL.Database.MaxPoolSize." + StringUtils.getCapitalized(identifier.toString()),
                 10);
@@ -514,7 +511,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("MySQL.Server.allowPublicKeyRetrieval", true);
     }
 
-    private String getStringIncludingInts(String key) {
+    private String getStringIncludingInts(final String key) {
         String str = config.getString(key);
 
         if (str == null) {
@@ -528,13 +525,13 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /* Hardcore Mode */
-    public boolean getHardcoreStatLossEnabled(PrimarySkillType primarySkillType) {
+    public boolean getHardcoreStatLossEnabled(final PrimarySkillType primarySkillType) {
         return config.getBoolean(
                 "Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(
                         primarySkillType.toString()), false);
     }
 
-    public void setHardcoreStatLossEnabled(PrimarySkillType primarySkillType, boolean enabled) {
+    public void setHardcoreStatLossEnabled(final PrimarySkillType primarySkillType, final boolean enabled) {
         config.set(
                 "Hardcore.Death_Stat_Loss.Enabled." + StringUtils.getCapitalized(
                         primarySkillType.toString()),
@@ -545,7 +542,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getDouble("Hardcore.Death_Stat_Loss.Penalty_Percentage", 75.0D);
     }
 
-    public void setHardcoreDeathStatPenaltyPercentage(double value) {
+    public void setHardcoreDeathStatPenaltyPercentage(final double value) {
         config.set("Hardcore.Death_Stat_Loss.Penalty_Percentage", value);
     }
 
@@ -553,13 +550,13 @@ public class GeneralConfig extends BukkitConfig {
         return config.getInt("Hardcore.Death_Stat_Loss.Level_Threshold", 0);
     }
 
-    public boolean getHardcoreVampirismEnabled(PrimarySkillType primarySkillType) {
+    public boolean getHardcoreVampirismEnabled(final PrimarySkillType primarySkillType) {
         return config.getBoolean(
                 "Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(
                         primarySkillType.toString()), false);
     }
 
-    public void setHardcoreVampirismEnabled(PrimarySkillType primarySkillType, boolean enabled) {
+    public void setHardcoreVampirismEnabled(final PrimarySkillType primarySkillType, final boolean enabled) {
         config.set("Hardcore.Vampirism.Enabled." + StringUtils.getCapitalized(
                 primarySkillType.toString()), enabled);
     }
@@ -568,7 +565,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getDouble("Hardcore.Vampirism.Leech_Percentage", 5.0D);
     }
 
-    public void setHardcoreVampirismStatLeechPercentage(double value) {
+    public void setHardcoreVampirismStatLeechPercentage(final double value) {
         config.set("Hardcore.Vampirism.Leech_Percentage", value);
     }
 
@@ -693,7 +690,7 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     public int getPartyLevelCap() {
-        int cap = config.getInt("Party.Leveling.Level_Cap", 10);
+        final int cap = config.getInt("Party.Leveling.Level_Cap", 10);
         return (cap <= 0) ? Integer.MAX_VALUE : cap;
     }
 
@@ -709,7 +706,7 @@ public class GeneralConfig extends BukkitConfig {
         return config.getBoolean("Party.Leveling.Inform_All_Party_Members_On_LevelUp", false);
     }
 
-    public int getPartyFeatureUnlockLevel(PartyFeature partyFeature) {
+    public int getPartyFeatureUnlockLevel(final PartyFeature partyFeature) {
         return config.getInt(
                 "Party.Leveling." + getConfigPartyFeatureString(partyFeature) + "_UnlockLevel", 0);
     }
@@ -786,11 +783,11 @@ public class GeneralConfig extends BukkitConfig {
         return abilitiesGateEnabled;
     }
 
-    public int getCooldown(SuperAbilityType ability) {
+    public int getCooldown(final SuperAbilityType ability) {
         return config.getInt("Abilities.Cooldowns." + ability.toString());
     }
 
-    public int getMaxLength(SuperAbilityType ability) {
+    public int getMaxLength(final SuperAbilityType ability) {
         return config.getInt("Abilities.Max_Seconds." + ability.toString());
     }
 
@@ -807,7 +804,7 @@ public class GeneralConfig extends BukkitConfig {
     /*
      * SKILL SETTINGS
      */
-    public boolean getDoubleDropsEnabled(PrimarySkillType skill, Material material) {
+    public boolean getDoubleDropsEnabled(final PrimarySkillType skill, final Material material) {
         //TODO: Temporary measure to fix an exploit caused by a yet to be fixed Spigot bug (as of 7/3/2020)
         if (material.toString().equalsIgnoreCase("LILY_PAD")) {
             return false;
@@ -819,16 +816,16 @@ public class GeneralConfig extends BukkitConfig {
                                 + getMaterialConfigString(key).replace(" ", "_")));
     }
 
-    public boolean getDoubleDropsDisabled(PrimarySkillType skill) {
-        String skillName = StringUtils.getCapitalized(skill.toString());
-        ConfigurationSection section = config.getConfigurationSection("Bonus_Drops." + skillName);
+    public boolean getDoubleDropsDisabled(final PrimarySkillType skill) {
+        final String skillName = StringUtils.getCapitalized(skill.toString());
+        final ConfigurationSection section = config.getConfigurationSection("Bonus_Drops." + skillName);
         if (section == null) {
             return false;
         }
-        Set<String> keys = section.getKeys(false);
+        final Set<String> keys = section.getKeys(false);
         boolean disabled = true;
 
-        for (String key : keys) {
+        for (final String key : keys) {
             if (config.getBoolean("Bonus_Drops." + skillName + "." + key)) {
                 disabled = false;
                 break;
@@ -988,19 +985,19 @@ public class GeneralConfig extends BukkitConfig {
                         "Skills.Taming.Call_Of_The_Wild." + key + ".Item_Material")));
     }
 
-    public int getTamingCOTWCost(String cotwEntity) {
+    public int getTamingCOTWCost(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Item_Amount");
     }
 
-    public int getTamingCOTWAmount(String cotwEntity) {
+    public int getTamingCOTWAmount(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Summon_Amount");
     }
 
-    public int getTamingCOTWLength(String cotwEntity) {
+    public int getTamingCOTWLength(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Summon_Length");
     }
 
-    public int getTamingCOTWMaxAmount(String cotwEntity) {
+    public int getTamingCOTWMaxAmount(final String cotwEntity) {
         return config.getInt("Skills.Taming.Call_Of_The_Wild." + cotwEntity + ".Per_Player_Limit",
                 1);
     }
@@ -1053,13 +1050,13 @@ public class GeneralConfig extends BukkitConfig {
     }
 
     /* PVP & PVE Settings */
-    public boolean getPVPEnabled(PrimarySkillType skill) {
+    public boolean getPVPEnabled(final PrimarySkillType skill) {
         return config.getBoolean(
                 "Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVP",
                 true);
     }
 
-    public boolean getPVEEnabled(PrimarySkillType skill) {
+    public boolean getPVEEnabled(final PrimarySkillType skill) {
         return config.getBoolean(
                 "Skills." + StringUtils.getCapitalized(skill.toString()) + ".Enabled_For_PVE",
                 true);
@@ -1154,7 +1151,7 @@ public class GeneralConfig extends BukkitConfig {
                 "General.Level_Up_Chat_Broadcasts.Broadcast_Powerlevels.Milestone_Interval", 100);
     }
 
-    public boolean isGreenThumbReplantableCrop(@NotNull Material material) {
+    public boolean isGreenThumbReplantableCrop(@NotNull final Material material) {
         return config.getBoolean(
                 "Green_Thumb_Replanting_Crops." + StringUtils.getCapitalized(material.toString()),
                 true);

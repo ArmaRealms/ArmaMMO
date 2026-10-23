@@ -1,14 +1,9 @@
 package com.gmail.nossr50.skills.tridents;
 
-import static java.util.logging.Logger.getLogger;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -17,6 +12,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 
 class TridentsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(TridentsTest.class.getName());
@@ -51,7 +52,7 @@ class TridentsTest extends MMOTestEnvironment {
         Mockito.when(advancedConfig.getImpaleBaseDamage()).thenReturn(1.0D);
         Mockito.when(advancedConfig.getImpaleRankDamageMultiplier()).thenReturn(0.5D);
         Mockito.when(RankUtils.getRank(any(Player.class),
-            Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(0);
+                Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(0);
 
         assertEquals(0.0D, tridentsManager.impaleDamageBonus());
     }
@@ -61,7 +62,7 @@ class TridentsTest extends MMOTestEnvironment {
         Mockito.when(advancedConfig.getImpaleBaseDamage()).thenReturn(1.0D);
         Mockito.when(advancedConfig.getImpaleRankDamageMultiplier()).thenReturn(0.5D);
         Mockito.when(RankUtils.getRank(any(Player.class),
-            Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(1);
+                Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(1);
 
         // base + rank * multiplier: 1.0 + 1 * 0.5 = 1.5
         assertEquals(1.5D, tridentsManager.impaleDamageBonus());
@@ -72,7 +73,7 @@ class TridentsTest extends MMOTestEnvironment {
         Mockito.when(advancedConfig.getImpaleBaseDamage()).thenReturn(1.0D);
         Mockito.when(advancedConfig.getImpaleRankDamageMultiplier()).thenReturn(0.5D);
         Mockito.when(RankUtils.getRank(any(Player.class),
-            Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(4);
+                Mockito.eq(SubSkillType.TRIDENTS_IMPALE))).thenReturn(4);
 
         // base + rank * multiplier: 1.0 + 4 * 0.5 = 3.0
         assertEquals(3.0D, tridentsManager.impaleDamageBonus());

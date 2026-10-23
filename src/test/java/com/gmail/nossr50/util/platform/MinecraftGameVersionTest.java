@@ -1,14 +1,7 @@
 package com.gmail.nossr50.util.platform;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.MinecraftGameVersionFactory;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +10,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MinecraftGameVersionTest {
 
@@ -33,7 +34,7 @@ class MinecraftGameVersionTest {
             "26, 1, 0, 26.1",
     })
     void getVersionStrShouldPrintDottedVersionNumbers(int major, int minor, int patch,
-            String expected) {
+                                                      String expected) {
         // Given - a Minecraft version with or without a patch component
         final MinecraftGameVersion version = new MinecraftGameVersion(major, minor, patch);
 
@@ -100,6 +101,20 @@ class MinecraftGameVersionTest {
 
     @Nested
     class VersionDetectionFromGetVersion {
+        private static @NotNull Stream<Arguments> getVersionStrings() {
+            return Stream.of(
+                    // Spigot: "git-Spigot-<hash>-<hash> (MC: X.Y.Z)"
+                    // The prefix never starts with digits, so the old regex matched nothing → 0.0.0
+                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.13.2)", 1, 13, 2),
+                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.17)", 1, 17, 0),
+                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.21.4)", 1, 21, 4),
+                    // Paper (old versioning): "X.Y.Z-build-hash (MC: X.Y.Z)"
+                    Arguments.of("1.21.11-106-0d768aa (MC: 1.21.11)", 1, 21, 11),
+                    // Paper (new versioning 26+): "26.X.Y-build-hash (MC: 26.X.Y)"
+                    Arguments.of("26.1.2-60-b4682bf (MC: 26.1.2)", 26, 1, 2)
+            );
+        }
+
         // Tests calculateGameVersion() with Bukkit.getVersion() format strings — the actual
         // input mcMMO.java passes at runtime. CraftBukkit always embeds "(MC: X.Y.Z)" in the
         // string, so the primary pattern must handle all server software variants:
@@ -127,24 +142,25 @@ class MinecraftGameVersionTest {
                 mcMMO.p = null;
             }
         }
-
-        private static @NotNull Stream<Arguments> getVersionStrings() {
-            return Stream.of(
-                    // Spigot: "git-Spigot-<hash>-<hash> (MC: X.Y.Z)"
-                    // The prefix never starts with digits, so the old regex matched nothing → 0.0.0
-                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.13.2)", 1, 13, 2),
-                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.17)", 1, 17, 0),
-                    Arguments.of("git-Spigot-12345-abcdef (MC: 1.21.4)", 1, 21, 4),
-                    // Paper (old versioning): "X.Y.Z-build-hash (MC: X.Y.Z)"
-                    Arguments.of("1.21.11-106-0d768aa (MC: 1.21.11)", 1, 21, 11),
-                    // Paper (new versioning 26+): "26.X.Y-build-hash (MC: 26.X.Y)"
-                    Arguments.of("26.1.2-60-b4682bf (MC: 26.1.2)", 26, 1, 2)
-            );
-        }
     }
 
     @Nested
     class VersionDetectionFallback {
+        private static @NotNull Stream<Arguments> getBukkitVersionStrings() {
+            // Samples taken from CraftBukkit's historical pom.xml:
+            // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/browse/pom.xml
+            return Stream.of(
+                    Arguments.of("1.13.2-R0.1-SNAPSHOT", 1, 13, 2),
+                    Arguments.of("1.13-R0.2-SNAPSHOT", 1, 13, 0),
+                    Arguments.of("1.13-pre7-R0.1-SNAPSHOT", 1, 13, 0),
+                    Arguments.of("1.14-pre5-SNAPSHOT", 1, 14, 0),
+                    Arguments.of("1.15-R0.1-SNAPSHOT", 1, 15, 0),
+                    Arguments.of("1.16.5-R0.1-SNAPSHOT", 1, 16, 5),
+                    Arguments.of("1.17-R0.1-SNAPSHOT", 1, 17, 0),
+                    Arguments.of("1.21.11-106-0d768aa", 1, 21, 11)
+            );
+        }
+
         // Tests the fallback regex path for strings that lack "(MC: X.Y.Z)".
         // This covers getBukkitVersion()-style strings and any legacy format.
         @ParameterizedTest(name = "Fallback: verify that \"{0}\" is recognized as {1}.{2}.{3}")
@@ -167,21 +183,6 @@ class MinecraftGameVersionTest {
             } finally {
                 mcMMO.p = null;
             }
-        }
-
-        private static @NotNull Stream<Arguments> getBukkitVersionStrings() {
-            // Samples taken from CraftBukkit's historical pom.xml:
-            // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/browse/pom.xml
-            return Stream.of(
-                    Arguments.of("1.13.2-R0.1-SNAPSHOT", 1, 13, 2),
-                    Arguments.of("1.13-R0.2-SNAPSHOT", 1, 13, 0),
-                    Arguments.of("1.13-pre7-R0.1-SNAPSHOT", 1, 13, 0),
-                    Arguments.of("1.14-pre5-SNAPSHOT", 1, 14, 0),
-                    Arguments.of("1.15-R0.1-SNAPSHOT", 1, 15, 0),
-                    Arguments.of("1.16.5-R0.1-SNAPSHOT", 1, 16, 5),
-                    Arguments.of("1.17-R0.1-SNAPSHOT", 1, 17, 0),
-                    Arguments.of("1.21.11-106-0d768aa", 1, 21, 11)
-            );
         }
     }
 

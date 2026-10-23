@@ -1,18 +1,26 @@
 package com.gmail.nossr50.config;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import org.bukkit.World;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class WorldBlacklistTest {
+
+    private static void setBlacklist(ArrayList<String> replacementList)
+            throws ReflectiveOperationException {
+        final Field blacklistField = WorldBlacklist.class.getDeclaredField("blacklist");
+        blacklistField.setAccessible(true);
+        blacklistField.set(null, replacementList);
+    }
 
     @AfterEach
     void restoreDefaultBlacklistState() throws ReflectiveOperationException {
@@ -78,12 +86,5 @@ class WorldBlacklistTest {
             // Then
             assertFalse(isBlacklisted);
         }
-    }
-
-    private static void setBlacklist(ArrayList<String> replacementList)
-            throws ReflectiveOperationException {
-        final Field blacklistField = WorldBlacklist.class.getDeclaredField("blacklist");
-        blacklistField.setAccessible(true);
-        blacklistField.set(null, replacementList);
     }
 }

@@ -134,11 +134,11 @@ public enum SuperAbilityType {
     private final String abilityPlayer;
     private final String abilityRefresh;
     private final String abilityPlayerOff;
-    private SubSkillType subSkillTypeDefinition;
     private final String localizedName;
+    private SubSkillType subSkillTypeDefinition;
 
     SuperAbilityType(String abilityOn, String abilityOff, String abilityPlayer,
-            String abilityRefresh, String abilityPlayerOff, String localizedName) {
+                     String abilityRefresh, String abilityPlayerOff, String localizedName) {
         this.abilityOn = abilityOn;
         this.abilityOff = abilityOff;
         this.abilityPlayer = abilityPlayer;

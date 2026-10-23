@@ -1,7 +1,8 @@
 package com.gmail.nossr50.util.random;
 
-import java.util.concurrent.ThreadLocalRandom;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public interface Probability {
     /**
@@ -26,50 +27,50 @@ public interface Probability {
      * @param percentage the value of the probability
      * @return a new Probability with the given value
      */
-    static @NotNull Probability ofPercent(double percentage) {
+    static @NotNull Probability ofPercent(final double percentage) {
         if (percentage < 0) {
             throw new IllegalArgumentException(
                     "Value should never be negative for Probability! This suggests a coding mistake, contact the devs!");
         }
 
         // Convert to a 0-1 floating point representation
-        double probabilityValue = percentage / 100.0D;
+        final double probabilityValue = percentage / 100.0D;
         return new ProbabilityImpl(probabilityValue);
     }
 
     /**
      * Create a new Probability of a value. This method takes a value between 0 and 1 and creates a
      * Probability of equivalent odds. A value of 1 or greater represents something that will always
-     * succeed. A value of around 0.5 represents something that succeeds around half the time. A
-     * value of 0 represents something that will always fail.
+     * succeed. A statVal of around 0.5 represents something that succeeds around half the time. A
+     * statVal of 0 represents something that will always fail.
      *
-     * @param value the value of the probability
-     * @return a new Probability with the given value
+     * @param value the statVal of the probability
+     * @return a new Probability with the given statVal
      */
-    static @NotNull Probability ofValue(double value) {
+    static @NotNull Probability ofValue(final double value) {
         return new ProbabilityImpl(value);
     }
 
     /**
-     * Simulates a "roll of the dice" If the value passed is higher than the "random" value, than it
+     * Simulates a "roll of the dice" If the statVal passed is higher than the "random" statVal, than it
      * is a successful roll
      *
-     * @param probabilityValue probability value
+     * @param probabilityValue probability statVal
      * @return true for succeeding, false for failing
      */
-    static private boolean isSuccessfulRoll(double probabilityValue) {
+    static private boolean isSuccessfulRoll(final double probabilityValue) {
         return (probabilityValue) >= ThreadLocalRandom.current().nextDouble(1D);
     }
 
     /**
-     * The value of this Probability Should return a result between 0 and 1 (inclusive) A value of 1
-     * or greater represents something that will always succeed A value of around 0.5 represents
-     * something that succeeds around half the time A value of 0 represents something that will
+     * The statVal of this Probability Should return a result between 0 and 1 (inclusive) A statVal of 1
+     * or greater represents something that will always succeed A statVal of around 0.5 represents
+     * something that succeeds around half the time A statVal of 0 represents something that will
      * always fail
      *
-     * @return the value of probability
+     * @return the statVal of probability
      */
-    double getValue();
+    double value();
 
     /**
      * Simulate an outcome on a probability and return true or false for the result of that outcome
@@ -77,7 +78,7 @@ public interface Probability {
      * @return true if the probability succeeded, false if it failed
      */
     default boolean evaluate() {
-        return isSuccessfulRoll(getValue());
+        return isSuccessfulRoll(value());
     }
 
     /**
@@ -85,11 +86,11 @@ public interface Probability {
      * of that outcome
      *
      * @param probabilityMultiplier probability will be multiplied by this before success is
-     * checked
+     *                              checked
      * @return true if the probability succeeded, false if it failed
      */
-    default boolean evaluate(double probabilityMultiplier) {
-        double probabilityValue = getValue() * probabilityMultiplier;
+    default boolean evaluate(final double probabilityMultiplier) {
+        final double probabilityValue = value() * probabilityMultiplier;
         return isSuccessfulRoll(probabilityValue);
     }
 
@@ -97,14 +98,14 @@ public interface Probability {
      * Modify and then Simulate an outcome on a probability and return true or false for the result
      * of that outcome.
      *
-     * @param probabilityMultiplier probability will be multiplied by this before success is
-     * checked
+     * @param probabilityMultiplier      probability will be multiplied by this before success is
+     *                                   checked
      * @param finalProbabilityMultiplier probability will be multiplied by this after the first
-     * multiplier, should be between 0 and 1
+     *                                   multiplier, should be between 0 and 1
      * @return true if the probability succeeded, false if it failed
      */
-    default boolean evaluate(double probabilityMultiplier, double finalProbabilityMultiplier) {
-        double probabilityValue = getValue() * probabilityMultiplier;
+    default boolean evaluate(final double probabilityMultiplier, final double finalProbabilityMultiplier) {
+        final double probabilityValue = value() * probabilityMultiplier;
         return isSuccessfulRoll(probabilityValue * finalProbabilityMultiplier);
     }
 }

@@ -5,9 +5,6 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.runnables.player.PlayerProfileLoadingTask;
 import com.gmail.nossr50.util.player.UserManager;
 import com.google.common.collect.ImmutableSet;
-import java.util.Locale;
-import java.util.Random;
-import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -20,15 +17,15 @@ import org.bukkit.entity.Villager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class Misc {
-    private static final @NotNull Random random = new Random();
+import java.util.Locale;
+import java.util.Random;
+import java.util.Set;
 
+public final class Misc {
     public static final int TIME_CONVERSION_FACTOR = 1000;
     public static final int TICK_CONVERSION_FACTOR = 20;
-
     public static final int PLAYER_RESPAWN_COOLDOWN_SECONDS = 5;
     public static final double SKILL_MESSAGE_MAX_SENDING_DISTANCE = 10.0;
-
     public static final @NotNull Set<String> modNames = ImmutableSet.of("LOTR", "BUILDCRAFT",
             "ENDERIO",
             "ENHANCEDBIOMES", "IC2", "METALLURGY", "FORESTRY", "GALACTICRAFT", "RAILCRAFT",
@@ -36,6 +33,7 @@ public final class Misc {
             "THAUMCRAFT", "GRAVESTONEMOD", "GROWTHCRAFT", "ARCTICMOBS", "DEMONMOBS", "INFERNOMOBS",
             "SWAMPMOBS",
             "MARICULTURE", "MINESTRAPPOLATION");
+    private static final @NotNull Random random = new Random();
 
     private Misc() {
     }
@@ -83,14 +81,14 @@ public final class Misc {
     /**
      * Determine if two locations are near each other.
      *
-     * @param first The first location
-     * @param second The second location
+     * @param first       The first location
+     * @param second      The second location
      * @param maxDistance The max distance apart
      * @return true if the distance between {@code first} and {@code second} is less than
      * {@code maxDistance}, false otherwise
      */
     public static boolean isNear(@NotNull Location first, @NotNull Location second,
-            double maxDistance) {
+                                 double maxDistance) {
         return (first.getWorld() == second.getWorld()) && (
                 first.distanceSquared(second) < (maxDistance * maxDistance) || maxDistance == 0);
     }

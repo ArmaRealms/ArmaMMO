@@ -11,9 +11,6 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
@@ -24,6 +21,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Builds Adventure {@link Component} objects for mcMMO's JSON hover tooltips and clickable text.
@@ -141,8 +142,8 @@ public class TextComponentFactory {
      * @param player             target player
      * @param subSkillComponents the per-sub-skill button components
      */
-    public static void sendPlayerSubSkillList(
-            @NotNull Player player, @NotNull List<Component> subSkillComponents) {
+    public static void sendPlayerSubSkillList(@NotNull Player player,
+                                              @NotNull List<Component> subSkillComponents) {
         final Audience audience = mcMMO.getAudiences().player(player);
         final Component atSign = LocaleLoader.getTextComponent("JSON.Hover.AtSymbolSkills");
         final Component space = Component.space();
@@ -265,7 +266,8 @@ public class TextComponentFactory {
     }
 
     private static Component buildSubSkillButton(
-            @NotNull Player player, @NotNull AbstractSubSkill abstractSubSkill) {
+            @NotNull Player player,
+            @NotNull AbstractSubSkill abstractSubSkill) {
         final String skillName = abstractSubSkill.getNiceName();
         final SubSkillType subSkillType = abstractSubSkill.getSubSkillType();
         final boolean unlocked = RankUtils.hasUnlockedSubskill(player, subSkillType);
@@ -444,7 +446,8 @@ public class TextComponentFactory {
      * {@code JSON.Locked=&8-=[LOCKED]=-} and {@code JSON.LevelRequirement=&9Level Requirement}.
      */
     private static void appendLockedSection(
-            @NotNull TextComponent.Builder tooltip, @NotNull SubSkillType subSkillType) {
+            @NotNull
+            TextComponent.Builder tooltip, @NotNull SubSkillType subSkillType) {
         appendLockedCore(tooltip, String.valueOf(
                 RankConfig.getInstance().getSubSkillUnlockLevel(subSkillType, 1)));
     }

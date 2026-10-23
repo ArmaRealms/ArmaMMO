@@ -7,15 +7,16 @@ import com.gmail.nossr50.commands.levelup.RegistrationSource;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import org.bukkit.configuration.ConfigurationSection;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Loads {@code level_up_commands.yml} and registers each valid entry with the
@@ -78,7 +79,7 @@ public class CommandOnLevelUpConfig extends BukkitConfig {
     }
 
     private @Nullable LevelUpCommand buildCommand(@NotNull String key,
-            @NotNull ConfigurationSection entry) {
+                                                  @NotNull ConfigurationSection entry) {
         final List<String> commands = readCommands(entry);
         if (commands.isEmpty()) {
             warn(key, "no commands defined, skipping it");
@@ -123,7 +124,7 @@ public class CommandOnLevelUpConfig extends BukkitConfig {
     }
 
     private @NotNull Set<PrimarySkillType> readSkills(@NotNull String key,
-            @NotNull ConfigurationSection entry) {
+                                                      @NotNull ConfigurationSection entry) {
         final List<String> skillNames;
         if (entry.isString(SKILLS)) {
             final String skillName = entry.getString(SKILLS);
@@ -149,7 +150,7 @@ public class CommandOnLevelUpConfig extends BukkitConfig {
     }
 
     private @NotNull List<Integer> readPositiveLevels(@NotNull String key,
-            @NotNull ConfigurationSection entry, @NotNull String path) {
+                                                      @NotNull ConfigurationSection entry, @NotNull String path) {
         final List<Integer> levels = new ArrayList<>();
         for (int level : entry.getIntegerList(path)) {
             if (level > 0) {
@@ -163,7 +164,7 @@ public class CommandOnLevelUpConfig extends BukkitConfig {
     }
 
     private @NotNull LevelUpCommand.RunAs readRunAs(@NotNull String key,
-            @NotNull ConfigurationSection entry) {
+                                                    @NotNull ConfigurationSection entry) {
         final String runAsName = entry.getString(RUN_AS, LevelUpCommand.RunAs.CONSOLE.name());
         try {
             return LevelUpCommand.RunAs.valueOf(runAsName.toUpperCase(Locale.ENGLISH));

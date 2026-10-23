@@ -1,10 +1,17 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -24,18 +31,12 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Stress and scale-oriented migration tests for {@link McMMORegionBackupStore}.
@@ -46,63 +47,62 @@ import org.mockito.Mockito;
 @Tag("stress")
 class McMMORegionBackupStoreStressTest {
 
-    private static final class PlacedBlockExpectation {
-        private final int chunkX;
-        private final int chunkZ;
-        private final int[][] expectedTrueBits;
-
-        private PlacedBlockExpectation(int chunkX, int chunkZ, int[][] expectedTrueBits) {
-            this.chunkX = chunkX;
-            this.chunkZ = chunkZ;
-            this.expectedTrueBits = expectedTrueBits;
-        }
-    }
-
-    private enum WorldDatasetMode {
-        RANDOM_DENSE,
-        ALL_TRUE,
-        ALL_FALSE,
-        NO_DATA
-    }
-
-    private static final class WorldStressConfig {
-        private final WorldDatasetMode datasetMode;
-
-        private WorldStressConfig(WorldDatasetMode datasetMode) {
-            this.datasetMode = datasetMode;
-        }
-    }
-
-    private static final class MigrationStressScenario {
-        private final String name;
-        private final WorldStressConfig overworldConfig;
-        private final WorldStressConfig netherConfig;
-        private final WorldStressConfig endConfig;
-
-        private MigrationStressScenario(String name, WorldStressConfig overworldConfig,
-                WorldStressConfig netherConfig, WorldStressConfig endConfig) {
-            this.name = name;
-            this.overworldConfig = overworldConfig;
-            this.netherConfig = netherConfig;
-            this.endConfig = endConfig;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
+    private final Logger silentLogger = Logger.getLogger("McMMORegionBackupStoreStressTest");
     @TempDir
     Path containerRoot;
-
     @TempDir
     Path pluginDataRoot;
-
     private World mockWorld;
     private UUID worldUid;
     private MockedStatic<Bukkit> bukkitMock;
-    private final Logger silentLogger = Logger.getLogger("McMMORegionBackupStoreStressTest");
+
+    private static Clock fixedUtc(String isoInstant) {
+        return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
+    }
+
+    private static Stream<Arguments> migrationStressScenarios() {
+        return Stream.of(
+                Arguments.of(new MigrationStressScenario(
+                        "scenario1_denseRandom_allWorlds",
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario2_allTrue_allWorlds",
+                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario3_allFalse_allWorlds",
+                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario4_oneWorldNoData",
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario5_twoWorldsNoData",
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario6_allWorldsNoData_noOp",
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario7_mixedDenseTrueFalse",
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
+                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE))),
+                Arguments.of(new MigrationStressScenario(
+                        "scenario8_mixedFalseDenseNoData",
+                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
+                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
+                        new WorldStressConfig(WorldDatasetMode.NO_DATA))));
+    }
 
     @BeforeEach
     void setUp() {
@@ -230,7 +230,7 @@ class McMMORegionBackupStoreStressTest {
 
         final Path overworldNewShapeFolder = newPaperWorldFolder(overworldName, "overworld");
         writeRegionFileWithChunk(inWorld(overworldNewShapeFolder), 0, 0,
-                new int[][] { { 9, 9, 9 } });
+                new int[][]{{9, 9, 9}});
 
         // When
         final Path netherNewShapeFolder = newPaperWorldFolder(netherWorldName, "the_nether");
@@ -270,7 +270,7 @@ class McMMORegionBackupStoreStressTest {
     }
 
     private Path writeRegionFileWithChunk(Path regionFolder, int chunkX, int chunkZ,
-            int[][] trueBits) throws IOException {
+                                          int[][] trueBits) throws IOException {
         Files.createDirectories(regionFolder);
         final Path regionFile = regionFolder.resolve(
                 "mcmmo_" + (chunkX >> 5) + "_" + (chunkZ >> 5) + "_.mcm");
@@ -319,10 +319,6 @@ class McMMORegionBackupStoreStressTest {
                 .resolve(worldName);
     }
 
-    private static Clock fixedUtc(String isoInstant) {
-        return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
-    }
-
     private List<PlacedBlockExpectation> writeLegacyRegionDataset(
             Path legacyWorldFolder, int regionFileCount, WorldDatasetMode worldDatasetMode)
             throws IOException {
@@ -343,11 +339,11 @@ class McMMORegionBackupStoreStressTest {
                     final int maximumAdditionalTrueValuesPerRegionFile = 20;
                     final int trueValueCountForRegionFile = minimumTrueValuesPerRegionFile
                             + ThreadLocalRandom.current().nextInt(
-                                    maximumAdditionalTrueValuesPerRegionFile + 1);
+                            maximumAdditionalTrueValuesPerRegionFile + 1);
                     yield generateUniqueRandomTrueBits(trueValueCountForRegionFile);
                 }
                 case ALL_TRUE -> generateDeterministicAllTrueBits();
-                case ALL_FALSE -> new int[][] {};
+                case ALL_FALSE -> new int[][]{};
                 case NO_DATA -> throw new IllegalStateException(
                         "NO_DATA should return before file generation");
             };
@@ -365,7 +361,7 @@ class McMMORegionBackupStoreStressTest {
             for (int blockZ = 0; blockZ < 4; blockZ++) {
                 for (int blockY = LEGACY_WORLD_HEIGHT_MIN; blockY < LEGACY_WORLD_HEIGHT_MIN
                         + 4; blockY++) {
-                    allTrueBits.add(new int[] { blockX, blockY, blockZ });
+                    allTrueBits.add(new int[]{blockX, blockY, blockZ});
                 }
             }
         }
@@ -390,14 +386,14 @@ class McMMORegionBackupStoreStressTest {
                 continue;
             }
 
-            randomizedTrueBits.add(new int[] { randomizedBlockX, randomizedBlockY, randomizedBlockZ });
+            randomizedTrueBits.add(new int[]{randomizedBlockX, randomizedBlockY, randomizedBlockZ});
         }
 
         return randomizedTrueBits.toArray(int[][]::new);
     }
 
     private void assertRestoredDatasetContainsAllExpectedPlacedBlocks(Path restoredRegionFolder,
-            List<PlacedBlockExpectation> expectations) throws IOException {
+                                                                      List<PlacedBlockExpectation> expectations) throws IOException {
         for (PlacedBlockExpectation expectedPlacedBlock : expectations) {
             final Path expectedRegionFile = restoredRegionFolder.resolve(
                     "mcmmo_" + (expectedPlacedBlock.chunkX >> 5) + "_"
@@ -416,7 +412,7 @@ class McMMORegionBackupStoreStressTest {
     }
 
     private void assertNoOpWhenWorldHasNoMigrationDataset(Path restoredRegionFolder,
-            List<PlacedBlockExpectation> expectations, WorldDatasetMode worldDatasetMode) {
+                                                          List<PlacedBlockExpectation> expectations, WorldDatasetMode worldDatasetMode) {
         if (worldDatasetMode != WorldDatasetMode.NO_DATA) {
             return;
         }
@@ -425,47 +421,50 @@ class McMMORegionBackupStoreStressTest {
         assertThat(Files.exists(restoredRegionFolder)).isFalse();
     }
 
-    private static Stream<Arguments> migrationStressScenarios() {
-        return Stream.of(
-                Arguments.of(new MigrationStressScenario(
-                        "scenario1_denseRandom_allWorlds",
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario2_allTrue_allWorlds",
-                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario3_allFalse_allWorlds",
-                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario4_oneWorldNoData",
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario5_twoWorldsNoData",
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario6_allWorldsNoData_noOp",
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario7_mixedDenseTrueFalse",
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_TRUE),
-                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE))),
-                Arguments.of(new MigrationStressScenario(
-                        "scenario8_mixedFalseDenseNoData",
-                        new WorldStressConfig(WorldDatasetMode.ALL_FALSE),
-                        new WorldStressConfig(WorldDatasetMode.RANDOM_DENSE),
-                        new WorldStressConfig(WorldDatasetMode.NO_DATA))));
+    private enum WorldDatasetMode {
+        RANDOM_DENSE,
+        ALL_TRUE,
+        ALL_FALSE,
+        NO_DATA
+    }
+
+    private static final class PlacedBlockExpectation {
+        private final int chunkX;
+        private final int chunkZ;
+        private final int[][] expectedTrueBits;
+
+        private PlacedBlockExpectation(int chunkX, int chunkZ, int[][] expectedTrueBits) {
+            this.chunkX = chunkX;
+            this.chunkZ = chunkZ;
+            this.expectedTrueBits = expectedTrueBits;
+        }
+    }
+
+    private static final class WorldStressConfig {
+        private final WorldDatasetMode datasetMode;
+
+        private WorldStressConfig(WorldDatasetMode datasetMode) {
+            this.datasetMode = datasetMode;
+        }
+    }
+
+    private static final class MigrationStressScenario {
+        private final String name;
+        private final WorldStressConfig overworldConfig;
+        private final WorldStressConfig netherConfig;
+        private final WorldStressConfig endConfig;
+
+        private MigrationStressScenario(String name, WorldStressConfig overworldConfig,
+                                        WorldStressConfig netherConfig, WorldStressConfig endConfig) {
+            this.name = name;
+            this.overworldConfig = overworldConfig;
+            this.netherConfig = netherConfig;
+            this.endConfig = endConfig;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

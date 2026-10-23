@@ -1,7 +1,5 @@
 package com.gmail.nossr50.runnables.database;
 
-import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
-
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.database.DatabaseManager;
 import com.gmail.nossr50.datatypes.database.PlayerNameAndUUID;
@@ -20,6 +18,8 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
+
 public class FormulaConversionTask extends CancellableRunnable {
     private final CommandSender sender;
     private final FormulaType formulaType;
@@ -27,6 +27,25 @@ public class FormulaConversionTask extends CancellableRunnable {
     public FormulaConversionTask(CommandSender sender, FormulaType formulaType) {
         this.sender = sender;
         this.formulaType = formulaType;
+    }
+
+    private static @Nullable McMMOPlayer getOnlinePlayer(@NotNull PlayerNameAndUUID storedUser) {
+        if (storedUser.uuid() == null) {
+            return UserManager.getOfflinePlayer(storedUser.playerName());
+        }
+
+        return UserManager.getPlayer(mcMMO.p.getServer().getPlayer(storedUser.uuid()));
+    }
+
+    /**
+     * By UUID when there is one, since a name can be stored for more than one player.
+     */
+    private static @NotNull PlayerProfile loadProfile(@NotNull PlayerNameAndUUID storedUser) {
+        if (storedUser.uuid() == null) {
+            return mcMMO.getDatabaseManager().loadPlayerProfile(storedUser.playerName());
+        }
+
+        return mcMMO.getDatabaseManager().loadPlayerProfile(storedUser.uuid());
     }
 
     @Override
@@ -66,23 +85,6 @@ public class FormulaConversionTask extends CancellableRunnable {
 
         sender.sendMessage(LocaleLoader.getString("Commands.mcconvert.Experience.Finish",
                 formulaType.toString()));
-    }
-
-    private static @Nullable McMMOPlayer getOnlinePlayer(@NotNull PlayerNameAndUUID storedUser) {
-        if (storedUser.uuid() == null) {
-            return UserManager.getOfflinePlayer(storedUser.playerName());
-        }
-
-        return UserManager.getPlayer(mcMMO.p.getServer().getPlayer(storedUser.uuid()));
-    }
-
-    /** By UUID when there is one, since a name can be stored for more than one player. */
-    private static @NotNull PlayerProfile loadProfile(@NotNull PlayerNameAndUUID storedUser) {
-        if (storedUser.uuid() == null) {
-            return mcMMO.getDatabaseManager().loadPlayerProfile(storedUser.playerName());
-        }
-
-        return mcMMO.getDatabaseManager().loadPlayerProfile(storedUser.uuid());
     }
 
     private void editValues(PlayerProfile profile) {

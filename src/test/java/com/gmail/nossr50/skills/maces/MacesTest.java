@@ -1,17 +1,5 @@
 package com.gmail.nossr50.skills.maces;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -24,7 +12,6 @@ import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.lang.reflect.Field;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -36,6 +23,20 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class MacesTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(
@@ -140,7 +141,7 @@ class MacesTest extends MMOTestEnvironment {
         @Test
         void alreadySlowedTargetsShouldNotBeReCrippled() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a target already slowed by something else
                 when(target.getPotionEffect(slowness)).thenReturn(mock(PotionEffect.class));
 
@@ -155,7 +156,7 @@ class MacesTest extends MMOTestEnvironment {
         @Test
         void attackStrengthShouldScaleTheCrippleOdds() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // When - a half-strength hit processes
                 macesManager.processCripple(target, 0.5);
 
@@ -169,12 +170,12 @@ class MacesTest extends MMOTestEnvironment {
         @Test
         void successfulCrippleShouldSlowTheTarget() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ParticleEffectUtils> particles =
-                            mockStatic(ParticleEffectUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ParticleEffectUtils> particles =
+                         mockStatic(ParticleEffectUtils.class)) {
                 // Given - a winning cripple roll against a mob
                 probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        PrimarySkillType.MACES, mmoPlayer, CRIPPLE_CHANCE_AT_FULL_STRENGTH))
+                                PrimarySkillType.MACES, mmoPlayer, CRIPPLE_CHANCE_AT_FULL_STRENGTH))
                         .thenReturn(true);
                 final PotionEffect slowEffect = mock(PotionEffect.class);
                 when(slowness.createEffect(MacesManager.getCrippleTickDuration(false),
@@ -195,13 +196,13 @@ class MacesTest extends MMOTestEnvironment {
         @Test
         void playerTargetsShouldGetThePlayerTierSlow() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ParticleEffectUtils> ignored =
-                            mockStatic(ParticleEffectUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ParticleEffectUtils> ignored =
+                         mockStatic(ParticleEffectUtils.class)) {
                 // Given - a winning cripple roll against a player
                 final Player defender = mock(Player.class);
                 probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        PrimarySkillType.MACES, mmoPlayer, CRIPPLE_CHANCE_AT_FULL_STRENGTH))
+                                PrimarySkillType.MACES, mmoPlayer, CRIPPLE_CHANCE_AT_FULL_STRENGTH))
                         .thenReturn(true);
                 final PotionEffect slowEffect = mock(PotionEffect.class);
                 when(slowness.createEffect(MacesManager.getCrippleTickDuration(true),
@@ -218,7 +219,7 @@ class MacesTest extends MMOTestEnvironment {
         @Test
         void missingPermissionShouldBlockCripple() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - no cripple permission
                 when(Permissions.canUseSubSkill(player, SubSkillType.MACES_CRIPPLE))
                         .thenReturn(false);
@@ -228,7 +229,7 @@ class MacesTest extends MMOTestEnvironment {
 
                 // Then - cripple never rolls
                 probabilityUtil.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
+                                any(PrimarySkillType.class), any(McMMOPlayer.class), anyDouble()),
                         never());
             }
         }

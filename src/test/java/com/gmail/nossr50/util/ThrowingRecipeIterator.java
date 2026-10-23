@@ -1,10 +1,11 @@
 package com.gmail.nossr50.util;
 
-import java.util.Iterator;
-import java.util.List;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Mimics CraftBukkit's RecipeIterator on a server that cannot convert every recipe to its Bukkit

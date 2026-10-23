@@ -2,9 +2,10 @@ package com.gmail.nossr50.api;
 
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.mcMMO;
-import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class DatabaseAPI {
     private DatabaseAPI() {

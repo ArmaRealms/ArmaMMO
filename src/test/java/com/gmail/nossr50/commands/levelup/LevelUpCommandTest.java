@@ -1,5 +1,34 @@
 package com.gmail.nossr50.commands.levelup;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.api.LevelUpCommandAPI;
+import com.gmail.nossr50.datatypes.experience.XPGainReason;
+import com.gmail.nossr50.datatypes.experience.XPGainSource;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
+import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent;
+import com.gmail.nossr50.listeners.SelfListener;
+import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.Permissions;
+import com.gmail.nossr50.util.TestPlayerMock;
+import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.Bukkit;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.event.server.PluginDisableEvent;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Logger;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.WOODCUTTING;
 import static java.util.logging.Logger.getLogger;
@@ -12,34 +41,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.api.LevelUpCommandAPI;
-import com.gmail.nossr50.datatypes.experience.XPGainReason;
-import com.gmail.nossr50.datatypes.experience.XPGainSource;
-import com.gmail.nossr50.datatypes.player.McMMOPlayer;
-import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import com.gmail.nossr50.events.experience.McMMOPlayerLevelUpEvent;
-import com.gmail.nossr50.listeners.SelfListener;
-import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.Permissions;
-import com.gmail.nossr50.util.TestPlayerMock;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Logger;
-import me.clip.placeholderapi.PlaceholderAPI;
-import org.bukkit.Bukkit;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 /**
  * Behavior tests for level up commands and API registrations, driven through real XP gains so
@@ -510,7 +511,7 @@ class LevelUpCommandTest extends MMOTestEnvironment {
     }
 
     private void registerConfigCommand(@NotNull String command,
-            @NotNull Set<PrimarySkillType> skills, @NotNull Set<Integer> levels) {
+                                       @NotNull Set<PrimarySkillType> skills, @NotNull Set<Integer> levels) {
         levelUpCommandManager.register(LevelUpCommand.builder()
                         .withSkills(skills)
                         .withLevels(levels)
@@ -520,7 +521,7 @@ class LevelUpCommandTest extends MMOTestEnvironment {
     }
 
     private void levelPlayerViaXP(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull PrimarySkillType skill, int levelsToGain) {
+                                  @NotNull PrimarySkillType skill, int levelsToGain) {
         final int startingLevel = mmoPlayer.getSkillLevel(skill);
         for (int i = 0; i < levelsToGain; i++) {
             mmoPlayer.applyXpGain(skill, mmoPlayer.getProfile().getXpToLevel(skill),

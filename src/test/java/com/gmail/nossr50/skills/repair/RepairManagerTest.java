@@ -1,10 +1,5 @@
 package com.gmail.nossr50.skills.repair;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.times;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -16,6 +11,7 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.repair.repairables.Repairable;
 import com.gmail.nossr50.skills.repair.repairables.RepairableManager;
+import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
@@ -23,9 +19,6 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -36,48 +29,33 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
+
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
 
 class RepairManagerTest extends MMOTestEnvironment {
     private static final java.util.logging.Logger logger = getLogger(
             RepairManagerTest.class.getName());
 
     private RepairManager repairManager;
-
-    @BeforeEach
-    void setUp() throws InvalidSkillException {
-        mockBaseEnvironment(logger);
-        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(5);
-        repairManager = new RepairManager(mmoPlayer);
-    }
-
-    @AfterEach
-    void tearDown() {
-        cleanUpStaticMocks();
-    }
-
-    @ParameterizedTest(name = "cap={0}, enchantLevel={1} -> {2}")
-    @MethodSource("arcaneForgingCapCases")
-    void arcaneForgingShouldRespectConfiguredCap(int maxEnchantLevel, int enchantLevel,
-            int expectedLevel) {
-        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(maxEnchantLevel);
-        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments()).thenReturn(false);
-
-        assertEquals(expectedLevel, repairManager.getArcaneForgingEnchantLevel(enchantLevel));
-    }
-
-    @ParameterizedTest(name = "unsafe={0}, cap={1}, enchantLevel={2} -> {3}")
-    @MethodSource("arcaneForgingUnsafeCases")
-    void arcaneForgingShouldIgnoreConfiguredCapWhenUnsafeEnchantmentsAreAllowed(
-            boolean unsafeEnchantments, int maxEnchantLevel, int enchantLevel,
-            int expectedLevel) {
-        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(maxEnchantLevel);
-        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments())
-                .thenReturn(unsafeEnchantments);
-
-        assertEquals(expectedLevel, repairManager.getArcaneForgingEnchantLevel(enchantLevel));
-    }
+    /**
+     * Shared wiring for the handleRepair tests: a damaged diamond helmet repairable with
+     * diamonds the player has, with live damage tracking through its Damageable meta.
+     */
+    private AtomicInteger helmetDamage;
+    private ItemStack helmet;
+    private Damageable helmetMeta;
+    private Repairable repairable;
+    private ItemStack diamonds;
 
     private static Stream<Arguments> arcaneForgingCapCases() {
         return Stream.of(
@@ -96,6 +74,40 @@ class RepairManagerTest extends MMOTestEnvironment {
                 Arguments.of(true, 0, 15, 15),
                 Arguments.of(false, 10, 15, 10)
         );
+    }
+
+    @BeforeEach
+    void setUp() throws InvalidSkillException {
+        mockBaseEnvironment(logger);
+        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(5);
+        repairManager = new RepairManager(mmoPlayer);
+    }
+
+    @AfterEach
+    void tearDown() {
+        cleanUpStaticMocks();
+    }
+
+    @ParameterizedTest(name = "cap={0}, enchantLevel={1} -> {2}")
+    @MethodSource("arcaneForgingCapCases")
+    void arcaneForgingShouldRespectConfiguredCap(int maxEnchantLevel, int enchantLevel,
+                                                 int expectedLevel) {
+        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(maxEnchantLevel);
+        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments()).thenReturn(false);
+
+        assertEquals(expectedLevel, repairManager.getArcaneForgingEnchantLevel(enchantLevel));
+    }
+
+    @ParameterizedTest(name = "unsafe={0}, cap={1}, enchantLevel={2} -> {3}")
+    @MethodSource("arcaneForgingUnsafeCases")
+    void arcaneForgingShouldIgnoreConfiguredCapWhenUnsafeEnchantmentsAreAllowed(
+            boolean unsafeEnchantments, int maxEnchantLevel, int enchantLevel,
+            int expectedLevel) {
+        Mockito.when(advancedConfig.getArcaneForgingMaxEnchantLevel()).thenReturn(maxEnchantLevel);
+        Mockito.when(ExperienceConfig.getInstance().allowUnsafeEnchantments())
+                .thenReturn(unsafeEnchantments);
+
+        assertEquals(expectedLevel, repairManager.getArcaneForgingEnchantLevel(enchantLevel));
     }
 
     private ItemStack mockConfirmableItem() {
@@ -259,16 +271,6 @@ class RepairManagerTest extends MMOTestEnvironment {
         assertThat(repairManager.checkConfirmation(helmet, true)).isTrue();
     }
 
-    /**
-     * Shared wiring for the handleRepair tests: a damaged diamond helmet repairable with
-     * diamonds the player has, with live damage tracking through its Damageable meta.
-     */
-    private AtomicInteger helmetDamage;
-    private ItemStack helmet;
-    private Damageable helmetMeta;
-    private Repairable repairable;
-    private ItemStack diamonds;
-
     private void wireRepairableHelmet(int initialDamage) {
         helmetDamage = new AtomicInteger(initialDamage);
         helmetMeta = Mockito.mock(Damageable.class);
@@ -362,6 +364,42 @@ class RepairManagerTest extends MMOTestEnvironment {
             assertThat(helmetDamage.get()).isEqualTo(60);
         }
 
+        @ParameterizedTest
+        @CsvSource({
+                "true, false, false, true, true",
+                "true, false, true, false, false",
+                "false, true, false, true, false",
+                "false, true, true, false, true",
+                "true, true, false, true, true",
+                "true, true, true, false, true",
+                "true, true, true, true, false",
+                "false, false, false, false, false"
+        })
+        void customItemGuardsShouldRespectIndependentOptions(boolean itemModel, boolean modelData,
+                boolean allowItemModel, boolean allowModelData, boolean blocked) {
+            // Given - model and legacy model-data options can be configured independently
+            final CustomItemSupportConfig config = Mockito.mock(CustomItemSupportConfig.class);
+            Mockito.when(mcMMO.p.getCustomItemSupportConfig()).thenReturn(config);
+            Mockito.when(config.isItemModelRepairAllowed()).thenReturn(allowItemModel);
+            Mockito.when(config.isCustomRepairAllowed()).thenReturn(allowModelData);
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(modelData);
+            try (var itemUtils = Mockito.mockStatic(ItemUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                itemUtils.when(() -> ItemUtils.hasItemModel(helmetMeta)).thenReturn(itemModel);
+
+                // When - repairing the same damaged helmet
+                repairManager.handleRepair(helmet);
+
+                // Then - a blocked item keeps its damage and repair materials
+                notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Repair.Reject.CustomModelData"),
+                        times(blocked ? 1 : 0));
+                assertThat(helmetDamage.get()).isEqualTo(blocked ? 60 : 30);
+                if (blocked) {
+                    Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+                }
+            }
+        }
+
         @Test
         void lowSkillShouldBeRejectedWithTheRequiredLevel() {
             Mockito.when(repairable.getMinimumLevel()).thenReturn(50);
@@ -449,7 +487,7 @@ class RepairManagerTest extends MMOTestEnvironment {
         @Test
         void superRepairShouldDoubleTheRepairAmount() {
             try (org.mockito.MockedStatic<ProbabilityUtil> probabilityUtil =
-                    Mockito.mockStatic(ProbabilityUtil.class)) {
+                         Mockito.mockStatic(ProbabilityUtil.class)) {
                 // Given - Super Repair unlocked and its roll succeeding
                 Mockito.when(RankUtils.hasUnlockedSubskill(player,
                         SubSkillType.REPAIR_SUPER_REPAIR)).thenReturn(true);
@@ -499,7 +537,7 @@ class RepairManagerTest extends MMOTestEnvironment {
         @Test
         void winningKeepRollsShouldPreserveTheEnchants() {
             try (org.mockito.MockedStatic<ProbabilityUtil> probabilityUtil =
-                    Mockito.mockStatic(ProbabilityUtil.class)) {
+                         Mockito.mockStatic(ProbabilityUtil.class)) {
                 // Given - Arcane Forging rank 3 with a winning keep roll and no downgrades
                 Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING))
                         .thenReturn(3);
@@ -522,7 +560,7 @@ class RepairManagerTest extends MMOTestEnvironment {
         @Test
         void losingKeepRollsShouldStripTheEnchant() {
             try (org.mockito.MockedStatic<ProbabilityUtil> probabilityUtil =
-                    Mockito.mockStatic(ProbabilityUtil.class)) {
+                         Mockito.mockStatic(ProbabilityUtil.class)) {
                 // Given - Arcane Forging rank 1 with a losing keep roll
                 Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING))
                         .thenReturn(1);
@@ -544,7 +582,7 @@ class RepairManagerTest extends MMOTestEnvironment {
         @Test
         void downgradeRollsShouldWeakenTheEnchant() {
             try (org.mockito.MockedStatic<ProbabilityUtil> probabilityUtil =
-                    Mockito.mockStatic(ProbabilityUtil.class)) {
+                         Mockito.mockStatic(ProbabilityUtil.class)) {
                 // Given - a winning keep roll but a losing avoid-downgrade roll
                 Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING))
                         .thenReturn(3);

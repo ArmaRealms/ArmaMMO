@@ -1,20 +1,11 @@
 package com.gmail.nossr50.config.experience;
 
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
-import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
-
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
 import com.gmail.nossr50.datatypes.skills.MaterialType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -23,10 +14,29 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.EntityType;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getConfigEntityTypeString;
+import static com.gmail.nossr50.util.text.ConfigStringUtils.getMaterialConfigString;
+
 public class ExperienceConfig extends BukkitConfig {
     private static ExperienceConfig instance;
     final private Map<PrimarySkillType, Map<Material, Integer>> blockExperienceMap = new HashMap<>();
-
+    private final Map<PrimarySkillType, Double> formulaSkillModifiers =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Integer> diminishedReturnsThresholds =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, Boolean> experienceBarEnabled =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarColor> experienceBarColors =
+            new EnumMap<>(PrimarySkillType.class);
+    private final Map<PrimarySkillType, BarStyle> experienceBarStyles =
+            new EnumMap<>(PrimarySkillType.class);
     /* Values resolved once and reused on the XP hot path; reset by loadKeys() */
     private FormulaType formulaType;
     private Boolean cumulativeCurveEnabled;
@@ -52,16 +62,6 @@ public class ExperienceConfig extends BukkitConfig {
     private Float diminishedReturnsCap;
     private Integer diminishedReturnsTimeInterval;
     private Boolean experienceBarsEnabled;
-    private final Map<PrimarySkillType, Double> formulaSkillModifiers =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, Integer> diminishedReturnsThresholds =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, Boolean> experienceBarEnabled =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, BarColor> experienceBarColors =
-            new EnumMap<>(PrimarySkillType.class);
-    private final Map<PrimarySkillType, BarStyle> experienceBarStyles =
-            new EnumMap<>(PrimarySkillType.class);
 
     private ExperienceConfig() {
         super("experience.yml");
@@ -71,11 +71,11 @@ public class ExperienceConfig extends BukkitConfig {
     public static ExperienceConfig getInstance() {
         if (instance == null) {
             instance = new ExperienceConfig();
-            for (PrimarySkillType skill : PrimarySkillType.values()) {
+            for (final PrimarySkillType skill : PrimarySkillType.values()) {
                 final Map<Material, Integer> experienceMap = new HashMap<>();
                 instance.blockExperienceMap.put(skill, experienceMap);
-                for (Material material : Material.values()) {
-                    int xp = instance.getConfigXp(skill, material);
+                for (final Material material : Material.values()) {
+                    final int xp = instance.getConfigXp(skill, material);
 
                     if (xp > 0) {
                         experienceMap.put(material, xp);
@@ -120,7 +120,7 @@ public class ExperienceConfig extends BukkitConfig {
 
     @Override
     protected boolean validateKeys() {
-        List<String> reason = new ArrayList<>();
+        final List<String> reason = new ArrayList<>();
 
         /*
          * FORMULA SETTINGS
@@ -170,7 +170,7 @@ public class ExperienceConfig extends BukkitConfig {
          */
 
         /* Alchemy */
-        for (PotionStage potionStage : PotionStage.values()) {
+        for (final PotionStage potionStage : PotionStage.values()) {
             if (getPotionXP(potionStage) < 0) {
                 reason.add(
                         "Experience_Values.Alchemy.Potion_Stage_" + potionStage.toNumerical()
@@ -362,7 +362,7 @@ public class ExperienceConfig extends BukkitConfig {
                 + "_Values.base", def);
     }
 
-    public double getExponent(FormulaType type) {
+    public double getExponent(final FormulaType type) {
         return config.getDouble(
                 "Experience_Formula." + StringUtils.getCapitalized(type.toString())
                         + "_Values.exponent");
@@ -378,7 +378,7 @@ public class ExperienceConfig extends BukkitConfig {
         return experienceGainsGlobalMultiplier;
     }
 
-    public void setExperienceGainsGlobalMultiplier(double value) {
+    public void setExperienceGainsGlobalMultiplier(final double value) {
         config.set("Experience_Formula.Multiplier.Global", value);
         experienceGainsGlobalMultiplier = value;
         globalXpRateSetMillis = System.currentTimeMillis();
@@ -577,17 +577,17 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     /* Combat XP Multipliers */
-    public double getCombatXP(String entity) {
+    public double getCombatXP(final String entity) {
         return config.getDouble("Experience_Values.Combat.Multiplier." + entity);
     }
 
-    public double getCombatXP(EntityType entity) {
+    public double getCombatXP(final EntityType entity) {
         return config.getDouble(
                 "Experience_Values.Combat.Multiplier." + getConfigEntityTypeString(entity).replace(
                         " ", "_"));
     }
 
-    public double getAnimalsXP(EntityType entity) {
+    public double getAnimalsXP(final EntityType entity) {
         return config.getDouble(
                 "Experience_Values.Combat.Multiplier." + getConfigEntityTypeString(entity).replace(
                         " ", "_"),
@@ -598,14 +598,14 @@ public class ExperienceConfig extends BukkitConfig {
         return config.getDouble("Experience_Values.Combat.Multiplier.Animals", 1.0);
     }
 
-    public boolean hasCombatXP(EntityType entity) {
+    public boolean hasCombatXP(final EntityType entity) {
         return config.contains(
                 "Experience_Values.Combat.Multiplier." + getConfigEntityTypeString(entity).replace(
                         " ", "_"));
     }
 
     /* Materials  */
-    private int getConfigXp(PrimarySkillType skill, Material material) {
+    private int getConfigXp(final PrimarySkillType skill, final Material material) {
         // prevents exploit
         if (material == Material.LILY_PAD) {
             return 0;
@@ -617,29 +617,29 @@ public class ExperienceConfig extends BukkitConfig {
         return config.getInt(configPath, 0);
     }
 
-    public int getXp(PrimarySkillType skill, Material material) {
+    public int getXp(final PrimarySkillType skill, final Material material) {
         return blockExperienceMap.get(skill).getOrDefault(material, 0);
     }
 
-    public int getXp(PrimarySkillType skill, BlockState blockState) {
+    public int getXp(final PrimarySkillType skill, final BlockState blockState) {
         return getXp(skill, blockState.getType());
     }
 
-    public int getXp(PrimarySkillType skill, Block block) {
-        Material material = block.getType();
+    public int getXp(final PrimarySkillType skill, final Block block) {
+        final Material material = block.getType();
         return getXp(skill, material);
     }
 
-    public int getXp(PrimarySkillType skill, BlockData data) {
+    public int getXp(final PrimarySkillType skill, final BlockData data) {
         return getXp(skill, data.getMaterial());
     }
 
-    public boolean doesBlockGiveSkillXP(PrimarySkillType skill, Material material) {
+    public boolean doesBlockGiveSkillXP(final PrimarySkillType skill, final Material material) {
         return getXp(skill, material) > 0;
     }
 
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public boolean doesBlockGiveSkillXP(PrimarySkillType skill, BlockData data) {
+    public boolean doesBlockGiveSkillXP(final PrimarySkillType skill, final BlockData data) {
         return getXp(skill, data) > 0;
     }
 
@@ -699,7 +699,7 @@ public class ExperienceConfig extends BukkitConfig {
                 "Experience_Bars." + StringUtils.getCapitalized(primarySkillType.toString())
                         + ".Color");
 
-        for (BarColor barColor : BarColor.values()) {
+        for (final BarColor barColor : BarColor.values()) {
             if (barColor.toString().equalsIgnoreCase(colorValueFromConfig)) {
                 return barColor;
             }
@@ -719,7 +719,7 @@ public class ExperienceConfig extends BukkitConfig {
                 "Experience_Bars." + StringUtils.getCapitalized(primarySkillType.toString())
                         + ".BarStyle");
 
-        for (BarStyle barStyle : BarStyle.values()) {
+        for (final BarStyle barStyle : BarStyle.values()) {
             if (barStyle.toString().equalsIgnoreCase(colorValueFromConfig)) {
                 return barStyle;
             }
@@ -747,7 +747,7 @@ public class ExperienceConfig extends BukkitConfig {
     }
 
     /* Alchemy */
-    public double getPotionXP(PotionStage stage) {
+    public double getPotionXP(final PotionStage stage) {
         return config.getDouble(
                 "Experience_Values.Alchemy.Potion_Brewing.Stage_" + stage.toNumerical(), 10D);
     }
@@ -766,14 +766,14 @@ public class ExperienceConfig extends BukkitConfig {
         return config.getDouble("Experience_Values.Repair.Base", 1000.0);
     }
 
-    public double getRepairXP(MaterialType repairMaterialType) {
+    public double getRepairXP(final MaterialType repairMaterialType) {
         return config.getDouble(
                 "Experience_Values.Repair." + StringUtils.getCapitalized(
                         repairMaterialType.toString()));
     }
 
     /* Taming */
-    public int getTamingXP(EntityType type) {
+    public int getTamingXP(final EntityType type) {
         return config.getInt(
                 "Experience_Values.Taming.Animal_Taming." + getConfigEntityTypeString(type));
     }

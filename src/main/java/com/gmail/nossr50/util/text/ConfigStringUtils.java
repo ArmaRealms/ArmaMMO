@@ -1,11 +1,11 @@
 package com.gmail.nossr50.util.text;
 
 import com.gmail.nossr50.datatypes.party.PartyFeature;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class for String operations, including formatting and caching deterministic results to
@@ -40,7 +40,7 @@ public class ConfigStringUtils {
         return StringUtils.capitalizeAndRejoin(baseString, '_');
     }
 
-    private static String createConfigFriendlyString(Object object) {
+    private static String createConfigFriendlyString(final Object object) {
         return createConfigFriendlyString(object.toString());
     }
 }

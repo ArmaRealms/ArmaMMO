@@ -23,7 +23,7 @@ public class NoopScoreboardBackend implements ScoreboardBackend {
 
     @Override
     public @NotNull PlayerBoard createPlayerBoard(final @NotNull Player player,
-            final @NotNull Scoreboard eventTargetBoard) {
+                                                  final @NotNull Scoreboard eventTargetBoard) {
         return new NoopPlayerBoard(player);
     }
 

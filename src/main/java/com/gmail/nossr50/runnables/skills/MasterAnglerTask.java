@@ -11,7 +11,7 @@ public class MasterAnglerTask extends CancellableRunnable {
     private final int lureLevel;
 
     public MasterAnglerTask(@NotNull FishHook fishHook, @NotNull FishingManager fishingManager,
-            int lureLevel) {
+                            int lureLevel) {
         this.fishHook = fishHook;
         this.fishingManager = fishingManager;
         this.lureLevel = lureLevel;

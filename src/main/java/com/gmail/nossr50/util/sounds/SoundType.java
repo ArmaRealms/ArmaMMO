@@ -17,19 +17,18 @@ public enum SoundType {
     // The mace smash sound only exists on 1.21+, where Cripple can trigger; on older
     // versions the unresolvable ID makes the sound a silent no-op instead of an anvil noise
     CRIPPLE("minecraft:item.mace.smash_ground");
-    
+
     private final String soundRegistryId;
 
-    SoundType(String soundRegistryId) {
+    SoundType(final String soundRegistryId) {
         this.soundRegistryId = soundRegistryId;
     }
 
     public String id() {
         return soundRegistryId;
     }
-    
-    public boolean usesCustomPitch()
-    {
+
+    public boolean usesCustomPitch() {
         return switch (this) {
             case POP, FIZZ -> true;
             default -> false;

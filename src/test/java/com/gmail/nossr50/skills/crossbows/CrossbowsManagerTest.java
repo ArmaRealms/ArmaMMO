@@ -1,17 +1,5 @@
 package com.gmail.nossr50.skills.crossbows;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
@@ -21,8 +9,6 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.ProjectileUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.AbstractArrow;
@@ -39,6 +25,21 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Crossbows manager: the Trick Shot ricochet (bounce budget, head-on rejection,
@@ -118,6 +119,15 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
         crossbowsManager.handleRicochet(mcMMO.p, originalArrow, new Vector(0, 1, 0));
     }
 
+    @Test
+    void trickShotBounceBudgetShouldMirrorTheRank() {
+        // Given - Trick Shot at rank 3
+        // When - the bounce budget is read
+        // Then - it is the rank
+        assertThat(crossbowsManager.getTrickShotMaxBounceCount())
+                .isEqualTo(TRICK_SHOT_MAX_BOUNCES);
+    }
+
     @Nested
     class TrickShotRicochet {
         @Test
@@ -154,8 +164,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             wireHeadOnShot();
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -171,9 +181,9 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             wireGlancingShot();
 
             try (final MockedStatic<ProjectileUtils> mockedProjectileUtils =
-                    mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> mockedCombatUtils =
-                            mockStatic(CombatUtils.class)) {
+                         mockStatic(ProjectileUtils.class);
+                 final MockedStatic<CombatUtils> mockedCombatUtils =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -212,8 +222,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             wireBounceCount(1);
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -233,8 +243,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             wireBounceCount(TRICK_SHOT_MAX_BOUNCES);
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -254,8 +264,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             when(originalArrow.getCustomEffects()).thenReturn(List.of(customEffect));
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -277,8 +287,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
                     .thenReturn(true);
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 ricochetOffUpwardFace();
 
@@ -301,8 +311,8 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
             when(originalArrow.getVelocity()).thenReturn(velocity);
 
             try (final MockedStatic<ProjectileUtils> ignored = mockStatic(ProjectileUtils.class);
-                    final MockedStatic<CombatUtils> ignoredCombat =
-                            mockStatic(CombatUtils.class)) {
+                 final MockedStatic<CombatUtils> ignoredCombat =
+                         mockStatic(CombatUtils.class)) {
                 // When - the ricochet is handled
                 crossbowsManager.handleRicochet(mcMMO.p, originalArrow, normal);
 
@@ -314,15 +324,6 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
                 assertThat(normal).isEqualTo(new Vector(0, 1, 0));
             }
         }
-    }
-
-    @Test
-    void trickShotBounceBudgetShouldMirrorTheRank() {
-        // Given - Trick Shot at rank 3
-        // When - the bounce budget is read
-        // Then - it is the rank
-        assertThat(crossbowsManager.getTrickShotMaxBounceCount())
-                .isEqualTo(TRICK_SHOT_MAX_BOUNCES);
     }
 
     @Nested
@@ -357,7 +358,7 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
         @Test
         void successfulActivationShouldBoostDamage() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Powered Shot activates
                 mockedProbability.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.CROSSBOWS_POWERED_SHOT, mmoPlayer)).thenReturn(true);
@@ -371,7 +372,7 @@ class CrossbowsManagerTest extends MMOTestEnvironment {
         @Test
         void failedActivationShouldKeepTheOriginalDamage() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Powered Shot does not activate
                 mockedProbability.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.CROSSBOWS_POWERED_SHOT, mmoPlayer)).thenReturn(false);

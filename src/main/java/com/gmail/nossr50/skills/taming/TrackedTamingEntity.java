@@ -4,10 +4,11 @@ import com.gmail.nossr50.datatypes.skills.subskills.taming.CallOfTheWildType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.Misc;
-import java.util.UUID;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
 
 public class TrackedTamingEntity extends CancellableRunnable {
     private final @NotNull LivingEntity livingEntity;
@@ -16,8 +17,8 @@ public class TrackedTamingEntity extends CancellableRunnable {
     private final @NotNull UUID playerUUID;
 
     public TrackedTamingEntity(@NotNull LivingEntity livingEntity,
-            @NotNull CallOfTheWildType callOfTheWildType,
-            @NotNull Player player) {
+                               @NotNull CallOfTheWildType callOfTheWildType,
+                               @NotNull Player player) {
         this.player = player;
         this.playerUUID = player.getUniqueId();
         this.callOfTheWildType = callOfTheWildType;

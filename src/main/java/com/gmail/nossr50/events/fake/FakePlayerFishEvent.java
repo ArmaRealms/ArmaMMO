@@ -9,9 +9,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class FakePlayerFishEvent extends PlayerFishEvent implements FakeEvent {
     /**
+     * @see #FakePlayerFishEvent(Player, Entity, FishHook, EquipmentSlot, State)
      * @deprecated since 2.2.052 for removal. Use
      * {@link #FakePlayerFishEvent(Player, Entity, FishHook, EquipmentSlot, State)} instead.
-     * @see #FakePlayerFishEvent(Player, Entity, FishHook, EquipmentSlot, State)
      */
     @Deprecated(since = "2.2.052", forRemoval = true)
     public FakePlayerFishEvent(Player player, Entity entity, FishHook hookEntity, State state) {
@@ -19,7 +19,7 @@ public class FakePlayerFishEvent extends PlayerFishEvent implements FakeEvent {
     }
 
     public FakePlayerFishEvent(Player player, Entity entity, FishHook hookEntity,
-            @Nullable EquipmentSlot hand, State state) {
+                               @Nullable EquipmentSlot hand, State state) {
         super(player, entity, hookEntity, hand, state);
     }
 }

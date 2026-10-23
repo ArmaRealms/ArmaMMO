@@ -1,11 +1,11 @@
 package com.gmail.nossr50.listeners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Contract coverage for the eaten-food resolution and the food-to-diet-skill mapping used by

@@ -1,10 +1,14 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,15 +27,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link McMMORegionBackupStore}.
@@ -53,18 +54,7 @@ import org.mockito.Mockito;
  */
 class McMMORegionBackupStoreTest {
 
-    private static final class PlacedBlockExpectation {
-        private final int chunkX;
-        private final int chunkZ;
-        private final int[][] expectedTrueBits;
-
-        private PlacedBlockExpectation(int chunkX, int chunkZ, int[][] expectedTrueBits) {
-            this.chunkX = chunkX;
-            this.chunkZ = chunkZ;
-            this.expectedTrueBits = expectedTrueBits;
-        }
-    }
-
+    private final Logger silentLogger = Logger.getLogger("McMMORegionBackupStoreTest");
     @TempDir
     Path containerRoot;
 
@@ -74,7 +64,15 @@ class McMMORegionBackupStoreTest {
     private World mockWorld;
     private UUID worldUid;
     private MockedStatic<Bukkit> bukkitMock;
-    private final Logger silentLogger = Logger.getLogger("McMMORegionBackupStoreTest");
+
+    private static Clock fixedUtc(String isoInstant) {
+        return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
+    }
+
+    private static String snapshotName(String isoInstant) {
+        return McMMORegionBackupStore.SNAPSHOT_TIMESTAMP_FORMAT.format(
+                Instant.parse(isoInstant));
+    }
 
     @BeforeEach
     void setUp() {
@@ -99,7 +97,7 @@ class McMMORegionBackupStoreTest {
      * {@code chunkZ} (each shifted right 5 bits to get region-space coordinates).
      */
     private Path writeRegionFileWithChunk(Path regionFolder, int chunkX, int chunkZ,
-            int[][] trueBits) throws IOException {
+                                          int[][] trueBits) throws IOException {
         Files.createDirectories(regionFolder);
         final Path regionFile = regionFolder.resolve(
                 "mcmmo_" + (chunkX >> 5) + "_" + (chunkZ >> 5) + "_.mcm");
@@ -130,7 +128,9 @@ class McMMORegionBackupStoreTest {
         }
     }
 
-    /** Returns the world folder path for a world still on the Spigot / pre-26.1 Paper layout. */
+    /**
+     * Returns the world folder path for a world still on the Spigot / pre-26.1 Paper layout.
+     */
     private Path legacyWorldFolder(String worldName) {
         return containerRoot.resolve(worldName);
     }
@@ -144,38 +144,45 @@ class McMMORegionBackupStoreTest {
                 .resolve(dimensionKey);
     }
 
-    /** Returns the in-world mcmmo_regions folder for the given world folder. */
+    /**
+     * Returns the in-world mcmmo_regions folder for the given world folder.
+     */
     private Path inWorld(Path worldFolder) {
         return worldFolder.resolve(McMMORegionBackupStore.IN_WORLD_FOLDER_NAME);
     }
 
     /**
      * Returns the per-world backup-store folder inside the simulated plugin data directory.
-         * On a real server this resolves to
-         * {@code plugins/mcMMO/region_data_backups_for_migration/<worldName>/}.
+     * On a real server this resolves to
+     * {@code plugins/mcMMO/region_data_backups_for_migration/<worldName>/}.
      */
     private Path worldBackupRoot(String worldName) {
         return pluginDataRoot.resolve(McMMORegionBackupStore.BACKUP_ROOT_FOLDER_NAME)
                 .resolve(worldName);
     }
 
-        /** Returns the backup-store root folder inside the simulated plugin data directory. */
-        private Path backupStoreRoot() {
-                return pluginDataRoot.resolve(McMMORegionBackupStore.BACKUP_ROOT_FOLDER_NAME);
-        }
-
-        private Path archivedWorldBackupRoot(String worldName) {
-                return backupStoreRoot().resolve(McMMORegionBackupStore.ARCHIVE_ROOT_FOLDER_NAME)
-                                .resolve(worldName);
-        }
-
-    private static Clock fixedUtc(String isoInstant) {
-        return Clock.fixed(Instant.parse(isoInstant), ZoneOffset.UTC);
+    /**
+     * Returns the backup-store root folder inside the simulated plugin data directory.
+     */
+    private Path backupStoreRoot() {
+        return pluginDataRoot.resolve(McMMORegionBackupStore.BACKUP_ROOT_FOLDER_NAME);
     }
 
-    private static String snapshotName(String isoInstant) {
-        return McMMORegionBackupStore.SNAPSHOT_TIMESTAMP_FORMAT.format(
-                Instant.parse(isoInstant));
+    private Path archivedWorldBackupRoot(String worldName) {
+        return backupStoreRoot().resolve(McMMORegionBackupStore.ARCHIVE_ROOT_FOLDER_NAME)
+                .resolve(worldName);
+    }
+
+    private static final class PlacedBlockExpectation {
+        private final int chunkX;
+        private final int chunkZ;
+        private final int[][] expectedTrueBits;
+
+        private PlacedBlockExpectation(int chunkX, int chunkZ, int[][] expectedTrueBits) {
+            this.chunkX = chunkX;
+            this.chunkZ = chunkZ;
+            this.expectedTrueBits = expectedTrueBits;
+        }
     }
 
     @Nested
@@ -213,8 +220,8 @@ class McMMORegionBackupStoreTest {
             // Given a legacy-shape world with two region files in-world
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 64, 2 } });
-            writeRegionFileWithChunk(inWorld(worldFolder), 32, 0, new int[][] { { 3, 65, 4 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 64, 2}});
+            writeRegionFileWithChunk(inWorld(worldFolder), 32, 0, new int[][]{{3, 65, 4}});
             final Clock clock = fixedUtc("2026-05-31T14:23:05Z");
 
             // When backup runs
@@ -236,7 +243,7 @@ class McMMORegionBackupStoreTest {
             // Given a legacy-shape world with one region file
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final Clock clock = fixedUtc("2026-05-31T14:23:05Z");
 
             // When backup runs
@@ -258,7 +265,7 @@ class McMMORegionBackupStoreTest {
             // Given a legacy-shape world with one region file and four backups taken in order
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final String[] timestamps = {
                     "2026-05-28T10:00:00Z",
                     "2026-05-29T10:00:00Z",
@@ -332,7 +339,7 @@ class McMMORegionBackupStoreTest {
             // Given a new-shape (Paper 26.1+) world with in-world data
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
 
             // When backup runs
             McMMORegionBackupStore.backup(containerRoot, pluginDataRoot, worldName, worldFolder,
@@ -347,7 +354,7 @@ class McMMORegionBackupStoreTest {
             // Given a legacy-shape world with tracked block data and a logger that captures INFO
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final Clock clock = fixedUtc("2026-05-31T14:23:05Z");
             final Path expectedSnapshotPath = worldBackupRoot(worldName)
                     .resolve(snapshotName("2026-05-31T14:23:05Z"));
@@ -544,15 +551,15 @@ class McMMORegionBackupStoreTest {
                     .isEqualTo("complete-payload");
         }
 
-                @Test
-                void archivesBackupStoreWhenNewShapeInWorldAlreadyHasData() throws IOException {
+        @Test
+        void archivesBackupStoreWhenNewShapeInWorldAlreadyHasData() throws IOException {
             // Given a new-shape world with existing in-world data AND a backup-store snapshot.
             // This happens when Paper's migration already moved the data (or mcMMO already
-                        // restored it on a prior startup). The backup store should be archived so an admin
-                        // can re-use those snapshots for another merge pass later.
+            // restored it on a prior startup). The backup store should be archived so an admin
+            // can re-use those snapshots for another merge pass later.
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 1, 1}});
             createCompleteSnapshot(worldName, "2026-05-31T10:00:00Z",
                     "mcmmo_0_0_.mcm", "restore-payload");
 
@@ -563,13 +570,13 @@ class McMMORegionBackupStoreTest {
             // Then the in-world data is left untouched
             final ChunkStore preserved = readChunkFromRegionFile(
                     inWorld(worldFolder).resolve("mcmmo_0_0_.mcm"), 0, 0);
-                        assertThat(preserved).isNotNull();
-                        assertThat(preserved.isTrue(1, 1, 1)).isTrue();
+            assertThat(preserved).isNotNull();
+            assertThat(preserved.isTrue(1, 1, 1)).isTrue();
             // And the backup store is archived instead of deleted
-                        assertThat(Files.exists(worldBackupRoot(worldName))).isFalse();
-                        assertThat(Files.isDirectory(archivedWorldBackupRoot(worldName))).isTrue();
+            assertThat(Files.exists(worldBackupRoot(worldName))).isFalse();
+            assertThat(Files.isDirectory(archivedWorldBackupRoot(worldName))).isTrue();
             try (Stream<Path> archiveEntries = Files.list(archivedWorldBackupRoot(worldName))) {
-                                assertThat(archiveEntries.anyMatch(Files::isDirectory)).isTrue();
+                assertThat(archiveEntries.anyMatch(Files::isDirectory)).isTrue();
             }
         }
 
@@ -579,14 +586,14 @@ class McMMORegionBackupStoreTest {
             // Given a new-shape world with existing in-world data
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 1, 1}});
 
             // And backup-store snapshot data that should NOT be applied in this code path
             writeRegionFileWithChunk(
                     worldBackupRoot(worldName).resolve(snapshotName("2026-05-31T10:00:00Z")),
                     0,
                     0,
-                    new int[][] { { 7, 7, 7 } });
+                    new int[][]{{7, 7, 7}});
             Files.writeString(
                     worldBackupRoot(worldName)
                             .resolve(snapshotName("2026-05-31T10:00:00Z"))
@@ -596,7 +603,7 @@ class McMMORegionBackupStoreTest {
 
             // And surviving legacy-root data that SHOULD be merged into the new in-world folder
             writeRegionFileWithChunk(inWorld(legacyWorldFolder(worldName)), 0, 0,
-                    new int[][] { { 2, 2, 2 } });
+                    new int[][]{{2, 2, 2}});
 
             // When restore runs on the new layout with in-world data already present
             McMMORegionBackupStore.restore(containerRoot, pluginDataRoot, worldName, worldFolder,
@@ -652,16 +659,16 @@ class McMMORegionBackupStoreTest {
             assertThat(Files.exists(inWorld(worldFolder))).isFalse();
         }
 
-                @Test
-                void prunesIncompleteSnapshotsAndDeletesEmptyBackupStoreWhenNewShapeInWorldHasData()
+        @Test
+        void prunesIncompleteSnapshotsAndDeletesEmptyBackupStoreWhenNewShapeInWorldHasData()
                 throws IOException {
             // Given a new-shape world with in-world data (no restore needed) and an incomplete
             // snapshot left from a crashed previous backup. restore() should first prune the
-                        // incomplete snapshot, then remove the empty per-world folder because there is
-                        // nothing worth archiving.
+            // incomplete snapshot, then remove the empty per-world folder because there is
+            // nothing worth archiving.
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final Path incomplete = worldBackupRoot(worldName).resolve(
                     snapshotName("2026-05-30T10:00:00Z"));
             Files.createDirectories(incomplete);
@@ -706,10 +713,10 @@ class McMMORegionBackupStoreTest {
             // Given a new-shape world with existing in-world data and no migration snapshot
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 1, 1}});
             // And leftover legacy-root region data
             final Path legacyRootRegionFolder = inWorld(legacyWorldFolder(worldName));
-            writeRegionFileWithChunk(legacyRootRegionFolder, 0, 0, new int[][] { { 2, 2, 2 } });
+            writeRegionFileWithChunk(legacyRootRegionFolder, 0, 0, new int[][]{{2, 2, 2}});
 
             // When restore runs
             McMMORegionBackupStore.restore(containerRoot, pluginDataRoot, worldName, worldFolder,
@@ -726,7 +733,7 @@ class McMMORegionBackupStoreTest {
         }
 
         private void createCompleteSnapshot(String worldName, String isoTimestamp,
-                String regionFileName, String content) throws IOException {
+                                            String regionFileName, String content) throws IOException {
             final Path snapshot = worldBackupRoot(worldName).resolve(snapshotName(isoTimestamp));
             Files.createDirectories(snapshot);
             Files.writeString(snapshot.resolve(regionFileName), content);
@@ -744,14 +751,14 @@ class McMMORegionBackupStoreTest {
             // Given a successful backup at a fixed clock
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final Clock clock = fixedUtc("2026-05-31T14:23:05Z");
             McMMORegionBackupStore.backup(containerRoot, pluginDataRoot, worldName, worldFolder,
                     silentLogger, clock);
             final Path snapshot = worldBackupRoot(worldName)
                     .resolve(snapshotName("2026-05-31T14:23:05Z"));
             final long sentinelMtimeBefore = Files.getLastModifiedTime(
-                    snapshot.resolve(McMMORegionBackupStore.BACKUP_COMPLETE_SENTINEL))
+                            snapshot.resolve(McMMORegionBackupStore.BACKUP_COMPLETE_SENTINEL))
                     .toMillis();
 
             // When backup is invoked again with the same clock
@@ -760,7 +767,7 @@ class McMMORegionBackupStoreTest {
 
             // Then the existing snapshot is not rewritten (sentinel mtime unchanged)
             final long sentinelMtimeAfter = Files.getLastModifiedTime(
-                    snapshot.resolve(McMMORegionBackupStore.BACKUP_COMPLETE_SENTINEL))
+                            snapshot.resolve(McMMORegionBackupStore.BACKUP_COMPLETE_SENTINEL))
                     .toMillis();
             assertThat(sentinelMtimeAfter).isEqualTo(sentinelMtimeBefore);
         }
@@ -771,7 +778,7 @@ class McMMORegionBackupStoreTest {
             // backup will use — the stale temp must be removed before the fresh copy starts
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
             final Clock clock = fixedUtc("2026-05-31T14:23:05Z");
             final Path stale = worldBackupRoot(worldName)
                     .resolve(snapshotName("2026-05-31T14:23:05Z")
@@ -804,11 +811,11 @@ class McMMORegionBackupStoreTest {
             final Path snapshot = worldBackupRoot(worldName).resolve(
                     snapshotName("2026-05-31T10:00:00Z"));
             Files.createDirectories(snapshot);
-            writeRegionFileWithChunk(snapshot, 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(snapshot, 0, 0, new int[][]{{1, 1, 1}});
             Files.writeString(snapshot.resolve(
                     McMMORegionBackupStore.BACKUP_COMPLETE_SENTINEL), "ok");
             // Simulate prior partial: in-world already has the same chunk with a different bit
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 2, 2, 2 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{2, 2, 2}});
 
             // When restore runs again
             McMMORegionBackupStore.restore(containerRoot, pluginDataRoot, worldName, worldFolder,
@@ -817,17 +824,17 @@ class McMMORegionBackupStoreTest {
             // Then the in-world chunk is preserved unmodified (no overwrite or merge)
             final ChunkStore inWorldChunk = readChunkFromRegionFile(
                     inWorld(worldFolder).resolve("mcmmo_0_0_.mcm"), 0, 0);
-                        assertThat(inWorldChunk).isNotNull();
-                        assertThat(inWorldChunk.isTrue(2, 2, 2)).isTrue();
-                        assertThat(inWorldChunk.isTrue(1, 1, 1)).isFalse();
+            assertThat(inWorldChunk).isNotNull();
+            assertThat(inWorldChunk.isTrue(2, 2, 2)).isTrue();
+            assertThat(inWorldChunk.isTrue(1, 1, 1)).isFalse();
             // And the backup store is archived instead of removed
-                        assertThat(Files.exists(worldBackupRoot(worldName))).isFalse();
-                        assertThat(Files.isDirectory(archivedWorldBackupRoot(worldName))).isTrue();
+            assertThat(Files.exists(worldBackupRoot(worldName))).isFalse();
+            assertThat(Files.isDirectory(archivedWorldBackupRoot(worldName))).isTrue();
         }
     }
 
     @Nested
-        class NewestCompleteSnapshotPicker {
+    class NewestCompleteSnapshotPicker {
 
         @Test
         void returnsLexicographicallyNewestCompleteSnapshot() throws IOException {
@@ -892,7 +899,7 @@ class McMMORegionBackupStoreTest {
             // Given - a legacy-shape world with tracked region data
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 1, 1}});
 
             // When / Then - the pre-check reports a backup is needed
             assertThat(McMMORegionBackupStore.needsBackup(containerRoot, worldName, worldFolder,
@@ -916,7 +923,7 @@ class McMMORegionBackupStoreTest {
             // Given - a world already on the new Paper layout, even with region data present
             final String worldName = "world";
             final Path worldFolder = newPaperWorldFolder(worldName, "overworld");
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 1, 1, 1 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{1, 1, 1}});
 
             // When / Then - snapshots are not needed on the new shape
             assertThat(McMMORegionBackupStore.needsBackup(containerRoot, worldName, worldFolder,
@@ -962,7 +969,7 @@ class McMMORegionBackupStoreTest {
             // Given a legacy-shape world with one in-world region file and no existing README
             final String worldName = "world";
             final Path worldFolder = legacyWorldFolder(worldName);
-            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][] { { 0, 0, 0 } });
+            writeRegionFileWithChunk(inWorld(worldFolder), 0, 0, new int[][]{{0, 0, 0}});
 
             // When backup runs for the first time
             McMMORegionBackupStore.backup(containerRoot, pluginDataRoot, worldName, worldFolder,
@@ -984,7 +991,7 @@ class McMMORegionBackupStoreTest {
         void copiesIntactWhenDestinationMissing(@TempDir Path scratch) throws IOException {
             // Given a region file at source and no destination file yet
             final Path source = writeRegionFileWithChunk(scratch.resolve("src"), 0, 0,
-                    new int[][] { { 1, 1, 1 } });
+                    new int[][]{{1, 1, 1}});
             final Path destination = scratch.resolve("dst").resolve("mcmmo_0_0_.mcm");
             Files.createDirectories(destination.getParent());
 
@@ -1000,18 +1007,18 @@ class McMMORegionBackupStoreTest {
             // Given source with bit A at (1,64,2) and destination with bit B at (5,32,6) in the
             // same chunk — both bits must survive the merge
             final Path source = writeRegionFileWithChunk(scratch.resolve("src"), 0, 0,
-                    new int[][] { { 1, 64, 2 } });
+                    new int[][]{{1, 64, 2}});
             final Path destination = writeRegionFileWithChunk(scratch.resolve("dst"), 0, 0,
-                    new int[][] { { 5, 32, 6 } });
+                    new int[][]{{5, 32, 6}});
 
             // When copy-or-merge runs
             McMMORegionBackupStore.copyOrMergeRegionFile(source, destination);
 
             // Then both bits survive in the destination
             final ChunkStore merged = readChunkFromRegionFile(destination, 0, 0);
-                        assertThat(merged).isNotNull();
-                        assertThat(merged.isTrue(1, 64, 2)).isTrue();
-                        assertThat(merged.isTrue(5, 32, 6)).isTrue();
+            assertThat(merged).isNotNull();
+            assertThat(merged.isTrue(1, 64, 2)).isTrue();
+            assertThat(merged.isTrue(5, 32, 6)).isTrue();
         }
     }
 

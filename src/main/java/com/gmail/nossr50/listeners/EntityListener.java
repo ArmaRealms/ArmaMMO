@@ -1,11 +1,5 @@
 package com.gmail.nossr50.listeners;
 
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
-import static com.gmail.nossr50.util.MobMetadataUtils.addMobFlags;
-import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
-import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
-
 import com.gmail.nossr50.config.WorldBlacklist;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
@@ -34,7 +28,6 @@ import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -87,13 +80,22 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
 
+import java.util.Set;
+
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MAX_HEALTH;
+import static com.gmail.nossr50.util.MobMetadataUtils.addMobFlags;
+import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlag;
+import static com.gmail.nossr50.util.MobMetadataUtils.hasMobFlags;
+
 public class EntityListener implements Listener {
     private static final String PIERCING = "piercing";
     private static final String DEEPSLATE_REDSTONE_ORE = "deepslate_redstone_ore";
     // String-matched because the entity type does not exist in the oldest supported API
     private static final Set<String> MANNEQUIN = Set.of("mannequin", "MANNEQUIN");
+    private final static Set<EntityType> TRANSFORMABLE_ENTITIES
+            = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
     private final mcMMO pluginRef;
-
     /**
      * Used to check if a {@link Player} has a {@link Trident} enchanted with "Piercing".
      * Resolved on first use because the enchantment registry isn't available when listeners are
@@ -101,11 +103,17 @@ public class EntityListener implements Listener {
      */
     private Enchantment piercingEnchantment;
     private boolean piercingEnchantmentResolved;
-    private final static Set<EntityType> TRANSFORMABLE_ENTITIES
-            = Set.of(EntityType.SLIME, EntityType.MAGMA_CUBE);
 
     public EntityListener(final mcMMO pluginRef) {
         this.pluginRef = pluginRef;
+    }
+
+    public static boolean isMannequinEntity(Entity attacker) {
+        return MANNEQUIN.contains(attacker.getType().toString());
+    }
+
+    public static boolean isArmorStandEntity(Entity attacker) {
+        return attacker.getType() == EntityType.ARMOR_STAND;
     }
 
     private Enchantment resolvePiercingEnchantment() {
@@ -311,7 +319,6 @@ public class EntityListener implements Listener {
         }
     }
 
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityCombustByEntityEvent(EntityCombustByEntityEvent event) {
         //Prevent players from setting fire to each other if they are in the same party
@@ -495,14 +502,14 @@ public class EntityListener implements Listener {
     /**
      * Sends the PvP combat debug report to the given viewer when they have debug mode enabled.
      *
-     * @param viewer the player receiving the report
-     * @param roleDescription the viewer's role in the damage event
+     * @param viewer           the player receiving the report
+     * @param roleDescription  the viewer's role in the damage event
      * @param healthOwnerLabel possessive label for the health lines ("Your", "Target players")
-     * @param healthOwner the player whose health is reported
-     * @param event the damage event being reported
+     * @param healthOwner      the player whose health is reported
+     * @param event            the damage event being reported
      */
     private void sendCombatDebugReport(Player viewer, String roleDescription,
-            String healthOwnerLabel, Player healthOwner, EntityDamageByEntityEvent event) {
+                                       String healthOwnerLabel, Player healthOwner, EntityDamageByEntityEvent event) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(viewer);
         if (mmoPlayer == null || !mmoPlayer.isDebugMode()) {
             return;
@@ -533,7 +540,7 @@ public class EntityListener implements Listener {
 
     /**
      * Monitor non-entity damage for lethal hits.
-     *
+     * <p>
      * EntityDamageByEntityEvent already has its own monitor path above; this fills the gap for
      * lethal environmental damage where Slime/MagmaCube split can still inherit temporary names.
      *
@@ -549,7 +556,7 @@ public class EntityListener implements Listener {
     }
 
     public boolean checkIfInPartyOrSamePlayer(Cancellable event, Player defendingPlayer,
-            Player attackingPlayer) {
+                                              Player attackingPlayer) {
         final FriendlyFire.Outcome outcome = resolveFriendlyFire(defendingPlayer,
                 attackingPlayer);
 
@@ -561,7 +568,7 @@ public class EntityListener implements Listener {
     }
 
     private FriendlyFire.Outcome resolveFriendlyFire(Player defendingPlayer,
-            Player attackingPlayer) {
+                                                     Player attackingPlayer) {
         return FriendlyFire.resolve(
                 defendingPlayer.equals(attackingPlayer),
                 pluginRef.isPartySystemEnabled(),
@@ -831,7 +838,7 @@ public class EntityListener implements Listener {
     }
 
     private void trackSpawnedAndPassengers(LivingEntity livingEntity,
-            MobMetaFlagType mobMetaFlagType) {
+                                           MobMetaFlagType mobMetaFlagType) {
         flagMetadata(mobMetaFlagType, livingEntity);
 
         for (Entity passenger : livingEntity.getPassengers()) {
@@ -1167,13 +1174,5 @@ public class EntityListener implements Listener {
                 Crossbows.processCrossbows(event, pluginRef, arrow);
             }
         }
-    }
-
-    public static boolean isMannequinEntity(Entity attacker) {
-        return MANNEQUIN.contains(attacker.getType().toString());
-    }
-
-    public static boolean isArmorStandEntity(Entity attacker) {
-        return attacker.getType() == EntityType.ARMOR_STAND;
     }
 }

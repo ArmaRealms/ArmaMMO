@@ -1,16 +1,5 @@
 package com.gmail.nossr50.skills.alchemy;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.config.skills.alchemy.PotionConfig;
@@ -21,8 +10,6 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.alchemy.PotionStage;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +19,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Alchemy manager: the Catalysis brew speed curve (unlock gate, linear scaling,
@@ -90,6 +91,19 @@ class AlchemyManagerTest extends MMOTestEnvironment {
         final ItemStack ingredient = mock(ItemStack.class);
         when(ingredient.getType()).thenReturn(material);
         return ingredient;
+    }
+
+    @Test
+    void brewSuccessShouldPayStageXpPerPotion() {
+        // Given - a stage worth 15 XP and a brew that produced three potions
+        when(ExperienceConfig.getInstance().getPotionXP(PotionStage.THREE)).thenReturn(15.0);
+        doNothing().when(alchemyManager).applyXpGain(anyFloat(), any(), any());
+
+        // When - the brew successes are handled
+        alchemyManager.handlePotionBrewSuccesses(PotionStage.THREE, 3);
+
+        // Then - the XP payout scales with the amount and is passive PVE XP
+        verify(alchemyManager).applyXpGain(45.0f, XPGainReason.PVE, XPGainSource.PASSIVE);
     }
 
     @Nested
@@ -192,18 +206,5 @@ class AlchemyManagerTest extends MMOTestEnvironment {
             // Then - the single name stands alone
             assertThat(alchemyManager.getIngredientList()).isEqualTo("Nether_Wart");
         }
-    }
-
-    @Test
-    void brewSuccessShouldPayStageXpPerPotion() {
-        // Given - a stage worth 15 XP and a brew that produced three potions
-        when(ExperienceConfig.getInstance().getPotionXP(PotionStage.THREE)).thenReturn(15.0);
-        doNothing().when(alchemyManager).applyXpGain(anyFloat(), any(), any());
-
-        // When - the brew successes are handled
-        alchemyManager.handlePotionBrewSuccesses(PotionStage.THREE, 3);
-
-        // Then - the XP payout scales with the amount and is passive PVE XP
-        verify(alchemyManager).applyXpGain(45.0f, XPGainReason.PVE, XPGainSource.PASSIVE);
     }
 }

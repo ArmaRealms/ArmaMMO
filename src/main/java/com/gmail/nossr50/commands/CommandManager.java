@@ -33,7 +33,7 @@ public class CommandManager {
     private final @NotNull mcMMO pluginRef;
     private final @NotNull BukkitCommandManager bukkitCommandManager;
 
-    public CommandManager(@NotNull mcMMO pluginRef) {
+    public CommandManager(@NotNull final mcMMO pluginRef) {
         this.pluginRef = pluginRef;
         bukkitCommandManager = new BukkitCommandManager(pluginRef);
 
@@ -75,7 +75,7 @@ public class CommandManager {
     private void registerSkillConditions() {
         bukkitCommandManager.getCommandConditions()
                 .addCondition(POWER_LEVEL_CONDITION, (context) -> {
-                    BukkitCommandIssuer issuer = context.getIssuer();
+                    final BukkitCommandIssuer issuer = context.getIssuer();
 
                     if (issuer.getIssuer() instanceof Player) {
                         validateLoadedData(issuer.getPlayer());
@@ -89,7 +89,7 @@ public class CommandManager {
     private void registerChatCommandConditions() {
         // Method or Class based - Can only be used on methods
         bukkitCommandManager.getCommandConditions().addCondition(ADMIN_CONDITION, (context) -> {
-            BukkitCommandIssuer issuer = context.getIssuer();
+            final BukkitCommandIssuer issuer = context.getIssuer();
 
             if (issuer.getIssuer() instanceof Player) {
                 validateLoadedData(issuer.getPlayer());
@@ -98,7 +98,7 @@ public class CommandManager {
         });
 
         bukkitCommandManager.getCommandConditions().addCondition(MMO_DATA_LOADED, (context) -> {
-            BukkitCommandIssuer bukkitCommandIssuer = context.getIssuer();
+            final BukkitCommandIssuer bukkitCommandIssuer = context.getIssuer();
 
             if (bukkitCommandIssuer.getIssuer() instanceof Player) {
                 validateLoadedData(bukkitCommandIssuer.getPlayer());
@@ -106,7 +106,7 @@ public class CommandManager {
         });
 
         bukkitCommandManager.getCommandConditions().addCondition(PARTY_CONDITION, (context) -> {
-            BukkitCommandIssuer bukkitCommandIssuer = context.getIssuer();
+            final BukkitCommandIssuer bukkitCommandIssuer = context.getIssuer();
 
             if (bukkitCommandIssuer.getIssuer() instanceof Player) {
                 validateLoadedData(bukkitCommandIssuer.getPlayer());
@@ -117,31 +117,30 @@ public class CommandManager {
         });
     }
 
-    private void validatePermission(@NotNull String permissionNode,
-            @NotNull Permissible permissible) {
+    private void validatePermission(@NotNull final String permissionNode,
+                                    @NotNull final Permissible permissible) {
         if (!permissible.hasPermission(permissionNode)) {
             throw new ConditionFailedException(LocaleLoader.getString("mcMMO.NoPermission"));
         }
     }
 
-
-    public void validateAdmin(@NotNull Player player) {
+    public void validateAdmin(@NotNull final Player player) {
         if (!player.isOp() && !Permissions.adminChat(player)) {
             throw new ConditionFailedException(
                     "You are lacking the correct permissions to use this command.");
         }
     }
 
-    public void validateLoadedData(@NotNull Player player) {
+    public void validateLoadedData(@NotNull final Player player) {
         if (UserManager.getPlayer(player) == null) {
             throw new ConditionFailedException(LocaleLoader.getString("Profile.PendingLoad"));
         }
     }
 
-    public void validatePlayerParty(@NotNull Player player) {
+    public void validatePlayerParty(@NotNull final Player player) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
-        if (!pluginRef.getPartyConfig().isPartyEnabled() || mmoPlayer.getParty() == null) {
+        if (!pluginRef.getPartyConfig().isPartyEnabled() || mmoPlayer == null || mmoPlayer.getParty() == null) {
             throw new ConditionFailedException(LocaleLoader.getString("Commands.Party.None"));
         }
     }

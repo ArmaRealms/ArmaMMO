@@ -1,23 +1,24 @@
 package com.gmail.nossr50.datatypes.player;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.Permissions;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the power level cap checks in {@link McMMOPlayer}, which compare a permission-free
@@ -87,7 +88,7 @@ class McMMOPlayerPowerLevelCapTest extends MMOTestEnvironment {
             "1500, true"
     })
     void hasReachedPowerLevelCapShouldFlipExactlyAtCapWhenAllSkillsPermitted(int miningLevel,
-            boolean expectedCapped) {
+                                                                             boolean expectedCapped) {
         // Given - a cap of 1000 and a player with permission for every skill
         when(generalConfig.getPowerLevelCap()).thenReturn(1000);
         when(Permissions.skillEnabled(any(Player.class), any(PrimarySkillType.class)))

@@ -9,33 +9,32 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class McMMOReplaceVanillaTreasureEvent extends Event {
-    private @NotNull ItemStack replacementItemStack;
+    /**
+     * Rest of file is required boilerplate for custom events
+     **/
+    private static final @NotNull HandlerList handlers = new HandlerList();
     private final @NotNull Item originalItem;
     private final @Nullable Player causingPlayer;
+    private @NotNull ItemStack replacementItemStack;
 
     public McMMOReplaceVanillaTreasureEvent(@NotNull Item originalItem,
-            @NotNull ItemStack replacementItemStack) {
+                                            @NotNull ItemStack replacementItemStack) {
         this(originalItem, replacementItemStack, null);
     }
 
     public McMMOReplaceVanillaTreasureEvent(@NotNull Item originalItem,
-            @NotNull ItemStack replacementItemStack, @Nullable Player causingPlayer) {
+                                            @NotNull ItemStack replacementItemStack, @Nullable Player causingPlayer) {
         this.originalItem = originalItem;
         this.replacementItemStack = replacementItemStack;
         this.causingPlayer = causingPlayer;
     }
 
-    /**
-     * Rest of file is required boilerplate for custom events
-     **/
-    private static final @NotNull HandlerList handlers = new HandlerList();
-
-    @Override
-    public @NotNull HandlerList getHandlers() {
+    public static @NotNull HandlerList getHandlerList() {
         return handlers;
     }
 
-    public static @NotNull HandlerList getHandlerList() {
+    @Override
+    public @NotNull HandlerList getHandlers() {
         return handlers;
     }
 
@@ -43,12 +42,12 @@ public class McMMOReplaceVanillaTreasureEvent extends Event {
         return replacementItemStack;
     }
 
-    public @Nullable Player getCausingPlayer() {
-        return causingPlayer;
-    }
-
     public void setReplacementItemStack(@NotNull ItemStack replacementItemStack) {
         this.replacementItemStack = replacementItemStack;
+    }
+
+    public @Nullable Player getCausingPlayer() {
+        return causingPlayer;
     }
 
     public @NotNull Item getOriginalItem() {

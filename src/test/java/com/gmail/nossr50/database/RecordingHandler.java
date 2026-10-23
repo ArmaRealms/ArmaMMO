@@ -1,14 +1,17 @@
 package com.gmail.nossr50.database;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
 
-/** Keeps what is logged to it, so a test can check what a database manager logged. */
+/**
+ * Keeps what is logged to it, so a test can check what a database manager logged.
+ */
 final class RecordingHandler extends Handler {
     private final List<LogRecord> records = new CopyOnWriteArrayList<>();
 

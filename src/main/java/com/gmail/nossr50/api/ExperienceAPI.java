@@ -1,9 +1,5 @@
 package com.gmail.nossr50.api;
 
-import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVE;
-import static com.gmail.nossr50.datatypes.experience.XPGainSource.CUSTOM;
-import static com.gmail.nossr50.datatypes.experience.XPGainSource.SELF;
-
 import com.gmail.nossr50.api.exceptions.InvalidFormulaTypeException;
 import com.gmail.nossr50.api.exceptions.InvalidPlayerException;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -19,13 +15,18 @@ import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.ArrayList;
-import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.UUID;
+
+import static com.gmail.nossr50.datatypes.experience.XPGainReason.PVE;
+import static com.gmail.nossr50.datatypes.experience.XPGainSource.CUSTOM;
+import static com.gmail.nossr50.datatypes.experience.XPGainSource.SELF;
 
 public final class ExperienceAPI {
     private ExperienceAPI() {
@@ -40,7 +41,7 @@ public final class ExperienceAPI {
      * @param skillType A string that may or may not be a skill
      * @return true if this is a valid mcMMO skill
      */
-    public static boolean isValidSkillType(@NotNull String skillType) {
+    public static boolean isValidSkillType(@NotNull final String skillType) {
         return mcMMO.p.getSkillTools().matchSkill(skillType) != null;
     }
 
@@ -48,16 +49,16 @@ public final class ExperienceAPI {
      * Start the task that gives combat XP. Processes combat XP like mcMMO normally would, so mcMMO
      * will check whether the entity should reward XP when giving out the XP
      *
-     * @param mmoPlayer The attacking player
-     * @param target The defending entity
+     * @param mmoPlayer        The attacking player
+     * @param target           The defending entity
      * @param primarySkillType The skill being used
-     * @param multiplier final XP result will be multiplied by this
+     * @param multiplier       final XP result will be multiplied by this
      * @deprecated Draft API
      */
     @Deprecated
-    public static void addCombatXP(McMMOPlayer mmoPlayer, LivingEntity target,
-            PrimarySkillType primarySkillType,
-            double multiplier) {
+    public static void addCombatXP(final McMMOPlayer mmoPlayer, final LivingEntity target,
+                                   final PrimarySkillType primarySkillType,
+                                   final double multiplier) {
         CombatUtils.processCombatXP(mmoPlayer, target, primarySkillType, multiplier);
     }
 
@@ -65,14 +66,14 @@ public final class ExperienceAPI {
      * Start the task that gives combat XP. Processes combat XP like mcMMO normally would, so mcMMO
      * will check whether the entity should reward XP when giving out the XP
      *
-     * @param mmoPlayer The attacking player
-     * @param target The defending entity
+     * @param mmoPlayer        The attacking player
+     * @param target           The defending entity
      * @param primarySkillType The skill being used
      * @deprecated Draft API
      */
     @Deprecated
-    public static void addCombatXP(McMMOPlayer mmoPlayer, LivingEntity target,
-            PrimarySkillType primarySkillType) {
+    public static void addCombatXP(final McMMOPlayer mmoPlayer, final LivingEntity target,
+                                   final PrimarySkillType primarySkillType) {
         CombatUtils.processCombatXP(mmoPlayer, target, primarySkillType);
     }
 
@@ -85,14 +86,14 @@ public final class ExperienceAPI {
      * @param skillType the skill to check
      * @return true if this is a valid, non-child mcMMO skill
      */
-    public static boolean isNonChildSkill(String skillType) {
+    public static boolean isNonChildSkill(final String skillType) {
         final PrimarySkillType skill = mcMMO.p.getSkillTools().matchSkill(skillType);
 
         return skill != null && !SkillTools.isChildSkill(skill);
     }
 
     @Deprecated
-    public static void addRawXP(Player player, String skillType, int XP) {
+    public static void addRawXP(final Player player, final String skillType, final int XP) {
         addRawXP(player, skillType, (float) XP);
     }
 
@@ -101,13 +102,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
+     * @param player    The player to add XP to
      * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param XP        The amount of XP to add
      * @throws InvalidSkillException if the given skill is not valid
      */
     @Deprecated
-    public static void addRawXP(Player player, String skillType, float XP) {
+    public static void addRawXP(final Player player, final String skillType, final float XP) {
         addRawXP(player, skillType, XP, "UNKNOWN");
     }
 
@@ -116,14 +117,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addRawXP(Player player, String skillType, float XP, String xpGainReason) {
+    public static void addRawXP(final Player player, final String skillType, final float XP, final String xpGainReason) {
         addRawXP(player, skillType, XP, xpGainReason, false);
     }
 
@@ -132,16 +133,16 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @param isUnshared true if the XP cannot be shared with party members
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param isUnshared   true if the XP cannot be shared with party members
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addRawXP(Player player, String skillType, float XP, String xpGainReason,
-            boolean isUnshared) {
+    public static void addRawXP(final Player player, final String skillType, final float XP, final String xpGainReason,
+                                final boolean isUnshared) {
         if (isUnshared) {
             getPlayer(player).beginUnsharedXpGain(getSkillType(skillType), XP,
                     getXPGainReason(xpGainReason), CUSTOM);
@@ -158,10 +159,10 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @deprecated We're using float for our XP values now replaced by
-     * {@link #addRawXPOffline(String playerName, String skillType, float XP)}
+     * {@link #addRawXPOffline(String name, String skillType, float XP)}
      */
     @Deprecated
-    public static void addRawXPOffline(String playerName, String skillType, int XP) {
+    public static void addRawXPOffline(final String playerName, final String skillType, final int XP) {
         addRawXPOffline(playerName, skillType, (float) XP);
     }
 
@@ -171,15 +172,15 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param skillType  The skill to add XP to
+     * @param XP         The amount of XP to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      * @deprecated We're using uuids to get an offline player replaced by
      * {@link #addRawXPOffline(UUID uuid, String skillType, float XP)}
      */
     @Deprecated
-    public static void addRawXPOffline(String playerName, String skillType, float XP) {
+    public static void addRawXPOffline(final String playerName, final String skillType, final float XP) {
         addOfflineXP(playerName, getSkillType(skillType), (int) Math.floor(XP));
     }
 
@@ -188,13 +189,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The UUID of player to add XP to
+     * @param uuid      The UUID of player to add XP to
      * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param XP        The amount of XP to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static void addRawXPOffline(UUID uuid, String skillType, float XP) {
+    public static void addRawXPOffline(final UUID uuid, final String skillType, final float XP) {
         addOfflineXP(uuid, getSkillType(skillType), (int) Math.floor(XP));
     }
 
@@ -203,13 +204,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
+     * @param player    The player to add XP to
      * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param XP        The amount of XP to add
      * @throws InvalidSkillException if the given skill is not valid
      */
     @Deprecated
-    public static void addMultipliedXP(Player player, String skillType, int XP) {
+    public static void addMultipliedXP(final Player player, final String skillType, final int XP) {
         addMultipliedXP(player, skillType, XP, "UNKNOWN");
     }
 
@@ -218,15 +219,15 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
     public static void addMultipliedXP(Player player, String skillType, int XP,
-            String xpGainReason) {
+                                       String xpGainReason) {
         final PrimarySkillType skill = getSkillType(skillType);
         getPlayer(player).applyXpGain(
                 skill,
@@ -240,9 +241,9 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param skillType  The skill to add XP to
+     * @param XP         The amount of XP to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
@@ -258,13 +259,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
+     * @param player    The player to add XP to
      * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param XP        The amount of XP to add
      * @throws InvalidSkillException if the given skill is not valid
      */
     @Deprecated
-    public static void addModifiedXP(Player player, String skillType, int XP) {
+    public static void addModifiedXP(final Player player, final String skillType, final int XP) {
         addModifiedXP(player, skillType, XP, "UNKNOWN");
     }
 
@@ -273,14 +274,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addModifiedXP(Player player, String skillType, int XP, String xpGainReason) {
+    public static void addModifiedXP(final Player player, final String skillType, final int XP, final String xpGainReason) {
         addModifiedXP(player, skillType, XP, xpGainReason, false);
     }
 
@@ -289,16 +290,16 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @param isUnshared true if the XP cannot be shared with party members
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param isUnshared   true if the XP cannot be shared with party members
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addModifiedXP(Player player, String skillType, int XP, String xpGainReason,
-            boolean isUnshared) {
+    public static void addModifiedXP(final Player player, final String skillType, final int XP, final String xpGainReason,
+                                     final boolean isUnshared) {
         final PrimarySkillType skill = getSkillType(skillType);
 
         final ExperienceConfig expConf = ExperienceConfig.getInstance();
@@ -322,13 +323,13 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param skillType  The skill to add XP to
+     * @param XP         The amount of XP to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static void addModifiedXPOffline(String playerName, String skillType, int XP) {
+    public static void addModifiedXPOffline(final String playerName, final String skillType, final int XP) {
         final PrimarySkillType skill = getSkillType(skillType);
 
         addOfflineXP(
@@ -344,13 +345,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
+     * @param player    The player to add XP to
      * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param XP        The amount of XP to add
      * @throws InvalidSkillException if the given skill is not valid
      */
     @Deprecated
-    public static void addXP(Player player, String skillType, int XP) {
+    public static void addXP(final Player player, final String skillType, final int XP) {
         addXP(player, skillType, XP, "UNKNOWN");
     }
 
@@ -360,14 +361,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addXP(Player player, String skillType, int XP, String xpGainReason) {
+    public static void addXP(final Player player, final String skillType, final int XP, final String xpGainReason) {
         addXP(player, skillType, XP, xpGainReason, false);
     }
 
@@ -377,16 +378,16 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add XP to
-     * @param skillType The skill to add XP to
-     * @param XP The amount of XP to add
+     * @param player       The player to add XP to
+     * @param skillType    The skill to add XP to
+     * @param XP           The amount of XP to add
      * @param xpGainReason The reason to gain XP
-     * @param isUnshared true if the XP cannot be shared with party members
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param isUnshared   true if the XP cannot be shared with party members
+     * @throws InvalidSkillException        if the given skill is not valid
      * @throws InvalidXPGainReasonException if the given xpGainReason is not valid
      */
-    public static void addXP(Player player, String skillType, int XP, String xpGainReason,
-            boolean isUnshared) {
+    public static void addXP(final Player player, final String skillType, final int XP, final String xpGainReason,
+                             final boolean isUnshared) {
         if (isUnshared) {
             getPlayer(player).beginUnsharedXpGain(getSkillType(skillType), XP,
                     getXPGainReason(xpGainReason), CUSTOM);
@@ -402,13 +403,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get XP for
+     * @param player    The player to get XP for
      * @param skillType The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getXP(Player player, String skillType) {
+    public static int getXP(final Player player, final String skillType) {
         return getPlayer(player).getSkillXpLevel(getNonChildSkillType(skillType));
     }
 
@@ -418,14 +419,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType  The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static int getOfflineXP(String playerName, String skillType) {
+    public static int getOfflineXP(final String playerName, final String skillType) {
         return getOfflineProfile(playerName).getSkillXpLevel(getNonChildSkillType(skillType));
     }
 
@@ -434,14 +435,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to get XP for
+     * @param uuid      The player to get XP for
      * @param skillType The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getOfflineXP(UUID uuid, String skillType) {
+    public static int getOfflineXP(final UUID uuid, final String skillType) {
         return getOfflineProfile(uuid).getSkillXpLevel(getNonChildSkillType(skillType));
     }
 
@@ -451,13 +452,13 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param offlinePlayer The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType     The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getOfflineXP(@NotNull OfflinePlayer offlinePlayer, @NotNull String skillType)
+    public static int getOfflineXP(@NotNull final OfflinePlayer offlinePlayer, @NotNull final String skillType)
             throws InvalidPlayerException {
         return getOfflineProfile(offlinePlayer).getSkillXpLevel(getNonChildSkillType(skillType));
     }
@@ -467,13 +468,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get XP for
+     * @param player    The player to get XP for
      * @param skillType The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static float getXPRaw(Player player, String skillType) {
+    public static float getXPRaw(final Player player, final String skillType) {
         return getPlayer(player).getSkillXpLevelRaw(getNonChildSkillType(skillType));
     }
 
@@ -483,14 +484,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType  The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static float getOfflineXPRaw(String playerName, String skillType) {
+    public static float getOfflineXPRaw(final String playerName, final String skillType) {
         return getOfflineProfile(playerName).getSkillXpLevelRaw(getNonChildSkillType(skillType));
     }
 
@@ -499,14 +500,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to get XP for
+     * @param uuid      The player to get XP for
      * @param skillType The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static float getOfflineXPRaw(UUID uuid, String skillType) {
+    public static float getOfflineXPRaw(final UUID uuid, final String skillType) {
         return getOfflineProfile(uuid).getSkillXpLevelRaw(getNonChildSkillType(skillType));
     }
 
@@ -516,20 +517,20 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param offlinePlayer The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType     The skill to get XP for
      * @return the amount of XP in a given skill
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static float getOfflineXPRaw(@NotNull OfflinePlayer offlinePlayer,
-            @NotNull String skillType)
+    public static float getOfflineXPRaw(@NotNull final OfflinePlayer offlinePlayer,
+                                        @NotNull final String skillType)
             throws InvalidPlayerException, UnsupportedOperationException, InvalidSkillException {
         return getOfflineProfile(offlinePlayer).getSkillXpLevelRaw(getNonChildSkillType(skillType));
     }
 
-    public static float getOfflineXPRaw(@NotNull OfflinePlayer offlinePlayer,
-            @NotNull PrimarySkillType skillType)
+    public static float getOfflineXPRaw(@NotNull final OfflinePlayer offlinePlayer,
+                                        @NotNull final PrimarySkillType skillType)
             throws InvalidPlayerException, UnsupportedOperationException {
         if (SkillTools.isChildSkill(skillType)) {
             throw new UnsupportedOperationException();
@@ -543,13 +544,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get the XP amount for
+     * @param player    The player to get the XP amount for
      * @param skillType The skill to get the XP amount for
      * @return the total amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getXPToNextLevel(Player player, String skillType) {
+    public static int getXPToNextLevel(final Player player, final String skillType) {
         return getPlayer(player).getXpToLevel(getNonChildSkillType(skillType));
     }
 
@@ -559,14 +560,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType  The skill to get XP for
      * @return the total amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static int getOfflineXPToNextLevel(String playerName, String skillType) {
+    public static int getOfflineXPToNextLevel(final String playerName, final String skillType) {
         return getOfflineProfile(playerName).getXpToLevel(getNonChildSkillType(skillType));
     }
 
@@ -575,14 +576,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to get XP for
+     * @param uuid      The player to get XP for
      * @param skillType The skill to get XP for
      * @return the total amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getOfflineXPToNextLevel(@NotNull UUID uuid, @NotNull String skillType) {
+    public static int getOfflineXPToNextLevel(@NotNull final UUID uuid, @NotNull final String skillType) {
         return getOfflineProfile(uuid).getXpToLevel(getNonChildSkillType(skillType));
     }
 
@@ -592,14 +593,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param offlinePlayer The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType     The skill to get XP for
      * @return the total amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getOfflineXPToNextLevel(@NotNull OfflinePlayer offlinePlayer,
-            @NotNull String skillType)
+    public static int getOfflineXPToNextLevel(@NotNull final OfflinePlayer offlinePlayer,
+                                              @NotNull final String skillType)
             throws UnsupportedOperationException, InvalidSkillException, InvalidPlayerException {
         return getOfflineProfile(offlinePlayer).getXpToLevel(getNonChildSkillType(skillType));
     }
@@ -609,13 +610,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get the XP amount for
+     * @param player    The player to get the XP amount for
      * @param skillType The skill to get the XP amount for
      * @return the amount of XP remaining until the next level
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getXPRemaining(Player player, String skillType) {
+    public static int getXPRemaining(final Player player, final String skillType) {
         final PrimarySkillType skill = getNonChildSkillType(skillType);
 
         final PlayerProfile profile = getPlayer(player).getProfile();
@@ -629,14 +630,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType  The skill to get XP for
      * @return the amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static int getOfflineXPRemaining(String playerName, String skillType) {
+    public static int getOfflineXPRemaining(final String playerName, final String skillType) {
         final PrimarySkillType skill = getNonChildSkillType(skillType);
         final PlayerProfile profile = getOfflineProfile(playerName);
 
@@ -648,14 +649,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to get XP for
+     * @param uuid      The player to get XP for
      * @param skillType The skill to get XP for
      * @return the amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static float getOfflineXPRemaining(UUID uuid, String skillType) {
+    public static float getOfflineXPRemaining(final UUID uuid, final String skillType) {
         final PrimarySkillType skill = getNonChildSkillType(skillType);
         final PlayerProfile profile = getOfflineProfile(uuid);
 
@@ -668,13 +669,13 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param offlinePlayer The player to get XP for
-     * @param skillType The skill to get XP for
+     * @param skillType     The skill to get XP for
      * @return the amount of XP needed to reach the next level
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static float getOfflineXPRemaining(OfflinePlayer offlinePlayer, String skillType)
+    public static float getOfflineXPRemaining(final OfflinePlayer offlinePlayer, final String skillType)
             throws InvalidSkillException, InvalidPlayerException, UnsupportedOperationException {
         final PrimarySkillType skill = getNonChildSkillType(skillType);
         final PlayerProfile profile = getOfflineProfile(offlinePlayer);
@@ -687,12 +688,12 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to add levels to
+     * @param player    The player to add levels to
      * @param skillType Type of skill to add levels to
-     * @param levels Number of levels to add
+     * @param levels    Number of levels to add
      * @throws InvalidSkillException if the given skill is not valid
      */
-    public static void addLevel(Player player, String skillType, int levels) {
+    public static void addLevel(final Player player, final String skillType, final int levels) {
         getPlayer(player).addLevels(getSkillType(skillType), levels);
     }
 
@@ -702,20 +703,20 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to add levels to
-     * @param skillType Type of skill to add levels to
-     * @param levels Number of levels to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param skillType  Type of skill to add levels to
+     * @param levels     Number of levels to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static void addLevelOffline(String playerName, String skillType, int levels) {
+    public static void addLevelOffline(final String playerName, final String skillType, final int levels) {
         final PlayerProfile profile = getOfflineProfile(playerName);
         final PrimarySkillType skill = getSkillType(skillType);
 
         if (SkillTools.isChildSkill(skill)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            final var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
-            for (PrimarySkillType parentSkill : parentSkills) {
+            for (final PrimarySkillType parentSkill : parentSkills) {
                 profile.addLevels(parentSkill, (levels / parentSkills.size()));
             }
 
@@ -732,20 +733,20 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to add levels to
+     * @param uuid      The player to add levels to
      * @param skillType Type of skill to add levels to
-     * @param levels Number of levels to add
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param levels    Number of levels to add
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static void addLevelOffline(UUID uuid, String skillType, int levels) {
+    public static void addLevelOffline(final UUID uuid, final String skillType, final int levels) {
         final PlayerProfile profile = getOfflineProfile(uuid);
         final PrimarySkillType skill = getSkillType(skillType);
 
         if (SkillTools.isChildSkill(skill)) {
-            var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
+            final var parentSkills = mcMMO.p.getSkillTools().getChildSkillParents(skill);
 
-            for (PrimarySkillType parentSkill : parentSkills) {
+            for (final PrimarySkillType parentSkill : parentSkills) {
                 profile.addLevels(parentSkill, (levels / parentSkills.size()));
             }
 
@@ -762,14 +763,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get the level for
+     * @param player    The player to get the level for
      * @param skillType The skill to get the level for
      * @return the level of a given skill
      * @throws InvalidSkillException if the given skill is not valid
      * @deprecated Use getLevel(Player player, PrimarySkillType skillType) instead
      */
     @Deprecated
-    public static int getLevel(Player player, String skillType) {
+    public static int getLevel(final Player player, final String skillType) {
         return getPlayer(player).getSkillLevel(getSkillType(skillType));
     }
 
@@ -778,12 +779,12 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to get the level for
+     * @param player    The player to get the level for
      * @param skillType The skill to get the level for
      * @return the level of a given skill
      * @throws InvalidSkillException if the given skill is not valid
      */
-    public static int getLevel(Player player, PrimarySkillType skillType) {
+    public static int getLevel(final Player player, final PrimarySkillType skillType) {
         return getPlayer(player).getSkillLevel(skillType);
     }
 
@@ -793,12 +794,12 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to get the level for
-     * @param skillType The skill to get the level for
+     * @param skillType  The skill to get the level for
      * @return the level of a given skill
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static int getLevelOffline(String playerName, String skillType) {
+    public static int getLevelOffline(final String playerName, final String skillType) {
         return getOfflineProfile(playerName).getSkillLevel(getSkillType(skillType));
     }
 
@@ -807,13 +808,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to get the level for
+     * @param uuid      The player to get the level for
      * @param skillType The skill to get the level for
      * @return the level of a given skill
-     * @throws InvalidSkillException if the given skill is not valid
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static int getLevelOffline(UUID uuid, String skillType) {
+    public static int getLevelOffline(final UUID uuid, final String skillType) {
         return getOfflineProfile(uuid).getSkillLevel(getSkillType(skillType));
     }
 
@@ -825,7 +826,7 @@ public final class ExperienceAPI {
      * @param player The player to get the power level for
      * @return the power level of the player
      */
-    public static int getPowerLevel(Player player) {
+    public static int getPowerLevel(final Player player) {
         return getPlayer(player).getPowerLevel();
     }
 
@@ -839,11 +840,11 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static int getPowerLevelOffline(String playerName) {
+    public static int getPowerLevelOffline(final String playerName) {
         int powerLevel = 0;
         final PlayerProfile profile = getOfflineProfile(playerName);
 
-        for (PrimarySkillType type : SkillTools.NON_CHILD_SKILLS) {
+        for (final PrimarySkillType type : SkillTools.NON_CHILD_SKILLS) {
             powerLevel += profile.getSkillLevel(type);
         }
 
@@ -859,11 +860,11 @@ public final class ExperienceAPI {
      * @return the power level of the player
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static int getPowerLevelOffline(UUID uuid) {
+    public static int getPowerLevelOffline(final UUID uuid) {
         int powerLevel = 0;
         final PlayerProfile profile = getOfflineProfile(uuid);
 
-        for (PrimarySkillType type : SkillTools.NON_CHILD_SKILLS) {
+        for (final PrimarySkillType type : SkillTools.NON_CHILD_SKILLS) {
             powerLevel += profile.getSkillLevel(type);
         }
 
@@ -879,7 +880,7 @@ public final class ExperienceAPI {
      * @return the level cap of a given skill
      * @throws InvalidSkillException if the given skill is not valid
      */
-    public static int getLevelCap(String skillType) {
+    public static int getLevelCap(final String skillType) {
         return mcMMO.p.getSkillTools().getLevelCap(getSkillType(skillType));
     }
 
@@ -900,14 +901,14 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The name of the player to check
-     * @param skillType The skill to check
+     * @param skillType  The skill to check
      * @return the position on the leaderboard
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
-    public static int getPlayerRankSkill(String playerName, String skillType) {
+    public static int getPlayerRankSkill(final String playerName, final String skillType) {
         return mcMMO.getDatabaseManager()
                 .readRank(mcMMO.p.getServer().getOfflinePlayer(playerName).getName()).get(
                         getNonChildSkillType(skillType));
@@ -918,14 +919,14 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The name of the player to check
+     * @param uuid      The name of the player to check
      * @param skillType The skill to check
      * @return the position on the leaderboard
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static int getPlayerRankSkill(UUID uuid, String skillType) {
+    public static int getPlayerRankSkill(final UUID uuid, final String skillType) {
         return mcMMO.getDatabaseManager()
                 .readRank(mcMMO.p.getServer().getOfflinePlayer(uuid).getName()).get(
                         getNonChildSkillType(skillType));
@@ -941,7 +942,7 @@ public final class ExperienceAPI {
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
-    public static int getPlayerRankOverall(String playerName) {
+    public static int getPlayerRankOverall(final String playerName) {
         return mcMMO.getDatabaseManager()
                 .readRank(mcMMO.p.getServer().getOfflinePlayer(playerName).getName()).get(
                         null);
@@ -956,7 +957,7 @@ public final class ExperienceAPI {
      * @return the position on the power level leaderboard
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
-    public static int getPlayerRankOverall(UUID uuid) {
+    public static int getPlayerRankOverall(final UUID uuid) {
         return mcMMO.getDatabaseManager()
                 .readRank(mcMMO.p.getServer().getOfflinePlayer(uuid).getName()).get(null);
     }
@@ -966,12 +967,12 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to set the level of
-     * @param skillType The skill to set the level for
+     * @param player     The player to set the level of
+     * @param skillType  The skill to set the level for
      * @param skillLevel The value to set the level to
      * @throws InvalidSkillException if the given skill is not valid
      */
-    public static void setLevel(Player player, String skillType, int skillLevel) {
+    public static void setLevel(final Player player, final String skillType, final int skillLevel) {
         getPlayer(player).modifySkill(getSkillType(skillType), skillLevel);
     }
 
@@ -981,9 +982,9 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to set the level of
-     * @param skillType The skill to set the level for
-     * @param skillLevel The value to set the level to
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param skillType  The skill to set the level for
+     * @param skillLevel The statVal to set the level to
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     @Deprecated
@@ -998,10 +999,10 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to set the level of
-     * @param skillType The skill to set the level for
-     * @param skillLevel The value to set the level to
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param uuid       The player to set the level of
+     * @param skillType  The skill to set the level for
+     * @param skillLevel The statVal to set the level to
+     * @throws InvalidSkillException  if the given skill is not valid
      * @throws InvalidPlayerException if the given player does not exist in the database
      */
     public static void setLevelOffline(UUID uuid, String skillType, int skillLevel) {
@@ -1015,13 +1016,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to set the XP of
+     * @param player    The player to set the XP of
      * @param skillType The skill to set the XP for
-     * @param newValue The value to set the XP to
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param newValue  The statVal to set the XP to
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static void setXP(Player player, String skillType, int newValue) {
+    public static void setXP(final Player player, final String skillType, final int newValue) {
         getPlayer(player).setSkillXpLevel(getNonChildSkillType(skillType), newValue);
     }
 
@@ -1031,10 +1032,10 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to set the XP of
-     * @param skillType The skill to set the XP for
-     * @param newValue The value to set the XP to
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @param skillType  The skill to set the XP for
+     * @param newValue   The statVal to set the XP to
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
@@ -1049,11 +1050,11 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to set the XP of
+     * @param uuid      The player to set the XP of
      * @param skillType The skill to set the XP for
-     * @param newValue The value to set the XP to
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @param newValue  The statVal to set the XP to
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     public static void setXPOffline(UUID uuid, String skillType, int newValue) {
@@ -1067,13 +1068,13 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param player The player to change the XP of
+     * @param player    The player to change the XP of
      * @param skillType The skill to change the XP for
-     * @param xp The amount of XP to remove
-     * @throws InvalidSkillException if the given skill is not valid
+     * @param xp        The amount of XP to remove
+     * @throws InvalidSkillException         if the given skill is not valid
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
-    public static void removeXP(Player player, String skillType, int xp) {
+    public static void removeXP(final Player player, final String skillType, final int xp) {
         getPlayer(player).removeXp(getNonChildSkillType(skillType), xp);
     }
 
@@ -1083,10 +1084,10 @@ public final class ExperienceAPI {
      * This function is designed for API usage.
      *
      * @param playerName The player to change the XP of
-     * @param skillType The skill to change the XP for
-     * @param xp The amount of XP to remove
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @param skillType  The skill to change the XP for
+     * @param xp         The amount of XP to remove
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     @Deprecated
@@ -1101,11 +1102,11 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param uuid The player to change the XP of
+     * @param uuid      The player to change the XP of
      * @param skillType The skill to change the XP for
-     * @param xp The amount of XP to remove
-     * @throws InvalidSkillException if the given skill is not valid
-     * @throws InvalidPlayerException if the given player does not exist in the database
+     * @param xp        The amount of XP to remove
+     * @throws InvalidSkillException         if the given skill is not valid
+     * @throws InvalidPlayerException        if the given player does not exist in the database
      * @throws UnsupportedOperationException if the given skill is a child skill
      */
     public static void removeXPOffline(UUID uuid, String skillType, int xp) {
@@ -1122,7 +1123,7 @@ public final class ExperienceAPI {
      * @param level The level to get the amount of XP for
      * @throws InvalidFormulaTypeException if the given formulaType is not valid
      */
-    public static int getXpNeededToLevel(int level) {
+    public static int getXpNeededToLevel(final int level) {
         return mcMMO.getFormulaManager()
                 .getXPtoNextLevel(level, ExperienceConfig.getInstance().getFormulaType());
     }
@@ -1132,11 +1133,11 @@ public final class ExperienceAPI {
      * </br>
      * This function is designed for API usage.
      *
-     * @param level The level to get the amount of XP for
+     * @param level       The level to get the amount of XP for
      * @param formulaType The formula type to get the amount of XP for
      * @throws InvalidFormulaTypeException if the given formulaType is not valid
      */
-    public static int getXpNeededToLevel(int level, String formulaType) {
+    public static int getXpNeededToLevel(final int level, final String formulaType) {
         return mcMMO.getFormulaManager().getXPtoNextLevel(level, getFormulaType(formulaType));
     }
 
@@ -1145,11 +1146,11 @@ public final class ExperienceAPI {
      * blocks given
      *
      * @param blockStates the blocks to reward XP for
-     * @param mmoPlayer the target player
+     * @param mmoPlayer   the target player
      */
-    public static void addXpFromBlocks(ArrayList<BlockState> blockStates, McMMOPlayer mmoPlayer) {
-        for (BlockState bs : blockStates) {
-            for (PrimarySkillType skillType : PrimarySkillType.values()) {
+    public static void addXpFromBlocks(final ArrayList<BlockState> blockStates, final McMMOPlayer mmoPlayer) {
+        for (final BlockState bs : blockStates) {
+            for (final PrimarySkillType skillType : PrimarySkillType.values()) {
                 if (ExperienceConfig.getInstance().getXp(skillType, bs.getType()) > 0) {
                     mmoPlayer.applyXpGain(
                             skillType,
@@ -1165,13 +1166,13 @@ public final class ExperienceAPI {
      * blocks given if it matches the given skillType
      *
      * @param blockStates the blocks to reward XP for
-     * @param mmoPlayer the target player
-     * @param skillType target primary skill
+     * @param mmoPlayer   the target player
+     * @param skillType   target primary skill
      */
-    public static void addXpFromBlocksBySkill(ArrayList<BlockState> blockStates,
-            McMMOPlayer mmoPlayer,
-            PrimarySkillType skillType) {
-        for (BlockState bs : blockStates) {
+    public static void addXpFromBlocksBySkill(final ArrayList<BlockState> blockStates,
+                                              final McMMOPlayer mmoPlayer,
+                                              final PrimarySkillType skillType) {
+        for (final BlockState bs : blockStates) {
             if (ExperienceConfig.getInstance().getXp(skillType, bs.getType()) > 0) {
                 mmoPlayer.applyXpGain(
                         skillType, ExperienceConfig.getInstance().getXp(skillType, bs.getType()),
@@ -1186,10 +1187,10 @@ public final class ExperienceAPI {
      * blocks given
      *
      * @param blockState The target blockstate
-     * @param mmoPlayer The target player
+     * @param mmoPlayer  The target player
      */
-    public static void addXpFromBlock(BlockState blockState, McMMOPlayer mmoPlayer) {
-        for (PrimarySkillType skillType : PrimarySkillType.values()) {
+    public static void addXpFromBlock(final BlockState blockState, final McMMOPlayer mmoPlayer) {
+        for (final PrimarySkillType skillType : PrimarySkillType.values()) {
             if (ExperienceConfig.getInstance().getXp(skillType, blockState.getType()) > 0) {
                 mmoPlayer.applyXpGain(
                         skillType,
@@ -1204,11 +1205,11 @@ public final class ExperienceAPI {
      * blocks given if it matches the given skillType
      *
      * @param blockState The target blockstate
-     * @param mmoPlayer The target player
-     * @param skillType target primary skill
+     * @param mmoPlayer  The target player
+     * @param skillType  target primary skill
      */
-    public static void addXpFromBlockBySkill(BlockState blockState, McMMOPlayer mmoPlayer,
-            PrimarySkillType skillType) {
+    public static void addXpFromBlockBySkill(final BlockState blockState, final McMMOPlayer mmoPlayer,
+                                             final PrimarySkillType skillType) {
         if (ExperienceConfig.getInstance().getXp(skillType, blockState.getType()) > 0) {
             mmoPlayer.applyXpGain(
                     skillType,
@@ -1218,23 +1219,23 @@ public final class ExperienceAPI {
     }
 
     // Utility methods follow.
-    private static void addOfflineXP(@NotNull UUID playerUniqueId, @NotNull PrimarySkillType skill,
-            int XP) {
+    private static void addOfflineXP(@NotNull final UUID playerUniqueId, @NotNull final PrimarySkillType skill,
+                                     final int XP) {
         final PlayerProfile profile = getOfflineProfile(playerUniqueId);
 
         profile.addXp(skill, XP);
         profile.save(true);
     }
 
-    private static void addOfflineXP(@NotNull String playerName, @NotNull PrimarySkillType skill,
-            int XP) {
+    private static void addOfflineXP(@NotNull final String playerName, @NotNull final PrimarySkillType skill,
+                                     final int XP) {
         final PlayerProfile profile = getOfflineProfile(playerName);
 
         profile.addXp(skill, XP);
         profile.scheduleAsyncSave();
     }
 
-    private static @NotNull PlayerProfile getOfflineProfile(@NotNull UUID uuid)
+    private static @NotNull PlayerProfile getOfflineProfile(@NotNull final UUID uuid)
             throws InvalidPlayerException {
         final PlayerProfile profile = mcMMO.getDatabaseManager().loadPlayerProfile(uuid);
 
@@ -1245,7 +1246,7 @@ public final class ExperienceAPI {
         return profile;
     }
 
-    private static @NotNull PlayerProfile getOfflineProfile(@NotNull OfflinePlayer offlinePlayer)
+    private static @NotNull PlayerProfile getOfflineProfile(@NotNull final OfflinePlayer offlinePlayer)
             throws InvalidPlayerException {
         final PlayerProfile profile = mcMMO.getDatabaseManager().loadPlayerProfile(offlinePlayer);
 
@@ -1256,7 +1257,7 @@ public final class ExperienceAPI {
         return profile;
     }
 
-    private static @NotNull PlayerProfile getOfflineProfile(@NotNull String playerName)
+    private static @NotNull PlayerProfile getOfflineProfile(@NotNull final String playerName)
             throws InvalidPlayerException {
         final PlayerProfile profile = mcMMO.getDatabaseManager().loadPlayerProfile(playerName);
 
@@ -1267,7 +1268,7 @@ public final class ExperienceAPI {
         return profile;
     }
 
-    private static PrimarySkillType getSkillType(String skillType) throws InvalidSkillException {
+    private static PrimarySkillType getSkillType(final String skillType) throws InvalidSkillException {
         final PrimarySkillType skill = mcMMO.p.getSkillTools().matchSkill(skillType);
 
         if (skill == null) {
@@ -1277,7 +1278,7 @@ public final class ExperienceAPI {
         return skill;
     }
 
-    private static PrimarySkillType getNonChildSkillType(String skillType)
+    private static PrimarySkillType getNonChildSkillType(final String skillType)
             throws InvalidSkillException, UnsupportedOperationException {
         final PrimarySkillType skill = getSkillType(skillType);
 
@@ -1288,8 +1289,8 @@ public final class ExperienceAPI {
         return skill;
     }
 
-    private static XPGainReason getXPGainReason(String reason) throws InvalidXPGainReasonException {
-        XPGainReason xpGainReason = XPGainReason.getXPGainReason(reason);
+    private static XPGainReason getXPGainReason(final String reason) throws InvalidXPGainReasonException {
+        final XPGainReason xpGainReason = XPGainReason.getXPGainReason(reason);
 
         if (xpGainReason == null) {
             throw new InvalidXPGainReasonException();
@@ -1298,7 +1299,7 @@ public final class ExperienceAPI {
         return xpGainReason;
     }
 
-    private static FormulaType getFormulaType(String formula) throws InvalidFormulaTypeException {
+    private static FormulaType getFormulaType(final String formula) throws InvalidFormulaTypeException {
         final FormulaType formulaType = FormulaType.getFormulaType(formula);
 
         if (formulaType == null) {
@@ -1315,7 +1316,7 @@ public final class ExperienceAPI {
      * @deprecated Use UserManager::getPlayer(Player player) instead
      */
     @Deprecated(forRemoval = true)
-    private static McMMOPlayer getPlayer(Player player) throws McMMOPlayerNotFoundException {
+    private static McMMOPlayer getPlayer(final Player player) throws McMMOPlayerNotFoundException {
         if (!UserManager.hasPlayerDataKey(player)) {
             throw new McMMOPlayerNotFoundException(player);
         }

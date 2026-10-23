@@ -1,10 +1,5 @@
 package com.gmail.nossr50.util;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
@@ -12,12 +7,17 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class PotionUtil {
-    // Some of the old potion types got renamed, our configs can still contain these old names
-    private static final Map<String, String> legacyPotionTypes = new HashMap<>();
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+public final class PotionUtil {
     public static final String STRONG = "STRONG";
     public static final String LONG = "LONG";
+    // Some of the old potion types got renamed, our configs can still contain these old names
+    private static final Map<String, String> legacyPotionTypes = new HashMap<>();
 
     static {
         // Uncraftable doesn't exist in modern versions
@@ -43,7 +43,7 @@ public final class PotionUtil {
      *                    against the potion's key or enum name
      * @return The potion type, or null if no match
      */
-    public static @Nullable PotionType matchPotionType(String partialName, boolean isUpgraded, boolean isExtended) {
+    public static @Nullable PotionType matchPotionType(final String partialName, final boolean isUpgraded, final boolean isExtended) {
         if (partialName == null || partialName.isEmpty()) {
             return null;
         }
@@ -54,8 +54,7 @@ public final class PotionUtil {
                 // Allow matching by namespace key ("swiftness", "long_swiftness") or enum name
                 .filter(potionType -> {
                     final NamespacedKey key = potionType.getKey();
-                    final String keyStr = key != null ? key.getKey() : "";
-                    return keyStr.toUpperCase(Locale.ENGLISH).contains(updatedName)
+                    return key.getKey().toUpperCase(Locale.ENGLISH).contains(updatedName)
                             || potionType.name().toUpperCase(Locale.ENGLISH).contains(updatedName);
                 })
                 // Enforce strong/long selection by the enum name prefix convention
@@ -116,28 +115,28 @@ public final class PotionUtil {
         return prefix + legacyPotionTypes.getOrDefault(baseName, baseName);
     }
 
-    public static boolean isStrong(@NotNull PotionMeta potionMeta) {
+    public static boolean isStrong(@NotNull final PotionMeta potionMeta) {
         final PotionType base = potionMeta.getBasePotionType();
         return base != null && base.name().startsWith(STRONG + "_");
     }
 
-    public static boolean isLong(@NotNull PotionMeta potionMeta) {
+    public static boolean isLong(@NotNull final PotionMeta potionMeta) {
         final PotionType base = potionMeta.getBasePotionType();
         return base != null && base.name().startsWith(LONG + "_");
     }
 
-    public static boolean isPotionTypeWater(@NotNull PotionMeta potionMeta) {
+    public static boolean isPotionTypeWater(@NotNull final PotionMeta potionMeta) {
         return potionMeta.getBasePotionType() == PotionType.WATER;
     }
 
-    public static boolean hasBasePotionEffects(@NotNull PotionMeta potionMeta) {
+    public static boolean hasBasePotionEffects(@NotNull final PotionMeta potionMeta) {
         final PotionType base = potionMeta.getBasePotionType();
         if (base == null) {
             return false;
         }
 
         final List<PotionEffect> effects = base.getPotionEffects();
-        return effects != null && !effects.isEmpty();
+        return !effects.isEmpty();
     }
 
     /**
@@ -148,14 +147,14 @@ public final class PotionUtil {
      * attempts to select the appropriate STRONG_/LONG_ variant when requested. If no such variant
      * exists, it falls back to the provided base type.</p>
      */
-    public static void setBasePotionType(@NotNull PotionMeta potionMeta,
-            @NotNull PotionType potionType, boolean extended, boolean upgraded) {
+    public static void setBasePotionType(@NotNull final PotionMeta potionMeta,
+                                         @NotNull final PotionType potionType, final boolean extended, final boolean upgraded) {
         final PotionType resolved = resolveVariant(potionType, upgraded, extended);
         potionMeta.setBasePotionType(resolved);
     }
 
-    private static @NotNull PotionType resolveVariant(@NotNull PotionType base, boolean upgraded,
-            boolean extended) {
+    private static @NotNull PotionType resolveVariant(@NotNull final PotionType base, boolean upgraded,
+                                                      boolean extended) {
         // Apply the same prefix scheme your code already expects
         String name = base.name();
 
@@ -176,7 +175,7 @@ public final class PotionUtil {
 
         try {
             return PotionType.valueOf(name);
-        } catch (IllegalArgumentException ignored) {
+        } catch (final IllegalArgumentException ignored) {
             // Not all potion types have strong/long variants; just use the provided base.
             return base;
         }

@@ -1,25 +1,10 @@
 package com.gmail.nossr50.placeholders;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.database.FlatFileDatabaseManager;
 import com.gmail.nossr50.datatypes.player.PlayerProfile;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.TestFileCleanup;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.nio.file.Files;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -30,6 +15,21 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.nio.file.Files;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class LeaderboardPlaceholderFlatFileIntegrationTest {
     private static final long PURGE_TIME = 2_630_000_000L;
@@ -51,6 +51,30 @@ class LeaderboardPlaceholderFlatFileIntegrationTest {
         if (mockedExperienceConfig != null) {
             mockedExperienceConfig.close();
         }
+    }
+
+    private static Stream<Arguments> aliasAndPositionProvider() {
+        return Stream.of(
+                Arguments.of("overall", "1"),
+                Arguments.of("all", "1"),
+                Arguments.of("powerlevel", "1"),
+                Arguments.of("overall", "2"),
+                Arguments.of("all", "2"),
+                Arguments.of("powerlevel", "3")
+        );
+    }
+
+    private static Stream<String> invalidPositionProvider() {
+        return Stream.of(null, "", " ", "0", "-5", "abc", "9999");
+    }
+
+    private static void seedUserWithMiningLevel(FlatFileDatabaseManager databaseManager,
+                                                String playerName, int miningLevel) {
+        UUID uuid = UUID.randomUUID();
+        databaseManager.newUser(playerName, uuid);
+        PlayerProfile profile = databaseManager.loadPlayerProfile(uuid);
+        profile.modifySkill(PrimarySkillType.MINING, miningLevel);
+        assertThat(databaseManager.saveUser(profile)).isTrue();
     }
 
     @AfterEach
@@ -211,21 +235,6 @@ class LeaderboardPlaceholderFlatFileIntegrationTest {
         assertThat(firstResult.get()).isTrue();
     }
 
-    private static Stream<Arguments> aliasAndPositionProvider() {
-        return Stream.of(
-                Arguments.of("overall", "1"),
-                Arguments.of("all", "1"),
-                Arguments.of("powerlevel", "1"),
-                Arguments.of("overall", "2"),
-                Arguments.of("all", "2"),
-                Arguments.of("powerlevel", "3")
-        );
-    }
-
-    private static Stream<String> invalidPositionProvider() {
-        return Stream.of(null, "", " ", "0", "-5", "abc", "9999");
-    }
-
     private FlatFileDatabaseManager createFlatFileManager() throws Exception {
         tempDir = Files.createTempDirectory("mcmmo-flatfile-placeholder-it-").toFile();
         File usersFile = new File(tempDir, "users.db");
@@ -236,14 +245,5 @@ class LeaderboardPlaceholderFlatFileIntegrationTest {
         constructor.setAccessible(true);
 
         return constructor.newInstance(usersFile, LOGGER, PURGE_TIME, 0, true);
-    }
-
-    private static void seedUserWithMiningLevel(FlatFileDatabaseManager databaseManager,
-            String playerName, int miningLevel) {
-        UUID uuid = UUID.randomUUID();
-        databaseManager.newUser(playerName, uuid);
-        PlayerProfile profile = databaseManager.loadPlayerProfile(uuid);
-        profile.modifySkill(PrimarySkillType.MINING, miningLevel);
-        assertThat(databaseManager.saveUser(profile)).isTrue();
     }
 }

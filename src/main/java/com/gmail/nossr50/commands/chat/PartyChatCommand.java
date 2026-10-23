@@ -64,7 +64,7 @@ public class PartyChatCommand extends BaseCommand {
      * Processes the command with arguments for a {@link McMMOPlayer}
      *
      * @param mmoPlayer target player
-     * @param args command arguments
+     * @param args      command arguments
      */
     private void processCommandArgsPlayer(@NotNull McMMOPlayer mmoPlayer, @NotNull String[] args) {
         //Player is not toggling and is chatting directly to party

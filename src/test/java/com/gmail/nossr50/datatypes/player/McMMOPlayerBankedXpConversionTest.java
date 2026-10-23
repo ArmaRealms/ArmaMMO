@@ -1,9 +1,5 @@
 package com.gmail.nossr50.datatypes.player;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.experience.FormulaType;
@@ -12,16 +8,21 @@ import com.gmail.nossr50.datatypes.experience.XPGainSource;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 /**
  * Covers how the XP gain path converts banked XP into levels when the XP curve no longer
  * matches the XP a player has stored.
- *
+ * <p>
  * When level requirements change between sessions (edited experience.yml curve values, or a
  * flip of General.RetroMode.Enabled changing Standard/Retro scaling), players can hold XP
  * far above or far below the requirement for their current level. mcMMO only reconciles

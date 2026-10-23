@@ -1,5 +1,20 @@
 package com.gmail.nossr50.util.random;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import com.gmail.nossr50.events.skills.secondaryabilities.SubSkillEvent;
+import com.gmail.nossr50.util.Permissions;
+import org.bukkit.event.Event;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.ACROBATICS;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.HERBALISM;
 import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
@@ -21,39 +36,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.skills.SubSkillType;
-import com.gmail.nossr50.events.skills.secondaryabilities.SubSkillEvent;
-import com.gmail.nossr50.util.Permissions;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-import org.bukkit.event.Event;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 class ProbabilityUtilTest extends MMOTestEnvironment {
-    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
-
     final static double impactChance = 11D;
     final static double greaterImpactChance = 0.007D;
     final static double fastFoodChance = 45.5D;
-
-    @BeforeEach
-    public void setupMocks() {
-        mockBaseEnvironment(logger);
-        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
-        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
-        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
-    }
-
-    @AfterEach
-    public void tearDown() {
-        cleanUpStaticMocks();
-    }
+    private static final Logger logger = getLogger(ProbabilityUtilTest.class.getName());
 
     private static Stream<Arguments> staticChanceSkills() {
         return Stream.of(
@@ -62,27 +49,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 Arguments.of(AXES_GREATER_IMPACT, greaterImpactChance),
                 Arguments.of(TAMING_FAST_FOOD_SERVICE, fastFoodChance)
         );
-    }
-
-    @ParameterizedTest
-    @MethodSource("staticChanceSkills")
-    void staticChanceSkillsShouldSucceedAsExpected(SubSkillType subSkillType,
-            double expectedWinPercent)
-            throws InvalidStaticChance {
-        Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
-        assertProbabilityExpectations(expectedWinPercent, staticRandomChance);
-    }
-
-    @Test
-    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
-        // Given
-        when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
-        when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
-
-        @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
-                UNARMED_ARROW_DEFLECT, mmoPlayer);
-        assertEquals(0.2D, probability.getValue());
-        assertProbabilityExpectations(20, probability);
     }
 
     private static Stream<Arguments> provideSkillProbabilityTestData() {
@@ -102,58 +68,6 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 // 1% chance at skill level 1000
                 Arguments.of(1000, 0, 1, 1000, 0.01)
         );
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideSkillProbabilityTestData")
-    void testCalculateCurrentSkillProbability(double skillLevel, double floor, double ceiling,
-            double maxBonusLevel,
-            double expectedValue) {
-        // When
-        final Probability probability = calculateCurrentSkillProbability(skillLevel, floor, ceiling,
-                maxBonusLevel);
-
-        // Then
-        assertEquals(expectedValue, probability.getValue());
-    }
-
-    @Test
-    public void getRNGDisplayValuesShouldReturn10PercentForDodge() {
-        // Given
-        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
-        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
-        mmoPlayer.modifySkill(ACROBATICS, 500);
-
-        // When & Then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
-                ACROBATICS_DODGE);
-        assertEquals("10.00%", rngDisplayValues[0]);
-    }
-
-    @Test
-    public void getRNGDisplayValuesShouldReturn20PercentForDodge() {
-        // Given
-        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
-        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
-        mmoPlayer.modifySkill(ACROBATICS, 1000);
-
-        // When & then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
-                ACROBATICS_DODGE);
-        assertEquals("20.00%", rngDisplayValues[0]);
-    }
-
-    @Test
-    public void getRNGDisplayValuesShouldReturn0PercentForDodge() {
-        // Given
-        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
-        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
-        mmoPlayer.modifySkill(ACROBATICS, 0);
-
-        // When & then
-        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
-                ACROBATICS_DODGE);
-        assertEquals("0.00%", rngDisplayValues[0]);
     }
 
     /**
@@ -223,6 +137,114 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
         );
     }
 
+    private static Stream<Arguments> greenThumbGuaranteedRollCases() {
+        return Stream.of(
+                // isLucky, herbalismLevel (ceiling 100% at level 100)
+                // Max bonus level without the lucky perk is a plain 100% chance
+                Arguments.of(false, 100),
+                // Max bonus level with the lucky perk is 100% * 1.333
+                Arguments.of(true, 100),
+                // 76% base chance with the lucky perk is 76% * 1.333 = 101.308%
+                Arguments.of(true, 76)
+        );
+    }
+
+    private static Stream<Arguments> probabilityMultiplierCases() {
+        return Stream.of(
+                // isLucky, probabilityMultiplier, shouldAlwaysSucceed
+                Arguments.of(false, 0.0D, false),
+                Arguments.of(true, 0.0D, false),
+                Arguments.of(false, 1.0D, true),
+                Arguments.of(true, 1.0D, true)
+        );
+    }
+
+    @BeforeEach
+    public void setupMocks() {
+        mockBaseEnvironment(logger);
+        when(advancedConfig.getImpactChance()).thenReturn(impactChance);
+        when(advancedConfig.getGreaterImpactChance()).thenReturn(greaterImpactChance);
+        when(advancedConfig.getFastFoodChance()).thenReturn(fastFoodChance);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        cleanUpStaticMocks();
+    }
+
+    @ParameterizedTest
+    @MethodSource("staticChanceSkills")
+    void staticChanceSkillsShouldSucceedAsExpected(final SubSkillType subSkillType,
+                                                   final double expectedWinPercent)
+            throws InvalidStaticChance {
+        final Probability staticRandomChance = ProbabilityUtil.getStaticRandomChance(subSkillType);
+        assertProbabilityExpectations(expectedWinPercent, staticRandomChance);
+    }
+
+    @Test
+    public void isSkillRNGSuccessfulShouldBehaveAsExpected() {
+        // Given
+        when(advancedConfig.getMaximumProbability(UNARMED_ARROW_DEFLECT)).thenReturn(20D);
+        when(advancedConfig.getMaxBonusLevel(UNARMED_ARROW_DEFLECT)).thenReturn(0);
+
+        @SuppressWarnings("all") final Probability probability = ProbabilityUtil.getSkillProbability(
+                UNARMED_ARROW_DEFLECT, mmoPlayer);
+        assertEquals(0.2D, probability.value());
+        assertProbabilityExpectations(20, probability);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSkillProbabilityTestData")
+    void testCalculateCurrentSkillProbability(final double skillLevel, final double floor, final double ceiling,
+                                              final double maxBonusLevel,
+                                              final double expectedValue) {
+        // When
+        final Probability probability = calculateCurrentSkillProbability(skillLevel, floor, ceiling,
+                maxBonusLevel);
+
+        // Then
+        assertEquals(expectedValue, probability.value());
+    }
+
+    @Test
+    public void getRNGDisplayValuesShouldReturn10PercentForDodge() {
+        // Given
+        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
+        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
+        mmoPlayer.modifySkill(ACROBATICS, 500);
+
+        // When & Then
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("10.00%", rngDisplayValues[0]);
+    }
+
+    @Test
+    public void getRNGDisplayValuesShouldReturn20PercentForDodge() {
+        // Given
+        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
+        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
+        mmoPlayer.modifySkill(ACROBATICS, 1000);
+
+        // When & then
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("20.00%", rngDisplayValues[0]);
+    }
+
+    @Test
+    public void getRNGDisplayValuesShouldReturn0PercentForDodge() {
+        // Given
+        when(advancedConfig.getMaximumProbability(ACROBATICS_DODGE)).thenReturn(20D);
+        when(advancedConfig.getMaxBonusLevel(ACROBATICS_DODGE)).thenReturn(1000);
+        mmoPlayer.modifySkill(ACROBATICS, 0);
+
+        // When & then
+        final String[] rngDisplayValues = ProbabilityUtil.getRNGDisplayValues(mmoPlayer,
+                ACROBATICS_DODGE);
+        assertEquals("0.00%", rngDisplayValues[0]);
+    }
+
     /**
      * Regression coverage for issue #5210: with standard-mode defaults every reported level is
      * above the max bonus level, so both the real proc chance and the displayed chance must sit
@@ -245,7 +267,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 ACROBATICS_DODGE);
 
         // Then - the real proc chance is pinned to the 20% cap rather than scaling unbounded
-        assertThat(probability.getValue()).isEqualTo(0.2D);
+        assertThat(probability.value()).isEqualTo(0.2D);
 
         // And - the value shown to players matches the capped chance
         assertThat(displayValues[0]).isEqualTo("20.00%");
@@ -271,10 +293,10 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
 
         // Then - the chance scales linearly below the max bonus level and is capped above it
         final double expectedValue = Math.min(skillLevel, 1000) / 5000.0D;
-        assertThat(probability.getValue()).isCloseTo(expectedValue, within(1.0E-12));
+        assertThat(probability.value()).isCloseTo(expectedValue, within(1.0E-12));
 
         // And - the chance never exceeds the 20% ceiling, let alone 100%
-        assertThat(probability.getValue()).isLessThanOrEqualTo(0.2D);
+        assertThat(probability.value()).isLessThanOrEqualTo(0.2D);
     }
 
     /**
@@ -296,7 +318,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 UNARMED_ARROW_DEFLECT, mmoPlayer);
 
         // Then - the real proc chance is pinned to the 20% cap rather than scaling unbounded
-        assertThat(probability.getValue()).isEqualTo(0.2D);
+        assertThat(probability.value()).isEqualTo(0.2D);
     }
 
     @Test
@@ -343,19 +365,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 HERBALISM_GREEN_THUMB, mmoPlayer);
 
         // Then - the probability is exactly 1.0, not 0.99x
-        assertThat(probability.getValue()).isEqualTo(1.0D);
-    }
-
-    private static Stream<Arguments> greenThumbGuaranteedRollCases() {
-        return Stream.of(
-                // isLucky, herbalismLevel (ceiling 100% at level 100)
-                // Max bonus level without the lucky perk is a plain 100% chance
-                Arguments.of(false, 100),
-                // Max bonus level with the lucky perk is 100% * 1.333
-                Arguments.of(true, 100),
-                // 76% base chance with the lucky perk is 76% * 1.333 = 101.308%
-                Arguments.of(true, 76)
-        );
+        assertThat(probability.value()).isEqualTo(1.0D);
     }
 
     /**
@@ -365,7 +375,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     @ParameterizedTest
     @MethodSource("greenThumbGuaranteedRollCases")
     void greenThumbRollShouldNeverFailWhenChanceIsHundredPercent(boolean isLucky,
-            int herbalismLevel) {
+                                                                 int herbalismLevel) {
         // Given - Green Thumb is configured with a 100% ceiling reached at level 100
         when(advancedConfig.getMaximumProbability(HERBALISM_GREEN_THUMB)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(HERBALISM_GREEN_THUMB)).thenReturn(100);
@@ -447,17 +457,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
                 mmoPlayer);
 
         // Then - the 20% base chance is halved to 10%, not shrunk by another factor of 100
-        assertThat(probability.getValue()).isCloseTo(0.1D, within(1.0E-12));
-    }
-
-    private static Stream<Arguments> probabilityMultiplierCases() {
-        return Stream.of(
-                // isLucky, probabilityMultiplier, shouldAlwaysSucceed
-                Arguments.of(false, 0.0D, false),
-                Arguments.of(true, 0.0D, false),
-                Arguments.of(false, 1.0D, true),
-                Arguments.of(true, 1.0D, true)
-        );
+        assertThat(probability.value()).isCloseTo(0.1D, within(1.0E-12));
     }
 
     /**
@@ -468,7 +468,7 @@ class ProbabilityUtilTest extends MMOTestEnvironment {
     @ParameterizedTest
     @MethodSource("probabilityMultiplierCases")
     void skillRNGShouldApplyProbabilityMultiplierRegardlessOfLuck(boolean isLucky,
-            double probabilityMultiplier, boolean shouldAlwaysSucceed) {
+                                                                  double probabilityMultiplier, boolean shouldAlwaysSucceed) {
         // Given - Green Thumb is a guaranteed 100% chance at max bonus level
         when(advancedConfig.getMaximumProbability(HERBALISM_GREEN_THUMB)).thenReturn(100D);
         when(advancedConfig.getMaxBonusLevel(HERBALISM_GREEN_THUMB)).thenReturn(100);

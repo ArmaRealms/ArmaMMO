@@ -18,7 +18,9 @@ public enum McMMOWebLinks {
         return StringUtils.getCapitalized(toString());
     }
 
-    /** Returns the raw locale description string (legacy compatibility). */
+    /**
+     * Returns the raw locale description string (legacy compatibility).
+     */
     public String getLocaleDescription() {
         return switch (this) {
             case WEBSITE -> LocaleLoader.getString("JSON.URL.Website");
@@ -28,7 +30,9 @@ public enum McMMOWebLinks {
         };
     }
 
-    /** Returns the colored description as a proper Adventure component. */
+    /**
+     * Returns the colored description as a proper Adventure component.
+     */
     public TextComponent getDescriptionComponent() {
         return switch (this) {
             case WEBSITE -> LocaleLoader.getTextComponent("JSON.URL.Website");
@@ -51,7 +55,9 @@ public enum McMMOWebLinks {
         };
     }
 
-    /** Returns the colored label component used in the URL row (e.g. &9Web). */
+    /**
+     * Returns the colored label component used in the URL row (e.g. &9Web).
+     */
     public TextComponent getLabelComponent() {
         return switch (this) {
             case WEBSITE -> LocaleLoader.getTextComponent("JSON.URL.Label.Website");

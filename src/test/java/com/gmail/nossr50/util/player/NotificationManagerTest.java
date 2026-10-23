@@ -1,17 +1,5 @@
 package com.gmail.nossr50.util.player;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.AdvancedConfig;
 import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -24,13 +12,6 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.McMMOMessageType;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.Component;
@@ -52,6 +33,26 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies that sub-skill unlock notifications honor the
@@ -76,6 +77,22 @@ class NotificationManagerTest {
     private Location playerLocation;
     private McMMOPlayer mmoPlayer;
     private TextComponent unlockMessage;
+
+    private static List<Component> hoverContents(Component root) {
+        final List<Component> hovers = new ArrayList<>();
+        collectHoverContents(root, hovers);
+        return hovers;
+    }
+
+    private static void collectHoverContents(Component component, List<Component> hovers) {
+        final HoverEvent<?> hoverEvent = component.hoverEvent();
+        if (hoverEvent != null && hoverEvent.value() instanceof Component) {
+            hovers.add((Component) hoverEvent.value());
+        }
+        for (final Component child : component.children()) {
+            collectHoverContents(child, hovers);
+        }
+    }
 
     @BeforeEach
     void setUp() {
@@ -131,7 +148,7 @@ class NotificationManagerTest {
             "false, true, 0, 1",
     })
     void unlockNotificationShouldRouteBasedOnActionBarConfig(boolean useActionBar,
-            boolean sendCopyToChat, int expectedActionBarSends, int expectedChatSends) {
+                                                             boolean sendCopyToChat, int expectedActionBarSends, int expectedChatSends) {
         // Given - advanced.yml configures where SubSkillUnlocked notifications are shown
         stubUnlockNotificationConfig(useActionBar, sendCopyToChat);
 
@@ -266,22 +283,6 @@ class NotificationManagerTest {
         verify(logger).info(consoleCaptor.capture());
         assertThat(consoleCaptor.getValue())
                 .contains("nossr50 (" + senderUuid + ")");
-    }
-
-    private static List<Component> hoverContents(Component root) {
-        final List<Component> hovers = new ArrayList<>();
-        collectHoverContents(root, hovers);
-        return hovers;
-    }
-
-    private static void collectHoverContents(Component component, List<Component> hovers) {
-        final HoverEvent<?> hoverEvent = component.hoverEvent();
-        if (hoverEvent != null && hoverEvent.value() instanceof Component) {
-            hovers.add((Component) hoverEvent.value());
-        }
-        for (final Component child : component.children()) {
-            collectHoverContents(child, hovers);
-        }
     }
 
     private void stubUnlockNotificationConfig(boolean useActionBar, boolean sendCopyToChat) {

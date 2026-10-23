@@ -2,11 +2,12 @@ package com.gmail.nossr50.config;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
-import java.io.File;
-import java.util.List;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
+
+import java.io.File;
+import java.util.List;
 
 @Deprecated
 public abstract class LegacyConfigLoader {
@@ -16,7 +17,7 @@ public abstract class LegacyConfigLoader {
     protected YamlConfiguration config;
 
     public LegacyConfigLoader(@NotNull String relativePath, @NotNull String fileName,
-            @NotNull File dataFolder) {
+                              @NotNull File dataFolder) {
         this.fileName = fileName;
         this.dataFolder = dataFolder;
         configFile = new File(dataFolder, relativePath + File.separator + fileName);

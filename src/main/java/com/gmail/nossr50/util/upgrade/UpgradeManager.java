@@ -4,6 +4,7 @@ import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;

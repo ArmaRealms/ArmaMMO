@@ -4,11 +4,12 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.PerksUtils;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
+
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 
 public final class Motd {
     /**
@@ -40,7 +41,7 @@ public final class Motd {
     /**
      * Display version info.
      *
-     * @param player Target player
+     * @param player  Target player
      * @param version Plugin version
      */
     public static void displayVersion(Player player, String version) {
@@ -161,7 +162,7 @@ public final class Motd {
     /**
      * Display website info.
      *
-     * @param player Target player
+     * @param player  Target player
      * @param website Plugin website
      */
     public static void displayWebsite(Player player, String website) {

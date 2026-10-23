@@ -1,18 +1,8 @@
 package com.gmail.nossr50.listeners;
 
-import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
-import static java.util.logging.Logger.getLogger;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -24,6 +14,17 @@ import org.bukkit.metadata.MetadataValue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.util.MetadataConstants.METADATA_KEY_BONUS_DROPS;
+import static java.util.logging.Logger.getLogger;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class BlockListenerBonusDropsTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(BlockListenerBonusDropsTest.class.getName());
@@ -121,7 +122,7 @@ class BlockListenerBonusDropsTest extends MMOTestEnvironment {
     }
 
     private BlockDropItemEvent mockDropEvent(Block block, BlockState preBreakState,
-            List<Item> drops) {
+                                             List<Item> drops) {
         final BlockDropItemEvent event = mock(BlockDropItemEvent.class);
         when(event.getBlock()).thenReturn(block);
         when(event.getBlockState()).thenReturn(preBreakState);

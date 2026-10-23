@@ -1,26 +1,8 @@
 package com.gmail.nossr50.util.blockmeta;
 
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
-import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.bukkit.Bukkit.getWorld;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.BlockUtils;
 import com.google.common.io.Files;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -34,12 +16,34 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MAX;
+import static com.gmail.nossr50.util.blockmeta.BlockStoreTestUtils.LEGACY_WORLD_HEIGHT_MIN;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.bukkit.Bukkit.getWorld;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+
 /**
  * Could be a lot better. But some tests are better than none! Tests the major things, still kinda
  * unit-testy. Verifies that the serialization isn't completely broken.
  */
 class UserBlockTrackerTest {
     private static File tempDir;
+    private World mockWorld;
+    private MockedStatic<Bukkit> bukkitMock;
+    private MockedStatic<mcMMO> mcMMOMock;
 
     @BeforeAll
     public static void setUpClass() {
@@ -51,14 +55,46 @@ class UserBlockTrackerTest {
         recursiveDelete(tempDir);
     }
 
-    private World mockWorld;
+    public static void recursiveDelete(@NotNull final File directoryToBeDeleted) {
+        if (directoryToBeDeleted.isDirectory()) {
+            for (final File file : directoryToBeDeleted.listFiles()) {
+                recursiveDelete(file);
+            }
+        }
+        directoryToBeDeleted.delete();
+    }
 
-    private MockedStatic<Bukkit> bukkitMock;
-    private MockedStatic<mcMMO> mcMMOMock;
+    private static byte[] payload(int size, byte fill) {
+        final byte[] data = new byte[size];
+        Arrays.fill(data, fill);
+        // Vary the tail so compression cannot collapse payloads into identical streams
+        for (int i = 0; i < Math.min(size, 32); i++) {
+            data[size - 1 - i] = (byte) (fill + i);
+        }
+        return data;
+    }
+
+    private static void writeChunkPayload(McMMOSimpleRegionFile region, int cx, int cz,
+                                          byte[] payload) throws IOException {
+        try (DataOutputStream out = region.getOutputStream(cx, cz)) {
+            out.writeInt(payload.length);
+            out.write(payload);
+        }
+    }
+
+    private static byte[] readChunkPayload(McMMOSimpleRegionFile region, int cx, int cz)
+            throws IOException {
+        try (DataInputStream in = region.getInputStream(cx, cz)) {
+            Assertions.assertNotNull(in, "expected chunk data at (" + cx + ", " + cz + ")");
+            final byte[] data = new byte[in.readInt()];
+            in.readFully(data);
+            return data;
+        }
+    }
 
     @BeforeEach
     void setUpMock() {
-        UUID worldUUID = UUID.randomUUID();
+        final UUID worldUUID = UUID.randomUUID();
         mockWorld = Mockito.mock(World.class);
         when(mockWorld.getUID()).thenReturn(worldUUID);
         when(mockWorld.getMaxHeight()).thenReturn(256);
@@ -88,12 +124,12 @@ class UserBlockTrackerTest {
         final HashChunkManager hashChunkManager = new HashChunkManager();
 
         // Top Block
-        int illegalMaxHeight = 256 + 1;
+        final int illegalMaxHeight = 256 + 1;
         final Block illegalHeightBlock = initMockBlock(1337, illegalMaxHeight, -1337);
         Assertions.assertThrows(IndexOutOfBoundsException.class,
                 () -> hashChunkManager.setIneligible(illegalHeightBlock));
 
-        int illegalMinHeight = -65;
+        final int illegalMinHeight = -65;
         final Block otherIllegalHeightBlock = initMockBlock(1337, illegalMinHeight, -1337);
         Assertions.assertThrows(IndexOutOfBoundsException.class,
                 () -> hashChunkManager.setIneligible(otherIllegalHeightBlock));
@@ -103,7 +139,7 @@ class UserBlockTrackerTest {
     void testSetEligibility() {
         when(mockWorld.getMinHeight()).thenReturn(-64);
         final HashChunkManager hashChunkManager = new HashChunkManager();
-        int radius = 2; // Could be anything but drastically changes test time
+        final int radius = 2; // Could be anything but drastically changes test time
 
         for (int x = -radius; x <= radius; x++) {
             for (int y = mockWorld.getMinHeight(); y <= mockWorld.getMaxHeight(); y++) {
@@ -144,16 +180,16 @@ class UserBlockTrackerTest {
     void testChunkCoords() throws IOException {
         // TODO: Unfinished test?
         for (int x = -96; x < 0; x++) {
-            int cx = x >> 4;
-            int ix = Math.abs(x) % 16;
+            final int cx = x >> 4;
+            final int ix = Math.abs(x) % 16;
             //System.out.print(cx + ":" + ix + "  ");
         }
     }
 
     @Test
     void testSimpleRegionRejectsOutOfBounds() {
-        File file = new File(tempDir, "SimpleRegionRoundTrip.region");
-        McMMOSimpleRegionFile region = new McMMOSimpleRegionFile(file, 0, 0);
+        final File file = new File(tempDir, "SimpleRegionRoundTrip.region");
+        final McMMOSimpleRegionFile region = new McMMOSimpleRegionFile(file, 0, 0);
         Assertions.assertThrows(IndexOutOfBoundsException.class,
                 () -> region.getOutputStream(-1, 0));
         Assertions.assertThrows(IndexOutOfBoundsException.class,
@@ -167,7 +203,7 @@ class UserBlockTrackerTest {
 
     @Test
     void testChunkStoreRejectsOutOfBounds() {
-        ChunkStore chunkStore = new BitSetChunkStore(mockWorld, 0, 0);
+        final ChunkStore chunkStore = new BitSetChunkStore(mockWorld, 0, 0);
         Assertions.assertThrows(IndexOutOfBoundsException.class,
                 () -> chunkStore.setTrue(-1, 0, 0));
         Assertions.assertThrows(IndexOutOfBoundsException.class,
@@ -187,12 +223,12 @@ class UserBlockTrackerTest {
     @Test
     void testRegressionChunkMirrorBug() {
         final UserBlockTracker chunkManager = new HashChunkManager();
-        Block mockBlockA = Mockito.mock(Block.class);
+        final Block mockBlockA = Mockito.mock(Block.class);
         when(mockBlockA.getX()).thenReturn(15);
         when(mockBlockA.getZ()).thenReturn(15);
         when(mockBlockA.getY()).thenReturn(0);
         when(mockBlockA.getWorld()).thenReturn(mockWorld);
-        Block mockBlockB = Mockito.mock(Block.class);
+        final Block mockBlockB = Mockito.mock(Block.class);
         when(mockBlockB.getX()).thenReturn(-15);
         when(mockBlockB.getZ()).thenReturn(-15);
         when(mockBlockB.getY()).thenReturn(0);
@@ -206,12 +242,12 @@ class UserBlockTrackerTest {
     @Test
     void testUnload() {
         final ChunkManager chunkManager = new HashChunkManager();
-        Block mockBlockA = Mockito.mock(Block.class);
+        final Block mockBlockA = Mockito.mock(Block.class);
         when(mockBlockA.getX()).thenReturn(15);
         when(mockBlockA.getZ()).thenReturn(15);
         when(mockBlockA.getY()).thenReturn(0);
         when(mockBlockA.getWorld()).thenReturn(mockWorld);
-        Block mockBlockB = Mockito.mock(Block.class);
+        final Block mockBlockB = Mockito.mock(Block.class);
         when(mockBlockB.getX()).thenReturn(-15);
         when(mockBlockB.getZ()).thenReturn(-15);
         when(mockBlockB.getY()).thenReturn(0);
@@ -335,50 +371,13 @@ class UserBlockTrackerTest {
         assertFalse(hashChunkManager.isIneligible(block));
     }
 
-    private static byte[] payload(int size, byte fill) {
-        final byte[] data = new byte[size];
-        Arrays.fill(data, fill);
-        // Vary the tail so compression cannot collapse payloads into identical streams
-        for (int i = 0; i < Math.min(size, 32); i++) {
-            data[size - 1 - i] = (byte) (fill + i);
-        }
-        return data;
-    }
-
-    private static void writeChunkPayload(McMMOSimpleRegionFile region, int cx, int cz,
-            byte[] payload) throws IOException {
-        try (DataOutputStream out = region.getOutputStream(cx, cz)) {
-            out.writeInt(payload.length);
-            out.write(payload);
-        }
-    }
-
-    private static byte[] readChunkPayload(McMMOSimpleRegionFile region, int cx, int cz)
-            throws IOException {
-        try (DataInputStream in = region.getInputStream(cx, cz)) {
-            Assertions.assertNotNull(in, "expected chunk data at (" + cx + ", " + cz + ")");
-            final byte[] data = new byte[in.readInt()];
-            in.readFully(data);
-            return data;
-        }
-    }
-
     @NotNull
-    private Block initMockBlock(int x, int y, int z) {
+    private Block initMockBlock(final int x, final int y, final int z) {
         final Block mockBlock = Mockito.mock(Block.class);
         when(mockBlock.getX()).thenReturn(x);
         when(mockBlock.getY()).thenReturn(y);
         when(mockBlock.getZ()).thenReturn(z);
         when(mockBlock.getWorld()).thenReturn(mockWorld);
         return mockBlock;
-    }
-
-    public static void recursiveDelete(@NotNull File directoryToBeDeleted) {
-        if (directoryToBeDeleted.isDirectory()) {
-            for (File file : directoryToBeDeleted.listFiles()) {
-                recursiveDelete(file);
-            }
-        }
-        directoryToBeDeleted.delete();
     }
 }

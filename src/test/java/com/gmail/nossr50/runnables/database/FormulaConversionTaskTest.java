@@ -1,16 +1,5 @@
 package com.gmail.nossr50.runnables.database;
 
-import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
-import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
-import static java.util.UUID.randomUUID;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.database.DatabaseManager;
@@ -21,13 +10,25 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.experience.FormulaManager;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.List;
-import java.util.UUID;
-import java.util.logging.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
+import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * /mcconvert experience converts every stored player once. Everyone who lost their name to
@@ -114,7 +115,9 @@ class FormulaConversionTaskTest extends MMOTestEnvironment {
         verify(databaseManager, never()).loadPlayerProfile(INVALID_OLD_USERNAME);
     }
 
-    /** An online player's loaded profile is converted in place, and saved as they play. */
+    /**
+     * An online player's loaded profile is converted in place, and saved as they play.
+     */
     @Test
     void conversionShouldConvertAnOnlinePlayerFoundByUuid() {
         // Given - an online player, stored with their UUID
@@ -132,7 +135,9 @@ class FormulaConversionTaskTest extends MMOTestEnvironment {
         verify(databaseManager, never()).loadPlayerProfile(playerUUID);
     }
 
-    /** Without a UUID, an online player is found by the name they are stored under. */
+    /**
+     * Without a UUID, an online player is found by the name they are stored under.
+     */
     @Test
     void conversionShouldConvertAnOnlinePlayerStoredWithoutAUuid() {
         // Given - an online player, stored before mcMMO kept UUIDs
@@ -151,7 +156,9 @@ class FormulaConversionTaskTest extends MMOTestEnvironment {
         verify(databaseManager, never()).loadPlayerProfile(playerName);
     }
 
-    /** A stored player, found the way the database finds them now. */
+    /**
+     * A stored player, found the way the database finds them now.
+     */
     private PlayerProfile storedPlayer(String playerName, @Nullable UUID uuid) {
         final PlayerProfile profile = spy(new PlayerProfile(playerName, uuid, true, 0));
         profile.modifySkill(PrimarySkillType.MINING, MINING_LEVEL);

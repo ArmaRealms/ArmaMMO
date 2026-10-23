@@ -5,22 +5,23 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.subskills.AbstractSubSkill;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.mining.BlastMining;
+import org.bukkit.ChatColor;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import org.jetbrains.annotations.Nullable;
 
 public class AdvancedConfig extends BukkitConfig {
+    private final Map<SubSkillType, Integer> maxBonusLevel = new EnumMap<>(SubSkillType.class);
+    private final Map<SubSkillType, Double> maximumProbability = new EnumMap<>(SubSkillType.class);
     int[] defaultCrippleValues = new int[]{10, 15, 20, 25};
     int[] defaultMomentumValues = new int[]{5, 10, 15, 20, 25, 30, 35, 40, 45, 50};
-
     /* Values resolved once and reused on hot combat/RNG paths; reset by loadKeys() */
     private @Nullable Boolean adjustSkillsForAttackCooldown;
     private @Nullable Double archeryForceMultiplier;
-    private final Map<SubSkillType, Integer> maxBonusLevel = new EnumMap<>(SubSkillType.class);
-    private final Map<SubSkillType, Double> maximumProbability = new EnumMap<>(SubSkillType.class);
 
     public AdvancedConfig(File dataFolder) {
         super("advanced.yml", dataFolder);
@@ -30,7 +31,7 @@ public class AdvancedConfig extends BukkitConfig {
     @Override
     protected boolean validateKeys() {
         // Validate all the settings!
-        List<String> reason = new ArrayList<>();
+        final List<String> reason = new ArrayList<>();
 
         /* GENERAL */
         if (getAbilityLength() < 1) {
@@ -495,7 +496,7 @@ public class AdvancedConfig extends BukkitConfig {
         });
     }
 
-    public int getMaxBonusLevel(AbstractSubSkill abstractSubSkill) {
+    public int getMaxBonusLevel(final AbstractSubSkill abstractSubSkill) {
         return getMaxBonusLevel(abstractSubSkill.getSubSkillType());
     }
 
@@ -504,7 +505,7 @@ public class AdvancedConfig extends BukkitConfig {
                 key -> config.getDouble(key.getAdvConfigAddress() + ".ChanceMax", 100.0D));
     }
 
-    public double getMaximumProbability(AbstractSubSkill abstractSubSkill) {
+    public double getMaximumProbability(final AbstractSubSkill abstractSubSkill) {
         return getMaximumProbability(abstractSubSkill.getSubSkillType());
     }
 
@@ -528,7 +529,7 @@ public class AdvancedConfig extends BukkitConfig {
                 true);
     }
 
-    public boolean doesNotificationSendCopyToChat(NotificationType notificationType) {
+    public boolean doesNotificationSendCopyToChat(final NotificationType notificationType) {
         return config.getBoolean(
                 "Feedback.ActionBarNotifications." + notificationType.toString()
                         + ".SendCopyOfMessageToChat", false);
@@ -541,6 +542,24 @@ public class AdvancedConfig extends BukkitConfig {
     public boolean sendAbilityNotificationToOtherPlayers() {
         return config.getBoolean("Feedback.Events.AbilityActivation.SendNotificationToOtherPlayers",
                 true);
+    }
+
+    private ChatColor getChatColorFromKey(final String keyLocation) {
+        final String colorName = config.getString(keyLocation);
+
+        return getChatColor(colorName);
+    }
+
+    private ChatColor getChatColor(final String configColor) {
+        for (final ChatColor chatColor : ChatColor.values()) {
+            if (configColor.equalsIgnoreCase(chatColor.name())) {
+                return chatColor;
+            }
+        }
+
+        //Invalid Color
+        mcMMO.p.getLogger().warning(configColor + " is an invalid color value");
+        return ChatColor.WHITE;
     }
 
     /* ACROBATICS */
@@ -572,7 +591,6 @@ public class AdvancedConfig extends BukkitConfig {
     public double getCatalysisMaxSpeed() {
         return config.getDouble("Skills.Alchemy.Catalysis.MaxSpeed", 4.0D);
     }
-
 
     /* ARCHERY */
     public double getSkillShotRankDamageMultiplier() {
@@ -645,11 +663,11 @@ public class AdvancedConfig extends BukkitConfig {
     //Nothing to configure, everything is already configurable in config.yml
 
     /* FISHING */
-    public double getShakeChance(int rank) {
+    public double getShakeChance(final int rank) {
         return config.getDouble("Skills.Fishing.ShakeChance.Rank_" + rank);
     }
 
-    public int getFishingVanillaXPModifier(int rank) {
+    public int getFishingVanillaXPModifier(final int rank) {
         return config.getInt("Skills.Fishing.VanillaXPMultiplier.Rank_" + rank);
     }
 
@@ -684,7 +702,6 @@ public class AdvancedConfig extends BukkitConfig {
     public int getFishermanDietRankChange() {
         return config.getInt("Skills.Fishing.FishermansDiet.RankChange", 200);
     }
-
 
     public double getMasterAnglerBoatModifier() {
         return config.getDouble("Skills.Fishing.MasterAngler.BoatModifier", 2.0);
@@ -729,7 +746,7 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getDouble("Skills.Mining.BlastMining.BlastDamageDecrease.Rank_" + rank);
     }
 
-    public double getOreBonus(int rank) {
+    public double getOreBonus(final int rank) {
         return config.getDouble("Skills.Mining.BlastMining.OreBonus.Rank_" + rank);
     }
 
@@ -753,7 +770,7 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getInt("Skills.Mining.BlastMining.DropMultiplier.Rank_" + rank);
     }
 
-    public double getBlastRadiusModifier(int rank) {
+    public double getBlastRadiusModifier(final int rank) {
         return config.getDouble("Skills.Mining.BlastMining.BlastRadiusModifier.Rank_" + rank);
     }
 
@@ -778,7 +795,7 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getInt("Skills.Repair.ArcaneForging.MaxEnchantLevel", 5);
     }
 
-    public double getArcaneForgingKeepEnchantsChance(int rank) {
+    public double getArcaneForgingKeepEnchantsChance(final int rank) {
         return config.getDouble("Skills.Repair.ArcaneForging.Keep_Enchants_Chance.Rank_" + rank);
     }
 
@@ -786,7 +803,7 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getBoolean("Skills.Repair.ArcaneForging.Downgrades_Enabled", true);
     }
 
-    public double getArcaneForgingDowngradeChance(int rank) {
+    public double getArcaneForgingDowngradeChance(final int rank) {
         return config.getDouble("Skills.Repair.ArcaneForging.Downgrades_Chance.Rank_" + rank);
     }
 
@@ -802,11 +819,11 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getInt("Skills.Salvage.ArcaneSalvage.MaxEnchantLevel", 5);
     }
 
-    public double getArcaneSalvageExtractFullEnchantsChance(int rank) {
+    public double getArcaneSalvageExtractFullEnchantsChance(final int rank) {
         return config.getDouble("Skills.Salvage.ArcaneSalvage.ExtractFullEnchant.Rank_" + rank);
     }
 
-    public double getArcaneSalvageExtractPartialEnchantsChance(int rank) {
+    public double getArcaneSalvageExtractPartialEnchantsChance(final int rank) {
         return config.getDouble("Skills.Salvage.ArcaneSalvage.ExtractPartialEnchant.Rank_" + rank);
     }
 
@@ -832,17 +849,17 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getDouble("Skills.Swords.Stab.Per_Rank_Multiplier", 1.5D);
     }
 
-    public double getRuptureTickDamage(boolean isTargetPlayer, int rank) {
-        String root = "Skills.Swords.Rupture.Rupture_Mechanics.Tick_Interval_Damage.Against_";
-        String targetType = isTargetPlayer ? "Players" : "Mobs";
-        String key = root + targetType + ".Rank_" + rank;
+    public double getRuptureTickDamage(final boolean isTargetPlayer, final int rank) {
+        final String root = "Skills.Swords.Rupture.Rupture_Mechanics.Tick_Interval_Damage.Against_";
+        final String targetType = isTargetPlayer ? "Players" : "Mobs";
+        final String key = root + targetType + ".Rank_" + rank;
 
         return config.getDouble(key, 1.0D);
     }
 
-    public int getRuptureDurationSeconds(boolean isTargetPlayer) {
-        String root = "Skills.Swords.Rupture.Rupture_Mechanics.Duration_In_Seconds.Against_";
-        String targetType = isTargetPlayer ? "Players" : "Mobs";
+    public int getRuptureDurationSeconds(final boolean isTargetPlayer) {
+        final String root = "Skills.Swords.Rupture.Rupture_Mechanics.Duration_In_Seconds.Against_";
+        final String targetType = isTargetPlayer ? "Players" : "Mobs";
         return config.getInt(root + targetType, 5);
     }
 
@@ -897,8 +914,8 @@ public class AdvancedConfig extends BukkitConfig {
         return config.getBoolean("Skills.Unarmed.SteelArmStyle.Damage_Override", false);
     }
 
-    public double getSteelArmOverride(int rank, double def) {
-        String key = "Rank_" + rank;
+    public double getSteelArmOverride(final int rank, final double def) {
+        final String key = "Rank_" + rank;
         return config.getDouble("Skills.Unarmed.SteelArmStyle.Override." + key, def);
     }
 

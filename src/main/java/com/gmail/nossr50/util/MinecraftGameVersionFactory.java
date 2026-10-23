@@ -2,9 +2,10 @@ package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jetbrains.annotations.NotNull;
 
 public class MinecraftGameVersionFactory {
     // Primary: matches the "(MC: X.Y.Z)" segment that CraftBukkit always embeds in

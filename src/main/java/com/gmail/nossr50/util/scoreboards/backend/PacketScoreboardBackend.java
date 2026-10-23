@@ -2,7 +2,6 @@ package com.gmail.nossr50.util.scoreboards.backend;
 
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
-import java.util.ArrayList;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.megavex.scoreboardlibrary.api.ScoreboardLibrary;
 import net.megavex.scoreboardlibrary.api.exception.NoPacketAdapterAvailableException;
@@ -13,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 
 public class PacketScoreboardBackend implements ScoreboardBackend {
     private static final LegacyComponentSerializer LEGACY = LegacyComponentSerializer.legacySection();
@@ -50,7 +51,7 @@ public class PacketScoreboardBackend implements ScoreboardBackend {
 
     @Override
     public @NotNull PlayerBoard createPlayerBoard(final @NotNull Player player,
-            final @NotNull Scoreboard eventTargetBoard) {
+                                                  final @NotNull Scoreboard eventTargetBoard) {
         if (scoreboardLibrary == null || scoreboardLibrary.closed()) {
             return new NoopPlayerBoard(player);
         }

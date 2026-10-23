@@ -14,7 +14,7 @@ public abstract class McMMOPlayerLevelChangeEvent extends McMMOPlayerExperienceE
     }
 
     public McMMOPlayerLevelChangeEvent(Player player, PrimarySkillType skill,
-            XPGainReason xpGainReason) {
+                                       XPGainReason xpGainReason) {
         super(player, skill, xpGainReason);
     }
 }

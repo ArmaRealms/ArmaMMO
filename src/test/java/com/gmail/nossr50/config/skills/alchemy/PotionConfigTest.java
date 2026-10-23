@@ -1,16 +1,17 @@
 package com.gmail.nossr50.config.skills.alchemy;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.StringReader;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.StringReader;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PotionConfigTest {
 
@@ -53,7 +54,9 @@ class PotionConfigTest {
                 + "      - \"OOZING 0 " + lingeringDuration + "\"\n";
     }
 
-    /** Parses a YAML string into a {@link YamlConfiguration} without touching the file system. */
+    /**
+     * Parses a YAML string into a {@link YamlConfiguration} without touching the file system.
+     */
     private static YamlConfiguration loadYaml(final String yaml) {
         return YamlConfiguration.loadConfiguration(new StringReader(yaml));
     }
