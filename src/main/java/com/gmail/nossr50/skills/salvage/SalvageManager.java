@@ -87,7 +87,9 @@ public class SalvageManager extends SkillManager {
         final ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             if (meta.hasCustomModelData() && !mcMMO.p.getCustomItemSupportConfig()
-                    .isCustomSalvageAllowed()) {
+                    .isCustomSalvageAllowed()
+                    || ItemUtils.hasItemModel(meta)
+                    && !mcMMO.p.getCustomItemSupportConfig().isItemModelSalvageAllowed()) {
                 NotificationManager.sendPlayerInformation(player,
                         NotificationType.SUBSKILL_MESSAGE_FAILED,
                         "Anvil.Salvage.Reject.CustomModelData");
@@ -138,6 +140,8 @@ public class SalvageManager extends SkillManager {
         potentialSalvageYield = Math.min(potentialSalvageYield, getSalvageLimit(
                 getPlayer())); // Always get at least something back, if you're capable of salvaging it.
 
+        // Refused salvages must not strip ability buffs from the player's inventory.
+        SkillUtils.removeAbilityBoostsFromInventory(player);
         location.add(0.5, 1, 0.5);
 
         Map<Enchantment, Integer> enchants = item.getEnchantments();

@@ -28,6 +28,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -72,17 +73,18 @@ public class RepairManager extends SkillManager {
     public void handleRepair(ItemStack item) {
         Player player = getPlayer();
         Repairable repairable = mcMMO.getRepairableManager().getRepairable(item.getType());
-        if (item.getItemMeta() != null) {
-            if (item.getItemMeta().hasCustomModelData()) {
-                if (!mcMMO.p.getCustomItemSupportConfig().isCustomRepairAllowed()) {
-                    NotificationManager.sendPlayerInformation(player,
-                            NotificationType.SUBSKILL_MESSAGE_FAILED,
-                            "Anvil.Repair.Reject.CustomModelData");
-                    return;
-                }
+        final ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            if (meta.hasCustomModelData() && !mcMMO.p.getCustomItemSupportConfig().isCustomRepairAllowed()
+                    || ItemUtils.hasItemModel(meta)
+                    && !mcMMO.p.getCustomItemSupportConfig().isItemModelRepairAllowed()) {
+                NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED,
+                        "Anvil.Repair.Reject.CustomModelData");
+                return;
             }
 
-            if (item.getItemMeta().isUnbreakable()) {
+            if (meta.isUnbreakable()) {
                 NotificationManager.sendPlayerInformation(player,
                         NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Unbreakable");
                 return;

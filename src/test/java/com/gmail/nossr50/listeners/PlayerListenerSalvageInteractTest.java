@@ -2,6 +2,8 @@ package com.gmail.nossr50.listeners;
 
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.CustomItemSupportConfig;
+import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
@@ -9,6 +11,8 @@ import com.gmail.nossr50.skills.salvage.SalvageManager;
 import com.gmail.nossr50.skills.salvage.salvageables.Salvageable;
 import com.gmail.nossr50.skills.salvage.salvageables.SalvageableManager;
 import com.gmail.nossr50.util.Permissions;
+import com.gmail.nossr50.util.ItemUtils;
+import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.RankUtils;
@@ -24,6 +28,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -102,9 +107,6 @@ class PlayerListenerSalvageInteractTest extends MMOTestEnvironment {
         dirtBlock = mock(Block.class);
         when(dirtBlock.getType()).thenReturn(Material.DIRT);
 
-        // removeAbilityBoostsFromInventory iterates the inventory contents before a salvage
-        when(playerInventory.getContents()).thenReturn(new ItemStack[0]);
-
         salvageManager = Mockito.spy(new SalvageManager(mmoPlayer));
         doReturn(salvageManager).when(mmoPlayer).getSalvageManager();
         doNothing().when(salvageManager).handleSalvage(any(), any());
@@ -170,6 +172,33 @@ class PlayerListenerSalvageInteractTest extends MMOTestEnvironment {
             } catch (ReflectiveOperationException e) {
                 throw new AssertionError("Failed to dispatch to " + handler.getName(), e);
             }
+        }
+    }
+
+    @Test
+    void blockedItemModelSalvageShouldLeaveInventoryAbilityBoostsUntouched() {
+        // Given - the actual salvage manager rejects a modeled item after confirmation
+        final ItemMeta meta = mock(ItemMeta.class);
+        when(helmet.getType()).thenReturn(Material.DIAMOND_HELMET);
+        when(helmet.getItemMeta()).thenReturn(meta);
+        final CustomItemSupportConfig config = mock(CustomItemSupportConfig.class);
+        when(mcMMO.p.getCustomItemSupportConfig()).thenReturn(config);
+        when(config.isItemModelSalvageAllowed()).thenReturn(false);
+        Mockito.doCallRealMethod().when(salvageManager).handleSalvage(any(), any());
+        try (var itemUtils = Mockito.mockStatic(ItemUtils.class);
+                var skillUtils = Mockito.mockStatic(SkillUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            itemUtils.when(() -> ItemUtils.hasItemModel(meta)).thenReturn(true);
+            when(generalConfig.getSalvageConfirmRequired()).thenReturn(false);
+
+            // When - using the salvage anvil with the blocked item
+            fireRightClick(Action.RIGHT_CLICK_BLOCK, anvilBlock, helmet);
+
+            // Then - refusal happens without changing any inventory buffs or consuming the item
+            notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                    NotificationType.SUBSKILL_MESSAGE_FAILED,
+                    "Anvil.Salvage.Reject.CustomModelData"));
+            skillUtils.verify(() -> SkillUtils.removeAbilityBoostsFromInventory(player), never());
+            verify(playerInventory, never()).setItemInMainHand(any());
         }
     }
 
