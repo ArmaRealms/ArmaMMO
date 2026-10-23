@@ -10,6 +10,7 @@ import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.CustomItemSupportConfig;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -284,6 +285,44 @@ class SalvageManagerTest extends MMOTestEnvironment {
 
             notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
                     NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Unbreakable"));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "true, false, false, true, true",
+                "true, false, true, false, false",
+                "false, true, false, true, false",
+                "false, true, true, false, true",
+                "true, true, false, true, true",
+                "true, true, true, false, true",
+                "true, true, true, true, false",
+                "false, false, false, false, false"
+        })
+        void customItemGuardsShouldRespectIndependentOptions(boolean itemModel, boolean modelData,
+                boolean allowItemModel, boolean allowModelData, boolean blocked) {
+            // Given - model and legacy model-data options can be configured independently
+            final CustomItemSupportConfig config = Mockito.mock(CustomItemSupportConfig.class);
+            Mockito.when(mcMMO.p.getCustomItemSupportConfig()).thenReturn(config);
+            Mockito.when(config.isItemModelSalvageAllowed()).thenReturn(allowItemModel);
+            Mockito.when(config.isCustomSalvageAllowed()).thenReturn(allowModelData);
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(modelData);
+            try (var itemUtils = Mockito.mockStatic(ItemUtils.class);
+                    var stacks = Mockito.mockConstruction(ItemStack.class)) {
+                itemUtils.when(() -> ItemUtils.hasItemModel(helmetMeta)).thenReturn(itemModel);
+
+                // When - salvaging the helmet
+                salvageManager.handleSalvage(anvilLocation, helmet);
+
+                // Then - blocked items stay in hand and produce no salvage materials
+                notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Salvage.Reject.CustomModelData"),
+                        times(blocked ? 1 : 0));
+                Mockito.verify(playerInventory, times(blocked ? 0 : 1))
+                        .setItemInMainHand(Mockito.any(ItemStack.class));
+                itemUtils.verify(() -> ItemUtils.spawnItemTowardsLocation(Mockito.eq(player),
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyDouble(),
+                        Mockito.eq(ItemSpawnReason.SALVAGE_MATERIALS)), times(blocked ? 0 : 1));
+            }
         }
 
         @Test

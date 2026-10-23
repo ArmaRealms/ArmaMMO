@@ -46,6 +46,7 @@ public final class ItemUtils {
     private static final Map<String, Enchantment> enchantmentsByName = new ConcurrentHashMap<>();
     // Use custom name if available
     private static final Method customName;
+    private static final Method hasItemModelMethod = getHasItemModelMethod();
 
     static {
         customName = getCustomNameMethod();
@@ -60,6 +61,31 @@ public final class ItemUtils {
             return ItemMeta.class.getMethod("customName", Component.class);
         } catch (NoSuchMethodException e) {
             return null;
+        }
+    }
+
+    private static Method getHasItemModelMethod() {
+        try {
+            return ItemMeta.class.getMethod("hasItemModel");
+        } catch (NoSuchMethodException exception) {
+            return null;
+        }
+    }
+
+    /**
+     * Checks for an explicit item model, returning false on APIs before 1.21.2.
+     *
+     * @param meta the item's metadata
+     * @return whether minecraft:item_model is set
+     */
+    public static boolean hasItemModel(final @NotNull ItemMeta meta) {
+        if (hasItemModelMethod == null) {
+            return false;
+        }
+        try {
+            return (boolean) hasItemModelMethod.invoke(meta);
+        } catch (IllegalAccessException | InvocationTargetException exception) {
+            throw new IllegalStateException("Could not read the item's model", exception);
         }
     }
 

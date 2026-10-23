@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.RETURNS_DEFAULTS;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -41,6 +42,20 @@ class ItemUtilsTest extends MMOTestEnvironment {
     @AfterEach
     void tearDown() {
         cleanUpStaticMocks();
+    }
+
+    @Test
+    void itemModelDetectionShouldFollowTheAvailableServerApi() {
+        // Given - metadata that reports an explicit model when the API supports it
+        final ItemMeta meta = mock(ItemMeta.class, call ->
+                call.getMethod().getName().equals("hasItemModel")
+                        ? true : RETURNS_DEFAULTS.answer(call));
+        final boolean supported = Arrays.stream(ItemMeta.class.getMethods())
+                .anyMatch(method -> method.getName().equals("hasItemModel"));
+
+        // Then - old APIs remain supported, and modern APIs detect the model
+        assertEquals(supported, ItemUtils.hasItemModel(meta));
+        assertFalse(ItemUtils.hasItemModel(mock(ItemMeta.class)));
     }
 
     @Test

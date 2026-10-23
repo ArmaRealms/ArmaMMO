@@ -22,4 +22,16 @@ public class CustomItemSupportConfig extends BukkitConfig {
         return config.getBoolean(
                 "Custom_Item_Support.Salvage.Allow_Salvage_On_Items_With_Custom_Model_Data", true);
     }
+
+    /** Returns whether items with an explicit item model may be repaired. */
+    public boolean isItemModelRepairAllowed() {
+        return config.getBoolean(
+                "Custom_Item_Support.Repair.Allow_Repair_On_Items_With_Custom_Item_Model", true);
+    }
+
+    /** Returns whether items with an explicit item model may be salvaged. */
+    public boolean isItemModelSalvageAllowed() {
+        return config.getBoolean(
+                "Custom_Item_Support.Salvage.Allow_Salvage_On_Items_With_Custom_Item_Model", true);
+    }
 }

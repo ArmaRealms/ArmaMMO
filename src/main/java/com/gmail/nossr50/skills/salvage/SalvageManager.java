@@ -73,7 +73,9 @@ public class SalvageManager extends SkillManager {
         final ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             if (meta.hasCustomModelData() && !mcMMO.p.getCustomItemSupportConfig()
-                    .isCustomSalvageAllowed()) {
+                    .isCustomSalvageAllowed()
+                    || ItemUtils.hasItemModel(meta)
+                    && !mcMMO.p.getCustomItemSupportConfig().isItemModelSalvageAllowed()) {
                 NotificationManager.sendPlayerInformation(player,
                         NotificationType.SUBSKILL_MESSAGE_FAILED,
                         "Anvil.Salvage.Reject.CustomModelData");

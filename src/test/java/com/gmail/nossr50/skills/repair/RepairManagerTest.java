@@ -16,6 +16,7 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.repair.repairables.Repairable;
 import com.gmail.nossr50.skills.repair.repairables.RepairableManager;
+import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.NotificationManager;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
@@ -360,6 +362,42 @@ class RepairManagerTest extends MMOTestEnvironment {
                     NotificationType.SUBSKILL_MESSAGE_FAILED,
                     "Anvil.Repair.Reject.CustomModelData"));
             assertThat(helmetDamage.get()).isEqualTo(60);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "true, false, false, true, true",
+                "true, false, true, false, false",
+                "false, true, false, true, false",
+                "false, true, true, false, true",
+                "true, true, false, true, true",
+                "true, true, true, false, true",
+                "true, true, true, true, false",
+                "false, false, false, false, false"
+        })
+        void customItemGuardsShouldRespectIndependentOptions(boolean itemModel, boolean modelData,
+                boolean allowItemModel, boolean allowModelData, boolean blocked) {
+            // Given - model and legacy model-data options can be configured independently
+            final CustomItemSupportConfig config = Mockito.mock(CustomItemSupportConfig.class);
+            Mockito.when(mcMMO.p.getCustomItemSupportConfig()).thenReturn(config);
+            Mockito.when(config.isItemModelRepairAllowed()).thenReturn(allowItemModel);
+            Mockito.when(config.isCustomRepairAllowed()).thenReturn(allowModelData);
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(modelData);
+            try (var itemUtils = Mockito.mockStatic(ItemUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                itemUtils.when(() -> ItemUtils.hasItemModel(helmetMeta)).thenReturn(itemModel);
+
+                // When - repairing the same damaged helmet
+                repairManager.handleRepair(helmet);
+
+                // Then - a blocked item keeps its damage and repair materials
+                notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Repair.Reject.CustomModelData"),
+                        times(blocked ? 1 : 0));
+                assertThat(helmetDamage.get()).isEqualTo(blocked ? 60 : 30);
+                if (blocked) {
+                    Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+                }
+            }
         }
 
         @Test
