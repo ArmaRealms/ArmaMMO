@@ -1,24 +1,5 @@
 package com.gmail.nossr50.skills.mining;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyCollection;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anySet;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.TestRegistryBootstrap;
 import com.gmail.nossr50.api.FakeBlockBreakEventType;
@@ -44,9 +25,6 @@ import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -63,6 +41,29 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class MiningManagerTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(MiningManagerTest.class.getName());
@@ -137,8 +138,8 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void miningABlockShouldAlwaysPayXp() {
             try (final MockedStatic<BlockUtils> ignored = mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> ignoredRng =
-                            mockStatic(ProbabilityUtil.class)) {
+                 final MockedStatic<ProbabilityUtil> ignoredRng =
+                         mockStatic(ProbabilityUtil.class)) {
                 // When - the mined block is processed
                 miningManager.miningBlockCheck(minedBlock);
 
@@ -150,7 +151,7 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void missingDoubleDropPermissionShouldStopAfterXp() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class)) {
+                         mockStatic(BlockUtils.class)) {
                 // Given - no double drop permission
                 when(Permissions.isSubSkillEnabled(player, SubSkillType.MINING_DOUBLE_DROPS))
                         .thenReturn(false);
@@ -166,10 +167,10 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void superBreakerShouldWearTheToolDown() {
             try (final MockedStatic<BlockUtils> ignored = mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> ignoredRng =
-                            mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<SkillUtils> mockedSkillUtils =
-                            mockStatic(SkillUtils.class)) {
+                 final MockedStatic<ProbabilityUtil> ignoredRng =
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<SkillUtils> mockedSkillUtils =
+                         mockStatic(SkillUtils.class)) {
                 // Given - Super Breaker is active with a configured tool damage
                 doReturn(true).when(mmoPlayer).getAbilityMode(SuperAbilityType.SUPER_BREAKER);
                 when(generalConfig.getAbilityToolDamage()).thenReturn(1);
@@ -186,7 +187,7 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void disabledDoubleDropsForTheBlockShouldNotRoll() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class)) {
+                         mockStatic(BlockUtils.class)) {
                 // Given - double drops are disabled for this block in the config
                 when(generalConfig.getDoubleDropsEnabled(PrimarySkillType.MINING,
                         Material.IRON_ORE)).thenReturn(false);
@@ -202,7 +203,7 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void silkTouchShouldBlockBonusDropsWhenDisallowed() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class)) {
+                         mockStatic(BlockUtils.class)) {
                 // Given - a silk touch pickaxe while silk touch doubles are disabled
                 when(heldItem.containsEnchantment(Enchantment.SILK_TOUCH)).thenReturn(true);
                 when(advancedConfig.getDoubleDropSilkTouchEnabled()).thenReturn(false);
@@ -218,9 +219,9 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void successfulDoubleDropRollShouldMarkTheBlock() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> mockedProbability =
-                            mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(BlockUtils.class);
+                 final MockedStatic<ProbabilityUtil> mockedProbability =
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the double drop roll succeeds
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.MINING_DOUBLE_DROPS, mmoPlayer)).thenReturn(true);
@@ -236,10 +237,10 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void superBreakerDoubleDropsShouldTripleWhenAllowed() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> mockedProbability =
-                            mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<SkillUtils> ignored = mockStatic(SkillUtils.class)) {
+                         mockStatic(BlockUtils.class);
+                 final MockedStatic<ProbabilityUtil> mockedProbability =
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<SkillUtils> ignored = mockStatic(SkillUtils.class)) {
                 // Given - Super Breaker is active, triple drops are allowed, and the roll wins
                 doReturn(true).when(mmoPlayer).getAbilityMode(SuperAbilityType.SUPER_BREAKER);
                 when(advancedConfig.getAllowMiningTripleDrops()).thenReturn(true);
@@ -257,9 +258,9 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void motherLodeShouldPayTripleDropsOnSuccess() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> mockedProbability =
-                            mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(BlockUtils.class);
+                 final MockedStatic<ProbabilityUtil> mockedProbability =
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Mother Lode is available and its roll succeeds
                 when(Permissions.canUseSubSkill(player, SubSkillType.MINING_MOTHER_LODE))
                         .thenReturn(true);
@@ -277,9 +278,9 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void failedMotherLodeShouldFallBackToTheDoubleDropRoll() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils =
-                    mockStatic(BlockUtils.class);
-                    final MockedStatic<ProbabilityUtil> mockedProbability =
-                            mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(BlockUtils.class);
+                 final MockedStatic<ProbabilityUtil> mockedProbability =
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Mother Lode is available but its roll fails, and the double roll wins
                 when(Permissions.canUseSubSkill(player, SubSkillType.MINING_MOTHER_LODE))
                         .thenReturn(true);
@@ -461,10 +462,10 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void oresShouldPayXpAndDropThroughTheYieldRolls() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils = mockStatic(BlockUtils.class);
-                    final MockedStatic<Probability> mockedProbability =
-                            mockStatic(Probability.class);
-                    final MockedStatic<ItemUtils> mockedItemUtils =
-                            mockStatic(ItemUtils.class)) {
+                 final MockedStatic<Probability> mockedProbability =
+                         mockStatic(Probability.class);
+                 final MockedStatic<ItemUtils> mockedItemUtils =
+                         mockStatic(ItemUtils.class)) {
                 // Given - one ore in the blast with a guaranteed drop roll
                 when(explodeEvent.blockList()).thenReturn(List.of(oreBlock));
                 mockedBlockUtils.when(() -> BlockUtils.isOre(oreBlock)).thenReturn(true);
@@ -493,10 +494,10 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void bonusDropTiersShouldMultiplyTheOreDrops() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils = mockStatic(BlockUtils.class);
-                    final MockedStatic<Probability> mockedProbability =
-                            mockStatic(Probability.class);
-                    final MockedStatic<ItemUtils> mockedItemUtils =
-                            mockStatic(ItemUtils.class)) {
+                 final MockedStatic<Probability> mockedProbability =
+                         mockStatic(Probability.class);
+                 final MockedStatic<ItemUtils> mockedItemUtils =
+                         mockStatic(ItemUtils.class)) {
                 // Given - blast mining rank 3 (x2 drops) with bonus drops enabled and every
                 // roll succeeding
                 when(RankUtils.getRank(player, SubSkillType.MINING_BLAST_MINING)).thenReturn(3);
@@ -524,10 +525,10 @@ class MiningManagerTest extends MMOTestEnvironment {
         @Test
         void debrisShouldOccasionallyDropTheBlockItself() {
             try (final MockedStatic<BlockUtils> mockedBlockUtils = mockStatic(BlockUtils.class);
-                    final MockedStatic<Probability> mockedProbability =
-                            mockStatic(Probability.class);
-                    final MockedStatic<ItemUtils> mockedItemUtils =
-                            mockStatic(ItemUtils.class)) {
+                 final MockedStatic<Probability> mockedProbability =
+                         mockStatic(Probability.class);
+                 final MockedStatic<ItemUtils> mockedItemUtils =
+                         mockStatic(ItemUtils.class)) {
                 // Given - a non-ore debris block and a winning 10% debris roll
                 final Block debrisBlock = mock(Block.class);
                 when(debrisBlock.getType()).thenReturn(Material.STONE);

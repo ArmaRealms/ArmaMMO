@@ -7,6 +7,7 @@ import com.gmail.nossr50.util.Misc;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,6 +39,12 @@ public class UUIDUpdateAsyncTask extends CancellableRunnable {
     public UUIDUpdateAsyncTask(mcMMO plugin, List<String> userNames) {
         this.plugin = plugin;
         this.userNames = ImmutableList.copyOf(userNames);
+    }
+
+    private static UUID toUUID(String id) {
+        return UUID.fromString(
+                id.substring(0, 8) + "-" + id.substring(8, 12) + "-" + id.substring(12, 16) + "-"
+                        + id.substring(16, 20) + "-" + id.substring(20, 32));
     }
 
     @Override
@@ -84,7 +91,7 @@ public class UUIDUpdateAsyncTask extends CancellableRunnable {
             }
 
             try (InputStream input = connection.getInputStream();
-                    InputStreamReader reader = new InputStreamReader(input)) {
+                 InputStreamReader reader = new InputStreamReader(input)) {
                 for (JsonObject jsonProfile : GSON.fromJson(reader, JsonObject[].class)) {
                     UUID id = toUUID(jsonProfile.get("id").getAsString());
                     String name = jsonProfile.get("name").getAsString();
@@ -123,12 +130,6 @@ public class UUIDUpdateAsyncTask extends CancellableRunnable {
 
     public void start() {
         plugin.getFoliaLib().getScheduler().runAsync(this);
-    }
-
-    private static UUID toUUID(String id) {
-        return UUID.fromString(
-                id.substring(0, 8) + "-" + id.substring(8, 12) + "-" + id.substring(12, 16) + "-"
-                        + id.substring(16, 20) + "-" + id.substring(20, 32));
     }
 
     public void waitUntilFinished() {

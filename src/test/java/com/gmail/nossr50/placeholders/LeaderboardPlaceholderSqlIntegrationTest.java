@@ -1,11 +1,5 @@
 package com.gmail.nossr50.placeholders;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.AdvancedConfig;
 import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -19,18 +13,6 @@ import com.gmail.nossr50.util.TestFileCleanup;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.upgrade.UpgradeManager;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +27,25 @@ import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.mariadb.MariaDBContainer;
 import org.testcontainers.mysql.MySQLContainer;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @Tag("docker")
 class LeaderboardPlaceholderSqlIntegrationTest {
     private static final @NotNull Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
@@ -58,11 +59,6 @@ class LeaderboardPlaceholderSqlIntegrationTest {
     private static MockedStatic<ExperienceConfig> mockedExperienceConfig;
     private static GeneralConfig generalConfig;
     private static File testDataFolder;
-
-    private enum DbFlavor {
-        MYSQL,
-        MARIADB
-    }
 
     @BeforeAll
     static void setUpClass() {
@@ -131,6 +127,65 @@ class LeaderboardPlaceholderSqlIntegrationTest {
         if (testDataFolder != null) {
             TestFileCleanup.deleteRecursively(testDataFolder);
         }
+    }
+
+    private static Stream<Arguments> aliasAndPositionProvider() {
+        return Stream.of(
+                Arguments.of("overall", "1"),
+                Arguments.of("all", "2"),
+                Arguments.of("powerlevel", "3")
+        );
+    }
+
+    private static SQLDatabaseManager createManagerFor(DbFlavor flavor) throws Exception {
+        JdbcDatabaseContainer<?> container = containerFor(flavor);
+
+        when(generalConfig.getMySQLServerName()).thenReturn(container.getHost());
+        when(generalConfig.getMySQLServerPort()).thenReturn(container.getFirstMappedPort());
+        when(generalConfig.getMySQLDatabaseName()).thenReturn(container.getDatabaseName());
+        when(generalConfig.getMySQLUserName()).thenReturn(container.getUsername());
+        when(generalConfig.getMySQLUserPassword()).thenReturn(container.getPassword());
+
+        Constructor<SQLDatabaseManager> constructor = SQLDatabaseManager.class
+                .getDeclaredConstructor(Logger.class, String.class);
+        constructor.setAccessible(true);
+
+        return constructor.newInstance(LOGGER, "com.mysql.cj.jdbc.Driver");
+    }
+
+    private static JdbcDatabaseContainer<?> containerFor(DbFlavor flavor) {
+        return switch (flavor) {
+            case MYSQL -> MYSQL_CONTAINER;
+            case MARIADB -> MARIADB_CONTAINER;
+        };
+    }
+
+    private static void truncateAllCoreTables(DbFlavor flavor) throws Exception {
+        // Ensure mcMMO schema/tables are initialized for this container before cleanup.
+        SQLDatabaseManager schemaInitializer = createManagerFor(flavor);
+        schemaInitializer.onDisable();
+
+        JdbcDatabaseContainer<?> container = containerFor(flavor);
+        try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(),
+                container.getUsername(), container.getPassword());
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate("DELETE FROM mcmmo_cooldowns");
+            statement.executeUpdate("DELETE FROM mcmmo_experience");
+            statement.executeUpdate("DELETE FROM mcmmo_huds");
+            statement.executeUpdate("DELETE FROM mcmmo_skills");
+            statement.executeUpdate("DELETE FROM mcmmo_users");
+        } catch (SQLException exception) {
+            throw new RuntimeException("Failed to truncate SQL core tables", exception);
+        }
+    }
+
+    private static void seedUserWithMiningLevel(SQLDatabaseManager databaseManager,
+                                                String playerName, int miningLevel) {
+        UUID uuid = UUID.randomUUID();
+        databaseManager.newUser(playerName, uuid);
+        PlayerProfile profile = databaseManager.loadPlayerProfile(uuid);
+        profile.modifySkill(PrimarySkillType.MINING, miningLevel);
+        assertThat(databaseManager.saveUser(profile)).isTrue();
     }
 
     @Test
@@ -259,62 +314,8 @@ class LeaderboardPlaceholderSqlIntegrationTest {
         }
     }
 
-    private static Stream<Arguments> aliasAndPositionProvider() {
-        return Stream.of(
-                Arguments.of("overall", "1"),
-                Arguments.of("all", "2"),
-                Arguments.of("powerlevel", "3")
-        );
-    }
-
-    private static SQLDatabaseManager createManagerFor(DbFlavor flavor) throws Exception {
-        JdbcDatabaseContainer<?> container = containerFor(flavor);
-
-        when(generalConfig.getMySQLServerName()).thenReturn(container.getHost());
-        when(generalConfig.getMySQLServerPort()).thenReturn(container.getFirstMappedPort());
-        when(generalConfig.getMySQLDatabaseName()).thenReturn(container.getDatabaseName());
-        when(generalConfig.getMySQLUserName()).thenReturn(container.getUsername());
-        when(generalConfig.getMySQLUserPassword()).thenReturn(container.getPassword());
-
-        Constructor<SQLDatabaseManager> constructor = SQLDatabaseManager.class
-                .getDeclaredConstructor(Logger.class, String.class);
-        constructor.setAccessible(true);
-
-        return constructor.newInstance(LOGGER, "com.mysql.cj.jdbc.Driver");
-    }
-
-    private static JdbcDatabaseContainer<?> containerFor(DbFlavor flavor) {
-        return switch (flavor) {
-            case MYSQL -> MYSQL_CONTAINER;
-            case MARIADB -> MARIADB_CONTAINER;
-        };
-    }
-
-    private static void truncateAllCoreTables(DbFlavor flavor) throws Exception {
-        // Ensure mcMMO schema/tables are initialized for this container before cleanup.
-        SQLDatabaseManager schemaInitializer = createManagerFor(flavor);
-        schemaInitializer.onDisable();
-
-        JdbcDatabaseContainer<?> container = containerFor(flavor);
-        try (Connection connection = DriverManager.getConnection(container.getJdbcUrl(),
-                container.getUsername(), container.getPassword());
-             Statement statement = connection.createStatement()) {
-            statement.executeUpdate("DELETE FROM mcmmo_cooldowns");
-            statement.executeUpdate("DELETE FROM mcmmo_experience");
-            statement.executeUpdate("DELETE FROM mcmmo_huds");
-            statement.executeUpdate("DELETE FROM mcmmo_skills");
-            statement.executeUpdate("DELETE FROM mcmmo_users");
-        } catch (SQLException exception) {
-            throw new RuntimeException("Failed to truncate SQL core tables", exception);
-        }
-    }
-
-    private static void seedUserWithMiningLevel(SQLDatabaseManager databaseManager,
-            String playerName, int miningLevel) {
-        UUID uuid = UUID.randomUUID();
-        databaseManager.newUser(playerName, uuid);
-        PlayerProfile profile = databaseManager.loadPlayerProfile(uuid);
-        profile.modifySkill(PrimarySkillType.MINING, miningLevel);
-        assertThat(databaseManager.saveUser(profile)).isTrue();
+    private enum DbFlavor {
+        MYSQL,
+        MARIADB
     }
 }

@@ -1,12 +1,13 @@
 package com.gmail.nossr50.util;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 import org.bukkit.Server;
 import org.bukkit.inventory.Recipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.logging.Logger;
 
 public final class RecipeUtils {
     private RecipeUtils() {
@@ -25,7 +26,7 @@ public final class RecipeUtils {
      * @return an iterator over every recipe the server can hand out
      */
     public static @NotNull Iterator<Recipe> safeRecipeIterator(@NotNull Server server,
-            @NotNull Logger logger) {
+                                                               @NotNull Logger logger) {
         return new SafeRecipeIterator(server.recipeIterator(), logger);
     }
 
@@ -37,7 +38,7 @@ public final class RecipeUtils {
         private int skippedRecipes;
 
         private SafeRecipeIterator(@NotNull Iterator<Recipe> serverRecipes,
-                @NotNull Logger logger) {
+                                   @NotNull Logger logger) {
             this.serverRecipes = serverRecipes;
             this.logger = logger;
         }

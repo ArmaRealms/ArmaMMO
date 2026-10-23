@@ -34,8 +34,8 @@ public class ChatConfig extends BukkitConfig {
         return config.getBoolean("Chat.Enable", true);
     }
 
-    public boolean isChatChannelEnabled(@NotNull ChatChannel chatChannel) {
-        String key =
+    public boolean isChatChannelEnabled(@NotNull final ChatChannel chatChannel) {
+        final String key =
                 "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString()) + ".Enable";
         return config.getBoolean(key, true);
     }
@@ -46,18 +46,17 @@ public class ChatConfig extends BukkitConfig {
      * @param chatChannel target chat channel
      * @return true if display names should be used
      */
-    public boolean useDisplayNames(@NotNull ChatChannel chatChannel) {
-        String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
+    public boolean useDisplayNames(@NotNull final ChatChannel chatChannel) {
+        final String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
                 + ".Use_Display_Names";
         return config.getBoolean(key, true);
     }
 
-    public boolean isConsoleIncludedInAudience(@NotNull ChatChannel chatChannel) {
-        String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
+    public boolean isConsoleIncludedInAudience(@NotNull final ChatChannel chatChannel) {
+        final String key = "Chat.Channels." + StringUtils.getCapitalized(chatChannel.toString())
                 + ".Send_To_Console";
         return config.getBoolean(key, true);
     }
-
 
     public boolean isSpyingAutomatic() {
         return config.getBoolean("Chat.Channels.Party.Spies.Automatically_Enable_Spying", false);

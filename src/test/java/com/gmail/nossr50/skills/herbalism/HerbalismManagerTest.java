@@ -1,16 +1,5 @@
 package com.gmail.nossr50.skills.herbalism;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
@@ -20,10 +9,6 @@ import com.gmail.nossr50.util.EventUtils;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.tcoded.folialib.FoliaLib;
-import java.lang.reflect.Method;
-import java.util.stream.Stream;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -41,11 +26,37 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class HerbalismManagerTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(HerbalismManagerTest.class.getName());
 
     private HerbalismManager herbalismManager;
     private MockedStatic<ProbabilityUtil> mockedProbabilityUtil;
+
+    private static Stream<Arguments> immatureGreenThumbCrops() {
+        return Stream.of(
+                Arguments.of(Material.CARROTS, Material.CARROT, 1, 7),
+                Arguments.of(Material.POTATOES, Material.POTATO, 1, 7),
+                Arguments.of(Material.WHEAT, Material.WHEAT_SEEDS, 1, 7),
+                Arguments.of(Material.BEETROOTS, Material.BEETROOT_SEEDS, 1, 3),
+                Arguments.of(Material.COCOA, Material.COCOA_BEANS, 1, 2),
+                Arguments.of(Material.SWEET_BERRY_BUSH, Material.SWEET_BERRIES, 1, 3));
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -113,7 +124,7 @@ class HerbalismManagerTest extends MMOTestEnvironment {
     @Test
     void greenThumbImmatureNetherWartConsumesWartWithoutSuppressingDrops() throws Exception {
         final AtomicReference<ItemStack[]> storageContents = new AtomicReference<>(
-            new ItemStack[]{createStorageStack(Material.NETHER_WART)});
+                new ItemStack[]{createStorageStack(Material.NETHER_WART)});
         final Block block = mock(Block.class);
         final BlockState blockState = mock(BlockState.class);
         final Ageable ageableCrop = mock(Ageable.class);
@@ -144,20 +155,20 @@ class HerbalismManagerTest extends MMOTestEnvironment {
         when(block.getLocation()).thenReturn(cropLocation);
 
         final boolean activated = invokeProcessGreenThumbPlants(blockState, blockBreakEvent,
-            false);
+                false);
 
         assertTrue(activated,
-            "Green Thumb should activate for immature nether wart when requirements are met.");
+                "Green Thumb should activate for immature nether wart when requirements are met.");
         verify(blockBreakEvent, never()).setDropItems(false);
         assertNull(storageContents.get()[0],
-            "Immature nether wart replant should consume one nether wart from storage.");
+                "Immature nether wart replant should consume one nether wart from storage.");
         verify(playerInventory, never()).removeItem(any(ItemStack.class));
     }
 
     @ParameterizedTest(name = "{0} immature Green Thumb keeps drops enabled")
     @MethodSource("immatureGreenThumbCrops")
     void greenThumbImmatureCropsConsumeReplantWithoutSuppressingDrops(Material cropMaterial,
-            Material replantMaterial, int immatureAge, int maxAge) throws Exception {
+                                                                      Material replantMaterial, int immatureAge, int maxAge) throws Exception {
         final AtomicReference<ItemStack[]> storageContents = new AtomicReference<>(
                 new ItemStack[]{createStorageStack(replantMaterial)});
         final Block block = mock(Block.class);
@@ -261,8 +272,8 @@ class HerbalismManagerTest extends MMOTestEnvironment {
                 () -> ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.HERBALISM_GREEN_THUMB,
                         mmoPlayer)).thenReturn(true);
         mockedProbabilityUtil.when(
-            () -> ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.HERBALISM_SHROOM_THUMB,
-                mmoPlayer)).thenReturn(true);
+                () -> ProbabilityUtil.isSkillRNGSuccessful(SubSkillType.HERBALISM_SHROOM_THUMB,
+                        mmoPlayer)).thenReturn(true);
 
         mockedEventUtils = Mockito.mockStatic(EventUtils.class);
         mockedEventUtils.when(() -> EventUtils.callSubSkillBlockEvent(any(Player.class),
@@ -271,7 +282,7 @@ class HerbalismManagerTest extends MMOTestEnvironment {
     }
 
     private boolean invokeProcessGreenThumbPlants(BlockState blockState,
-            BlockBreakEvent blockBreakEvent, boolean greenTerra) throws Exception {
+                                                  BlockBreakEvent blockBreakEvent, boolean greenTerra) throws Exception {
         final Method greenThumbMethod = HerbalismManager.class.getDeclaredMethod(
                 "processGreenThumbPlants", BlockState.class, BlockBreakEvent.class,
                 boolean.class);
@@ -295,15 +306,5 @@ class HerbalismManagerTest extends MMOTestEnvironment {
         when(storedStack.getAmount()).thenReturn(1);
 
         return storedStack;
-    }
-
-    private static Stream<Arguments> immatureGreenThumbCrops() {
-        return Stream.of(
-                Arguments.of(Material.CARROTS, Material.CARROT, 1, 7),
-                Arguments.of(Material.POTATOES, Material.POTATO, 1, 7),
-                Arguments.of(Material.WHEAT, Material.WHEAT_SEEDS, 1, 7),
-                Arguments.of(Material.BEETROOTS, Material.BEETROOT_SEEDS, 1, 3),
-                Arguments.of(Material.COCOA, Material.COCOA_BEANS, 1, 2),
-                Arguments.of(Material.SWEET_BERRY_BUSH, Material.SWEET_BERRIES, 1, 3));
     }
 }

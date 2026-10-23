@@ -1,24 +1,25 @@
 package com.gmail.nossr50.util.scoreboards;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.scoreboards.backend.PlayerBoard;
 import com.gmail.nossr50.util.scoreboards.backend.SidebarLine;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the power level line on the stats sidebar. Skill rows are already filtered by skill
@@ -32,38 +33,6 @@ class ScoreboardWrapperStatsPowerLevelTest extends MMOTestEnvironment {
             ScoreboardWrapperStatsPowerLevelTest.class.getName());
 
     private RecordingPlayerBoard playerBoard;
-
-    /** Captures the rows pushed to the backend so assertions can inspect the rendered board. */
-    private static final class RecordingPlayerBoard implements PlayerBoard {
-        private List<SidebarLine> lastDrawnLines = List.of();
-
-        @Override
-        public @Nullable Scoreboard show() {
-            return null;
-        }
-
-        @Override
-        public void hide(@NotNull Player targetPlayer, @Nullable Scoreboard targetBoard) {
-        }
-
-        @Override
-        public boolean isShown() {
-            return false;
-        }
-
-        @Override
-        public void setTitle(@NotNull String displayName) {
-        }
-
-        @Override
-        public void draw(@NotNull List<SidebarLine> lines) {
-            lastDrawnLines = List.copyOf(lines);
-        }
-
-        @Override
-        public void close() {
-        }
-    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -159,5 +128,39 @@ class ScoreboardWrapperStatsPowerLevelTest extends MMOTestEnvironment {
         final SidebarLine row = findSkillRow(skill);
         assertThat(row).isNotNull();
         return row.value();
+    }
+
+    /**
+     * Captures the rows pushed to the backend so assertions can inspect the rendered board.
+     */
+    private static final class RecordingPlayerBoard implements PlayerBoard {
+        private List<SidebarLine> lastDrawnLines = List.of();
+
+        @Override
+        public @Nullable Scoreboard show() {
+            return null;
+        }
+
+        @Override
+        public void hide(@NotNull Player targetPlayer, @Nullable Scoreboard targetBoard) {
+        }
+
+        @Override
+        public boolean isShown() {
+            return false;
+        }
+
+        @Override
+        public void setTitle(@NotNull String displayName) {
+        }
+
+        @Override
+        public void draw(@NotNull List<SidebarLine> lines) {
+            lastDrawnLines = List.copyOf(lines);
+        }
+
+        @Override
+        public void close() {
+        }
     }
 }

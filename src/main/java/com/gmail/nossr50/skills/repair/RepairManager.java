@@ -22,11 +22,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import org.bukkit.Material;
 import org.bukkit.SoundCategory;
 import org.bukkit.enchantments.Enchantment;
@@ -34,6 +29,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 
 public class RepairManager extends SkillManager {
     private static final int CONFIRMATION_WINDOW_SECONDS = 3;
@@ -245,7 +246,7 @@ public class RepairManager extends SkillManager {
     }
 
     private float getPercentageRepaired(short startDurability, short newDurability,
-            short totalDurability) {
+                                        short totalDurability) {
         return ((startDurability - newDurability) / (float) totalDurability);
     }
 
@@ -280,7 +281,7 @@ public class RepairManager extends SkillManager {
      * prompt (for example through vanilla armor quick-equipping) starts a new confirmation
      * instead of being repaired.
      *
-     * @param item the item the player is attempting to repair
+     * @param item      the item the player is attempting to repair
      * @param actualize whether to start a new confirmation when none applies to the item
      * @return true if the player has confirmed repairing the given item
      */
@@ -357,7 +358,7 @@ public class RepairManager extends SkillManager {
     /**
      * Computes repair bonuses.
      *
-     * @param durability The durability of the item being repaired
+     * @param durability   The durability of the item being repaired
      * @param repairAmount The base amount of durability repaired to the item
      * @return The final amount of durability repaired to the item
      */
@@ -447,7 +448,7 @@ public class RepairManager extends SkillManager {
             int enchantLevel = getArcaneForgingEnchantLevel(enchant.getValue());
 
             if (!ExperienceConfig.getInstance().allowUnsafeEnchantments()
-                && enchantLevel > enchant.getKey().getMaxLevel()) {
+                    && enchantLevel > enchant.getKey().getMaxLevel()) {
                 item.addUnsafeEnchantment(enchant.getKey(), enchantLevel);
             }
 

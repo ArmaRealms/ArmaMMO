@@ -1,10 +1,11 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
-import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class NoopPlayerBoard implements PlayerBoard {
     public NoopPlayerBoard(final @NotNull Player player) {

@@ -1,7 +1,8 @@
 package com.gmail.nossr50.listeners;
 
-import java.util.function.BooleanSupplier;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * Pure decision logic for player-vs-player friendly fire, shared by the damage and combust
@@ -10,17 +11,6 @@ import org.jetbrains.annotations.NotNull;
  * {@link Outcome#SELF} and {@link Outcome#CANCEL_FRIENDLY_FIRE} justify cancelling an event.
  */
 final class FriendlyFire {
-
-    enum Outcome {
-        /** Attacker and defender are the same player. */
-        SELF,
-        /** Disallowed party/ally friendly fire; the event should be cancelled. */
-        CANCEL_FRIENDLY_FIRE,
-        /** A player's mcMMO data has not loaded; skip skill processing but never cancel. */
-        DATA_NOT_LOADED,
-        /** Normal PvP; continue processing. */
-        PROCESS
-    }
 
     private FriendlyFire() {
     }
@@ -31,10 +21,10 @@ final class FriendlyFire {
      * run when an earlier gate has not already decided the outcome.
      */
     static @NotNull Outcome resolve(boolean samePlayer, boolean partySystemEnabled,
-            @NotNull BooleanSupplier bothPlayersDataLoaded,
-            @NotNull BooleanSupplier partyFriendlyFireAllowed,
-            @NotNull BooleanSupplier inSamePartyOrAllied,
-            @NotNull BooleanSupplier bothHaveFriendlyFirePermission) {
+                                    @NotNull BooleanSupplier bothPlayersDataLoaded,
+                                    @NotNull BooleanSupplier partyFriendlyFireAllowed,
+                                    @NotNull BooleanSupplier inSamePartyOrAllied,
+                                    @NotNull BooleanSupplier bothHaveFriendlyFirePermission) {
         if (samePlayer) {
             return Outcome.SELF;
         }
@@ -53,5 +43,24 @@ final class FriendlyFire {
         }
 
         return Outcome.PROCESS;
+    }
+
+    enum Outcome {
+        /**
+         * Attacker and defender are the same player.
+         */
+        SELF,
+        /**
+         * Disallowed party/ally friendly fire; the event should be cancelled.
+         */
+        CANCEL_FRIENDLY_FIRE,
+        /**
+         * A player's mcMMO data has not loaded; skip skill processing but never cancel.
+         */
+        DATA_NOT_LOADED,
+        /**
+         * Normal PvP; continue processing.
+         */
+        PROCESS
     }
 }

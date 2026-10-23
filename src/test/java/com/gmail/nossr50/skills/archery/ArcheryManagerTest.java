@@ -1,18 +1,5 @@
 package com.gmail.nossr50.skills.archery;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
@@ -31,13 +18,7 @@ import com.gmail.nossr50.util.skills.RankUtils;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
 import com.tcoded.folialib.wrapper.task.WrappedTask;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -50,6 +31,25 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
+
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Archery manager: ability gates, the distance XP multiplier for long shots, the
@@ -309,7 +309,7 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void failedRollShouldDealNoBonusDamageAndNoEffects() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the Daze roll fails
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.ARCHERY_DAZE, mmoPlayer)).thenReturn(false);
@@ -326,12 +326,12 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void dazeOnSpigotShouldScheduleThePitchFlipAndApplyNausea() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
-                    final MockedStatic<PotionEffectUtil> ignored =
-                            mockStatic(PotionEffectUtil.class);
-                    final MockedConstruction<PotionEffect> effectConstruction =
-                            mockConstruction(PotionEffect.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
+                 final MockedStatic<PotionEffectUtil> ignored =
+                         mockStatic(PotionEffectUtil.class);
+                 final MockedConstruction<PotionEffect> effectConstruction =
+                         mockConstruction(PotionEffect.class)) {
                 // Given - a successful Daze roll on a Spigot server
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.ARCHERY_DAZE, mmoPlayer)).thenReturn(true);
@@ -347,8 +347,7 @@ class ArcheryManagerTest extends MMOTestEnvironment {
                 assertThat(bonusDamage).isEqualTo(4.0);
 
                 // And - the pitch flip teleport is scheduled and lands on the defender
-                @SuppressWarnings("unchecked")
-                final ArgumentCaptor<Consumer<WrappedTask>> scheduledTeleport =
+                @SuppressWarnings("unchecked") final ArgumentCaptor<Consumer<WrappedTask>> scheduledTeleport =
                         ArgumentCaptor.forClass(Consumer.class);
                 verify(scheduler).runAtEntity(eq(defender), scheduledTeleport.capture());
                 scheduledTeleport.getValue().accept(mock(WrappedTask.class));
@@ -364,12 +363,12 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void scheduledDazeTeleportShouldNotFireAfterWorldChange() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
-                    final MockedStatic<PotionEffectUtil> ignored =
-                            mockStatic(PotionEffectUtil.class);
-                    final MockedConstruction<PotionEffect> ignoredConstruction =
-                            mockConstruction(PotionEffect.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
+                 final MockedStatic<PotionEffectUtil> ignored =
+                         mockStatic(PotionEffectUtil.class);
+                 final MockedConstruction<PotionEffect> ignoredConstruction =
+                         mockConstruction(PotionEffect.class)) {
                 // Given - a successful Spigot daze whose defender changes world before the
                 // scheduled teleport runs
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
@@ -381,8 +380,7 @@ class ArcheryManagerTest extends MMOTestEnvironment {
                 when(defender.getWorld()).thenReturn(mock(org.bukkit.World.class));
 
                 // When - the scheduled teleport fires
-                @SuppressWarnings("unchecked")
-                final ArgumentCaptor<Consumer<WrappedTask>> scheduledTeleport =
+                @SuppressWarnings("unchecked") final ArgumentCaptor<Consumer<WrappedTask>> scheduledTeleport =
                         ArgumentCaptor.forClass(Consumer.class);
                 verify(scheduler).runAtEntity(eq(defender), scheduledTeleport.capture());
                 scheduledTeleport.getValue().accept(mock(WrappedTask.class));
@@ -395,12 +393,12 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void dazeOnPaperShouldTurnTheDefendersViewWithoutTeleporting() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
-                    final MockedStatic<PotionEffectUtil> ignored =
-                            mockStatic(PotionEffectUtil.class);
-                    final MockedConstruction<PotionEffect> effectConstruction =
-                            mockConstruction(PotionEffect.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
+                 final MockedStatic<PotionEffectUtil> ignored =
+                         mockStatic(PotionEffectUtil.class);
+                 final MockedConstruction<PotionEffect> effectConstruction =
+                         mockConstruction(PotionEffect.class)) {
                 // Given - a successful Daze roll on a Paper server
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.ARCHERY_DAZE, mmoPlayer)).thenReturn(true);
@@ -436,12 +434,12 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void dazeShouldNotifyBothPlayersWhenNotificationsAreOn() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
-                    final MockedStatic<PotionEffectUtil> ignored =
-                            mockStatic(PotionEffectUtil.class);
-                    final MockedConstruction<PotionEffect> ignoredConstruction =
-                            mockConstruction(PotionEffect.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<PaperUtil> mockedPaperUtil = mockStatic(PaperUtil.class);
+                 final MockedStatic<PotionEffectUtil> ignored =
+                         mockStatic(PotionEffectUtil.class);
+                 final MockedConstruction<PotionEffect> ignoredConstruction =
+                         mockConstruction(PotionEffect.class)) {
                 // Given - a successful daze with notifications enabled on both sides
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.ARCHERY_DAZE, mmoPlayer)).thenReturn(true);
@@ -467,7 +465,7 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void successfulActivationShouldBoostDamage() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Skill Shot activates at rank 5 with a 10% per-rank multiplier
                 mockedProbability.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.ARCHERY_SKILL_SHOT, mmoPlayer)).thenReturn(true);
@@ -483,7 +481,7 @@ class ArcheryManagerTest extends MMOTestEnvironment {
         @Test
         void failedActivationShouldKeepTheOriginalDamage() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Skill Shot does not activate
                 mockedProbability.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.ARCHERY_SKILL_SHOT, mmoPlayer)).thenReturn(false);

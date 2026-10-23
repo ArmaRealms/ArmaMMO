@@ -1,6 +1,7 @@
 package com.gmail.nossr50.commands.party.teleport;
 
 import com.gmail.nossr50.datatypes.party.PartyTeleportRecord;
+import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
@@ -16,19 +17,28 @@ import org.jetbrains.annotations.NotNull;
 public class PtpAcceptCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         if (!Permissions.partyTeleportAccept(sender)) {
-            sender.sendMessage(command.getPermissionMessage());
+            String commandPermissionMessage = command.getPermissionMessage();
+            if (commandPermissionMessage != null) {
+                sender.sendMessage(commandPermissionMessage);
+            }
             return true;
         }
 
-        if (UserManager.getPlayer((Player) sender) == null) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
+            return true;
+        }
+
+        McMMOPlayer mcMMOPlayer = UserManager.getPlayer(player);
+        if (mcMMOPlayer == null) {
             sender.sendMessage(LocaleLoader.getString("Profile.PendingLoad"));
             return true;
         }
 
-        final Player player = (Player) sender;
-        PartyTeleportRecord ptpRecord = UserManager.getPlayer(player).getPartyTeleportRecord();
+        PartyTeleportRecord ptpRecord = mcMMOPlayer.getPartyTeleportRecord();
+        if (ptpRecord == null) return true;
 
         if (!ptpRecord.hasRequest()) {
             player.sendMessage(LocaleLoader.getString("Commands.ptp.NoRequests"));
@@ -45,9 +55,7 @@ public class PtpAcceptCommand implements CommandExecutor {
         Player target = ptpRecord.getRequestor();
         ptpRecord.removeRequest();
 
-        if (!PtpCommand.canTeleport(sender, player, target.getName())) {
-            return true;
-        }
+        if (!PtpCommand.canTeleport(sender, player, target.getName())) return true;
 
         if (mcMMO.p.getGeneralConfig().getPTPCommandWorldPermissions()) {
             World targetWorld = target.getWorld();

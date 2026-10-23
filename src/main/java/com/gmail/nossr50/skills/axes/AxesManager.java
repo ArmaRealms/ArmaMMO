@@ -1,8 +1,5 @@
 package com.gmail.nossr50.skills.axes;
 
-import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
-import static com.gmail.nossr50.util.skills.SkillUtils.handleArmorDurabilityChange;
-
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
@@ -24,8 +21,11 @@ import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import static com.gmail.nossr50.util.random.ProbabilityUtil.isSkillRNGSuccessful;
+import static com.gmail.nossr50.util.skills.SkillUtils.handleArmorDurabilityChange;
+
 public class AxesManager extends SkillManager {
-    public AxesManager(McMMOPlayer mmoPlayer) {
+    public AxesManager(final McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.AXES);
     }
 
@@ -37,7 +37,7 @@ public class AxesManager extends SkillManager {
         return Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.AXES_AXE_MASTERY);
     }
 
-    public boolean canCriticalHit(@NotNull LivingEntity target) {
+    public boolean canCriticalHit(@NotNull final LivingEntity target) {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.AXES_CRITICAL_STRIKES)) {
             return false;
         }
@@ -46,7 +46,7 @@ public class AxesManager extends SkillManager {
                 SubSkillType.AXES_CRITICAL_STRIKES);
     }
 
-    public boolean canImpact(@NotNull LivingEntity target) {
+    public boolean canImpact(@NotNull final LivingEntity target) {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.AXES_ARMOR_IMPACT)) {
             return false;
         }
@@ -55,7 +55,7 @@ public class AxesManager extends SkillManager {
                 SubSkillType.AXES_ARMOR_IMPACT) && Axes.hasArmor(target);
     }
 
-    public boolean canGreaterImpact(@NotNull LivingEntity target) {
+    public boolean canGreaterImpact(@NotNull final LivingEntity target) {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.AXES_GREATER_IMPACT)) {
             return false;
         }
@@ -64,7 +64,7 @@ public class AxesManager extends SkillManager {
                 SubSkillType.AXES_GREATER_IMPACT) && !Axes.hasArmor(target);
     }
 
-    public boolean canUseSkullSplitter(@NotNull LivingEntity target) {
+    public boolean canUseSkullSplitter(@NotNull final LivingEntity target) {
         if (!RankUtils.hasUnlockedSubskill(getPlayer(), SubSkillType.AXES_SKULL_SPLITTER)) {
             return false;
         }
@@ -106,8 +106,8 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Critical Hit ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param target              The {@link LivingEntity} being affected by the ability
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public double criticalHit(LivingEntity target, double damage, double attackStrengthScale) {
@@ -116,14 +116,14 @@ public class AxesManager extends SkillManager {
             return 0;
         }
 
-        Player player = getPlayer();
+        final Player player = getPlayer();
 
         if (mmoPlayer.useChatNotifications()) {
             NotificationManager.sendPlayerInformation(player, NotificationType.SUBSKILL_MESSAGE,
                     "Axes.Combat.CriticalHit");
         }
 
-        if (target instanceof Player defender) {
+        if (target instanceof final Player defender) {
 
             if (NotificationManager.doesPlayerUseNotifications(defender)) {
                 NotificationManager.sendPlayerInformation(defender,
@@ -153,7 +153,7 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Impact ability
      *
-     * @param target The {@link LivingEntity} being affected by Impact
+     * @param target              The {@link LivingEntity} being affected by Impact
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void impactCheck(@NotNull LivingEntity target, double attackStrengthScale) {
@@ -164,7 +164,7 @@ public class AxesManager extends SkillManager {
             return;
         }
 
-        for (ItemStack armor : equipment.getArmorContents()) {
+        for (final ItemStack armor : equipment.getArmorContents()) {
             if (armor != null && ItemUtils.isArmor(armor)) {
                 if (isSkillRNGSuccessful(SubSkillType.AXES_ARMOR_IMPACT, mmoPlayer,
                         attackStrengthScale)) {
@@ -194,7 +194,7 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Greater Impact ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
+     * @param target              The {@link LivingEntity} being affected by the ability
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public double greaterImpact(@NotNull LivingEntity target, double attackStrengthScale) {
@@ -203,7 +203,7 @@ public class AxesManager extends SkillManager {
             return 0;
         }
 
-        Player player = getPlayer();
+        final Player player = getPlayer();
 
         ParticleEffectUtils.playGreaterImpactEffect(target);
         target.setVelocity(
@@ -215,7 +215,7 @@ public class AxesManager extends SkillManager {
                     "Axes.Combat.GI.Proc");
         }
 
-        if (target instanceof Player defender) {
+        if (target instanceof final Player defender) {
 
             if (NotificationManager.doesPlayerUseNotifications(defender)) {
                 NotificationManager.sendPlayerInformation(defender,
@@ -243,12 +243,12 @@ public class AxesManager extends SkillManager {
     /**
      * Handle the effects of the Skull Splitter ability
      *
-     * @param target The {@link LivingEntity} being affected by the ability
-     * @param damage The amount of damage initially dealt by the event
+     * @param target              The {@link LivingEntity} being affected by the ability
+     * @param damage              The amount of damage initially dealt by the event
      * @param attackStrengthScale the committed attack strength of the hit, from 0.0 to 1.0
      */
     public void skullSplitterCheck(@NotNull LivingEntity target, double damage,
-            double attackStrengthScale) {
+                                   double attackStrengthScale) {
         CombatUtils.applyAbilityAoE(getPlayer(), target,
                 (damage / Axes.skullSplitterModifier) * attackStrengthScale, attackStrengthScale,
                 skill);

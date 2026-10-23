@@ -11,7 +11,6 @@ import com.gmail.nossr50.skills.alchemy.Alchemy;
 import com.gmail.nossr50.skills.alchemy.AlchemyPotionBrewer;
 import com.gmail.nossr50.util.ContainerMetadataUtils;
 import com.gmail.nossr50.util.ItemUtils;
-import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillUtils;
@@ -20,7 +19,6 @@ import com.gmail.nossr50.worldguard.WorldGuardUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.BrewingStand;
 import org.bukkit.block.Furnace;
@@ -30,7 +28,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.BrewEvent;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.FurnaceBurnEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.inventory.FurnaceSmeltEvent;
@@ -55,7 +52,7 @@ public class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onFurnaceBurnEvent(FurnaceBurnEvent event) {
+    public void onFurnaceBurnEvent(final FurnaceBurnEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) {
             return;
@@ -107,26 +104,26 @@ public class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onFurnaceSmeltEvent(FurnaceSmeltEvent event) {
+    public void onFurnaceSmeltEvent(final FurnaceSmeltEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) {
             return;
         }
 
-        BlockState blockState = event.getBlock()
+        final BlockState blockState = event.getBlock()
                 .getState(); //Furnaces can only be cast from a BlockState not a Block
-        ItemStack smelting = event.getSource();
+        final ItemStack smelting = event.getSource();
 
         if (!ItemUtils.isSmeltable(smelting)) {
             return;
         }
 
-        if (blockState instanceof Furnace furnace) {
-            OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(furnace);
+        if (blockState instanceof final Furnace furnace) {
+            final OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(furnace);
 
             if (offlinePlayer != null) {
 
-                McMMOPlayer offlineProfile = UserManager.getOfflinePlayer(offlinePlayer);
+                final McMMOPlayer offlineProfile = UserManager.getOfflinePlayer(offlinePlayer);
 
                 //Profile doesn't exist
                 if (offlineProfile != null) {
@@ -138,19 +135,19 @@ public class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onFurnaceExtractEvent(FurnaceExtractEvent event) {
+    public void onFurnaceExtractEvent(final FurnaceExtractEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getPlayer().getWorld())) {
             return;
         }
 
-        BlockState furnaceBlock = event.getBlock().getState();
+        final BlockState furnaceBlock = event.getBlock().getState();
 
         if (!ItemUtils.isSmelted(event.getItemType())) {
             return;
         }
 
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
 
         if (furnaceBlock instanceof Furnace) {
             /* WORLD GUARD MAIN FLAG CHECK */
@@ -179,7 +176,7 @@ public class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onInventoryClickEventNormal(InventoryClickEvent event) {
+    public void onInventoryClickEventNormal(final InventoryClickEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getWhoClicked().getWorld())) {
             return;
@@ -219,7 +216,7 @@ public class InventoryListener implements Listener {
 
         InventoryHolder holder = inventory.getHolder();
 
-        if (!(holder instanceof BrewingStand stand)) {
+        if (!(holder instanceof final BrewingStand stand)) {
             return;
         }
 
@@ -251,8 +248,8 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        ClickType click = event.getClick();
-        InventoryType.SlotType slot = event.getSlotType();
+        final ClickType click = event.getClick();
+        final InventoryType.SlotType slot = event.getSlotType();
 
         if (click.isShiftClick()) {
             switch (slot) {
@@ -276,7 +273,7 @@ public class InventoryListener implements Listener {
                 default:
             }
         } else if (slot == InventoryType.SlotType.FUEL) {
-            boolean emptyClicked = AlchemyPotionBrewer.isEmpty(clicked);
+            final boolean emptyClicked = AlchemyPotionBrewer.isEmpty(clicked);
 
             if (AlchemyPotionBrewer.isEmpty(cursor)) {
                 if (emptyClicked && click == ClickType.NUMBER_KEY) {
@@ -287,7 +284,7 @@ public class InventoryListener implements Listener {
                 AlchemyPotionBrewer.scheduleCheck(stand);
             } else if (emptyClicked) {
                 if (AlchemyPotionBrewer.isValidIngredientByPlayer(player, cursor)) {
-                    int amount = cursor.getAmount();
+                    final int amount = cursor.getAmount();
 
                     if (click == ClickType.LEFT || (click == ClickType.RIGHT && amount == 1)) {
                         event.setCancelled(true);
@@ -298,10 +295,10 @@ public class InventoryListener implements Listener {
                     } else if (click == ClickType.RIGHT) {
                         event.setCancelled(true);
 
-                        ItemStack one = cursor.clone();
+                        final ItemStack one = cursor.clone();
                         one.setAmount(1);
 
-                        ItemStack rest = cursor.clone();
+                        final ItemStack rest = cursor.clone();
                         rest.setAmount(amount - 1);
 
                         event.setCurrentItem(one);
@@ -314,25 +311,24 @@ public class InventoryListener implements Listener {
         }
     }
 
-    public boolean isOutsideWindowClick(InventoryClickEvent event) {
+    public boolean isOutsideWindowClick(final InventoryClickEvent event) {
         return event.getHotbarButton() == -1;
     }
 
-
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onInventoryDragEvent(InventoryDragEvent event) {
+    public void onInventoryDragEvent(final InventoryDragEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getWhoClicked().getWorld())) {
             return;
         }
 
-        Inventory inventory = event.getInventory();
+        final Inventory inventory = event.getInventory();
 
         if (!(inventory instanceof BrewerInventory)) {
             return;
         }
 
-        InventoryHolder holder = inventory.getHolder();
+        final InventoryHolder holder = inventory.getHolder();
 
         if (!(holder instanceof BrewingStand)) {
             return;
@@ -352,8 +348,8 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        ItemStack cursor = event.getCursor();
-        ItemStack ingredient = ((BrewerInventory) inventory).getIngredient();
+        final ItemStack cursor = event.getCursor();
+        final ItemStack ingredient = ((BrewerInventory) inventory).getIngredient();
 
         if (AlchemyPotionBrewer.isEmpty(ingredient) || ingredient.isSimilar(cursor)) {
             /* WORLD GUARD MAIN FLAG CHECK */
@@ -375,7 +371,7 @@ public class InventoryListener implements Listener {
 
     // Apparently sometimes vanilla brewing beats our task listener to the actual brew. We handle this by cancelling the vanilla event and finishing our brew ourselves.
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onBrew(BrewEvent event) {
+    public void onBrew(final BrewEvent event) {
         /* WORLD BLACKLIST CHECK */
         if (WorldBlacklist.isWorldBlacklisted(event.getBlock().getWorld())) {
             return;
@@ -394,45 +390,43 @@ public class InventoryListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onInventoryMoveItemEvent(InventoryMoveItemEvent event) {
+    public void onInventoryMoveItemEvent(final InventoryMoveItemEvent event) {
+        /* WORLD BLACKLIST CHECK */
+
+        if (event.getSource().getLocation() != null) {
+            if (WorldBlacklist.isWorldBlacklisted(event.getSource().getLocation().getWorld())) {
+                return;
+            }
+        }
+
         final Inventory inventory = event.getDestination();
 
         if (!(inventory instanceof BrewerInventory)) {
             return;
         }
 
-        /* WORLD BLACKLIST CHECK */
-        final Location sourceLocation = event.getSource().getLocation();
-        if (sourceLocation != null && WorldBlacklist.isWorldBlacklisted(sourceLocation.getWorld())) {
-            return;
-        }
-
-        ItemStack item = event.getItem();
-
-        if (mcMMO.p.getGeneralConfig().getPreventHopperTransferIngredients()
-                && item.getType() != Material.POTION && item.getType() != Material.SPLASH_POTION
-                && item.getType() != Material.LINGERING_POTION) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (mcMMO.p.getGeneralConfig().getPreventHopperTransferBottles() && (
-                item.getType() == Material.POTION || item.getType() == Material.SPLASH_POTION
-                        || item.getType() == Material.LINGERING_POTION)) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (!mcMMO.p.getGeneralConfig().getEnabledForHoppers()) {
-            return;
-        }
-
         final InventoryHolder holder = inventory.getHolder();
 
-        if (holder instanceof BrewingStand brewingStand) {
+        if (holder instanceof final BrewingStand brewingStand) {
+
+            final ItemStack item = event.getItem();
+
+            if (mcMMO.p.getGeneralConfig().getPreventHopperTransferIngredients()
+                    && item.getType() != Material.POTION && item.getType() != Material.SPLASH_POTION
+                    && item.getType() != Material.LINGERING_POTION) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (mcMMO.p.getGeneralConfig().getPreventHopperTransferBottles() && (
+                    item.getType() == Material.POTION || item.getType() == Material.SPLASH_POTION
+                            || item.getType() == Material.LINGERING_POTION)) {
+                event.setCancelled(true);
+                return;
+            }
             int ingredientLevel = 1;
 
-            OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(brewingStand);
+            final OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(brewingStand);
             if (offlinePlayer != null && offlinePlayer.isOnline()) {
                 final McMMOPlayer mmoPlayer = UserManager.getPlayer(offlinePlayer.getPlayer());
                 if (mmoPlayer != null) {
@@ -440,7 +434,8 @@ public class InventoryListener implements Listener {
                 }
             }
 
-            if (AlchemyPotionBrewer.isValidIngredientByLevel(ingredientLevel, item)) {
+            if (mcMMO.p.getGeneralConfig().getEnabledForHoppers()
+                    && AlchemyPotionBrewer.isValidIngredientByLevel(ingredientLevel, item)) {
                 AlchemyPotionBrewer.scheduleCheck(brewingStand);
             }
         }
@@ -461,7 +456,7 @@ public class InventoryListener implements Listener {
                 return;
             }
 
-            PlayerInventory playerInventory = event.getWhoClicked().getInventory();
+            final PlayerInventory playerInventory = event.getWhoClicked().getInventory();
 
             if (playerInventory.getItem(event.getHotbarButton()) != null) {
                 SkillUtils.removeAbilityBuff(playerInventory.getItem(event.getHotbarButton()));

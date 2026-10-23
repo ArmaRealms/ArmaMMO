@@ -1,20 +1,11 @@
 package com.gmail.nossr50.util.scoreboards;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -27,6 +18,16 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.util.logging.Logger;
+import java.util.stream.Stream;
+
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Verifies the sidebar refresh decisions made by {@link ScoreboardManager#handleXp} and
@@ -45,6 +46,31 @@ class ScoreboardManagerTest {
 
     private static MockedStatic<mcMMO> mockedMcMMO;
     private static MockedStatic<LocaleLoader> mockedLocaleLoader;
+
+    /**
+     * Every (child skill, parent skill) pairing defined by {@link SkillTools}.
+     */
+    private static Stream<Arguments> childBoardParentSkillPairs() {
+        return Stream.of(
+                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.REPAIR),
+                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.FISHING),
+                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.MINING),
+                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.REPAIR)
+        );
+    }
+
+    /**
+     * Child boards paired with skills that are NOT parents of that child - including skills
+     * that parent the other child skill, the trickiest false-positive case.
+     */
+    private static Stream<Arguments> childBoardUnrelatedSkillPairs() {
+        return Stream.of(
+                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.MINING),
+                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.EXCAVATION),
+                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.FISHING),
+                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.HERBALISM)
+        );
+    }
 
     @BeforeAll
     void setUpAll() {
@@ -83,31 +109,6 @@ class ScoreboardManagerTest {
     @AfterEach
     void clearRegisteredBoards() {
         ScoreboardManager.PLAYER_SCOREBOARDS.clear();
-    }
-
-    /**
-     * Every (child skill, parent skill) pairing defined by {@link SkillTools}.
-     */
-    private static Stream<Arguments> childBoardParentSkillPairs() {
-        return Stream.of(
-                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.REPAIR),
-                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.FISHING),
-                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.MINING),
-                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.REPAIR)
-        );
-    }
-
-    /**
-     * Child boards paired with skills that are NOT parents of that child - including skills
-     * that parent the other child skill, the trickiest false-positive case.
-     */
-    private static Stream<Arguments> childBoardUnrelatedSkillPairs() {
-        return Stream.of(
-                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.MINING),
-                Arguments.of(PrimarySkillType.SALVAGE, PrimarySkillType.EXCAVATION),
-                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.FISHING),
-                Arguments.of(PrimarySkillType.SMELTING, PrimarySkillType.HERBALISM)
-        );
     }
 
     @ParameterizedTest
@@ -255,7 +256,7 @@ class ScoreboardManagerTest {
     }
 
     private ScoreboardWrapper registerSkillBoard(final PrimarySkillType boardSkill,
-            final boolean shown) {
+                                                 final boolean shown) {
         final ScoreboardWrapper wrapper = mock(ScoreboardWrapper.class);
         when(wrapper.isSkillScoreboard()).thenReturn(true);
         when(wrapper.isStatsScoreboard()).thenReturn(false);
@@ -270,7 +271,7 @@ class ScoreboardManagerTest {
      * {@code watchedPlayerName} (e.g. /inspect), as tracked by the manager's otherboard scan.
      */
     private ScoreboardWrapper registerObserverStatsBoard(final String observerName,
-            final String watchedPlayerName, final boolean shown) {
+                                                         final String watchedPlayerName, final boolean shown) {
         final ScoreboardWrapper wrapper = mock(ScoreboardWrapper.class);
         when(wrapper.isSkillScoreboard()).thenReturn(false);
         when(wrapper.isStatsScoreboard()).thenReturn(true);

@@ -5,6 +5,13 @@ import com.gmail.nossr50.skills.taming.TrackedTamingEntity;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.skills.ParticleEffectUtils;
 import com.gmail.nossr50.util.text.StringUtils;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,12 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class TransientEntityTracker {
     private final @NotNull Map<UUID, Set<TrackedTamingEntity>> playerSummonedEntityTracker;
@@ -29,17 +30,17 @@ public class TransientEntityTracker {
         this.entityLookupCache = ConcurrentHashMap.newKeySet();
     }
 
-    public void initPlayer(@NotNull Player player) {
+    public void initPlayer(@NotNull final Player player) {
         playerSummonedEntityTracker.computeIfAbsent(player.getUniqueId(),
                 __ -> ConcurrentHashMap.newKeySet());
     }
 
-    public void cleanupPlayer(@NotNull Player player) {
+    public void cleanupPlayer(@NotNull final Player player) {
         cleanPlayer(player, player.getUniqueId());
     }
 
     public int getActiveSummonsForPlayerOfType(@NotNull UUID playerUUID,
-            @NotNull CallOfTheWildType callOfTheWildType) {
+                                               @NotNull CallOfTheWildType callOfTheWildType) {
         final Set<TrackedTamingEntity> entities = playerSummonedEntityTracker.get(playerUUID);
         if (entities == null) {
             return 0;
@@ -55,21 +56,21 @@ public class TransientEntityTracker {
         return activeSummons;
     }
 
-    public void addSummon(@NotNull UUID playerUUID,
-            @NotNull TrackedTamingEntity trackedTamingEntity) {
+    public void addSummon(@NotNull final UUID playerUUID,
+                          @NotNull final TrackedTamingEntity trackedTamingEntity) {
         playerSummonedEntityTracker.computeIfAbsent(playerUUID, __ -> ConcurrentHashMap.newKeySet())
                 .add(trackedTamingEntity);
         entityLookupCache.add(trackedTamingEntity.getLivingEntity());
     }
 
-    public void killSummonAndCleanMobFlags(@NotNull LivingEntity livingEntity,
-            @Nullable Player player,
-            boolean timeExpired) {
+    public void killSummonAndCleanMobFlags(@NotNull final LivingEntity livingEntity,
+                                           @Nullable final Player player,
+                                           final boolean timeExpired) {
         if (livingEntity.isValid()) {
             livingEntity.setHealth(0); // Should trigger entity death events
             livingEntity.remove();
 
-            Location location = livingEntity.getLocation();
+            final Location location = livingEntity.getLocation();
 
             if (location.getWorld() != null) {
                 location.getWorld().playSound(location, Sound.BLOCK_FIRE_EXTINGUISH, 0.8F, 0.8F);
@@ -91,7 +92,7 @@ public class TransientEntityTracker {
         }
     }
 
-    public boolean isTransient(@NotNull LivingEntity livingEntity) {
+    public boolean isTransient(@NotNull final LivingEntity livingEntity) {
         return entityLookupCache.contains(livingEntity);
     }
 
@@ -100,7 +101,7 @@ public class TransientEntityTracker {
         playerSummonedEntityTracker.remove(playerUUID);
     }
 
-    private void killAndCleanAllSummons(@NotNull UUID playerUUID, @Nullable Player player) {
+    private void killAndCleanAllSummons(@NotNull final UUID playerUUID, @Nullable final Player player) {
         final Set<TrackedTamingEntity> entities = playerSummonedEntityTracker.get(playerUUID);
         if (entities == null) {
             return;
@@ -114,14 +115,14 @@ public class TransientEntityTracker {
                 trackedTamingEntity -> killAndCleanSummon(playerUUID, player, trackedTamingEntity));
     }
 
-    public void killAndCleanSummon(@NotNull UUID playerUUID, @Nullable Player player,
-            @NotNull TrackedTamingEntity trackedTamingEntity) {
+    public void killAndCleanSummon(@NotNull final UUID playerUUID, @Nullable final Player player,
+                                   @NotNull final TrackedTamingEntity trackedTamingEntity) {
         killSummonAndCleanMobFlags(trackedTamingEntity.getLivingEntity(), player, false);
         removeSummonFromTracker(playerUUID, trackedTamingEntity);
     }
 
-    public void removeSummonFromTracker(@NotNull UUID playerUUID,
-            @NotNull TrackedTamingEntity trackedTamingEntity) {
+    public void removeSummonFromTracker(@NotNull final UUID playerUUID,
+                                        @NotNull final TrackedTamingEntity trackedTamingEntity) {
         entityLookupCache.remove(trackedTamingEntity.getLivingEntity());
 
         if (playerSummonedEntityTracker.containsKey(playerUUID)) {
@@ -129,7 +130,7 @@ public class TransientEntityTracker {
         }
     }
 
-    public void removeTrackedEntity(@NotNull LivingEntity livingEntity) {
+    public void removeTrackedEntity(@NotNull final LivingEntity livingEntity) {
         // Fail fast if the entity isn't being tracked
         if (!entityLookupCache.contains(livingEntity)) {
             return;

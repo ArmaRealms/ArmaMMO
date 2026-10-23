@@ -1,22 +1,23 @@
 package com.gmail.nossr50.config.experience;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Answers.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.mock;
-
 import com.gmail.nossr50.config.BukkitConfig;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Answers.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
 
 /**
  * Unit tests for {@link ExperienceConfig} combat XP ceiling settings. These guard against the
@@ -41,7 +42,9 @@ class ExperienceConfigTest {
         return experienceConfig;
     }
 
-    /** Loads the experience.yml bundled with the plugin jar. */
+    /**
+     * Loads the experience.yml bundled with the plugin jar.
+     */
     private static YamlConfiguration shippedExperienceYaml() {
         final InputStream resource =
                 ExperienceConfig.class.getClassLoader().getResourceAsStream("experience.yml");

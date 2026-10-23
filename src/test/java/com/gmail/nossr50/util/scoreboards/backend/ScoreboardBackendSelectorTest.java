@@ -1,9 +1,9 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.gmail.nossr50.util.platform.MinecraftGameVersion;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ScoreboardBackendSelectorTest {
     @Test

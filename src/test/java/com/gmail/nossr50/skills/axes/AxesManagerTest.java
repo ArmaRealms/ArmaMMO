@@ -1,13 +1,5 @@
 package com.gmail.nossr50.skills.axes;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -32,6 +24,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Axes combat effects that depend on the committed attack strength of a hit.
@@ -264,7 +264,7 @@ class AxesManagerTest extends MMOTestEnvironment {
             Mockito.when(RankUtils.getRank(player, SubSkillType.AXES_AXE_MASTERY)).thenReturn(4);
 
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // And - the mastery activation succeeds
                 probabilityUtil.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.AXES_AXE_MASTERY, mmoPlayer)).thenReturn(true);
@@ -300,9 +300,9 @@ class AxesManagerTest extends MMOTestEnvironment {
             when(NotificationManager.doesPlayerUseNotifications(defender)).thenReturn(true);
 
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
-                        eq(SubSkillType.AXES_CRITICAL_STRIKES), eq(mmoPlayer), eq(1.0)))
+                                eq(SubSkillType.AXES_CRITICAL_STRIKES), eq(mmoPlayer), eq(1.0)))
                         .thenReturn(true);
 
                 // When - an 8.0 damage hit crits
@@ -331,10 +331,10 @@ class AxesManagerTest extends MMOTestEnvironment {
             Mockito.when(RankUtils.getRank(player, SubSkillType.AXES_ARMOR_IMPACT)).thenReturn(4);
 
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<SkillUtils> skillUtils = mockStatic(SkillUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<SkillUtils> skillUtils = mockStatic(SkillUtils.class)) {
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
-                        eq(SubSkillType.AXES_ARMOR_IMPACT), eq(mmoPlayer), eq(1.0)))
+                                eq(SubSkillType.AXES_ARMOR_IMPACT), eq(mmoPlayer), eq(1.0)))
                         .thenReturn(true);
 
                 // When - the impact check runs at full strength
@@ -349,7 +349,7 @@ class AxesManagerTest extends MMOTestEnvironment {
         @Test
         void targetsWithoutEquipmentShouldBeSkipped() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a target with no equipment at all
                 when(target.getEquipment()).thenReturn(null);
 
@@ -370,11 +370,11 @@ class AxesManagerTest extends MMOTestEnvironment {
             when(player.getLocation()).thenReturn(new org.bukkit.Location(world, 0, 64, 0, 0, 0));
 
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ParticleEffectUtils> particles =
-                            mockStatic(ParticleEffectUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ParticleEffectUtils> particles =
+                         mockStatic(ParticleEffectUtils.class)) {
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
-                        eq(SubSkillType.AXES_GREATER_IMPACT), eq(mmoPlayer), eq(1.0)))
+                                eq(SubSkillType.AXES_GREATER_IMPACT), eq(mmoPlayer), eq(1.0)))
                         .thenReturn(true);
 
                 // When - the greater impact procs

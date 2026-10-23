@@ -1,18 +1,7 @@
 package com.gmail.nossr50.skills.fishing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
-import java.util.logging.Logger;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +11,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
+
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class FishingTest extends MMOTestEnvironment {
     private static final Logger LOGGER = Logger.getLogger(FishingTest.class.getName());
@@ -161,7 +162,7 @@ public class FishingTest extends MMOTestEnvironment {
                 "3.0, false",
         })
         void castsCountAsTheSameSpotOnlyWhileTheirRangesOverlap(double xOffset,
-                boolean sameSpot) {
+                                                                boolean sameSpot) {
             // Given - a first cast anchoring the tracked fishing spot
             fishingManager.processExploiting(new Vector(100, 64, 100));
 

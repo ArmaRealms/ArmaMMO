@@ -10,7 +10,7 @@ import org.bukkit.scoreboard.Scoreboard;
  */
 public class McMMOScoreboardMakeboardEvent extends McMMOScoreboardEvent {
     public McMMOScoreboardMakeboardEvent(Scoreboard targetBoard, Scoreboard currentBoard,
-            Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
+                                         Player targetPlayer, ScoreboardEventReason scoreboardEventReason) {
         super(targetBoard, currentBoard, targetPlayer, scoreboardEventReason);
     }
 }

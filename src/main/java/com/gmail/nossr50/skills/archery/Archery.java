@@ -6,26 +6,23 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.ItemUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Archery {
-    private static final Map<UUID, TrackedEntity> trackedEntities = new ConcurrentHashMap<>();
-
-    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
-            .getSkillShotDamageMax();
-
-    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
-
     public static final double DISTANCE_XP_MULTIPLIER = ExperienceConfig.getInstance()
             .getArcheryDistanceMultiplier();
+    private static final Map<UUID, TrackedEntity> trackedEntities = new ConcurrentHashMap<>();
+    public static double skillShotMaxBonusDamage = mcMMO.p.getAdvancedConfig()
+            .getSkillShotDamageMax();
+    public static double dazeBonusDamage = mcMMO.p.getAdvancedConfig().getDazeBonusDamage();
 
     protected static void incrementTrackerValue(LivingEntity livingEntity) {
         final TrackedEntity trackedEntity = trackedEntities.computeIfAbsent(
@@ -33,7 +30,7 @@ public class Archery {
         trackedEntity.incrementArrowCount();
     }
 
-    protected static void removeFromTracker(TrackedEntity trackedEntity) {
+    protected static void removeFromTracker(final TrackedEntity trackedEntity) {
         trackedEntities.remove(trackedEntity.getID());
     }
 
@@ -42,7 +39,7 @@ public class Archery {
      *
      * @param livingEntity The entity hit by the arrows
      */
-    public static void arrowRetrievalCheck(@NotNull LivingEntity livingEntity) {
+    public static void arrowRetrievalCheck(@NotNull final LivingEntity livingEntity) {
         final TrackedEntity trackedEntity = trackedEntities.remove(livingEntity.getUniqueId());
         if (trackedEntity != null) {
             ItemUtils.spawnItems(null, livingEntity.getLocation(),
@@ -57,7 +54,7 @@ public class Archery {
         return Math.min(newDamage, oldDamage + Archery.skillShotMaxBonusDamage);
     }
 
-    public static double getDamageBonusPercent(Player player) {
+    public static double getDamageBonusPercent(final Player player) {
         return ((RankUtils.getRank(player, SubSkillType.ARCHERY_SKILL_SHOT))
                 * (mcMMO.p.getAdvancedConfig().getSkillShotRankDamageMultiplier()) / 100.0D);
     }

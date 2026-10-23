@@ -4,10 +4,11 @@ import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.util.player.NotificationManager;
 import com.gmail.nossr50.util.sounds.SkillUnlockSoundThrottle;
-import java.util.logging.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.logging.Logger;
 
 /**
  * Covers the unlock sound behavior of batched sub-skill unlock notifications. Mass level

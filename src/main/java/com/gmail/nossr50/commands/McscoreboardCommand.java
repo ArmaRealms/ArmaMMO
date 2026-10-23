@@ -4,22 +4,21 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
-import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
-import org.bukkit.util.StringUtil;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 public class McscoreboardCommand implements TabExecutor {
-    private static final List<String> FIRST_ARGS = ImmutableList.of("keep", "time", "clear");
+    private static final List<String> FIRST_ARGS = List.of("keep", "time", "clear");
 
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
-        if (CommandUtils.noConsoleUsage(sender)) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(LocaleLoader.getString("Commands.NoConsole"));
             return true;
         }
 
@@ -42,8 +41,7 @@ public class McscoreboardCommand implements TabExecutor {
                 }
 
                 if (args[0].equalsIgnoreCase("keep")) {
-                    if (!mcMMO.p.getGeneralConfig().getAllowKeepBoard()
-                            || !mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
+                    if (!mcMMO.p.getGeneralConfig().getAllowKeepBoard() || !mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                         sender.sendMessage(LocaleLoader.getString("Commands.Disabled"));
                         return true;
                     }
@@ -81,13 +79,11 @@ public class McscoreboardCommand implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, String[] args) {
         if (args.length == 1) {
-            return StringUtil.copyPartialMatches(args[0], FIRST_ARGS,
-                    new ArrayList<>(FIRST_ARGS.size()));
+            return FIRST_ARGS.stream().filter(s -> s.startsWith(args[0])).toList();
         }
-        return ImmutableList.of();
+        return List.of();
     }
 
     private boolean help(CommandSender sender) {

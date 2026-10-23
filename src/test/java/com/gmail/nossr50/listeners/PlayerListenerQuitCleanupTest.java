@@ -1,19 +1,20 @@
 package com.gmail.nossr50.listeners;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.mcMMO;
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.UUID;
-import java.util.logging.Logger;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.UUID;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PlayerListenerQuitCleanupTest extends MMOTestEnvironment {
     private static final Logger logger = getLogger(

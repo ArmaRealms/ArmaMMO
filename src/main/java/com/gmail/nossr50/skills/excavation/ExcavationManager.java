@@ -1,7 +1,5 @@
 package com.gmail.nossr50.skills.excavation;
 
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
@@ -19,8 +17,6 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -30,9 +26,15 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
+
 public class ExcavationManager extends SkillManager {
-    public ExcavationManager(McMMOPlayer mmoPlayer) {
-        super(mmoPlayer, PrimarySkillType.EXCAVATION);
+
+    public ExcavationManager(final McMMOPlayer mcMMOPlayer) {
+        super(mcMMOPlayer, PrimarySkillType.EXCAVATION);
     }
 
     /**
@@ -41,11 +43,11 @@ public class ExcavationManager extends SkillManager {
      * @param blockState The {@link BlockState} to check ability activation for
      */
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void excavationBlockCheck(BlockState blockState) {
+    public void excavationBlockCheck(final @NotNull BlockState blockState) {
         excavationBlockCheck(blockState.getBlock());
     }
 
-    public void excavationBlockCheck(Block block) {
+    public void excavationBlockCheck(final Block block) {
         requireNonNull(block, "excavationBlockCheck: block cannot be null");
         final int xp = ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION, block.getType());
         applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
@@ -53,25 +55,25 @@ public class ExcavationManager extends SkillManager {
     }
 
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public List<ExcavationTreasure> getTreasures(@NotNull BlockState blockState) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final BlockState blockState) {
         requireNonNull(blockState, "blockState cannot be null");
         return getTreasures(blockState.getType());
     }
 
-    public List<ExcavationTreasure> getTreasures(@NotNull Block block) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final Block block) {
         requireNonNull(block, "block cannot be null");
         return getTreasures(block.getType());
     }
 
-    public List<ExcavationTreasure> getTreasures(@NotNull Material material) {
+    public List<ExcavationTreasure> getTreasures(@NotNull final Material material) {
         requireNonNull(material, "material cannot be null");
         return Excavation.getTreasures(material);
     }
 
     @VisibleForTesting
     @Deprecated(forRemoval = true, since = "2.2.024")
-    public void processExcavationBonusesOnBlock(BlockState ignored, ExcavationTreasure treasure,
-            Location location) {
+    public void processExcavationBonusesOnBlock(final BlockState ignored, final ExcavationTreasure treasure,
+                                                final Location location) {
         processExcavationBonusesOnBlock(treasure, location);
     }
 
@@ -88,7 +90,7 @@ public class ExcavationManager extends SkillManager {
      * @return list of treasure {@link ItemStack}s from all successful rolls
      */
     public @NotNull List<ItemStack> rollAndCollectTreasureDrops(
-            @NotNull Block block, @NotNull Material material) {
+            @NotNull final Block block, @NotNull final Material material) {
         requireNonNull(block, "block cannot be null");
         requireNonNull(material, "material cannot be null");
         return doRollAndCollectTreasureDrops(material, Misc.getBlockCenter(block));
@@ -96,17 +98,17 @@ public class ExcavationManager extends SkillManager {
 
     /**
      * @deprecated Use {@link #rollAndCollectTreasureDrops(Block, Material)} instead. When called
-     *     during {@link org.bukkit.event.block.BlockDropItemEvent}, {@code block.getType()}
-     *     returns AIR, causing treasure lookup to fail silently.
+     * during {@link org.bukkit.event.block.BlockDropItemEvent}, {@code block.getType()}
+     * returns AIR, causing treasure lookup to fail silently.
      */
     @Deprecated(forRemoval = true, since = "2.2.053")
-    public @NotNull List<ItemStack> rollAndCollectTreasureDrops(@NotNull Block block) {
+    public @NotNull List<ItemStack> rollAndCollectTreasureDrops(@NotNull final Block block) {
         requireNonNull(block, "block cannot be null");
         return doRollAndCollectTreasureDrops(block.getType(), Misc.getBlockCenter(block));
     }
 
     private @NotNull List<ItemStack> doRollAndCollectTreasureDrops(
-            @NotNull Material material, @NotNull Location centerOfBlock) {
+            @NotNull final Material material, @NotNull final Location centerOfBlock) {
         if (!Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
             return List.of();
         }
@@ -147,20 +149,19 @@ public class ExcavationManager extends SkillManager {
 
     /**
      * @deprecated Treasure drops are now handled via
-     *     {@link #rollAndCollectTreasureDrops(Block)} inside
-     *     {@link org.bukkit.event.block.BlockDropItemEvent} so they are visible to
-     *     Telekinesis-style enchant plugins.
+     * {@link #rollAndCollectTreasureDrops(Block)} inside
+     * {@link org.bukkit.event.block.BlockDropItemEvent} so they are visible to
+     * Telekinesis-style enchant plugins.
      */
-    public void processExcavationBonusesOnBlock(ExcavationTreasure treasure, Location location) {
+    public void processExcavationBonusesOnBlock(final ExcavationTreasure treasure, final Location location) {
         //Spawn Vanilla XP orbs if a dice roll succeeds
         if (ProbabilityUtil.isStaticSkillRNGSuccessful(
                 PrimarySkillType.EXCAVATION, mmoPlayer, getArchaelogyExperienceOrbChance())) {
             Misc.spawnExperienceOrb(location, getExperienceOrbsReward());
         }
 
-        int xp = treasure.getXp();
-        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop(),
-                ItemSpawnReason.EXCAVATION_TREASURE);
+        final int xp = treasure.getXp();
+        ItemUtils.spawnItem(getPlayer(), location, treasure.getDrop(), ItemSpawnReason.EXCAVATION_TREASURE);
         if (xp > 0) {
             applyXpGain(xp, XPGainReason.PVE, XPGainSource.SELF);
         }
@@ -171,26 +172,23 @@ public class ExcavationManager extends SkillManager {
     }
 
     public double getArchaelogyExperienceOrbChance() {
-        return getArchaeologyRank() * 2;
+        return getArchaeologyRank() * 2.0;
     }
 
     public int getArchaeologyRank() {
         return RankUtils.getRank(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY);
     }
 
-    public void printExcavationDebug(Player player, Block block) {
+    public void printExcavationDebug(final Player player, final Block block) {
         if (Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.EXCAVATION_ARCHAEOLOGY)) {
-            List<ExcavationTreasure> treasures = Excavation.getTreasures(block);
+            final List<ExcavationTreasure> treasures = Excavation.getTreasures(block);
 
             if (!treasures.isEmpty()) {
-                for (ExcavationTreasure treasure : treasures) {
+                for (final ExcavationTreasure treasure : treasures) {
                     player.sendMessage("|||||||||||||||||||||||||||||||||");
-                    player.sendMessage(
-                            "[mcMMO DEBUG] Treasure found: (" + treasure.getDrop().getType() + ")");
-                    player.sendMessage(
-                            "[mcMMO DEBUG] Drop Chance for Treasure: " + treasure.getDropChance());
-                    player.sendMessage(
-                            "[mcMMO DEBUG] Skill Level Required: " + treasure.getDropLevel());
+                    player.sendMessage("[mcMMO DEBUG] Treasure found: (" + treasure.getDrop().getType() + ")");
+                    player.sendMessage("[mcMMO DEBUG] Drop Chance for Treasure: " + treasure.getDropChance());
+                    player.sendMessage("[mcMMO DEBUG] Skill Level Required: " + treasure.getDropLevel());
                     player.sendMessage("[mcMMO DEBUG] XP for Treasure: " + treasure.getXp());
                 }
             } else {
@@ -204,10 +202,8 @@ public class ExcavationManager extends SkillManager {
      *
      * @param block The {@link Block} to check ability activation for
      */
-    public void gigaDrillBreaker(Block block) {
+    public void gigaDrillBreaker(final Block block) {
         excavationBlockCheck(block);
-        excavationBlockCheck(block);
-
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
     }

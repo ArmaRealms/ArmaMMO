@@ -1,7 +1,5 @@
 package com.gmail.nossr50.util.skills;
 
-import static com.gmail.nossr50.util.MetadataConstants.ARROW_METADATA_KEYS;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.MetadataConstants;
 import org.bukkit.block.BlockFace;
@@ -12,6 +10,8 @@ import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+
+import static com.gmail.nossr50.util.MetadataConstants.ARROW_METADATA_KEYS;
 
 public class ProjectileUtils {
 
@@ -41,12 +41,12 @@ public class ProjectileUtils {
     /**
      * Copies metadata from one arrow to another.
      *
-     * @param pluginRef mcMMO plugin reference.
+     * @param pluginRef   mcMMO plugin reference.
      * @param sourceArrow The arrow from which metadata is copied.
      * @param targetArrow The arrow to which metadata is copied.
      */
     public static void copyArrowMetadata(@NotNull Plugin pluginRef, @NotNull Arrow sourceArrow,
-            @NotNull Arrow targetArrow) {
+                                         @NotNull Arrow targetArrow) {
         ARROW_METADATA_KEYS.stream()
                 .filter(sourceArrow::hasMetadata)
                 .forEach(key -> {

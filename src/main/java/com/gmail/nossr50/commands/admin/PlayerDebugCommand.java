@@ -14,8 +14,8 @@ public class PlayerDebugCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label,
-            String[] args) {
+                             @NotNull String label,
+                             String[] args) {
         if (sender instanceof Player player) {
             final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
             if (mmoPlayer == null) {

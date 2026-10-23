@@ -1,12 +1,6 @@
 package com.gmail.nossr50.util.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.mcMMO;
-import java.util.List;
 import org.bukkit.Server;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -14,6 +8,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class CommandUtilsTest {
 
@@ -56,7 +57,9 @@ class CommandUtilsTest {
         assertThat(names).containsExactlyInAnyOrder("PlayerA", "PlayerB");
     }
 
-    /** Guard: player senders must keep vanish support and only see players visible to them. */
+    /**
+     * Guard: player senders must keep vanish support and only see players visible to them.
+     */
     @Test
     void playersShouldOnlyGetNamesOfPlayersTheyCanSee() {
         // Given - a player who can see PlayerA but not the vanished PlayerB

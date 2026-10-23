@@ -2,16 +2,17 @@ package com.gmail.nossr50.database.flatfile;
 
 import com.gmail.nossr50.database.FlatFileDataFlag;
 import com.google.common.base.Objects;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.HashSet;
-import org.jetbrains.annotations.NotNull;
 
 public class BadCategorizedFlatFileData extends CategorizedFlatFileData {
     private final boolean[] badDataIndexes;
 
     protected BadCategorizedFlatFileData(int uniqueProcessingId,
-            @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData,
-            boolean[] badDataIndexes) {
+                                         @NotNull HashSet<FlatFileDataFlag> dataFlags, @NotNull String[] splitData,
+                                         boolean[] badDataIndexes) {
         super(uniqueProcessingId, dataFlags, splitData);
         this.badDataIndexes = badDataIndexes;
     }

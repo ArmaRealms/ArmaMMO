@@ -1,23 +1,10 @@
 package com.gmail.nossr50.util.text;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -34,6 +21,20 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @TestInstance(Lifecycle.PER_CLASS)
 class TextComponentFactoryTest {
 
@@ -41,6 +42,58 @@ class TextComponentFactoryTest {
 
     private static MockedStatic<mcMMO> mockedMcMMO;
     private SkillTools skillTools;
+
+    static Stream<Arguments> wikiLinkProvider() {
+        return Stream.of(
+                Arguments.of(
+                        SubSkillType.MINING_BLAST_MINING,
+                        "https://wiki.mcmmo.org/en/skills/mining#blast-mining"),
+                Arguments.of(
+                        SubSkillType.ACROBATICS_DODGE,
+                        "https://wiki.mcmmo.org/en/skills/acrobatics#dodge"),
+                Arguments.of(
+                        SubSkillType.SWORDS_COUNTER_ATTACK,
+                        "https://wiki.mcmmo.org/en/skills/swords#counter-attack"),
+                Arguments.of(
+                        SubSkillType.WOODCUTTING_TREE_FELLER,
+                        "https://wiki.mcmmo.org/en/skills/woodcutting#tree-feller"),
+                Arguments.of(
+                        SubSkillType.UNARMED_ARROW_DEFLECT,
+                        "https://wiki.mcmmo.org/en/skills/unarmed#arrow-deflect")
+        );
+    }
+
+    private static @NotNull List<Component> flattenDepthFirst(final @NotNull Component root) {
+        final List<Component> segments = new ArrayList<>();
+        collectSegments(root, segments);
+        return segments;
+    }
+
+    // -------------------------------------------------------------------------
+    // getSubSkillWikiLink()
+    // -------------------------------------------------------------------------
+
+    private static void collectSegments(final @NotNull Component component,
+                                        final @NotNull List<Component> sink) {
+        sink.add(component);
+        for (final Component child : component.children()) {
+            collectSegments(child, sink);
+        }
+    }
+
+    /**
+     * Derives a {@link PrimarySkillType} from the enum constant name prefix.
+     * {@code MINING_BLAST_MINING} → {@code PrimarySkillType.MINING}.
+     */
+    private static PrimarySkillType parentFromEnumName(final @NotNull String enumName) {
+        final String prefix = enumName.substring(0, enumName.indexOf('_')).toUpperCase();
+        for (final PrimarySkillType primary : PrimarySkillType.values()) {
+            if (primary.name().equals(prefix)) {
+                return primary;
+            }
+        }
+        return null;
+    }
 
     @BeforeAll
     void setUpAll() throws IOException {
@@ -76,10 +129,6 @@ class TextComponentFactoryTest {
         mockedMcMMO.close();
     }
 
-    // -------------------------------------------------------------------------
-    // getSubSkillWikiLink()
-    // -------------------------------------------------------------------------
-
     @ParameterizedTest
     @MethodSource("wikiLinkProvider")
     void getSubSkillWikiLinkShouldProduceCorrectUrl(
@@ -89,25 +138,9 @@ class TextComponentFactoryTest {
                 .isEqualTo(expectedUrl);
     }
 
-    static Stream<Arguments> wikiLinkProvider() {
-        return Stream.of(
-                Arguments.of(
-                        SubSkillType.MINING_BLAST_MINING,
-                        "https://wiki.mcmmo.org/en/skills/mining#blast-mining"),
-                Arguments.of(
-                        SubSkillType.ACROBATICS_DODGE,
-                        "https://wiki.mcmmo.org/en/skills/acrobatics#dodge"),
-                Arguments.of(
-                        SubSkillType.SWORDS_COUNTER_ATTACK,
-                        "https://wiki.mcmmo.org/en/skills/swords#counter-attack"),
-                Arguments.of(
-                        SubSkillType.WOODCUTTING_TREE_FELLER,
-                        "https://wiki.mcmmo.org/en/skills/woodcutting#tree-feller"),
-                Arguments.of(
-                        SubSkillType.UNARMED_ARROW_DEFLECT,
-                        "https://wiki.mcmmo.org/en/skills/unarmed#arrow-deflect")
-        );
-    }
+    // -------------------------------------------------------------------------
+    // getNotificationLevelUpTextComponent()
+    // -------------------------------------------------------------------------
 
     @ParameterizedTest
     @MethodSource("wikiLinkProvider")
@@ -116,6 +149,10 @@ class TextComponentFactoryTest {
         assertThat(TextComponentFactory.getSubSkillWikiLink(subSkillType))
                 .startsWith("https://wiki.mcmmo.org/en/skills/");
     }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
 
     @ParameterizedTest
     @MethodSource("wikiLinkProvider")
@@ -133,10 +170,6 @@ class TextComponentFactoryTest {
         assertThat(TextComponentFactory.getSubSkillWikiLink(subSkillType))
                 .isEqualTo(TextComponentFactory.getSubSkillWikiLink(subSkillType).toLowerCase());
     }
-
-    // -------------------------------------------------------------------------
-    // getNotificationLevelUpTextComponent()
-    // -------------------------------------------------------------------------
 
     /**
      * Level-up notifications must parse the legacy color codes from the locale into component
@@ -169,37 +202,5 @@ class TextComponentFactoryTest {
                         .isEqualTo(TextDecoration.State.TRUE));
         assertThat(segments).anySatisfy(segment ->
                 assertThat(segment.color()).isEqualTo(NamedTextColor.GREEN));
-    }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private static @NotNull List<Component> flattenDepthFirst(final @NotNull Component root) {
-        final List<Component> segments = new ArrayList<>();
-        collectSegments(root, segments);
-        return segments;
-    }
-
-    private static void collectSegments(final @NotNull Component component,
-            final @NotNull List<Component> sink) {
-        sink.add(component);
-        for (final Component child : component.children()) {
-            collectSegments(child, sink);
-        }
-    }
-
-    /**
-     * Derives a {@link PrimarySkillType} from the enum constant name prefix.
-     * {@code MINING_BLAST_MINING} → {@code PrimarySkillType.MINING}.
-     */
-    private static PrimarySkillType parentFromEnumName(final @NotNull String enumName) {
-        final String prefix = enumName.substring(0, enumName.indexOf('_')).toUpperCase();
-        for (final PrimarySkillType primary : PrimarySkillType.values()) {
-            if (primary.name().equals(prefix)) {
-                return primary;
-            }
-        }
-        return null;
     }
 }

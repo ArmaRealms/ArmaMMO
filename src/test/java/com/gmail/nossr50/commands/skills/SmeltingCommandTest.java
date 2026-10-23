@@ -1,9 +1,5 @@
 package com.gmail.nossr50.commands.skills;
 
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.config.AdvancedConfig;
@@ -12,14 +8,6 @@ import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.skills.RankUtils;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +17,19 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Collections;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 /**
  * /smelting shows the Vanilla XP multiplier that a player's Understanding The Art rank earns.
@@ -41,11 +42,17 @@ class SmeltingCommandTest extends MMOTestEnvironment {
             "# VanillaXPMultiplier: Vanilla XP gained from smelting ores";
     private static final String MULTIPLIER_STAT_LABEL = "Vanilla XP Multiplier: ";
 
-    /** JUnit deletes this folder, and the advanced.yml written into it, after each test. */
+    /**
+     * JUnit deletes this folder, and the advanced.yml written into it, after each test.
+     */
     @TempDir
     File dataFolder;
 
     private SmeltingCommand smeltingCommand;
+
+    private static InputStream shippedAdvancedYml() {
+        return SmeltingCommandTest.class.getClassLoader().getResourceAsStream("advanced.yml");
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -66,10 +73,6 @@ class SmeltingCommandTest extends MMOTestEnvironment {
     @AfterEach
     void tearDown() {
         cleanUpStaticMocks();
-    }
-
-    private static InputStream shippedAdvancedYml() {
-        return SmeltingCommandTest.class.getClassLoader().getResourceAsStream("advanced.yml");
     }
 
     /**
@@ -100,7 +103,9 @@ class SmeltingCommandTest extends MMOTestEnvironment {
         when(mcMMO.p.getAdvancedConfig()).thenReturn(loadedConfig);
     }
 
-    /** Runs /smelting's stat steps for a player at this rank and returns the lines, uncolored. */
+    /**
+     * Runs /smelting's stat steps for a player at this rank and returns the lines, uncolored.
+     */
     private List<String> statLinesAtRank(int rank) {
         when(RankUtils.getRank(player, SubSkillType.SMELTING_UNDERSTANDING_THE_ART))
                 .thenReturn(rank);
@@ -114,10 +119,14 @@ class SmeltingCommandTest extends MMOTestEnvironment {
 
     @Nested
     class VanillaXpMultiplierLine {
-        /** Differs from both the rank number and the shipped default at every rank. */
+        /**
+         * Differs from both the rank number and the shipped default at every rank.
+         */
         private static final List<String> WHOLE_NUMBER_MULTIPLIERS =
                 List.of("3", "4", "6", "7", "9", "10", "12", "15");
-        /** A server owner's curve that was reported as never showing up in game. */
+        /**
+         * A server owner's curve that was reported as never showing up in game.
+         */
         private static final List<String> REPORTED_DECIMAL_MULTIPLIERS =
                 List.of("1", "1.05", "1.1", "1.15", "1.2", "1.3", "1.4", "1.5");
 
@@ -152,7 +161,9 @@ class SmeltingCommandTest extends MMOTestEnvironment {
             assertThat(statLines).containsExactly(MULTIPLIER_STAT_LABEL + "1x");
         }
 
-        /** Rounds down rather than to the nearest, and never shows less than 1x. */
+        /**
+         * Rounds down rather than to the nearest, and never shows less than 1x.
+         */
         @ParameterizedTest(name = "{0} -> {1}x")
         @CsvSource({
                 "2.9, 2",
@@ -160,7 +171,7 @@ class SmeltingCommandTest extends MMOTestEnvironment {
                 "0.5, 1",
         })
         void shouldShowADecimalRoundedDownButNotBelowOne(String configuredMultiplier,
-                int shownMultiplier) throws IOException {
+                                                         int shownMultiplier) throws IOException {
             // Given - advanced.yml with the same decimal at every rank
             loadAdvancedYmlWithSmeltingMultipliers(Collections.nCopies(8, configuredMultiplier));
 

@@ -9,8 +9,6 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.commands.CommandUtils;
 import com.gmail.nossr50.util.player.UserManager;
 import com.google.common.collect.ImmutableList;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -19,10 +17,13 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class McRankCommand implements TabExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label, String[] args) {
+                             @NotNull String label, String[] args) {
         switch (args.length) {
             case 0:
                 if (CommandUtils.noConsoleUsage(sender)) {
@@ -78,7 +79,7 @@ public class McRankCommand implements TabExecutor {
 
     @Override
     public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String alias, String[] args) {
+                                      @NotNull String alias, String[] args) {
         if (args.length == 1) {
             List<String> playerNames = CommandUtils.getOnlinePlayerNames(sender);
             return StringUtil.copyPartialMatches(args[0], playerNames,

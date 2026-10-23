@@ -1,25 +1,8 @@
 package com.gmail.nossr50.skills.taming;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyDouble;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.PersistentDataConfig;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -28,7 +11,6 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
 import com.gmail.nossr50.datatypes.skills.subskills.taming.CallOfTheWildType;
 import com.gmail.nossr50.events.skills.taming.McMMOPlayerTameEntityEvent;
-import com.gmail.nossr50.config.PersistentDataConfig;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.metadata.MobMetaFlagType;
@@ -44,9 +26,6 @@ import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -68,6 +47,28 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.logging.Logger;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 class TamingManagerTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(TamingManagerTest.class.getName());
 
@@ -77,6 +78,14 @@ class TamingManagerTest extends MMOTestEnvironment {
 
     private TamingManager tamingManager;
     private PlatformScheduler scheduler;
+
+    private static Material summonItemFor(CallOfTheWildType summonType) {
+        return switch (summonType) {
+            case CAT -> Material.COD;
+            case WOLF -> Material.BONE;
+            case HORSE -> Material.APPLE;
+        };
+    }
 
     @BeforeEach
     void setUp() throws InvalidSkillException {
@@ -91,7 +100,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         // bootstrap it here so the summon tests can flag mobs for real
         when(mcMMO.p.getName()).thenReturn("mcMMO");
         try (final MockedStatic<PersistentDataConfig> mockedPersistentData =
-                mockStatic(PersistentDataConfig.class)) {
+                     mockStatic(PersistentDataConfig.class)) {
             mockedPersistentData.when(PersistentDataConfig::getInstance)
                     .thenReturn(mock(PersistentDataConfig.class));
             Class.forName("com.gmail.nossr50.util.MobMetadataUtils");
@@ -121,14 +130,6 @@ class TamingManagerTest extends MMOTestEnvironment {
     void tearDown() {
         resetCotwStaticCaches();
         cleanUpStaticMocks();
-    }
-
-    private static Material summonItemFor(CallOfTheWildType summonType) {
-        return switch (summonType) {
-            case CAT -> Material.COD;
-            case WOLF -> Material.BONE;
-            case HORSE -> Material.APPLE;
-        };
     }
 
     private void resetCotwStaticCaches() {
@@ -212,6 +213,19 @@ class TamingManagerTest extends MMOTestEnvironment {
         verify(player, never()).getNearbyEntities(anyDouble(), anyDouble(), anyDouble());
     }
 
+    @Test
+    void cotwItemsShouldBeRecognized() {
+        // Given - the configured wolf summon item and an unrelated item
+        final ItemStack bone = mock(ItemStack.class);
+        when(bone.getType()).thenReturn(Material.BONE);
+        final ItemStack stone = mock(ItemStack.class);
+        when(stone.getType()).thenReturn(Material.STONE);
+
+        // When / Then - only the summon item is recognized
+        assertThat(tamingManager.isCOTWItem(bone)).isTrue();
+        assertThat(tamingManager.isCOTWItem(stone)).isFalse();
+    }
+
     @Nested
     class AbilityGates {
         /**
@@ -293,7 +307,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void failedRollShouldNotHeal() {
             try (final MockedStatic<ProbabilityUtil> ignored =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a Fast Food Service roll that fails
                 // When - the wolf absorbs 4 damage
                 tamingManager.fastFoodService(wolf, 4.0);
@@ -306,7 +320,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void successfulRollShouldHealTheDamageDealt() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a Fast Food Service roll that succeeds
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.TAMING_FAST_FOOD_SERVICE, mmoPlayer)).thenReturn(true);
@@ -322,7 +336,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void healingShouldClampAtMaxHealth() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a nearly full wolf and a successful roll
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.TAMING_FAST_FOOD_SERVICE, mmoPlayer)).thenReturn(true);
@@ -339,7 +353,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void fullHealthWolvesShouldBeLeftAlone() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a wolf already at max health and a successful roll
                 mockedProbability.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.TAMING_FAST_FOOD_SERVICE, mmoPlayer)).thenReturn(true);
@@ -403,7 +417,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void lockedPummelShouldDoNothing() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - Pummel has not been unlocked
                 when(RankUtils.hasUnlockedSubskill(player, SubSkillType.TAMING_PUMMEL))
                         .thenReturn(false);
@@ -420,7 +434,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void failedRollShouldNotKnockBack() {
             try (final MockedStatic<ProbabilityUtil> ignored =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the Pummel roll fails
                 // When - a wolf hit processes
                 tamingManager.pummel(target, wolf);
@@ -433,9 +447,9 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void successfulPummelShouldKnockTheTargetBack() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<ParticleEffectUtils> mockedParticles =
-                            mockStatic(ParticleEffectUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<ParticleEffectUtils> mockedParticles =
+                         mockStatic(ParticleEffectUtils.class)) {
                 // Given - the Pummel roll succeeds at the configured chance
                 mockedProbability.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
                         PrimarySkillType.TAMING, mmoPlayer, 15.0)).thenReturn(true);
@@ -452,9 +466,9 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void pummeledPlayersShouldBeToldWhatHitThem() {
             try (final MockedStatic<ProbabilityUtil> mockedProbability =
-                    mockStatic(ProbabilityUtil.class);
-                    final MockedStatic<ParticleEffectUtils> ignored =
-                            mockStatic(ParticleEffectUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 final MockedStatic<ParticleEffectUtils> ignored =
+                         mockStatic(ParticleEffectUtils.class)) {
                 // Given - a successful pummel against a player who uses notifications
                 mockedProbability.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
                         PrimarySkillType.TAMING, mmoPlayer, 15.0)).thenReturn(true);
@@ -643,7 +657,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void summonShouldSpawnConfigureTrackAndChargeTheWolf() {
             try (final MockedStatic<LocaleLoader> mockedLocaleLoader =
-                    mockStatic(LocaleLoader.class)) {
+                         mockStatic(LocaleLoader.class)) {
                 mockedLocaleLoader.when(() -> LocaleLoader.getString(anyString(),
                         any(Object[].class))).thenReturn("Summon Name");
 
@@ -757,7 +771,7 @@ class TamingManagerTest extends MMOTestEnvironment {
         @Test
         void rapidRepeatSummonsShouldBeThrottled() {
             try (final MockedStatic<LocaleLoader> ignoredLocale =
-                    mockStatic(LocaleLoader.class)) {
+                         mockStatic(LocaleLoader.class)) {
                 // Given - a successful summon just happened
                 tamingManager.summonWolf();
 
@@ -773,18 +787,5 @@ class TamingManagerTest extends MMOTestEnvironment {
                 verify(world, times(2)).spawnEntity(any(Location.class), eq(EntityType.WOLF));
             }
         }
-    }
-
-    @Test
-    void cotwItemsShouldBeRecognized() {
-        // Given - the configured wolf summon item and an unrelated item
-        final ItemStack bone = mock(ItemStack.class);
-        when(bone.getType()).thenReturn(Material.BONE);
-        final ItemStack stone = mock(ItemStack.class);
-        when(stone.getType()).thenReturn(Material.STONE);
-
-        // When / Then - only the summon item is recognized
-        assertThat(tamingManager.isCOTWItem(bone)).isTrue();
-        assertThat(tamingManager.isCOTWItem(stone)).isFalse();
     }
 }

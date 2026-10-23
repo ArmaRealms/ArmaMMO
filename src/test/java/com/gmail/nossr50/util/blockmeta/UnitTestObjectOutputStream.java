@@ -1,13 +1,14 @@
 package com.gmail.nossr50.util.blockmeta;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import org.jetbrains.annotations.NotNull;
 
 class UnitTestObjectOutputStream extends ObjectOutputStream {
 
-    public UnitTestObjectOutputStream(@NotNull OutputStream outputStream) throws IOException {
+    public UnitTestObjectOutputStream(@NotNull final OutputStream outputStream) throws IOException {
         super(outputStream);
     }
 

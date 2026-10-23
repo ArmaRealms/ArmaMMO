@@ -1,8 +1,9 @@
 package com.gmail.nossr50.placeholders;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
-import java.util.Locale;
 import org.bukkit.entity.Player;
+
+import java.util.Locale;
 
 public class SkillExpRemainingPlaceholder implements Placeholder {
     private final PapiExpansion papiExpansion;

@@ -21,8 +21,6 @@ import com.gmail.nossr50.util.skills.SkillUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Map;
-import java.util.Map.Entry;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -31,6 +29,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class SalvageManager extends SkillManager {
     private static final int CONFIRMATION_WINDOW_SECONDS = 3;
@@ -41,6 +42,15 @@ public class SalvageManager extends SkillManager {
 
     public SalvageManager(McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.SALVAGE);
+    }
+
+    public static int getSalvageLimit(Player player) {
+        if (RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR) == 1) {
+            return 1;
+        } else {
+            var curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
+            return curRank * 2;
+        }
     }
 
     /**
@@ -64,6 +74,10 @@ public class SalvageManager extends SkillManager {
 
         togglePlacedAnvil();
     }
+
+    /*public double getMaxSalvagePercentage() {
+        return Math.min((((Salvage.salvageMaxPercentage / Salvage.salvageMaxPercentageLevel) * getSkillLevel()) / 100.0D), Salvage.salvageMaxPercentage / 100.0D);
+    }*/
 
     public void handleSalvage(Location location, ItemStack item) {
         final Player player = getPlayer();
@@ -184,19 +198,6 @@ public class SalvageManager extends SkillManager {
                 "Salvage.Skills.Success");
     }
 
-    /*public double getMaxSalvagePercentage() {
-        return Math.min((((Salvage.salvageMaxPercentage / Salvage.salvageMaxPercentageLevel) * getSkillLevel()) / 100.0D), Salvage.salvageMaxPercentage / 100.0D);
-    }*/
-
-    public static int getSalvageLimit(Player player) {
-        if (RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR) == 1) {
-            return 1;
-        } else {
-            var curRank = RankUtils.getRank(player, SubSkillType.SALVAGE_SCRAP_COLLECTOR);
-            return curRank * 2;
-        }
-    }
-
     /**
      * Gets the Arcane Salvage rank
      *
@@ -314,7 +315,7 @@ public class SalvageManager extends SkillManager {
      * prompt (for example through vanilla armor quick-equipping) starts a new confirmation
      * instead of being salvaged.
      *
-     * @param item the item the player is attempting to salvage
+     * @param item      the item the player is attempting to salvage
      * @param actualize whether to start a new confirmation when none applies to the item
      * @return true if the player has confirmed salvaging the given item
      */

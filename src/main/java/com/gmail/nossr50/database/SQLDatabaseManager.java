@@ -1,9 +1,5 @@
 package com.gmail.nossr50.database;
 
-import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
-import static com.gmail.nossr50.database.UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
-import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
-
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.MobHealthbarType;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
@@ -29,12 +25,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.database.UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
+import static com.gmail.nossr50.database.UsernamePlaceholder.isInvalidOldUsername;
 
 public final class SQLDatabaseManager implements DatabaseManager {
 
@@ -48,7 +63,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
     public static final int CHILD_SKILLS_SIZE = 2;
     public static final String LEGACY_DRIVER_PATH = "com.mysql.jdbc.Driver";
     private static final String ALL_QUERY_VERSION = "total";
-    /** Row ids start at 1, so no row has this one. */
+    /**
+     * Row ids start at 1, so no row has this one.
+     */
     private static final int NO_USER_ID = -1;
 
     /**
@@ -154,6 +171,51 @@ public final class SQLDatabaseManager implements DatabaseManager {
         return connectionString;
     }
 
+    /**
+     * Binds both spellings of the placeholder for a {@code NOT IN (?, ?)} ghost-row filter.
+     * Converted FlatFile databases carry the older spelling. The users table's default
+     * collation compares them ignoring case, like {@link UsernamePlaceholder}.
+     *
+     * @return the index of the parameter after them
+     */
+    static int bindInvalidOldUsernames(@NotNull PreparedStatement statement, int firstIndex)
+            throws SQLException {
+        statement.setString(firstIndex, INVALID_OLD_USERNAME);
+        statement.setString(firstIndex + 1, LEGACY_FLATFILE_INVALID_OLD_USERNAME);
+        return firstIndex + 2;
+    }
+
+    private static @Nullable UUID parseUuidOrNull(@Nullable String uuid) {
+        if (uuid == null) {
+            return null;
+        }
+
+        try {
+            return UUID.fromString(uuid);
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Every column {@link #readLeaderboard} can sort on: one per non-child skill plus the
+     * {@code total} column. Derived from {@link SkillTools#NON_CHILD_SKILLS} so newly added
+     * skills are picked up without touching a hand-maintained list. Package-private so tests
+     * can assert against the exact set of columns the index migration maintains.
+     */
+    static @NotNull List<String> leaderboardIndexColumns() {
+        final List<String> columns = new ArrayList<>(SkillTools.NON_CHILD_SKILLS.size() + 1);
+        for (final PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
+            columns.add(skill.name().toLowerCase(Locale.ENGLISH));
+        }
+        columns.add(ALL_QUERY_VERSION);
+        return List.copyOf(columns);
+    }
+
+    // ---------------------------------------------------------------------
+    // Public operations
+    // ---------------------------------------------------------------------
+
     @NotNull
     private String buildConnectionStringWithOptions() {
         String connectionString = getConnectionString();
@@ -183,9 +245,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private DataSource createDataSource(String driverPath,
-            String connectionString,
-            int maxIdle,
-            int maxActive) {
+                                        String connectionString,
+                                        int maxIdle,
+                                        int maxActive) {
         PoolProperties poolProps = new PoolProperties();
         poolProps.setDriverClassName(driverPath);
         poolProps.setUrl(connectionString);
@@ -207,10 +269,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         return new DataSource(poolProps);
     }
 
-    // ---------------------------------------------------------------------
-    // Public operations
-    // ---------------------------------------------------------------------
-
     public int purgePowerlessUsers() {
         massUpdateLock.lock();
         logger.info("Purging powerless users...");
@@ -218,7 +276,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         int purged = 0;
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             purged = statement.executeUpdate(
                     "DELETE FROM " + tablePrefix + "skills WHERE "
@@ -270,7 +328,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         final long purgeTimeSeconds = mcMMO.p.getPurgeTime() / 1000L;
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                Statement statement = connection.createStatement()) {
+             Statement statement = connection.createStatement()) {
 
             purged = statement.executeUpdate(
                     "DELETE FROM u, e, h, s, c USING " + tablePrefix + "users u " +
@@ -289,6 +347,10 @@ public final class SQLDatabaseManager implements DatabaseManager {
         logger.info("Purged " + purged + " users from the database.");
     }
 
+    // ---------------------------------------------------------------------
+    // Update helpers
+    // ---------------------------------------------------------------------
+
     public boolean removeUser(String playerName, UUID uuid) {
         // It would delete every player who lost their name
         if (isInvalidOldUsername(playerName)) {
@@ -306,7 +368,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 "WHERE u.`user` = ?";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, playerName);
             success = statement.executeUpdate() != 0;
@@ -384,10 +446,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Update helpers
-    // ---------------------------------------------------------------------
-
     private boolean updateLastLogin(Connection connection, int userId, String playerName) {
         String sql =
                 "UPDATE " + tablePrefix + "users SET lastlogin = UNIX_TIMESTAMP() WHERE id = ?";
@@ -406,7 +464,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private boolean updateSkills(Connection connection, int userId, PlayerProfile profile,
-            String playerName) {
+                                 String playerName) {
         String sql = "UPDATE " + tablePrefix + "skills SET "
                 + " taming = ?, mining = ?, repair = ?, woodcutting = ?"
                 + ", unarmed = ?, herbalism = ?, excavation = ?"
@@ -452,8 +510,12 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Leaderboards / rank
+    // ---------------------------------------------------------------------
+
     private boolean updateExperience(Connection connection, int userId, PlayerProfile profile,
-            String playerName) {
+                                     String playerName) {
         String sql = "UPDATE " + tablePrefix + "experience SET "
                 + " taming = ?, mining = ?, repair = ?, woodcutting = ?"
                 + ", unarmed = ?, herbalism = ?, excavation = ?"
@@ -494,7 +556,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private boolean updateCooldowns(Connection connection, int userId, PlayerProfile profile,
-            String playerName) {
+                                    String playerName) {
         String sql = "UPDATE " + tablePrefix + "cooldowns SET "
                 + "  mining = ?, woodcutting = ?, unarmed = ?"
                 + ", herbalism = ?, excavation = ?, swords = ?"
@@ -531,7 +593,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private boolean updateHudSettings(Connection connection, int userId, PlayerProfile profile,
-            String playerName) {
+                                      String playerName) {
         String sql = "UPDATE " + tablePrefix
                 + "huds SET mobhealthbar = ?, scoreboardtips = ? WHERE user_id = ?";
 
@@ -551,13 +613,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // Leaderboards / rank
-    // ---------------------------------------------------------------------
-
     public @NotNull List<PlayerStat> readLeaderboard(@Nullable PrimarySkillType skill,
-            int pageNumber,
-            int statsPerPage) throws InvalidSkillException {
+                                                     int pageNumber,
+                                                     int statsPerPage) throws InvalidSkillException {
         try {
             return readLeaderboardRows(skill, pageNumber, statsPerPage);
         } catch (SQLException ex) {
@@ -583,7 +641,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
      * failures instead of swallowing them the way the command-facing read does.
      */
     private @NotNull List<PlayerStat> readLeaderboardRowsOrThrow(@Nullable PrimarySkillType skill,
-            int perScopeLimit) {
+                                                                 int perScopeLimit) {
         try {
             return readLeaderboardRows(skill, 1, perScopeLimit);
         } catch (SQLException ex) {
@@ -596,7 +654,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private @NotNull List<PlayerStat> readLeaderboardRows(@Nullable PrimarySkillType skill,
-            int pageNumber, int statsPerPage) throws InvalidSkillException, SQLException {
+                                                          int pageNumber, int statsPerPage) throws InvalidSkillException, SQLException {
         List<PlayerStat> stats = new ArrayList<>();
 
         // Fix for a plugin that people are using that is throwing SQL errors
@@ -616,7 +674,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         final String sql = leaderboardQuery(query);
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             final int limitIndex = bindInvalidOldUsernames(statement, 1);
             statement.setInt(limitIndex, (pageNumber * statsPerPage) - statsPerPage);
@@ -634,6 +692,10 @@ public final class SQLDatabaseManager implements DatabaseManager {
 
         return stats;
     }
+
+    // ---------------------------------------------------------------------
+    // New user / load profile
+    // ---------------------------------------------------------------------
 
     /**
      * Builds the leaderboard page query for the given skill column (or {@code total}).
@@ -661,20 +723,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 "WHERE " + column + " > 0 " +
                 "AND `user` NOT IN (?, ?) " +
                 "ORDER BY " + column + " DESC, user_id DESC LIMIT ?, ?";
-    }
-
-    /**
-     * Binds both spellings of the placeholder for a {@code NOT IN (?, ?)} ghost-row filter.
-     * Converted FlatFile databases carry the older spelling. The users table's default
-     * collation compares them ignoring case, like {@link UsernamePlaceholder}.
-     *
-     * @return the index of the parameter after them
-     */
-    static int bindInvalidOldUsernames(@NotNull PreparedStatement statement, int firstIndex)
-            throws SQLException {
-        statement.setString(firstIndex, INVALID_OLD_USERNAME);
-        statement.setString(firstIndex + 1, LEGACY_FLATFILE_INVALID_OLD_USERNAME);
-        return firstIndex + 2;
     }
 
     public Map<PrimarySkillType, Integer> readRank(String playerName) {
@@ -815,11 +863,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         return ranks;
     }
 
-
-    // ---------------------------------------------------------------------
-    // New user / load profile
-    // ---------------------------------------------------------------------
-
     public @NotNull PlayerProfile newUser(String playerName, @Nullable UUID uuid) {
         if (uuid == null) {
             logger.warning("Not adding " + playerName + ", mcMMO only adds players with a UUID");
@@ -942,7 +985,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     public @NotNull PlayerProfile loadPlayerProfile(@NotNull UUID uuid,
-            @Nullable String playerName) {
+                                                    @Nullable String playerName) {
         return loadPlayerFromDB(uuid, playerName, false);
     }
 
@@ -952,7 +995,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private PlayerProfile loadPlayerFromDB(@Nullable UUID uuid, @Nullable String playerName,
-            boolean nameIsCurrent) throws IllegalArgumentException {
+                                           boolean nameIsCurrent) throws IllegalArgumentException {
 
         if (uuid == null && playerName == null) {
             throw new IllegalArgumentException(
@@ -980,7 +1023,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
      * from anyone else stored under it, and a row stored before mcMMO kept UUIDs gets theirs.
      */
     private PlayerProfile loadPlayerRow(Connection connection, int id, @Nullable UUID uuid,
-            @Nullable String playerName, boolean nameIsCurrent) throws SQLException {
+                                        @Nullable String playerName, boolean nameIsCurrent) throws SQLException {
         writeMissingRows(connection, id);
 
         final String sql =
@@ -1092,7 +1135,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
      * longer be found.
      */
     private void moveOtherHoldersToPlaceholder(Connection connection, String playerName,
-            int userId) throws SQLException {
+                                               int userId) throws SQLException {
         // The placeholder is nobody's name, so the rows under it keep it
         if (isInvalidOldUsername(playerName)) {
             return;
@@ -1113,10 +1156,14 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
+    // ---------------------------------------------------------------------
+    // Cross-database conversion
+    // ---------------------------------------------------------------------
+
     private void updateCurrentUsername(Connection connection,
-            int id,
-            String playerName,
-            UUID uuid) throws SQLException {
+                                       int id,
+                                       String playerName,
+                                       UUID uuid) throws SQLException {
         String sql = "UPDATE `" + tablePrefix + "users` SET `user` = ?, uuid = ? WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, playerName);
@@ -1127,7 +1174,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private PlayerProfile loadFromResult(String playerName, @Nullable UUID uuid,
-            ResultSet result) throws SQLException {
+                                         ResultSet result) throws SQLException {
         final var skills = new EnumMap<PrimarySkillType, Integer>(PrimarySkillType.class);
         final var skillsXp = new EnumMap<PrimarySkillType, Float>(PrimarySkillType.class);
         final var skillsDATS = new EnumMap<SuperAbilityType, Integer>(SuperAbilityType.class);
@@ -1190,10 +1237,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 scoreboardTipsShown, uniqueData, null);
     }
 
-    // ---------------------------------------------------------------------
-    // Cross-database conversion
-    // ---------------------------------------------------------------------
-
     public void convertUsers(DatabaseManager destination) {
         final List<UserRow> userRows = readUserRows();
         if (userRows.isEmpty()) {
@@ -1235,8 +1278,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-    private record UserRow(int id, @NotNull String name) {}
-
     private @NotNull List<UserRow> readUserRows() {
         final List<UserRow> userRows = new ArrayList<>();
         // FlatFile saves take a name from whoever holds it, so the row saved last keeps a name
@@ -1245,8 +1286,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "users ORDER BY lastlogin, id";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)) {
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
             while (resultSet.next()) {
                 userRows.add(new UserRow(resultSet.getInt(1), resultSet.getString(2)));
             }
@@ -1272,8 +1313,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
         final String sql = "SELECT `user`, uuid FROM " + tablePrefix + "users";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)) {
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
             while (resultSet.next()) {
                 storedUsers.add(new PlayerNameAndUUID(resultSet.getString(1),
                         parseUuidOrNull(resultSet.getString(2))));
@@ -1285,18 +1326,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         return storedUsers;
     }
 
-    private static @Nullable UUID parseUuidOrNull(@Nullable String uuid) {
-        if (uuid == null) {
-            return null;
-        }
-
-        try {
-            return UUID.fromString(uuid);
-        } catch (IllegalArgumentException ex) {
-            return null;
-        }
-    }
-
     public boolean saveUserUUID(String userName, UUID uuid) {
         if (isInvalidOldUsername(userName)) {
             return false;
@@ -1305,7 +1334,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         final String sql = "UPDATE `" + tablePrefix + "users` SET uuid = ? WHERE `user` = ?";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1, uuid.toString());
             statement.setString(2, userName);
@@ -1322,7 +1351,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         int count = 0;
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             for (Map.Entry<String, UUID> entry : fetchedUUIDs.entrySet()) {
                 if (isInvalidOldUsername(entry.getKey())) {
@@ -1357,8 +1386,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
         String sql = "SELECT `user` FROM " + tablePrefix + "users";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                Statement statement = connection.createStatement();
-                ResultSet resultSet = statement.executeQuery(sql)) {
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
 
             while (resultSet.next()) {
                 users.add(resultSet.getString("user"));
@@ -1433,7 +1462,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private void ensureUsersTable(Connection connection,
-            PreparedStatement schemaStmt) throws SQLException {
+                                  PreparedStatement schemaStmt) throws SQLException {
         if (tableExists(schemaStmt, "users")) {
             return;
         }
@@ -1453,7 +1482,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private void ensureHudsTable(Connection connection,
-            PreparedStatement schemaStmt) throws SQLException {
+                                 PreparedStatement schemaStmt) throws SQLException {
         if (tableExists(schemaStmt, "huds")) {
             return;
         }
@@ -1472,7 +1501,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private void ensureCooldownsTable(Connection connection,
-            PreparedStatement schemaStmt) throws SQLException {
+                                      PreparedStatement schemaStmt) throws SQLException {
         if (tableExists(schemaStmt, "cooldowns")) {
             return;
         }
@@ -1505,7 +1534,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private void ensureSkillsTable(Connection connection,
-            PreparedStatement schemaStmt) throws SQLException {
+                                   PreparedStatement schemaStmt) throws SQLException {
         if (tableExists(schemaStmt, "skills")) {
             return;
         }
@@ -1565,7 +1594,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private void ensureExperienceTable(Connection connection,
-            PreparedStatement schemaStmt) throws SQLException {
+                                       PreparedStatement schemaStmt) throws SQLException {
         if (tableExists(schemaStmt, "experience")) {
             return;
         }
@@ -1678,9 +1707,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private boolean columnExists(Connection connection,
-            String database,
-            String tableName,
-            String columnName) throws SQLException {
+                                 String database,
+                                 String tableName,
+                                 String columnName) throws SQLException {
         String sql = "SELECT `COLUMN_NAME` " +
                 "FROM `INFORMATION_SCHEMA`.`COLUMNS` " +
                 "WHERE `TABLE_SCHEMA`='" + database + "' " +
@@ -1688,7 +1717,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 "AND `COLUMN_NAME`='" + columnName + "'";
 
         try (Statement stmt = connection.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+             ResultSet rs = stmt.executeQuery(sql)) {
 
             return rs.next();
         } catch (SQLException e) {
@@ -1772,9 +1801,9 @@ public final class SQLDatabaseManager implements DatabaseManager {
                 + "huds (user_id, mobhealthbar, scoreboardtips) VALUES (?, ?, ?)";
 
         try (PreparedStatement expStmt = connection.prepareStatement(expSql);
-                PreparedStatement skillsStmt = connection.prepareStatement(skillsSql);
-                PreparedStatement cdStmt = connection.prepareStatement(cooldownsSql);
-                PreparedStatement hudStmt = connection.prepareStatement(hudsSql)) {
+             PreparedStatement skillsStmt = connection.prepareStatement(skillsSql);
+             PreparedStatement cdStmt = connection.prepareStatement(cooldownsSql);
+             PreparedStatement hudStmt = connection.prepareStatement(hudsSql)) {
 
             expStmt.setInt(1, id);
             expStmt.execute();
@@ -2007,22 +2036,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-
-    /**
-     * Every column {@link #readLeaderboard} can sort on: one per non-child skill plus the
-     * {@code total} column. Derived from {@link SkillTools#NON_CHILD_SKILLS} so newly added
-     * skills are picked up without touching a hand-maintained list. Package-private so tests
-     * can assert against the exact set of columns the index migration maintains.
-     */
-    static @NotNull List<String> leaderboardIndexColumns() {
-        final List<String> columns = new ArrayList<>(SkillTools.NON_CHILD_SKILLS.size() + 1);
-        for (final PrimarySkillType skill : SkillTools.NON_CHILD_SKILLS) {
-            columns.add(skill.name().toLowerCase(Locale.ENGLISH));
-        }
-        columns.add(ALL_QUERY_VERSION);
-        return List.copyOf(columns);
-    }
-
     /**
      * Ensures a secondary index exists on each column used by leaderboard queries (every
      * non-child skill plus {@code total}).
@@ -2092,7 +2105,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
      * information schema instead. DATABASE() scopes this to the active mcMMO schema.
      */
     private Set<String> findIndexedLeaderboardColumns(final Connection connection,
-            final List<String> columns) throws SQLException {
+                                                      final List<String> columns) throws SQLException {
         final String placeholders = String.join(", ", Collections.nCopies(columns.size(), "?"));
         final String query = "SELECT DISTINCT column_name FROM INFORMATION_SCHEMA.STATISTICS "
                 + "WHERE table_schema = DATABASE() "
@@ -2132,7 +2145,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
      * taken), {@code false} if the attempt failed and the column remains unindexed.
      */
     private boolean ensureLeaderboardIndex(final Connection connection, final Statement statement,
-            final String column) {
+                                           final String column) {
         try {
             logger.info("Adding leaderboard index for column: " + column);
             statement.executeUpdate("ALTER TABLE `" + tablePrefix + "skills` ADD INDEX `idx_"
@@ -2165,7 +2178,6 @@ public final class SQLDatabaseManager implements DatabaseManager {
         }
     }
 
-
     private void checkUpgradeDropSpout(final Statement statement) {
         ResultSet resultSet = null;
 
@@ -2197,8 +2209,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     private int getUserID(final Connection connection,
-            final String playerName,
-            final UUID uuid) {
+                          final String playerName,
+                          final UUID uuid) {
         if (uuid == null) {
             return getUserIDByName(connection, playerName);
         }
@@ -2277,7 +2289,7 @@ public final class SQLDatabaseManager implements DatabaseManager {
         String sql = "UPDATE " + tablePrefix + "huds SET mobhealthbar = ?";
 
         try (Connection connection = getConnection(PoolIdentifier.MISC);
-                PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setString(1,
                     mcMMO.p.getGeneralConfig().getMobHealthbarDefault().toString());
@@ -2365,6 +2377,8 @@ public final class SQLDatabaseManager implements DatabaseManager {
         LOAD,
         SAVE
     }
+
+    private record UserRow(int id, @NotNull String name) {}
 
     private class GetUUIDUpdatesRequired implements Runnable {
         @Override

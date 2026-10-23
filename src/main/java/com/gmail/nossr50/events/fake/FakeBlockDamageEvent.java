@@ -8,9 +8,10 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Called when mcMMO damages a block due to a special ability.
  */
+@Deprecated
 public class FakeBlockDamageEvent extends BlockDamageEvent implements FakeEvent {
     public FakeBlockDamageEvent(Player player, Block block, ItemStack itemInHand,
-            boolean instaBreak) {
+                                boolean instaBreak) {
         super(player, block, itemInHand, instaBreak);
     }
 }

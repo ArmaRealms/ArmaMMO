@@ -1,10 +1,8 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
+import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
-import com.gmail.nossr50.locale.LocaleLoader;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import net.megavex.scoreboardlibrary.api.objective.ScoreboardObjective;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -14,6 +12,9 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BukkitScoreboardBackend implements ScoreboardBackend {
     // Fixed name for compatibility: this objective lives on the main scoreboard, which is
@@ -26,6 +27,34 @@ public class BukkitScoreboardBackend implements ScoreboardBackend {
 
     private final Map<String, BukkitPlayerBoard> activeBoards = new ConcurrentHashMap<>();
     private @Nullable Objective powerObjective;
+
+    /**
+     * Unregisters the power level objective from the main scoreboard, including a leftover
+     * objective persisted in the world's scoreboard data from a previous run.
+     * <p>
+     * This must also run when another backend is active: main-scoreboard objectives and their
+     * below-name display slot persist in the world's scoreboard data, so a leftover objective
+     * from an older run would otherwise keep rendering below nametags forever (as stale power
+     * levels, or as 0 on clients older than Minecraft 26.2 for players without a score) with
+     * nothing left in mcMMO managing it.
+     */
+    public static void removeLeftoverPowerObjective() {
+        final ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+        if (scoreboardManager == null) {
+            return;
+        }
+
+        final Objective leftoverObjective = scoreboardManager.getMainScoreboard()
+                .getObjective(POWER_OBJECTIVE);
+        if (leftoverObjective != null) {
+            try {
+                leftoverObjective.unregister();
+                LogUtils.debug(mcMMO.p.getLogger(),
+                        "Removed leftover power level objective from the main scoreboard.");
+            } catch (IllegalStateException ignored) {
+            }
+        }
+    }
 
     @Override
     public @NotNull ScoreboardBackendType getType() {
@@ -47,7 +76,7 @@ public class BukkitScoreboardBackend implements ScoreboardBackend {
 
     @Override
     public @NotNull PlayerBoard createPlayerBoard(final @NotNull Player player,
-            final @NotNull Scoreboard eventTargetBoard) {
+                                                  final @NotNull Scoreboard eventTargetBoard) {
         final BukkitPlayerBoard playerBoard = new BukkitPlayerBoard(player, eventTargetBoard);
         activeBoards.put(player.getName(), playerBoard);
         return playerBoard;
@@ -118,34 +147,6 @@ public class BukkitScoreboardBackend implements ScoreboardBackend {
 
         powerObjective = objective;
         return objective;
-    }
-
-    /**
-     * Unregisters the power level objective from the main scoreboard, including a leftover
-     * objective persisted in the world's scoreboard data from a previous run.
-     * <p>
-     * This must also run when another backend is active: main-scoreboard objectives and their
-     * below-name display slot persist in the world's scoreboard data, so a leftover objective
-     * from an older run would otherwise keep rendering below nametags forever (as stale power
-     * levels, or as 0 on clients older than Minecraft 26.2 for players without a score) with
-     * nothing left in mcMMO managing it.
-     */
-    public static void removeLeftoverPowerObjective() {
-        final ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
-        if (scoreboardManager == null) {
-            return;
-        }
-
-        final Objective leftoverObjective = scoreboardManager.getMainScoreboard()
-                .getObjective(POWER_OBJECTIVE);
-        if (leftoverObjective != null) {
-            try {
-                leftoverObjective.unregister();
-                LogUtils.debug(mcMMO.p.getLogger(),
-                        "Removed leftover power level objective from the main scoreboard.");
-            } catch (IllegalStateException ignored) {
-            }
-        }
     }
 
     @Override

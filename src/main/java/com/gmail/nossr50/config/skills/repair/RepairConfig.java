@@ -1,5 +1,24 @@
 package com.gmail.nossr50.config.skills.repair;
 
+import com.gmail.nossr50.config.BukkitConfig;
+import com.gmail.nossr50.datatypes.skills.ItemType;
+import com.gmail.nossr50.datatypes.skills.MaterialType;
+import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.skills.repair.repairables.Repairable;
+import com.gmail.nossr50.skills.repair.repairables.RepairableFactory;
+import com.gmail.nossr50.util.ItemUtils;
+import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+
 import static com.gmail.nossr50.util.ItemUtils.isCopperArmor;
 import static com.gmail.nossr50.util.ItemUtils.isCopperTool;
 import static com.gmail.nossr50.util.ItemUtils.isDiamondArmor;
@@ -15,29 +34,11 @@ import static com.gmail.nossr50.util.ItemUtils.isStoneTool;
 import static com.gmail.nossr50.util.ItemUtils.isStringTool;
 import static com.gmail.nossr50.util.ItemUtils.isWoodTool;
 
-import com.gmail.nossr50.config.BukkitConfig;
-import com.gmail.nossr50.datatypes.skills.ItemType;
-import com.gmail.nossr50.datatypes.skills.MaterialType;
-import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.skills.repair.repairables.Repairable;
-import com.gmail.nossr50.skills.repair.repairables.RepairableFactory;
-import com.gmail.nossr50.util.ItemUtils;
-import com.gmail.nossr50.util.LogUtils;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
-
 public class RepairConfig extends BukkitConfig {
     private final HashSet<String> notSupported;
     private List<Repairable> repairables;
 
-    public RepairConfig(String fileName, boolean copyDefaults) {
+    public RepairConfig(final String fileName, final boolean copyDefaults) {
         super(fileName, copyDefaults);
         notSupported = new HashSet<>();
         loadKeys();
@@ -52,20 +53,20 @@ public class RepairConfig extends BukkitConfig {
             return;
         }
 
-        ConfigurationSection section = config.getConfigurationSection("Repairables");
-        Set<String> keys = section.getKeys(false);
+        final ConfigurationSection section = config.getConfigurationSection("Repairables");
+        final Set<String> keys = section.getKeys(false);
 
-        for (String key : keys) {
+        for (final String key : keys) {
             if (config.contains("Repairables." + key + ".ItemId")) {
                 backup();
                 return;
             }
 
             // Validate all the things!
-            List<String> reason = new ArrayList<>();
+            final List<String> reason = new ArrayList<>();
 
             // Item Material
-            Material itemMaterial = Material.matchMaterial(key);
+            final Material itemMaterial = Material.matchMaterial(key);
 
             if (itemMaterial == null) {
                 //LogUtils.debug(mcMMO.p.getLogger(), "No support for repair item "+key+ " in this version of Minecraft, skipping.");
@@ -108,14 +109,14 @@ public class RepairConfig extends BukkitConfig {
             } else {
                 try {
                     repairMaterialType = MaterialType.valueOf(repairMaterialTypeString);
-                } catch (IllegalArgumentException ex) {
+                } catch (final IllegalArgumentException ex) {
                     reason.add(key + " has an invalid MaterialType of " + repairMaterialTypeString);
                 }
             }
 
             // Repair Material
-            String repairMaterialName = config.getString("Repairables." + key + ".RepairMaterial");
-            Material repairMaterial = (repairMaterialName == null
+            final String repairMaterialName = config.getString("Repairables." + key + ".RepairMaterial");
+            final Material repairMaterial = (repairMaterialName == null
                     ? repairMaterialType.getDefaultMaterial()
                     : Material.matchMaterial(repairMaterialName));
 
@@ -138,11 +139,11 @@ public class RepairConfig extends BukkitConfig {
 
             // Item Type
             ItemType repairItemType = ItemType.OTHER;
-            String repairItemTypeString = config.getString("Repairables." + key + ".ItemType",
+            final String repairItemTypeString = config.getString("Repairables." + key + ".ItemType",
                     "OTHER");
 
             if (!config.contains("Repairables." + key + ".ItemType") && itemMaterial != null) {
-                ItemStack repairItem = new ItemStack(itemMaterial);
+                final ItemStack repairItem = new ItemStack(itemMaterial);
 
                 if (ItemUtils.isMinecraftTool(repairItem)) {
                     repairItemType = ItemType.TOOL;
@@ -152,13 +153,13 @@ public class RepairConfig extends BukkitConfig {
             } else {
                 try {
                     repairItemType = ItemType.valueOf(repairItemTypeString);
-                } catch (IllegalArgumentException ex) {
+                } catch (final IllegalArgumentException ex) {
                     reason.add(key + " has an invalid ItemType of " + repairItemTypeString);
                 }
             }
 
-            int minimumLevel = config.getInt("Repairables." + key + ".MinimumLevel");
-            double xpMultiplier = config.getDouble("Repairables." + key + ".XpMultiplier", 1);
+            final int minimumLevel = config.getInt("Repairables." + key + ".MinimumLevel");
+            final double xpMultiplier = config.getDouble("Repairables." + key + ".XpMultiplier", 1);
 
             if (minimumLevel < 0) {
                 reason.add(key + " has an invalid MinimumLevel of " + minimumLevel);
@@ -178,21 +179,21 @@ public class RepairConfig extends BukkitConfig {
                             repairItemType,
                             repairMaterialType, xpMultiplier, minimumQuantity);
                     repairables.add(repairable);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     mcMMO.p.getLogger().log(Level.SEVERE,
                             "Error loading repairable from config entry: " + key, e);
                 }
             }
         }
         //Report unsupported
-        StringBuilder stringBuilder = new StringBuilder();
+        final StringBuilder stringBuilder = new StringBuilder();
 
         if (!notSupported.isEmpty()) {
             stringBuilder.append(
                     "mcMMO found the following materials in the Repair config that are not supported by the version of Minecraft running on this server: ");
 
-            for (Iterator<String> iterator = notSupported.iterator(); iterator.hasNext(); ) {
-                String unsupportedMaterial = iterator.next();
+            for (final Iterator<String> iterator = notSupported.iterator(); iterator.hasNext(); ) {
+                final String unsupportedMaterial = iterator.next();
 
                 if (!iterator.hasNext()) {
                     stringBuilder.append(unsupportedMaterial);
@@ -211,8 +212,8 @@ public class RepairConfig extends BukkitConfig {
         return repairables == null ? new ArrayList<>() : repairables;
     }
 
-    private boolean noErrorsInRepairable(List<String> issues) {
-        for (String issue : issues) {
+    private boolean noErrorsInRepairable(final List<String> issues) {
+        for (final String issue : issues) {
             mcMMO.p.getLogger().warning(issue);
         }
 

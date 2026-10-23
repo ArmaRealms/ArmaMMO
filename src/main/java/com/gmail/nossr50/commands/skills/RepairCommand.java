@@ -11,11 +11,12 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.random.ProbabilityUtil;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.text.TextComponentFactory;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class RepairCommand extends SkillCommand {
     private String repairMasteryBonus;
@@ -67,7 +68,7 @@ public class RepairCommand extends SkillCommand {
                     ((mcMMO.p.getAdvancedConfig().getRepairMasteryMaxBonus() / mcMMO.p.getAdvancedConfig()
                             .getMaxBonusLevel(SubSkillType.REPAIR_REPAIR_MASTERY))
                             * skillValue), mcMMO.p.getAdvancedConfig()
-                                    .getRepairMasteryMaxBonus()) / 100D);
+                            .getRepairMasteryMaxBonus()) / 100D);
         }
 
         // SUPER REPAIR
@@ -97,7 +98,7 @@ public class RepairCommand extends SkillCommand {
 
     @Override
     protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
+                                        boolean isLucky) {
         List<String> messages = new ArrayList<>();
 
         if (canArcaneForge) {
@@ -110,7 +111,7 @@ public class RepairCommand extends SkillCommand {
 
             if (mcMMO.p.getAdvancedConfig()
                     .getArcaneForgingEnchantLossEnabled() || mcMMO.p.getAdvancedConfig()
-                            .getArcaneForgingDowngradeEnabled()) {
+                    .getArcaneForgingDowngradeEnabled()) {
                 messages.add(getStatMessage(true, true, SubSkillType.REPAIR_ARCANE_FORGING,
                         String.valueOf(arcaneBypass ? 100 : repairManager.getKeepEnchantChance()),
                         String.valueOf(arcaneBypass ? 0

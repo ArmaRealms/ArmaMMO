@@ -9,9 +9,10 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 public class McMMOPlayerProfileLoadEvent extends Event implements Cancellable {
-    private boolean cancelled;
+    private static final HandlerList handlers = new HandlerList();
     private final PlayerProfile profile;
     private final Player player;
+    private boolean cancelled;
 
     public McMMOPlayerProfileLoadEvent(Player player, PlayerProfile profile) {
         super(!Bukkit.isPrimaryThread());
@@ -19,6 +20,10 @@ public class McMMOPlayerProfileLoadEvent extends Event implements Cancellable {
         this.cancelled = false;
         this.profile = profile;
         this.player = player;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     @Override
@@ -35,14 +40,8 @@ public class McMMOPlayerProfileLoadEvent extends Event implements Cancellable {
         return this.profile;
     }
 
-    private static final HandlerList handlers = new HandlerList();
-
     @Override
     public @NotNull HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
         return handlers;
     }
 

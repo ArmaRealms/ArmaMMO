@@ -15,7 +15,7 @@ public abstract class AcrobaticsSubSkill extends AbstractSubSkill {
     protected EventPriority interactionPriority;
 
     public AcrobaticsSubSkill(String configKeySub, EventPriority interactionPriority,
-            SubSkillType subSkillType) {
+                              SubSkillType subSkillType) {
         super(configKeySub, "Acrobatics", subSkillType);
 
         this.interactionPriority = interactionPriority;
@@ -87,7 +87,7 @@ public abstract class AcrobaticsSubSkill extends AbstractSubSkill {
     /**
      * Executes the interaction between this subskill and Minecraft
      *
-     * @param event the vector of interaction
+     * @param event  the vector of interaction
      * @param plugin the mcMMO plugin instance
      * @return true if interaction wasn't cancelled
      */

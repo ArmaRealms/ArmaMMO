@@ -15,8 +15,8 @@ import com.gmail.nossr50.util.PaperUtil;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.scoreboards.backend.BukkitScoreboardBackend;
 import com.gmail.nossr50.util.scoreboards.backend.NoopScoreboardBackend;
-import com.gmail.nossr50.util.scoreboards.backend.PlayerBoard;
 import com.gmail.nossr50.util.scoreboards.backend.PacketScoreboardBackend;
+import com.gmail.nossr50.util.scoreboards.backend.PlayerBoard;
 import com.gmail.nossr50.util.scoreboards.backend.ScoreboardBackend;
 import com.gmail.nossr50.util.scoreboards.backend.ScoreboardBackendSelector;
 import com.gmail.nossr50.util.scoreboards.backend.ScoreboardBackendType;
@@ -32,7 +32,10 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -41,7 +44,7 @@ import java.util.function.Consumer;
  */
 public class ScoreboardManager {
     static final Map<String, ScoreboardWrapper> PLAYER_SCOREBOARDS = new ConcurrentHashMap<>();
-
+    private static final Set<String> dirtyPowerLevels = ConcurrentHashMap.newKeySet();
     // Locale/config-derived labels. Built by init() (or lazily on first read) rather than a
     // static initializer for the same reason backends are: label building reads the general
     // config and locale, and a failure inside a static initializer would surface as an
@@ -54,11 +57,9 @@ public class ScoreboardManager {
     private static String levelLabel;
     private static String currentXpLabel;
     private static String remainingXpLabel;
-
     private static Map<PrimarySkillType, String> skillLabels;
     private static Map<SuperAbilityType, String> abilityLabelsColored;
     private static Map<SuperAbilityType, String> abilityLabelsSkill;
-
     private static ScoreboardBackend backend;
     private static ScoreboardBackendType backendType = ScoreboardBackendType.NOOP;
 
@@ -74,9 +75,9 @@ public class ScoreboardManager {
         /*
          * We need immutable objects for our Scoreboard's labels
          */
-        ImmutableMap.Builder<PrimarySkillType, String> skillLabelBuilder = ImmutableMap.builder();
-        ImmutableMap.Builder<SuperAbilityType, String> abilityLabelBuilder = ImmutableMap.builder();
-        ImmutableMap.Builder<SuperAbilityType, String> abilityLabelSkillBuilder = ImmutableMap.builder();
+        final ImmutableMap.Builder<PrimarySkillType, String> skillLabelBuilder = ImmutableMap.builder();
+        final ImmutableMap.Builder<SuperAbilityType, String> abilityLabelBuilder = ImmutableMap.builder();
+        final ImmutableMap.Builder<SuperAbilityType, String> abilityLabelSkillBuilder = ImmutableMap.builder();
 
         /*
          * Builds the labels for our ScoreBoards
@@ -85,7 +86,7 @@ public class ScoreboardManager {
          */
         if (mcMMO.p.getGeneralConfig().getScoreboardRainbows()) {
             // Everything but black, gray, gold
-            List<ChatColor> colors = Lists.newArrayList(
+            final List<ChatColor> colors = Lists.newArrayList(
                     ChatColor.WHITE,
                     ChatColor.YELLOW,
                     ChatColor.LIGHT_PURPLE,
@@ -103,7 +104,7 @@ public class ScoreboardManager {
             Collections.shuffle(colors, Misc.getRandom());
 
             int i = 0;
-            for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+            for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
                 // Include child skills
                 skillLabelBuilder.put(primarySkillType, getShortenedName(
                         colors.get(i) + mcMMO.p.getSkillTools()
@@ -131,7 +132,7 @@ public class ScoreboardManager {
          * Stylizes the targetBoard using our normal color scheme
          */
         else {
-            for (PrimarySkillType primarySkillType : PrimarySkillType.values()) {
+            for (final PrimarySkillType primarySkillType : PrimarySkillType.values()) {
                 // Include child skills
                 skillLabelBuilder.put(primarySkillType, getShortenedName(
                         ChatColor.GREEN + mcMMO.p.getSkillTools()
@@ -151,7 +152,7 @@ public class ScoreboardManager {
             }
         }
 
-        for (SuperAbilityType type : SuperAbilityType.values()) {
+        for (final SuperAbilityType type : SuperAbilityType.values()) {
             abilityLabelSkillBuilder.put(type, formatAbility(
                     (type == SuperAbilityType.BLAST_MINING ? ChatColor.BLUE : ChatColor.AQUA),
                     type.getLocalizedName()));
@@ -218,8 +219,6 @@ public class ScoreboardManager {
         return abilityLabelsSkill;
     }
 
-    private static final Set<String> dirtyPowerLevels = ConcurrentHashMap.newKeySet();
-
     public static void init() {
         if (backend != null) {
             return;
@@ -280,20 +279,11 @@ public class ScoreboardManager {
         }
     }
 
-    public enum SidebarType {
-        NONE,
-        SKILL_BOARD,
-        STATS_BOARD,
-        COOLDOWNS_BOARD,
-        RANK_BOARD,
-        TOP_BOARD
-    }
-
     private static String formatAbility(String abilityName) {
         return formatAbility(ChatColor.AQUA, abilityName);
     }
 
-    private static String formatAbility(ChatColor color, String abilityName) {
+    private static String formatAbility(final ChatColor color, final String abilityName) {
         if (mcMMO.p.getGeneralConfig().getShowAbilityNames()) {
             return getShortenedName(color + abilityName);
         } else {
@@ -301,19 +291,17 @@ public class ScoreboardManager {
         }
     }
 
-    private static String getShortenedName(String name) {
+    private static String getShortenedName(final String name) {
         return getShortenedName(name, true);
     }
 
-    private static String getShortenedName(String name, boolean useDots) {
+    private static String getShortenedName(String name, final boolean useDots) {
         if (name.length() > 16) {
             name = useDots ? name.substring(0, 14) + ".." : name.substring(0, 16);
         }
 
         return name;
     }
-
-    // **** Listener call-ins **** //
 
     // Called by PlayerJoinEvent listener
     public static void setupPlayer(Player player) {
@@ -328,7 +316,7 @@ public class ScoreboardManager {
     }
 
     // Called by PlayerQuitEvent listener and OnPlayerTeleport under certain circumstances
-    public static void teardownPlayer(Player player) {
+    public static void teardownPlayer(final Player player) {
         if (player == null) {
             return;
         }
@@ -352,13 +340,15 @@ public class ScoreboardManager {
         }
     }
 
+    // **** Listener call-ins **** //
+
     // Called in onDisable()
     public static void teardownAll() {
-        ImmutableList<Player> onlinePlayers = ImmutableList.copyOf(
+        final ImmutableList<Player> onlinePlayers = ImmutableList.copyOf(
                 mcMMO.p.getServer().getOnlinePlayers());
         LogUtils.debug(mcMMO.p.getLogger(),
                 "Tearing down scoreboards... (" + onlinePlayers.size() + ")");
-        for (Player player : onlinePlayers) {
+        for (final Player player : onlinePlayers) {
             teardownPlayer(player);
         }
 
@@ -370,13 +360,13 @@ public class ScoreboardManager {
     }
 
     // Called by ScoreboardWrapper when its Player logs off and an action tries to be performed
-    public static void cleanup(ScoreboardWrapper wrapper) {
+    public static void cleanup(final ScoreboardWrapper wrapper) {
         PLAYER_SCOREBOARDS.remove(wrapper.playerName);
         wrapper.close();
     }
 
     // Called by internal level-up event listener
-    public static void handleLevelUp(Player player, PrimarySkillType skill) {
+    public static void handleLevelUp(final Player player, final PrimarySkillType skill) {
         // Selfboards
         final ScoreboardWrapper wrapper = getWrapper(player);
 
@@ -406,9 +396,9 @@ public class ScoreboardManager {
     }
 
     // Called by internal xp event listener
-    public static void handleXp(Player player, PrimarySkillType skill) {
+    public static void handleXp(final Player player, final PrimarySkillType skill) {
         // Selfboards
-        ScoreboardWrapper wrapper = getWrapper(player);
+        final ScoreboardWrapper wrapper = getWrapper(player);
 
         if (wrapper != null && isSkillBoardTracking(wrapper, skill) && wrapper.isBoardShown()) {
             wrapper.doSidebarUpdateSoon();
@@ -423,7 +413,7 @@ public class ScoreboardManager {
      * its parent skills changes.
      */
     private static boolean isSkillBoardTracking(ScoreboardWrapper wrapper,
-            PrimarySkillType skill) {
+                                                PrimarySkillType skill) {
         if (!wrapper.isSkillScoreboard() || wrapper.targetSkill == null) {
             return false;
         }
@@ -434,11 +424,11 @@ public class ScoreboardManager {
 
         return SkillTools.isChildSkill(wrapper.targetSkill)
                 && mcMMO.p.getSkillTools().getChildSkillParents(wrapper.targetSkill)
-                        .contains(skill);
+                .contains(skill);
     }
 
     // Called by internal ability event listeners
-    public static void cooldownUpdate(Player player, PrimarySkillType skill) {
+    public static void cooldownUpdate(final Player player, final PrimarySkillType skill) {
         // Selfboards
         final ScoreboardWrapper wrapper = getWrapper(player);
 
@@ -449,14 +439,12 @@ public class ScoreboardManager {
         }
     }
 
-    // **** Setup methods **** //
-
     /**
      * Resolves the player's wrapper (lazily setting it up if needed), applies the given board
      * type, and shows the board for the given display time.
      */
     private static void showBoard(Player player, Consumer<ScoreboardWrapper> boardTypeSetter,
-            int displayTime) {
+                                  int displayTime) {
         final ScoreboardWrapper wrapper = getWrapper(player);
 
         if (wrapper == null) {
@@ -466,6 +454,8 @@ public class ScoreboardManager {
         boardTypeSetter.accept(wrapper);
         changeScoreboard(wrapper, displayTime);
     }
+
+    // **** Setup methods **** //
 
     public static void enablePlayerSkillScoreboard(Player player, PrimarySkillType skill) {
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
@@ -503,13 +493,13 @@ public class ScoreboardManager {
     }
 
     public static void enablePlayerInspectScoreboard(@NotNull Player player,
-            @NotNull PlayerProfile targetProfile) {
+                                                     @NotNull PlayerProfile targetProfile) {
         showBoard(player, wrapper -> wrapper.setTypeInspectStats(targetProfile),
                 mcMMO.p.getGeneralConfig().getInspectScoreboardTime());
     }
 
     public static void enablePlayerInspectScoreboard(@NotNull Player player,
-            @NotNull McMMOPlayer targetMcMMOPlayer) {
+                                                     @NotNull McMMOPlayer targetMcMMOPlayer) {
         showBoard(player, wrapper -> wrapper.setTypeInspectStats(targetMcMMOPlayer),
                 mcMMO.p.getGeneralConfig().getInspectScoreboardTime());
     }
@@ -520,7 +510,7 @@ public class ScoreboardManager {
     }
 
     public static void showPlayerRankScoreboard(Player player,
-            Map<PrimarySkillType, Integer> rank) {
+                                                Map<PrimarySkillType, Integer> rank) {
         showBoard(player, wrapper -> {
             wrapper.setTypeSelfRank();
             wrapper.acceptRankData(rank);
@@ -528,7 +518,7 @@ public class ScoreboardManager {
     }
 
     public static void showPlayerRankScoreboardOthers(Player player, String targetName,
-            Map<PrimarySkillType, Integer> rank) {
+                                                      Map<PrimarySkillType, Integer> rank) {
         showBoard(player, wrapper -> {
             wrapper.setTypeInspectRank(targetName);
             wrapper.acceptRankData(rank);
@@ -536,7 +526,7 @@ public class ScoreboardManager {
     }
 
     public static void showTopScoreboard(Player player, PrimarySkillType skill, int pageNumber,
-            List<PlayerStat> stats) {
+                                         List<PlayerStat> stats) {
         showBoard(player, wrapper -> {
             wrapper.setTypeTop(skill, pageNumber);
             wrapper.acceptLeaderboardData(stats);
@@ -544,7 +534,7 @@ public class ScoreboardManager {
     }
 
     public static void showTopPowerScoreboard(Player player, int pageNumber,
-            List<PlayerStat> stats) {
+                                              List<PlayerStat> stats) {
         showBoard(player, wrapper -> {
             wrapper.setTypeTopPower(pageNumber);
             wrapper.acceptLeaderboardData(stats);
@@ -565,8 +555,6 @@ public class ScoreboardManager {
 
         return wrapper;
     }
-
-    // **** Helper methods **** //
 
     /**
      * @return false if power levels are disabled
@@ -591,6 +579,8 @@ public class ScoreboardManager {
         return mmoPlayer == null ? null : mmoPlayer.getPowerLevel();
     }
 
+    // **** Helper methods **** //
+
     /**
      * Gets or creates the packet-based below-name power level objective.
      * <p/>
@@ -613,7 +603,7 @@ public class ScoreboardManager {
         return mcMMO.p.getServer().getScoreboardManager();
     }
 
-    public static void changeScoreboard(ScoreboardWrapper wrapper, int displayTime) {
+    public static void changeScoreboard(final ScoreboardWrapper wrapper, final int displayTime) {
         if (displayTime == -1) {
             wrapper.showBoardWithNoRevert();
         } else {
@@ -647,7 +637,7 @@ public class ScoreboardManager {
         }
     }
 
-    public static boolean isPlayerBoardSetup(@NotNull String playerName) {
+    public static boolean isPlayerBoardSetup(@NotNull final String playerName) {
         return PLAYER_SCOREBOARDS.get(playerName) != null;
     }
 
@@ -713,5 +703,14 @@ public class ScoreboardManager {
             backendType = ScoreboardBackendType.NOOP;
             backend.init();
         }
+    }
+
+    public enum SidebarType {
+        NONE,
+        SKILL_BOARD,
+        STATS_BOARD,
+        COOLDOWNS_BOARD,
+        RANK_BOARD,
+        TOP_BOARD
     }
 }

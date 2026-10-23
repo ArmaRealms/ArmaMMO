@@ -18,7 +18,7 @@ public class AwardCombatXpTask extends CancellableRunnable {
     private final double baseHealth;
 
     public AwardCombatXpTask(McMMOPlayer mmoPlayer, PrimarySkillType primarySkillType,
-            double baseXp, LivingEntity target, XPGainReason xpGainReason) {
+                             double baseXp, LivingEntity target, XPGainReason xpGainReason) {
         this.mmoPlayer = mmoPlayer;
         this.primarySkillType = primarySkillType;
         this.baseXp = baseXp;

@@ -2,6 +2,7 @@ package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.datatypes.database.UpgradeType;
 import com.gmail.nossr50.mcMMO;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

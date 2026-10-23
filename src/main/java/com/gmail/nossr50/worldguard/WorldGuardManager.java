@@ -1,7 +1,5 @@
 package com.gmail.nossr50.worldguard;
 
-import static org.bukkit.Bukkit.getServer;
-
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -14,6 +12,8 @@ import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import static org.bukkit.Bukkit.getServer;
 
 public class WorldGuardManager {
     private static WorldGuardManager instance;
@@ -126,6 +126,5 @@ public class WorldGuardManager {
             System.out.println("[mcMMO] Could not register WG Flags!"); //Don't use the Logger here
         }
     }
-
 
 }

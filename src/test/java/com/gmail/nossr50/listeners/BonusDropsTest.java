@@ -1,10 +1,11 @@
 package com.gmail.nossr50.listeners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Contract coverage for the bonus-drop trust analysis. Tile entities drop their contents when

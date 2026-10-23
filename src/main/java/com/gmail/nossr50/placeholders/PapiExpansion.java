@@ -10,14 +10,15 @@ import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.Map;
-import java.util.TreeMap;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * PlaceholderAPI expansion entrypoint for mcMMO placeholders.
@@ -79,6 +80,25 @@ public class PapiExpansion extends PlaceholderExpansion {
     @Override
     @Nullable
     public String onPlaceholderRequest(final Player player, @NotNull final String params) {
+        if (params.equalsIgnoreCase("mcability") || params.equalsIgnoreCase("mcnotify")) {
+            if (player == null) {
+                return null;
+            }
+            final McMMOPlayer user = UserManager.getPlayer(player);
+            if (user == null) {
+                return null;
+            }
+            final boolean enabled = params.equalsIgnoreCase("mcability")
+                    ? user.getAbilityUse() : user.useChatNotifications();
+            return enabled ? PlaceholderAPIPlugin.booleanTrue()
+                    : PlaceholderAPIPlugin.booleanFalse();
+        }
+
+        // Preserve the old zero-based top_power aliases while sharing master's async cache.
+        if (params.startsWith("top_power_")) {
+            return resolveLegacyTopPower(params.substring("top_power_".length()));
+        }
+
         String token;
         String data = null;
         int dataPosition = params.indexOf(":");
@@ -97,6 +117,32 @@ public class PapiExpansion extends PlaceholderExpansion {
         } else {
             return null;
         }
+    }
+
+    private @NotNull String resolveLegacyTopPower(@NotNull String suffix) {
+        final boolean name = suffix.startsWith("name_");
+        final boolean level = suffix.startsWith("level_");
+        if (!name && !level) {
+            return "top param not valid. Use top_power_name_0 or top_power_level_0.";
+        }
+
+        final String rankText = suffix.substring(name ? "name_".length() : "level_".length());
+        final int zeroBasedRank;
+        try {
+            zeroBasedRank = Integer.parseInt(rankText);
+        } catch (NumberFormatException ignored) {
+            return "top param not valid. Use top_power_name_0 or top_power_level_0.";
+        }
+        if (zeroBasedRank < 0 || zeroBasedRank == Integer.MAX_VALUE) {
+            return "No player found at that rank.";
+        }
+
+        final int position = zeroBasedRank + 1;
+        if (name) {
+            return leaderboardPlaceholderCache.getPlayerName(null, position);
+        }
+        final String value = leaderboardPlaceholderCache.getValue(null, position);
+        return value.isEmpty() ? value : StringUtils.formatNumber(Integer.parseInt(value));
     }
 
     public Integer getSkillLevel(PrimarySkillType skill, Player player) {
@@ -123,7 +169,6 @@ public class PapiExpansion extends PlaceholderExpansion {
 
         return user.getSkillXpLevel(skill);
     }
-
 
     public Integer getExpRemaining(PrimarySkillType skill, Player player) {
         final McMMOPlayer user = UserManager.getPlayer(player);

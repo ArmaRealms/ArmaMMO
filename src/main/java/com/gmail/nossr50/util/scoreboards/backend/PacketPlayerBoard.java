@@ -1,6 +1,5 @@
 package com.gmail.nossr50.util.scoreboards.backend;
 
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -10,6 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class PacketPlayerBoard implements PlayerBoard {
     private final @NotNull Player owner;

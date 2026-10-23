@@ -1,14 +1,5 @@
 package com.gmail.nossr50.skills.unarmed;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.data.Offset.offset;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.ItemSpawnReason;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
@@ -44,6 +35,15 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.offset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Unarmed combat effects that depend on the committed attack strength of a hit.
@@ -103,7 +103,7 @@ class UnarmedManagerTest extends MMOTestEnvironment {
             "9.0,  0.0,  -9.0",   // zero charge cancels the hit entirely
     })
     void berserkDamageShouldScaleWithCommittedAttackStrength(final double damage,
-            final double attackStrengthScale, final double expectedBonus) {
+                                                             final double attackStrengthScale, final double expectedBonus) {
         // Given - a hit committed at the given attack strength
 
         // When
@@ -215,7 +215,7 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         })
         void crackableBricksShouldCrack(Material intactBrick, Material crackedBrick) {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the block cracker activation succeeds against a crackable brick
                 probabilityUtil.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.UNARMED_BLOCK_CRACKER, mmoPlayer)).thenReturn(true);
@@ -232,7 +232,7 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         @Test
         void unrelatedBlocksShouldNotChange() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a successful activation against a block with no cracked variant
                 probabilityUtil.when(() -> ProbabilityUtil.isNonRNGSkillActivationSuccessful(
                         SubSkillType.UNARMED_BLOCK_CRACKER, mmoPlayer)).thenReturn(true);
@@ -286,8 +286,8 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         @Test
         void successfulDisarmShouldDropTheWeaponAndEmptyTheHand() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
                 // Given - a winning disarm roll, an uncancelled event, and protected drops
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.UNARMED_DISARM, mmoPlayer, 1.0)).thenReturn(true);
@@ -299,7 +299,7 @@ class UnarmedManagerTest extends MMOTestEnvironment {
                 final Item droppedItem = Mockito.mock(Item.class);
                 final Location defenderLocation = defender.getLocation();
                 itemUtils.when(() -> ItemUtils.spawnItem(player, defenderLocation,
-                        defenderWeapon, ItemSpawnReason.UNARMED_DISARMED_ITEM))
+                                defenderWeapon, ItemSpawnReason.UNARMED_DISARMED_ITEM))
                         .thenReturn(droppedItem);
                 when(advancedConfig.getDisarmProtected()).thenReturn(true);
                 final FixedMetadataValue defenderMetadata =
@@ -326,8 +326,8 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         @Test
         void ironGripShouldSaveTheDefender() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
                 // Given - a winning disarm roll but the defender's iron grip also wins
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.UNARMED_DISARM, mmoPlayer, 1.0)).thenReturn(true);
@@ -354,8 +354,8 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         @Test
         void cancelledDisarmEventsShouldDropNothing() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<ItemUtils> itemUtils = mockStatic(ItemUtils.class)) {
                 // Given - a winning disarm roll but another plugin cancels the disarm
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.UNARMED_DISARM, mmoPlayer, 1.0)).thenReturn(true);
@@ -381,7 +381,7 @@ class UnarmedManagerTest extends MMOTestEnvironment {
         @Test
         void successfulDeflectShouldInformThePlayer() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a winning deflect roll
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
                         SubSkillType.UNARMED_ARROW_DEFLECT, mmoPlayer)).thenReturn(true);

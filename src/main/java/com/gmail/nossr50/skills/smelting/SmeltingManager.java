@@ -48,7 +48,7 @@ public class SmeltingManager extends SkillManager {
     }
 
     public void smeltProcessing(@NotNull FurnaceSmeltEvent furnaceSmeltEvent,
-            @NotNull Furnace furnace) {
+                                @NotNull Furnace furnace) {
         applyXpGain(Smelting.getSmeltXP(furnaceSmeltEvent.getSource()), XPGainReason.PVE,
                 XPGainSource.PASSIVE); //Add XP
 
@@ -56,7 +56,7 @@ public class SmeltingManager extends SkillManager {
     }
 
     private void processDoubleSmelt(@NotNull FurnaceSmeltEvent furnaceSmeltEvent,
-            @NotNull Furnace furnace) {
+                                    @NotNull Furnace furnace) {
         ItemStack resultItemStack = furnaceSmeltEvent.getResult();
         /*
             doubleSmeltCondition should be equal to the max
@@ -101,7 +101,7 @@ public class SmeltingManager extends SkillManager {
      */
     public int getVanillaXpMultiplier() {
         int rank = Math.max(1,
-            RankUtils.getRank(getPlayer(), SubSkillType.SMELTING_UNDERSTANDING_THE_ART));
+                RankUtils.getRank(getPlayer(), SubSkillType.SMELTING_UNDERSTANDING_THE_ART));
         return Math.max(1, mcMMO.p.getAdvancedConfig().getSmeltingVanillaXPModifier(rank));
     }
 }

@@ -1,5 +1,23 @@
 package com.gmail.nossr50.skills.taming;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.datatypes.skills.subskills.taming.CallOfTheWildType;
+import com.gmail.nossr50.mcMMO;
+import com.gmail.nossr50.util.player.NotificationManager;
+import com.gmail.nossr50.util.skills.ParticleEffectUtils;
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.impl.PlatformScheduler;
+import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Wolf;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 import static java.util.logging.Logger.getLogger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -10,23 +28,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.datatypes.skills.subskills.taming.CallOfTheWildType;
-import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.player.NotificationManager;
-import com.gmail.nossr50.util.skills.ParticleEffectUtils;
-import com.tcoded.folialib.FoliaLib;
-import com.tcoded.folialib.impl.PlatformScheduler;
-import java.util.function.Consumer;
-import java.util.logging.Logger;
-import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Wolf;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 /**
  * Covers the Call of the Wild summon lifecycle tracker: finite-lifespan summons schedule
@@ -95,7 +96,7 @@ class TrackedTamingEntityTest extends MMOTestEnvironment {
     @Test
     void expiredSummonsShouldBeKilledAndUntracked() {
         try (final MockedStatic<ParticleEffectUtils> ignored =
-                mockStatic(ParticleEffectUtils.class)) {
+                     mockStatic(ParticleEffectUtils.class)) {
             // Given - a live tracked summon whose owner is online
             wireSummonLifespan(SUMMON_LIFESPAN_SECONDS);
             when(wolf.isValid()).thenReturn(true);

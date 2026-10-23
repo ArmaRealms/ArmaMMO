@@ -3,12 +3,13 @@ package com.gmail.nossr50.chat.author;
 import com.gmail.nossr50.datatypes.chat.ChatChannel;
 import com.gmail.nossr50.util.text.TextUtils;
 import com.google.common.base.Objects;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public abstract class AbstractPlayerAuthor implements Author {
     private final @NotNull Player player;
@@ -48,7 +49,7 @@ public abstract class AbstractPlayerAuthor implements Author {
      * @return the sanitized name for a player
      */
     protected @NotNull String getSanitizedName(@NotNull ChatChannel chatChannel,
-            boolean useDisplayName) {
+                                               boolean useDisplayName) {
         //Already in cache
         if (sanitizedNameCache.containsKey(chatChannel)) {
             //Update cache
@@ -74,11 +75,11 @@ public abstract class AbstractPlayerAuthor implements Author {
      * associated with a {@link ChatChannel} as different chat channels have different chat name
      * settings
      *
-     * @param chatChannel target chat channel
+     * @param chatChannel    target chat channel
      * @param useDisplayName whether to use this authors display name
      */
     private void updateSanitizedNameCache(@NotNull ChatChannel chatChannel,
-            boolean useDisplayName) {
+                                          boolean useDisplayName) {
         if (useDisplayName) {
             sanitizedNameCache.put(chatChannel,
                     TextUtils.sanitizeForSerializer(player.getDisplayName()));

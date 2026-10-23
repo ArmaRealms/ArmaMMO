@@ -1,5 +1,24 @@
 package com.gmail.nossr50.util;
 
+import com.gmail.nossr50.MMOTestEnvironment;
+import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.datatypes.treasure.EnchantmentWrapper;
+import org.bukkit.Material;
+import org.bukkit.inventory.FurnaceRecipe;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,24 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.gmail.nossr50.MMOTestEnvironment;
-import com.gmail.nossr50.api.exceptions.InvalidSkillException;
-import com.gmail.nossr50.datatypes.treasure.EnchantmentWrapper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
-import org.bukkit.Material;
-import org.bukkit.inventory.FurnaceRecipe;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.Damageable;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 class ItemUtilsTest extends MMOTestEnvironment {
     private static final Logger logger = Logger.getLogger(ItemUtilsTest.class.getName());
@@ -167,11 +168,11 @@ class ItemUtilsTest extends MMOTestEnvironment {
     @Test
     void getRandomEnchantmentShouldNotMutateTheProvidedList() {
         // Given - a treasure book's legal-enchantment list shared between catches
-        // (wrappers are mocked because Enchantment cannot initialize without a live registry)
+        // The roll only selects wrappers; no enchantment registry is needed here.
         when(Misc.getRandom()).thenReturn(new Random(42));
         final List<EnchantmentWrapper> legalEnchantments = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            legalEnchantments.add(mock(EnchantmentWrapper.class));
+            legalEnchantments.add(new EnchantmentWrapper(null, i));
         }
         final List<EnchantmentWrapper> orderBeforeRoll = List.copyOf(legalEnchantments);
 

@@ -1,13 +1,14 @@
 package com.gmail.nossr50.commands.levelup;
 
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable description of when a level up command fires: reaching one of the listed levels in
@@ -20,7 +21,7 @@ public final class LevelUpCondition {
     private final @NotNull Set<Integer> powerLevels;
 
     private LevelUpCondition(@NotNull Collection<PrimarySkillType> skills,
-            @NotNull Collection<Integer> levels, @NotNull Collection<Integer> powerLevels) {
+                             @NotNull Collection<Integer> levels, @NotNull Collection<Integer> powerLevels) {
         this.skills = Set.copyOf(skills);
         this.levels = Set.copyOf(levels);
         this.powerLevels = Set.copyOf(powerLevels);
@@ -45,7 +46,7 @@ public final class LevelUpCondition {
     }
 
     public static @NotNull LevelUpCondition of(@NotNull Collection<PrimarySkillType> skills,
-            @NotNull Collection<Integer> levels, @NotNull Collection<Integer> powerLevels) {
+                                               @NotNull Collection<Integer> levels, @NotNull Collection<Integer> powerLevels) {
         return new LevelUpCondition(skills, levels, powerLevels);
     }
 
@@ -54,7 +55,7 @@ public final class LevelUpCondition {
      * Empty when the skill is not listed or none of its listed levels were reached.
      */
     public @NotNull SortedSet<Integer> matchedSkillLevels(@NotNull PrimarySkillType skill,
-            @NotNull Set<Integer> levelsGained) {
+                                                          @NotNull Set<Integer> levelsGained) {
         if (!skills.contains(skill)) {
             return Collections.emptySortedSet();
         }

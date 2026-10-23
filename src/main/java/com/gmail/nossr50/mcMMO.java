@@ -77,6 +77,18 @@ import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.util.upgrade.UpgradeManager;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.tcoded.folialib.FoliaLib;
+import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.shatteredlands.shatt.backup.ZipLibrary;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.SimplePie;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -85,20 +97,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import net.kyori.adventure.platform.bukkit.BukkitAudiences;
-import net.shatteredlands.shatt.backup.ZipLibrary;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.SimplePie;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.HandlerList;
-import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class mcMMO extends JavaPlugin {
+    public static mcMMO p;
+    // Jar Stuff
+    public static File mcmmo;
     /* Managers & Services */
     private static ChunkManager chunkManager;
     private static RepairableManager repairableManager;
@@ -114,48 +117,32 @@ public class mcMMO extends JavaPlugin {
     private static CommandManager commandManager; //ACF
     private static TransientEntityTracker transientEntityTracker;
     private static MinecraftGameVersion minecraftGameVersion;
-
-    private SkillTools skillTools;
-
     private static boolean serverShutdownExecuted = false;
-
     /* Adventure */
     private static BukkitAudiences audiences;
-
     /* Blacklist */
     private static WorldBlacklist worldBlacklist;
-
     /* File Paths */
     private static String mainDirectory;
     private static String localesDirectory;
     private static String flatFileDirectory;
     private static String usersFile;
     private static String modDirectory;
-
-    public static mcMMO p;
-
-    // Jar Stuff
-    public static File mcmmo;
-
     /* Plugin Checks */
     private static boolean healthBarPluginEnabled;
     private static boolean projectKorraEnabled;
+    // API checks
+    private static boolean serverAPIOutdated = false;
+    private static boolean isRetroModeEnabled;
+    // Config Validation Check
+    public boolean noErrorsInConfigFiles = true;
+    private SkillTools skillTools;
     /**
      * Stored so we can stop expansion-owned tasks during plugin shutdown.
      */
     private @Nullable PapiExpansion papiExpansion;
-
-    // API checks
-    private static boolean serverAPIOutdated = false;
-
-    // Config Validation Check
-    public boolean noErrorsInConfigFiles = true;
-
     // XP Event Check
     private boolean xpEventEnabled;
-
-    private static boolean isRetroModeEnabled;
-
     private long purgeTime = 2630000000L;
 
     private GeneralConfig generalConfig;
@@ -174,6 +161,172 @@ public class mcMMO extends JavaPlugin {
         p = this;
     }
 
+    public static PlayerLevelUtils getPlayerLevelUtils() {
+        return playerLevelUtils;
+    }
+
+    public static MaterialMapStore getMaterialMapStore() {
+        return materialMapStore;
+    }
+
+    public static String getMainDirectory() {
+        return mainDirectory;
+    }
+
+    public static String getLocalesDirectory() {
+        return localesDirectory;
+    }
+
+    public static String getFlatFileDirectory() {
+        return flatFileDirectory;
+    }
+
+    public static String getUsersFilePath() {
+        return usersFile;
+    }
+
+    public static String getModDirectory() {
+        return modDirectory;
+    }
+
+    public static FormulaManager getFormulaManager() {
+        return formulaManager;
+    }
+
+    /**
+     * Get the {@link UserBlockTracker}.
+     *
+     * @return the {@link UserBlockTracker}
+     */
+    public static UserBlockTracker getUserBlockTracker() {
+        return chunkManager;
+    }
+
+    /**
+     * Get the chunk manager.
+     *
+     * @return the chunk manager
+     */
+    public static ChunkManager getChunkManager() {
+        return chunkManager;
+    }
+
+    /**
+     * Get the chunk manager.
+     *
+     * @return the chunk manager
+     * @deprecated Use {@link #getChunkManager()} or {@link #getUserBlockTracker()} instead.
+     */
+    @Deprecated(since = "2.2.013", forRemoval = true)
+    public static ChunkManager getPlaceStore() {
+        return chunkManager;
+    }
+
+    public static RepairableManager getRepairableManager() {
+        return repairableManager;
+    }
+
+    public static SalvageableManager getSalvageableManager() {
+        return salvageableManager;
+    }
+
+    public static DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    @Deprecated
+    public static void setDatabaseManager(final DatabaseManager databaseManager) {
+        mcMMO.databaseManager = databaseManager;
+    }
+
+    public static UpgradeManager getUpgradeManager() {
+        return upgradeManager;
+    }
+
+    public static boolean isHealthBarPluginEnabled() {
+        return healthBarPluginEnabled;
+    }
+
+    /**
+     * Checks if this plugin is using retro mode Retro mode is a 0-1000 skill system Standard mode
+     * is scaled for 1-100
+     *
+     * @return true if retro mode is enabled
+     */
+    public static boolean isRetroModeEnabled() {
+        return isRetroModeEnabled;
+    }
+
+    public static WorldBlacklist getWorldBlacklist() {
+        return worldBlacklist;
+    }
+
+    public static BukkitAudiences getAudiences() {
+        return audiences;
+    }
+
+    public static boolean isProjectKorraEnabled() {
+        return projectKorraEnabled;
+    }
+
+    public static TransientMetadataTools getTransientMetadataTools() {
+        return transientMetadataTools;
+    }
+
+    public static TransientEntityTracker getTransientEntityTracker() {
+        return transientEntityTracker;
+    }
+
+    public static synchronized boolean isServerShutdownExecuted() {
+        return serverShutdownExecuted;
+    }
+
+    static String formatDurationHms(long elapsedNanos) {
+        final Duration elapsedDuration = Duration.ofNanos(Math.max(0L, elapsedNanos));
+        final long totalMillis = elapsedDuration.toMillis();
+
+        if (totalMillis < 1000L) {
+            return totalMillis + "ms";
+        }
+
+        final long totalSeconds = elapsedDuration.getSeconds();
+        final long hours = totalSeconds / 3600;
+        final long minutes = (totalSeconds % 3600) / 60;
+        final long seconds = totalSeconds % 60;
+
+        final StringBuilder displayBuilder = new StringBuilder();
+        if (hours > 0L) {
+            displayBuilder.append(hours).append("h");
+        }
+        if (minutes > 0L) {
+            if (displayBuilder.length() > 0) {
+                displayBuilder.append(' ');
+            }
+            displayBuilder.append(minutes).append("m");
+        }
+        if (seconds > 0L) {
+            if (displayBuilder.length() > 0) {
+                displayBuilder.append(' ');
+            }
+            displayBuilder.append(seconds).append("s");
+        }
+
+        return displayBuilder.length() == 0 ? totalMillis + "ms" : displayBuilder.toString();
+    }
+
+    private static synchronized void setServerShutdown(final boolean bool) {
+        serverShutdownExecuted = bool;
+    }
+
+    /**
+     * Get the {@link MinecraftGameVersion}
+     *
+     * @return the {@link MinecraftGameVersion}
+     */
+    public static MinecraftGameVersion getMinecraftGameVersion() {
+        return minecraftGameVersion;
+    }
+
     /**
      * Things to be run when the plugin is enabled.
      */
@@ -187,7 +340,7 @@ public class mcMMO extends JavaPlugin {
             final String versionStr = Bukkit.getVersion();
             try {
                 minecraftGameVersion = MinecraftGameVersionFactory.calculateGameVersion(versionStr);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 // if anything goes wrong with our calculations, assume they are running the minimum
                 // supported version and log the error
                 getLogger().warning("Could not determine Minecraft version from"
@@ -223,7 +376,7 @@ public class mcMMO extends JavaPlugin {
             // Prime the shared metadata flag value (also populates the deprecated public field)
             MetadataConstants.getMcMMOMetadataValue();
 
-            PluginManager pluginManager = getServer().getPluginManager();
+            final PluginManager pluginManager = getServer().getPluginManager();
             healthBarPluginEnabled = pluginManager.getPlugin("HealthBar") != null;
             projectKorraEnabled = pluginManager.getPlugin("ProjectKorra") != null;
 
@@ -306,7 +459,7 @@ public class mcMMO extends JavaPlugin {
 
                 formulaManager = new FormulaManager();
 
-                for (Player player : getServer().getOnlinePlayers()) {
+                for (final Player player : getServer().getOnlinePlayers()) {
                     getFoliaLib().getScheduler().runLaterAsync(
                             new PlayerProfileLoadingTask(player),
                             1); // 1 Tick delay to ensure the player is marked as online before we begin loading
@@ -367,7 +520,7 @@ public class mcMMO extends JavaPlugin {
             }
 
             //If anonymous statistics are enabled then use them
-            Metrics metrics;
+            final Metrics metrics;
 
             if (generalConfig.getIsMetricsEnabled()) {
                 metrics = new Metrics(this, 3894);
@@ -380,7 +533,7 @@ public class mcMMO extends JavaPlugin {
                     metrics.addCustomChart(new SimplePie("leveling_system", () -> "Standard"));
                 }
             }
-        } catch (Throwable t) {
+        } catch (final Throwable t) {
             getLogger().log(Level.SEVERE, "There was an error while enabling mcMMO!", t);
 
             if (t instanceof ExceptionInInitializerError) {
@@ -426,14 +579,6 @@ public class mcMMO extends JavaPlugin {
         }
     }
 
-    public static PlayerLevelUtils getPlayerLevelUtils() {
-        return playerLevelUtils;
-    }
-
-    public static MaterialMapStore getMaterialMapStore() {
-        return materialMapStore;
-    }
-
     private void checkForOutdatedAPI() {
         try {
             Class<?> blockDropItemEvent = Class.forName(
@@ -441,9 +586,9 @@ public class mcMMO extends JavaPlugin {
             blockDropItemEvent.getMethod("getItems");
             Class.forName("net.md_5.bungee.api.chat.BaseComponent");
             // 1.20.4 checks
-            Class<?> entityDamageEvent = Class.forName("org.bukkit.event.entity.EntityDamageEvent");
+            final Class<?> entityDamageEvent = Class.forName("org.bukkit.event.entity.EntityDamageEvent");
             entityDamageEvent.getMethod("getDamageSource");
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
+        } catch (final ClassNotFoundException | NoSuchMethodException e) {
             serverAPIOutdated = true;
             getLogger().severe(
                     "Your server software is missing APIs that mcMMO requires to function properly, please update your server software!");
@@ -499,7 +644,7 @@ public class mcMMO extends JavaPlugin {
                     // Announce before the first snapshot is written, not after
                     if (!backupAnnouncementLogged
                             && McMMORegionBackupStore.worldNeedsBackup(loadedWorld,
-                                    getLogger())) {
+                            getLogger())) {
                         getLogger().info("Legacy region format detected, mcMMO will back up "
                                 + "region data files to prevent data loss, do NOT force a "
                                 + "shutdown until this completes.");
@@ -530,7 +675,7 @@ public class mcMMO extends JavaPlugin {
                             + formatDurationHms(backupTotalNanos));
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             getLogger().log(Level.SEVERE, "An error occurred while disabling mcMMO!", e);
         }
 
@@ -538,11 +683,11 @@ public class mcMMO extends JavaPlugin {
             // Remove other tasks BEFORE starting the Backup, or we just cancel it straight away.
             try {
                 ZipLibrary.mcMMOBackup();
-            } catch (NoClassDefFoundError e) {
+            } catch (final NoClassDefFoundError e) {
                 getLogger().severe("Backup class not found!");
                 getLogger().info(
                         "Please do not replace the mcMMO jar while the server is running.");
-            } catch (Throwable e) {
+            } catch (final Throwable e) {
                 getLogger().severe(e.toString());
             }
         }
@@ -563,94 +708,16 @@ public class mcMMO extends JavaPlugin {
         LogUtils.debug(mcMMO.p.getLogger(), "Was disabled."); // How informative!
     }
 
-    public static String getMainDirectory() {
-        return mainDirectory;
-    }
-
-    public static String getLocalesDirectory() {
-        return localesDirectory;
-    }
-
-    public static String getFlatFileDirectory() {
-        return flatFileDirectory;
-    }
-
-    public static String getUsersFilePath() {
-        return usersFile;
-    }
-
-    public static String getModDirectory() {
-        return modDirectory;
-    }
-
     public boolean isXPEventEnabled() {
         return xpEventEnabled;
     }
 
-    public void setXPEventEnabled(boolean enabled) {
+    public void setXPEventEnabled(final boolean enabled) {
         this.xpEventEnabled = enabled;
     }
 
     public void toggleXpEventEnabled() {
         xpEventEnabled = !xpEventEnabled;
-    }
-
-    public static FormulaManager getFormulaManager() {
-        return formulaManager;
-    }
-
-    /**
-     * Get the {@link UserBlockTracker}.
-     *
-     * @return the {@link UserBlockTracker}
-     */
-    public static UserBlockTracker getUserBlockTracker() {
-        return chunkManager;
-    }
-
-    /**
-     * Get the chunk manager.
-     *
-     * @return the chunk manager
-     */
-    public static ChunkManager getChunkManager() {
-        return chunkManager;
-    }
-
-    /**
-     * Get the chunk manager.
-     *
-     * @return the chunk manager
-     * @deprecated Use {@link #getChunkManager()} or {@link #getUserBlockTracker()} instead.
-     */
-    @Deprecated(since = "2.2.013", forRemoval = true)
-    public static ChunkManager getPlaceStore() {
-        return chunkManager;
-    }
-
-    public static RepairableManager getRepairableManager() {
-        return repairableManager;
-    }
-
-    public static SalvageableManager getSalvageableManager() {
-        return salvageableManager;
-    }
-
-    public static DatabaseManager getDatabaseManager() {
-        return databaseManager;
-    }
-
-    public static UpgradeManager getUpgradeManager() {
-        return upgradeManager;
-    }
-
-    @Deprecated
-    public static void setDatabaseManager(DatabaseManager databaseManager) {
-        mcMMO.databaseManager = databaseManager;
-    }
-
-    public static boolean isHealthBarPluginEnabled() {
-        return healthBarPluginEnabled;
     }
 
     /**
@@ -667,8 +734,8 @@ public class mcMMO extends JavaPlugin {
     }
 
     private void fixFilePaths() {
-        File oldFlatfilePath = new File(mainDirectory + "FlatFileStuff" + File.separator);
-        File oldModPath = new File(mainDirectory + "ModConfigs" + File.separator);
+        final File oldFlatfilePath = new File(mainDirectory + "FlatFileStuff" + File.separator);
+        final File oldModPath = new File(mainDirectory + "ModConfigs" + File.separator);
 
         if (oldFlatfilePath.exists()) {
             if (!oldFlatfilePath.renameTo(new File(flatFileDirectory))) {
@@ -682,10 +749,10 @@ public class mcMMO extends JavaPlugin {
             }
         }
 
-        File oldArmorFile = new File(modDirectory + "armor.yml");
-        File oldBlocksFile = new File(modDirectory + "blocks.yml");
-        File oldEntitiesFile = new File(modDirectory + "entities.yml");
-        File oldToolsFile = new File(modDirectory + "tools.yml");
+        final File oldArmorFile = new File(modDirectory + "armor.yml");
+        final File oldBlocksFile = new File(modDirectory + "blocks.yml");
+        final File oldEntitiesFile = new File(modDirectory + "entities.yml");
+        final File oldToolsFile = new File(modDirectory + "tools.yml");
 
         if (oldArmorFile.exists()) {
             if (!oldArmorFile.renameTo(new File(modDirectory + "armor.default.yml"))) {
@@ -711,9 +778,9 @@ public class mcMMO extends JavaPlugin {
             }
         }
 
-        File currentFlatfilePath = new File(flatFileDirectory);
+        final File currentFlatfilePath = new File(flatFileDirectory);
         currentFlatfilePath.mkdirs();
-        File localesDirectoryPath = new File(localesDirectory);
+        final File localesDirectoryPath = new File(localesDirectory);
         localesDirectoryPath.mkdirs();
     }
 
@@ -738,14 +805,14 @@ public class mcMMO extends JavaPlugin {
         repairableManager.registerRepairables(repairables);
 
         // Load salvage configs, make manager and register them at this time
-        SalvageConfigManager sManager = new SalvageConfigManager(this);
+        final SalvageConfigManager sManager = new SalvageConfigManager(this);
         final List<Salvageable> salvageables = sManager.getLoadedSalvageables();
         salvageableManager = new SimpleSalvageableManager(salvageables.size());
         salvageableManager.registerSalvageables(salvageables);
     }
 
     private void registerEvents() {
-        PluginManager pluginManager = getServer().getPluginManager();
+        final PluginManager pluginManager = getServer().getPluginManager();
 
         // Register events
         pluginManager.registerEvents(new PlayerListener(this), this);
@@ -785,10 +852,10 @@ public class mcMMO extends JavaPlugin {
 
     private void scheduleTasks() {
         // Periodic save timer (Saves every 10 minutes by default)
-        long second = 20;
-        long minute = second * 60;
+        final long second = 20;
+        final long minute = second * 60;
 
-        long saveIntervalTicks = Math.max(minute, generalConfig.getSaveInterval() * minute);
+        final long saveIntervalTicks = Math.max(minute, generalConfig.getSaveInterval() * minute);
 
         getFoliaLib().getScheduler()
                 .runTimer(new SaveTimerTask(), saveIntervalTicks, saveIntervalTicks);
@@ -797,7 +864,7 @@ public class mcMMO extends JavaPlugin {
         getFoliaLib().getScheduler().runAsync(new CleanBackupsTask());
 
         // Old & Powerless User remover
-        long purgeIntervalTicks =
+        final long purgeIntervalTicks =
                 generalConfig.getPurgeInterval() * 60L * 60L * Misc.TICK_CONVERSION_FACTOR;
 
         if (purgeIntervalTicks == 0) {
@@ -811,7 +878,7 @@ public class mcMMO extends JavaPlugin {
 
         // Automatically remove old members from parties
         if (partyConfig.isPartyEnabled()) {
-            long kickIntervalTicks = generalConfig.getAutoPartyKickInterval() * 60L * 60L
+            final long kickIntervalTicks = generalConfig.getAutoPartyKickInterval() * 60L * 60L
                     * Misc.TICK_CONVERSION_FACTOR;
 
             if (kickIntervalTicks == 0) {
@@ -866,35 +933,9 @@ public class mcMMO extends JavaPlugin {
         }
     }
 
-    public @Nullable InputStreamReader getResourceAsReader(@NotNull String fileName) {
-        InputStream in = getResource(fileName);
+    public @Nullable InputStreamReader getResourceAsReader(@NotNull final String fileName) {
+        final InputStream in = getResource(fileName);
         return in == null ? null : new InputStreamReader(in, StandardCharsets.UTF_8);
-    }
-
-    /**
-     * Checks if this plugin is using retro mode Retro mode is a 0-1000 skill system Standard mode
-     * is scaled for 1-100
-     *
-     * @return true if retro mode is enabled
-     */
-    public static boolean isRetroModeEnabled() {
-        return isRetroModeEnabled;
-    }
-
-    public static WorldBlacklist getWorldBlacklist() {
-        return worldBlacklist;
-    }
-
-    public static BukkitAudiences getAudiences() {
-        return audiences;
-    }
-
-    public static boolean isProjectKorraEnabled() {
-        return projectKorraEnabled;
-    }
-
-    public static TransientMetadataTools getTransientMetadataTools() {
-        return transientMetadataTools;
     }
 
     public ChatManager getChatManager() {
@@ -903,51 +944,6 @@ public class mcMMO extends JavaPlugin {
 
     public CommandManager getCommandManager() {
         return commandManager;
-    }
-
-    public static TransientEntityTracker getTransientEntityTracker() {
-        return transientEntityTracker;
-    }
-
-    public static synchronized boolean isServerShutdownExecuted() {
-        return serverShutdownExecuted;
-    }
-
-    static String formatDurationHms(long elapsedNanos) {
-        final Duration elapsedDuration = Duration.ofNanos(Math.max(0L, elapsedNanos));
-        final long totalMillis = elapsedDuration.toMillis();
-
-        if (totalMillis < 1000L) {
-            return totalMillis + "ms";
-        }
-
-        final long totalSeconds = elapsedDuration.getSeconds();
-        final long hours = totalSeconds / 3600;
-        final long minutes = (totalSeconds % 3600) / 60;
-        final long seconds = totalSeconds % 60;
-
-        final StringBuilder displayBuilder = new StringBuilder();
-        if (hours > 0L) {
-            displayBuilder.append(hours).append("h");
-        }
-        if (minutes > 0L) {
-            if (displayBuilder.length() > 0) {
-                displayBuilder.append(' ');
-            }
-            displayBuilder.append(minutes).append("m");
-        }
-        if (seconds > 0L) {
-            if (displayBuilder.length() > 0) {
-                displayBuilder.append(' ');
-            }
-            displayBuilder.append(seconds).append("s");
-        }
-
-        return displayBuilder.length() == 0 ? totalMillis + "ms" : displayBuilder.toString();
-    }
-
-    private static synchronized void setServerShutdown(boolean bool) {
-        serverShutdownExecuted = bool;
     }
 
     public long getPurgeTime() {
@@ -1005,14 +1001,5 @@ public class mcMMO extends JavaPlugin {
 
     public @NotNull LevelUpCommandManager getLevelUpCommandManager() {
         return levelUpCommandManager;
-    }
-
-    /**
-     * Get the {@link MinecraftGameVersion}
-     *
-     * @return the {@link MinecraftGameVersion}
-     */
-    public static MinecraftGameVersion getMinecraftGameVersion() {
-        return minecraftGameVersion;
     }
 }

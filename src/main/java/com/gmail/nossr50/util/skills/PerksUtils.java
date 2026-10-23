@@ -6,25 +6,17 @@ import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.events.skills.SkillActivationPerkEvent;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.List;
-import java.util.function.BiPredicate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permissible;
 
+import java.util.List;
+import java.util.function.BiPredicate;
+
 public final class PerksUtils {
     private static final int LUCKY_SKILL_ACTIVATION_CHANCE = 75;
     private static final int NORMAL_SKILL_ACTIVATION_CHANCE = 100;
-
-    /**
-     * One fixed-multiplier XP perk tier; tiers are checked strongest-first and the first one
-     * the player holds wins.
-     */
-    private record XpPerkTier(double modifier,
-            BiPredicate<Permissible, PrimarySkillType> permissionCheck) {
-    }
-
     private static final List<XpPerkTier> XP_PERK_TIERS = List.of(
             new XpPerkTier(4, Permissions::quadrupleXp),
             new XpPerkTier(3, Permissions::tripleXp),
@@ -79,7 +71,7 @@ public final class PerksUtils {
     }
 
     public static float handleXpPerks(Player player, float xp, PrimarySkillType skill) {
-        double modifier = 1.0F;
+        double modifier = XPBoostAmount.NONE;
 
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
         final boolean debugMode = mmoPlayer != null && mmoPlayer.isDebugMode();
@@ -114,7 +106,7 @@ public final class PerksUtils {
      * Calculate activation chance for a skill.
      *
      * @param player Player to check the activation chance for
-     * @param skill PrimarySkillType to check the activation chance of
+     * @param skill  PrimarySkillType to check the activation chance of
      * @return the activation chance with "lucky perk" accounted for
      * @deprecated The lucky perk is applied inside the skill RNG; no remaining callers.
      * Scheduled for removal.
@@ -132,7 +124,7 @@ public final class PerksUtils {
      * Calculate activation chance for a skill.
      *
      * @param mmoPlayer Player to check the activation chance for
-     * @param skill PrimarySkillType to check the activation chance of
+     * @param skill     PrimarySkillType to check the activation chance of
      * @return the activation chance with "lucky perk" accounted for
      * @deprecated The lucky perk is applied inside the skill RNG; no remaining callers.
      * Scheduled for removal.
@@ -144,5 +136,13 @@ public final class PerksUtils {
         }
 
         return NORMAL_SKILL_ACTIVATION_CHANCE;
+    }
+
+    /**
+     * One fixed-multiplier XP perk tier; tiers are checked strongest-first and the first one
+     * the player holds wins.
+     */
+    private record XpPerkTier(double modifier,
+                              BiPredicate<Permissible, PrimarySkillType> permissionCheck) {
     }
 }

@@ -3,6 +3,10 @@ package com.gmail.nossr50.locale;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.text.TextUtils;
+import net.kyori.adventure.text.TextComponent;
+import org.bukkit.ChatColor;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -25,42 +29,28 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.kyori.adventure.text.TextComponent;
-import org.bukkit.ChatColor;
-import org.jetbrains.annotations.NotNull;
 
 public final class LocaleLoader {
     private static final String BUNDLE_ROOT = "com.gmail.nossr50.locale.locale";
     private static final String OVERRIDE_FILE_NAME = "locale_override.properties";
-
-    /**
-     * The loaded bundles and their string cache, immutable as a unit. Readers on any thread
-     * (async chat, Folia regions) grab the whole snapshot once, so a locale reload can never
-     * expose half-swapped bundles or a cache mixing old and new strings.
-     */
-    private record LocaleSnapshot(ResourceBundle bundle, ResourceBundle filesystemBundle,
-            ResourceBundle enBundle, Map<String, String> cache) {
-    }
-
-    private static volatile LocaleSnapshot localeSnapshot = null;
     // Matches the pattern &#RRGGBB
     private static final Pattern hexPattern = Pattern.compile("&#([A-Fa-f0-9]{6})");
     private static final Pattern minecraftHexPattern = Pattern.compile(
             "§x(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])(§[A-Fa-f0-9])");
+    private static volatile LocaleSnapshot localeSnapshot = null;
     // Bumped on reload so consumers caching derived locale data know to rebuild
     private static volatile int localeGeneration = 0;
-
     private LocaleLoader() {
     }
 
-    public static String getString(String key) {
+    public static String getString(final String key) {
         return getString(key, (Object[]) null);
     }
 
     /**
      * Gets the appropriate string from the Locale files.
      *
-     * @param key The key to look up the string with
+     * @param key              The key to look up the string with
      * @param messageArguments Any arguments to be added to the string
      * @return The properly formatted locale string
      */
@@ -75,12 +65,12 @@ public final class LocaleLoader {
      * Gets the appropriate TextComponent representation of a formatted string from the Locale
      * files.
      *
-     * @param key The key to look up the string with
+     * @param key              The key to look up the string with
      * @param messageArguments Any arguments to be added to the text component
      * @return The properly formatted text component
      */
     public static @NotNull TextComponent getTextComponent(@NotNull String key,
-            Object... messageArguments) {
+                                                          Object... messageArguments) {
         final LocaleSnapshot snapshot = getSnapshot();
         String rawMessage = snapshot.cache()
                 .computeIfAbsent(key, missingKey -> getRawString(snapshot, missingKey));
@@ -146,9 +136,9 @@ public final class LocaleLoader {
         }
     }
 
-    public static String formatString(String string, Object... messageArguments) {
+    public static String formatString(String string, final Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.US);
+            final MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -159,9 +149,9 @@ public final class LocaleLoader {
     }
 
     public static @NotNull TextComponent formatComponent(@NotNull String string,
-            Object... messageArguments) {
+                                                         final Object... messageArguments) {
         if (messageArguments != null) {
-            MessageFormat formatter = new MessageFormat("", Locale.US);
+            final MessageFormat formatter = new MessageFormat("", Locale.of("pt", "BR"));
             formatter.applyPattern(string.replace("'", "''"));
             string = formatter.format(messageArguments);
         }
@@ -185,29 +175,29 @@ public final class LocaleLoader {
      */
     private static @NotNull String translateNamedColorTokens(@NotNull String input) {
         // Colors
-        input = input.replace("[[BLACK]]",       "&0");
-        input = input.replace("[[DARK_BLUE]]",   "&1");
-        input = input.replace("[[DARK_GREEN]]",  "&2");
-        input = input.replace("[[DARK_AQUA]]",   "&3");
-        input = input.replace("[[DARK_RED]]",    "&4");
+        input = input.replace("[[BLACK]]", "&0");
+        input = input.replace("[[DARK_BLUE]]", "&1");
+        input = input.replace("[[DARK_GREEN]]", "&2");
+        input = input.replace("[[DARK_AQUA]]", "&3");
+        input = input.replace("[[DARK_RED]]", "&4");
         input = input.replace("[[DARK_PURPLE]]", "&5");
-        input = input.replace("[[GOLD]]",        "&6");
-        input = input.replace("[[GRAY]]",        "&7");
-        input = input.replace("[[DARK_GRAY]]",   "&8");
-        input = input.replace("[[BLUE]]",        "&9");
-        input = input.replace("[[GREEN]]",       "&a");
-        input = input.replace("[[AQUA]]",        "&b");
-        input = input.replace("[[RED]]",         "&c");
-        input = input.replace("[[LIGHT_PURPLE]]","&d");
-        input = input.replace("[[YELLOW]]",      "&e");
-        input = input.replace("[[WHITE]]",       "&f");
+        input = input.replace("[[GOLD]]", "&6");
+        input = input.replace("[[GRAY]]", "&7");
+        input = input.replace("[[DARK_GRAY]]", "&8");
+        input = input.replace("[[BLUE]]", "&9");
+        input = input.replace("[[GREEN]]", "&a");
+        input = input.replace("[[AQUA]]", "&b");
+        input = input.replace("[[RED]]", "&c");
+        input = input.replace("[[LIGHT_PURPLE]]", "&d");
+        input = input.replace("[[YELLOW]]", "&e");
+        input = input.replace("[[WHITE]]", "&f");
         // Formatting
-        input = input.replace("[[BOLD]]",        "&l");
-        input = input.replace("[[UNDERLINE]]",   "&n");
-        input = input.replace("[[ITALIC]]",      "&o");
-        input = input.replace("[[STRIKE]]",      "&m");
-        input = input.replace("[[MAGIC]]",       "&k");
-        input = input.replace("[[RESET]]",       "&r");
+        input = input.replace("[[BOLD]]", "&l");
+        input = input.replace("[[UNDERLINE]]", "&n");
+        input = input.replace("[[ITALIC]]", "&o");
+        input = input.replace("[[STRIKE]]", "&m");
+        input = input.replace("[[MAGIC]]", "&k");
+        input = input.replace("[[RESET]]", "&r");
         return input;
     }
 
@@ -316,7 +306,7 @@ public final class LocaleLoader {
 
     @NotNull
     private static String getLocaleHelpText() {
-        String localeExplanation =
+        final String localeExplanation =
                 "# -- Are you looking to change the language of mcMMO but without editing it yourself? --\n"
                         +
                         "\n" +
@@ -384,7 +374,7 @@ public final class LocaleLoader {
 
     @NotNull
     private static String getLocaleHelpTextWithoutExamples() {
-        String localeExplanation =
+        final String localeExplanation =
                 """
                         # -- Are you looking to change the language of mcMMO but without editing it yourself? --
                         
@@ -482,14 +472,14 @@ public final class LocaleLoader {
      * Hex color codes are in the format of &#RRGGBB Minecraft color codes are in the format of
      * §x§R§R§G§G§B§B Where R, G, and B are the red, green, and blue values respectively. The §x is
      * a special character that tells Minecraft to use the following color codes as hex values. The
-     * §R§R is the red value, the §G§G is the green value, and the §B§B is the blue value. Example:
+     * §R§R is the red value, the §G§G is the green value, and the §B§B is the blue statVal. Example:
      * §x§R§R§G§G§B§B is the equivalent of the hex color code &#RRGGBB
      * </p>
      *
      * @param messageWithHex The message with hex color codes to translate
      * @return The message with the hex color codes translated to Minecraft color codes
      */
-    public static String translateHexColorCodes(String messageWithHex) {
+    public static String translateHexColorCodes(final String messageWithHex) {
         if (messageWithHex == null) {
             return null;
         }
@@ -497,8 +487,8 @@ public final class LocaleLoader {
         final Matcher matcher = hexPattern.matcher(messageWithHex);
         final StringBuilder buffer = new StringBuilder(messageWithHex.length() + 4 * 8);
         while (matcher.find()) {
-            String group = matcher.group(1);
-            String hexEquivalent = "§x" +
+            final String group = matcher.group(1);
+            final String hexEquivalent = "§x" +
                     "§" + group.charAt(0) + "§" + group.charAt(1) +
                     "§" + group.charAt(2) + "§" + group.charAt(3) +
                     "§" + group.charAt(4) + "§" + group.charAt(5);
@@ -508,13 +498,13 @@ public final class LocaleLoader {
     }
 
     // Method to reverse the transformation from Minecraft color codes to hex codes
-    public static String reverseTranslateHexColorCodes(String minecraftColorString) {
+    public static String reverseTranslateHexColorCodes(final String minecraftColorString) {
         // Matches the Minecraft color pattern: §x§R§R§G§G§B§B
-        Matcher matcher = minecraftHexPattern.matcher(minecraftColorString);
-        StringBuilder buffer = new StringBuilder();
+        final Matcher matcher = minecraftHexPattern.matcher(minecraftColorString);
+        final StringBuilder buffer = new StringBuilder();
 
         while (matcher.find()) {
-            String hexColor = "#" +
+            final String hexColor = "#" +
                     matcher.group(1).substring(1) + matcher.group(2).substring(1) +
                     matcher.group(3).substring(1) + matcher.group(4).substring(1) +
                     matcher.group(5).substring(1) + matcher.group(6).substring(1);
@@ -522,5 +512,14 @@ public final class LocaleLoader {
         }
         matcher.appendTail(buffer);
         return buffer.toString();
+    }
+
+    /**
+     * The loaded bundles and their string cache, immutable as a unit. Readers on any thread
+     * (async chat, Folia regions) grab the whole snapshot once, so a locale reload can never
+     * expose half-swapped bundles or a cache mixing old and new strings.
+     */
+    private record LocaleSnapshot(ResourceBundle bundle, ResourceBundle filesystemBundle,
+                                  ResourceBundle enBundle, Map<String, String> cache) {
     }
 }

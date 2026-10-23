@@ -2,8 +2,9 @@ package com.gmail.nossr50.skills.archery;
 
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.CancellableRunnable;
-import java.util.UUID;
 import org.bukkit.entity.LivingEntity;
+
+import java.util.UUID;
 
 public class TrackedEntity extends CancellableRunnable {
     private final LivingEntity livingEntity;

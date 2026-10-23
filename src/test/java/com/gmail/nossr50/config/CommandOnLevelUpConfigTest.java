@@ -1,28 +1,28 @@
 package com.gmail.nossr50.config;
 
-import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.HERBALISM;
-import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
-import static java.util.logging.Logger.getLogger;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.LevelUpCommandAPI;
 import com.gmail.nossr50.commands.levelup.LevelUpCommand;
 import com.gmail.nossr50.commands.levelup.RegistrationSource;
 import com.gmail.nossr50.mcMMO;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.HERBALISM;
+import static com.gmail.nossr50.datatypes.skills.PrimarySkillType.MINING;
+import static java.util.logging.Logger.getLogger;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 /**
  * Parsing tests for {@link CommandOnLevelUpConfig}. The loader is the bridge between what

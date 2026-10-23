@@ -5,14 +5,14 @@ import com.gmail.nossr50.skills.fishing.FishingManager;
 import org.jetbrains.annotations.NotNull;
 
 public class McMMOPlayerMasterAnglerEvent extends McMMOPlayerFishingEvent {
+    private final FishingManager fishingManager;
     private int reducedMinWaitTime;
     private int reducedMaxWaitTime;
-    private final FishingManager fishingManager;
 
     public McMMOPlayerMasterAnglerEvent(@NotNull McMMOPlayer mmoPlayer,
-            int reducedMinWaitTime,
-            int reducedMaxWaitTime,
-            FishingManager fishingManager) {
+                                        int reducedMinWaitTime,
+                                        int reducedMaxWaitTime,
+                                        FishingManager fishingManager) {
         super(mmoPlayer);
         this.fishingManager = fishingManager;
         this.reducedMinWaitTime = Math.max(reducedMinWaitTime, getReducedMinWaitTimeLowerBound());

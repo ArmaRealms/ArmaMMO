@@ -18,8 +18,8 @@ import org.jetbrains.annotations.NotNull;
 public class ConvertDatabaseCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command,
-            @NotNull String label,
-            String[] args) {
+                             @NotNull String label,
+                             String[] args) {
         if (args.length == 2) {
             DatabaseType previousType = DatabaseType.getDatabaseType(args[1]);
             DatabaseType newType = mcMMO.getDatabaseManager().getDatabaseType();

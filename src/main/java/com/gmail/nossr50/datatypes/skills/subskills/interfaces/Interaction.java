@@ -15,7 +15,7 @@ public interface Interaction {
     /**
      * Executes the interaction between this subskill and Minecraft
      *
-     * @param event the vector of interaction
+     * @param event  the vector of interaction
      * @param plugin the mcMMO plugin instance
      * @return true if interaction wasn't cancelled
      */

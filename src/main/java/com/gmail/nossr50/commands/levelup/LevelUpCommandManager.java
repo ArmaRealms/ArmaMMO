@@ -1,11 +1,13 @@
 package com.gmail.nossr50.commands.levelup;
 
-import static java.util.Objects.requireNonNull;
-
 import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.LogUtils;
+import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,9 +15,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Registry of everything that reacts to level ups: commands loaded from
@@ -42,7 +43,7 @@ public class LevelUpCommandManager {
      * @return the id used to remove this registration later
      */
     public @NotNull UUID register(@NotNull LevelUpAction action,
-            @NotNull RegistrationSource source) {
+                                  @NotNull RegistrationSource source) {
         return register(action, source, null);
     }
 
@@ -52,11 +53,11 @@ public class LevelUpCommandManager {
      *
      * @param action the action to run
      * @param source where the registration came from
-     * @param owner the plugin that owns this registration, or null for config entries
+     * @param owner  the plugin that owns this registration, or null for config entries
      * @return the id used to remove this registration later
      */
     public @NotNull UUID register(@NotNull LevelUpAction action,
-            @NotNull RegistrationSource source, @Nullable Plugin owner) {
+                                  @NotNull RegistrationSource source, @Nullable Plugin owner) {
         requireNonNull(action, "action cannot be null");
         requireNonNull(source, "source cannot be null");
         final UUID id = UUID.randomUUID();
@@ -100,14 +101,14 @@ public class LevelUpCommandManager {
     /**
      * Runs every registration against a level up.
      *
-     * @param mmoPlayer the player who leveled up
-     * @param primarySkillType the skill that leveled up
-     * @param levelsGained every skill level reached during this level up
+     * @param mmoPlayer         the player who leveled up
+     * @param primarySkillType  the skill that leveled up
+     * @param levelsGained      every skill level reached during this level up
      * @param powerLevelsGained every power level reached during this level up
      */
     public void applyLevelUp(@NotNull McMMOPlayer mmoPlayer,
-            @NotNull PrimarySkillType primarySkillType, @NotNull Set<Integer> levelsGained,
-            @NotNull Set<Integer> powerLevelsGained) {
+                             @NotNull PrimarySkillType primarySkillType, @NotNull Set<Integer> levelsGained,
+                             @NotNull Set<Integer> powerLevelsGained) {
         if (!mmoPlayer.getPlayer().isOnline()) {
             return;
         }

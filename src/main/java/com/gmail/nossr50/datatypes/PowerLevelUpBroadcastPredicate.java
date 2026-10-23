@@ -5,10 +5,11 @@ import com.gmail.nossr50.datatypes.player.McMMOPlayer;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.player.UserManager;
-import java.util.function.Predicate;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Predicate;
 
 //TODO: Allow for offline players to broadcast
 public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements Predicate<T> {
@@ -17,6 +18,10 @@ public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements 
 
     public PowerLevelUpBroadcastPredicate(@NotNull T broadcaster) {
         this.broadcaster = broadcaster;
+    }
+
+    private static boolean isPowerLevelUpBroadcastsSameWorldOnly() {
+        return mcMMO.p.getGeneralConfig().isPowerLevelUpBroadcastsSameWorldOnly();
     }
 
     @Override
@@ -84,10 +89,6 @@ public class PowerLevelUpBroadcastPredicate<T extends CommandSender> implements 
             //Send out to console
             return mcMMO.p.getGeneralConfig().shouldPowerLevelUpBroadcastToConsole();
         }
-    }
-
-    private static boolean isPowerLevelUpBroadcastsSameWorldOnly() {
-        return mcMMO.p.getGeneralConfig().isPowerLevelUpBroadcastsSameWorldOnly();
     }
 
     @Override

@@ -1,16 +1,5 @@
 package com.gmail.nossr50.skills.swords;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.gmail.nossr50.MMOTestEnvironment;
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
@@ -27,9 +16,6 @@ import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.tcoded.folialib.FoliaLib;
 import com.tcoded.folialib.impl.PlatformScheduler;
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.UUID;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -39,6 +25,21 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Covers the Swords combat effects that depend on the committed attack strength of a hit.
@@ -98,6 +99,23 @@ class SwordsManagerTest extends MMOTestEnvironment {
             probabilityUtil.verify(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
                     eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(16.5)));
             verify(player, never()).getAttackCooldown();
+        }
+    }
+
+    @Test
+    void serratedStrikesShouldApplyReducedAoeDamage() {
+        final double originalModifier = Swords.serratedStrikesModifier;
+        Swords.serratedStrikesModifier = 4.0;
+        try (MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+            // Given - a 12 damage serrated strike at full attack strength
+            // When - the AoE is processed
+            swordsManager.serratedStrikes(target, 12.0, 1.0);
+
+            // Then - the AoE deals the modifier-reduced damage
+            combatUtils.verify(() -> CombatUtils.applyAbilityAoE(player, target, 3.0, 1.0,
+                    PrimarySkillType.SWORDS));
+        } finally {
+            Swords.serratedStrikesModifier = originalModifier;
         }
     }
 
@@ -182,7 +200,7 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void existingRuptureShouldBeRefreshedInsteadOfReRolled() throws Exception {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the target is already bleeding from a rupture
                 final RuptureTask ongoingRupture = Mockito.mock(RuptureTask.class);
                 trackRupture(target, ongoingRupture);
@@ -199,10 +217,10 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void successfulRuptureShouldScheduleTheBleedTask() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - the rupture roll succeeds against a mob
                 probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
+                                eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
                         .thenReturn(true);
                 when(advancedConfig.getRuptureTickDamage(false, 3)).thenReturn(2.0);
 
@@ -219,13 +237,13 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void blockingDefendersShouldNotStartBleeding() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a defending player who is blocking with a shield
                 final Player defender = Mockito.mock(Player.class);
                 when(defender.getUniqueId()).thenReturn(UUID.randomUUID());
                 when(defender.isBlocking()).thenReturn(true);
                 probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
+                                eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
                         .thenReturn(true);
 
                 // When - the rupture roll succeeds anyway
@@ -239,13 +257,13 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void bledPlayersShouldBeNotified() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class)) {
+                         mockStatic(ProbabilityUtil.class)) {
                 // Given - a non-blocking defending player who uses notifications
                 final Player defender = Mockito.mock(Player.class);
                 when(defender.getUniqueId()).thenReturn(UUID.randomUUID());
                 when(NotificationManager.doesPlayerUseNotifications(defender)).thenReturn(true);
                 probabilityUtil.when(() -> ProbabilityUtil.isStaticSkillRNGSuccessful(
-                        eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
+                                eq(PrimarySkillType.SWORDS), eq(mmoPlayer), eq(100.0)))
                         .thenReturn(true);
                 when(advancedConfig.getRuptureTickDamage(true, 3)).thenReturn(1.5);
 
@@ -301,8 +319,8 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void successfulCounterShouldReflectReducedDamage() {
             try (MockedStatic<ProbabilityUtil> probabilityUtil =
-                    mockStatic(ProbabilityUtil.class);
-                    MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+                         mockStatic(ProbabilityUtil.class);
+                 MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
                 // Given - the counter roll succeeds against a player attacker
                 final Player attacker = Mockito.mock(Player.class);
                 probabilityUtil.when(() -> ProbabilityUtil.isSkillRNGSuccessful(
@@ -326,7 +344,7 @@ class SwordsManagerTest extends MMOTestEnvironment {
         @Test
         void failedCounterShouldReflectNothing() {
             try (MockedStatic<ProbabilityUtil> ignored = mockStatic(ProbabilityUtil.class);
-                    MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
+                 MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
                 // Given - the counter roll fails (mock default)
                 // When - damage comes in
                 swordsManager.counterAttackChecks(target, 10.0);
@@ -334,23 +352,6 @@ class SwordsManagerTest extends MMOTestEnvironment {
                 // Then - nothing is reflected
                 combatUtils.verifyNoInteractions();
             }
-        }
-    }
-
-    @Test
-    void serratedStrikesShouldApplyReducedAoeDamage() {
-        final double originalModifier = Swords.serratedStrikesModifier;
-        Swords.serratedStrikesModifier = 4.0;
-        try (MockedStatic<CombatUtils> combatUtils = mockStatic(CombatUtils.class)) {
-            // Given - a 12 damage serrated strike at full attack strength
-            // When - the AoE is processed
-            swordsManager.serratedStrikes(target, 12.0, 1.0);
-
-            // Then - the AoE deals the modifier-reduced damage
-            combatUtils.verify(() -> CombatUtils.applyAbilityAoE(player, target, 3.0, 1.0,
-                    PrimarySkillType.SWORDS));
-        } finally {
-            Swords.serratedStrikesModifier = originalModifier;
         }
     }
 }

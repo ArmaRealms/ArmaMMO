@@ -1,9 +1,5 @@
 package com.gmail.nossr50.skills.taming;
 
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_JUMP_STRENGTH;
-import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
-import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
-
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.experience.XPGainReason;
 import com.gmail.nossr50.datatypes.experience.XPGainSource;
@@ -27,7 +23,6 @@ import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.sounds.SoundManager;
 import com.gmail.nossr50.util.sounds.SoundType;
 import com.gmail.nossr50.util.text.StringUtils;
-import java.util.HashMap;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeInstance;
@@ -45,6 +40,12 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_JUMP_STRENGTH;
+import static com.gmail.nossr50.util.AttributeMapper.MAPPED_MOVEMENT_SPEED;
+import static com.gmail.nossr50.util.MobMetadataUtils.flagMetadata;
+
 public class TamingManager extends SkillManager {
     //TODO: Temporary static cache, will be changed in 2.2
     private static HashMap<Material, CallOfTheWildType> summoningItems;
@@ -54,15 +55,6 @@ public class TamingManager extends SkillManager {
     public TamingManager(@NotNull McMMOPlayer mmoPlayer) {
         super(mmoPlayer, PrimarySkillType.TAMING);
         init();
-    }
-
-    //TODO: Hacky stuff for 2.1, will be cleaned up in 2.2
-    private void init() {
-        //prevents accidentally summoning too many things when holding down left click
-        lastSummonTimeStamp = 0L;
-
-        //Init per-player tracking of summoned entities
-        mcMMO.getTransientEntityTracker().initPlayer(mmoPlayer.getPlayer());
     }
 
     public static void initStaticCaches() {
@@ -105,6 +97,15 @@ public class TamingManager extends SkillManager {
                 cotwSummonDataProperties.put(callOfTheWildType, tamingSummon);
             }
         }
+    }
+
+    //TODO: Hacky stuff for 2.1, will be cleaned up in 2.2
+    private void init() {
+        //prevents accidentally summoning too many things when holding down left click
+        lastSummonTimeStamp = 0L;
+
+        //Init per-player tracking of summoned entities
+        mcMMO.getTransientEntityTracker().initPlayer(mmoPlayer.getPlayer());
     }
 
     public boolean canUseThickFur() {
@@ -175,7 +176,7 @@ public class TamingManager extends SkillManager {
     /**
      * Apply the Fast Food Service ability.
      *
-     * @param wolf The wolf using the ability
+     * @param wolf   The wolf using the ability
      * @param damage The damage being absorbed by the wolf
      */
     public void fastFoodService(@NotNull Wolf wolf, double damage) {
@@ -356,7 +357,6 @@ public class TamingManager extends SkillManager {
         }
     }
 
-
     private void processCallOfTheWild() {
         //Prevent summoning too many things accidentally if a player holds down the button
         if (lastSummonTimeStamp + 150 > System.currentTimeMillis()) {
@@ -435,7 +435,7 @@ public class TamingManager extends SkillManager {
     }
 
     private void spawnCOTWEntity(CallOfTheWildType callOfTheWildType, Location spawnLocation,
-            EntityType entityType) {
+                                 EntityType entityType) {
         switch (callOfTheWildType) {
             case CAT ->
                 //Entity type is needed for cats because in 1.13 and below we spawn ocelots, in 1.14 and above we spawn cats
@@ -553,7 +553,7 @@ public class TamingManager extends SkillManager {
     }
 
     private void addToTracker(@NotNull LivingEntity livingEntity,
-            @NotNull CallOfTheWildType callOfTheWildType) {
+                              @NotNull CallOfTheWildType callOfTheWildType) {
         mcMMO.getTransientEntityTracker().addSummon(getPlayer().getUniqueId(),
                 new TrackedTamingEntity(livingEntity, callOfTheWildType, getPlayer()));
     }

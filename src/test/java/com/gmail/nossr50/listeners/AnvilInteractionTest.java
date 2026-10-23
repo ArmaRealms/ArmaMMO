@@ -1,9 +1,9 @@
 package com.gmail.nossr50.listeners;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.bukkit.Material;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Contract coverage for the repair/salvage anvil decision ladder. The perform path requires a

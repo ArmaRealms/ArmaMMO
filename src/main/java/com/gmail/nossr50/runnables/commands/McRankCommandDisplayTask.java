@@ -7,9 +7,10 @@ import com.gmail.nossr50.util.CancellableRunnable;
 import com.gmail.nossr50.util.MetadataConstants;
 import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.SkillTools;
-import java.util.Map;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.Map;
 
 /**
  * Display the results of McrankCommandAsyncTask to the sender.
@@ -18,11 +19,12 @@ public class McRankCommandDisplayTask extends CancellableRunnable {
     private final Map<PrimarySkillType, Integer> skills;
     private final CommandSender sender;
     private final String playerName;
-    private final boolean useBoard, useChat;
+    private final boolean useBoard;
+    private final boolean useChat;
 
     McRankCommandDisplayTask(Map<PrimarySkillType, Integer> skills, CommandSender sender,
-            String playerName,
-            boolean useBoard, boolean useChat) {
+                             String playerName,
+                             boolean useBoard, boolean useChat) {
         this.skills = skills;
         this.sender = sender;
         this.playerName = playerName;

@@ -1,12 +1,5 @@
 package com.gmail.nossr50.commands.skills;
 
-
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_MOMENTUM;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_SPEARS_LIMIT_BREAK;
-import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_SPEAR_MASTERY;
-import static com.gmail.nossr50.util.skills.SkillUtils.canUseSubskill;
-import static com.gmail.nossr50.util.text.TextComponentFactory.appendSubSkillTextComponents;
-
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.mcMMO;
@@ -15,18 +8,25 @@ import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.CombatUtils;
 import com.gmail.nossr50.util.skills.RankUtils;
 import com.gmail.nossr50.util.skills.SkillUtils;
-import java.util.ArrayList;
-import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_MOMENTUM;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_SPEARS_LIMIT_BREAK;
+import static com.gmail.nossr50.datatypes.skills.SubSkillType.SPEARS_SPEAR_MASTERY;
+import static com.gmail.nossr50.util.skills.SkillUtils.canUseSubskill;
+import static com.gmail.nossr50.util.text.TextComponentFactory.appendSubSkillTextComponents;
+
 public class SpearsCommand extends SkillCommand {
+
+    String momentumChanceToApply, momentumChanceToApplyLucky, momentumDuration;
 
     public SpearsCommand() {
         super(PrimarySkillType.SPEARS);
     }
-
-    String momentumChanceToApply, momentumChanceToApplyLucky, momentumDuration;
 
     @Override
     protected void dataCalculations(Player player, float skillValue) {
@@ -47,7 +47,7 @@ public class SpearsCommand extends SkillCommand {
 
     @Override
     protected List<String> statsDisplay(Player player, float skillValue, boolean hasEndurance,
-            boolean isLucky) {
+                                        boolean isLucky) {
         final SpearsManager spearsManager = UserManager.getPlayer(player).getSpearsManager();
         final double spearMasteryBonusDmg = spearsManager.getSpearMasteryBonusDamage();
 

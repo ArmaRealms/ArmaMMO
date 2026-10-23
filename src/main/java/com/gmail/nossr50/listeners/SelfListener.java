@@ -15,19 +15,20 @@ import com.gmail.nossr50.util.scoreboards.ScoreboardManager;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.gmail.nossr50.worldguard.WorldGuardManager;
 import com.gmail.nossr50.worldguard.WorldGuardUtils;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.PluginDisableEvent;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 public class SelfListener implements Listener {
     //Used in task scheduling and other things
     private final mcMMO plugin;
 
-    public SelfListener(mcMMO plugin) {
+    public SelfListener(final mcMMO plugin) {
         this.plugin = plugin;
     }
 
@@ -46,7 +47,7 @@ public class SelfListener implements Listener {
         if (player.isOnline()) {
             //Players can gain multiple levels especially during xprate events
             for (int i = 0; i < event.getLevelsGained(); i++) {
-                int previousLevelGained = event.getSkillLevel() - i;
+                final int previousLevelGained = event.getSkillLevel() - i;
                 //Send player skill unlock notifications
                 mmoPlayer.processUnlockNotifications(plugin, event.getSkill(),
                         previousLevelGained);
@@ -92,8 +93,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerXp(McMMOPlayerXpGainEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerXp(final McMMOPlayerXpGainEvent event) {
+        final Player player = event.getPlayer();
 
         if (player.isOnline()) {
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
@@ -103,8 +104,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onAbility(McMMOPlayerAbilityActivateEvent event) {
-        Player player = event.getPlayer();
+    public void onAbility(final McMMOPlayerAbilityActivateEvent event) {
+        final Player player = event.getPlayer();
         if (player.isOnline()) {
             if (mcMMO.p.getGeneralConfig().getScoreboardsEnabled()) {
                 ScoreboardManager.cooldownUpdate(event.getPlayer(), event.getSkill());
@@ -113,8 +114,8 @@ public class SelfListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    public void onPlayerXpGain(McMMOPlayerXpGainEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerXpGain(final McMMOPlayerXpGainEvent event) {
+        final Player player = event.getPlayer();
         final McMMOPlayer mmoPlayer = UserManager.getPlayer(player);
 
         //TODO: Handle proper validation at the event level
@@ -122,7 +123,7 @@ public class SelfListener implements Listener {
             return;
         }
 
-        PrimarySkillType primarySkillType = event.getSkill();
+        final PrimarySkillType primarySkillType = event.getSkill();
 
         if (mmoPlayer.isDebugMode()) {
             mmoPlayer.getPlayer().sendMessage(event.getSkill().toString() + " XP Gained");
@@ -164,7 +165,7 @@ public class SelfListener implements Listener {
             }
         }
 
-        int threshold = ExperienceConfig.getInstance()
+        final int threshold = ExperienceConfig.getInstance()
                 .getDiminishedReturnsThreshold(primarySkillType);
 
         if (threshold <= 0 || !ExperienceConfig.getInstance().getDiminishedReturnsEnabled()) {
@@ -202,6 +203,5 @@ public class SelfListener implements Listener {
             mmoPlayer.getPlayer().sendMessage("Final Raw XP: " + event.getRawXpGained());
         }
     }
-
 
 }
