@@ -216,8 +216,10 @@ class ExcavationTest extends MMOTestEnvironment {
         @Test
         void gigaDrillBreakerShouldPayDoubleChecksAndWearTheTool() {
             try (MockedStatic<SkillUtils> skillUtils = mockStatic(SkillUtils.class)) {
-                // Given - a configured ability tool damage
-                doNothing().when(excavationManager).excavationBlockCheck(block);
+                // Given - digging sand pays 40 XP and the ability damages the tool
+                when(ExperienceConfig.getInstance().getXp(PrimarySkillType.EXCAVATION,
+                        Material.SAND)).thenReturn(40);
+                doNothing().when(excavationManager).applyXpGain(anyFloat(), any(), any());
                 when(generalConfig.getAbilityToolDamage()).thenReturn(1);
 
                 // When - Giga Drill Breaker processes the block
@@ -225,6 +227,8 @@ class ExcavationTest extends MMOTestEnvironment {
 
                 // Then - the block pays double XP checks and the shovel wears down
                 verify(excavationManager, Mockito.times(2)).excavationBlockCheck(block);
+                verify(excavationManager, Mockito.times(2))
+                        .applyXpGain(40f, XPGainReason.PVE, XPGainSource.SELF);
                 skillUtils.verify(() -> SkillUtils.handleDurabilityChange(itemInMainHand, 1));
             }
         }

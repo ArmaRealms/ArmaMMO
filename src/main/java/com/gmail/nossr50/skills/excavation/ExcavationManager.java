@@ -203,6 +203,8 @@ public class ExcavationManager extends SkillManager {
      * @param block The {@link Block} to check ability activation for
      */
     public void gigaDrillBreaker(final Block block) {
+        // Two bonus XP checks plus the listener's normal check give the ability its 3x XP.
+        excavationBlockCheck(block);
         excavationBlockCheck(block);
         SkillUtils.handleDurabilityChange(getPlayer().getInventory().getItemInMainHand(),
                 mcMMO.p.getGeneralConfig().getAbilityToolDamage());
