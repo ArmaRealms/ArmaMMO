@@ -11,6 +11,7 @@ import com.gmail.nossr50.skills.alchemy.Alchemy;
 import com.gmail.nossr50.skills.alchemy.AlchemyPotionBrewer;
 import com.gmail.nossr50.util.ContainerMetadataUtils;
 import com.gmail.nossr50.util.ItemUtils;
+import com.gmail.nossr50.util.PaperUtil;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.player.UserManager;
 import com.gmail.nossr50.util.skills.SkillUtils;
@@ -405,7 +406,7 @@ public class InventoryListener implements Listener {
             return;
         }
 
-        final InventoryHolder holder = inventory.getHolder();
+        final InventoryHolder holder = PaperUtil.getHolderWithoutSnapshot(inventory);
 
         if (holder instanceof final BrewingStand brewingStand) {
 
@@ -424,6 +425,10 @@ public class InventoryListener implements Listener {
                 event.setCancelled(true);
                 return;
             }
+            if (!mcMMO.p.getGeneralConfig().getEnabledForHoppers()) {
+                return;
+            }
+
             int ingredientLevel = 1;
 
             final OfflinePlayer offlinePlayer = ContainerMetadataUtils.getContainerOwner(brewingStand);
@@ -434,9 +439,13 @@ public class InventoryListener implements Listener {
                 }
             }
 
-            if (mcMMO.p.getGeneralConfig().getEnabledForHoppers()
-                    && AlchemyPotionBrewer.isValidIngredientByLevel(ingredientLevel, item)) {
-                AlchemyPotionBrewer.scheduleCheck(brewingStand);
+            if (AlchemyPotionBrewer.isValidIngredientByLevel(ingredientLevel, item)) {
+                // Brewing tasks retain and mutate this state, so they still need the original snapshot semantics.
+                final InventoryHolder taskHolder = PaperUtil.canGetHolderWithoutSnapshot()
+                        ? inventory.getHolder() : holder;
+                if (taskHolder instanceof final BrewingStand snapshot) {
+                    AlchemyPotionBrewer.scheduleCheck(snapshot);
+                }
             }
         }
     }

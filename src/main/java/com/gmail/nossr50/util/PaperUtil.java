@@ -2,14 +2,17 @@ package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
  * Reflection-based access to Paper-only APIs. All reflection is resolved once at class load and
- * cached. On non-Paper servers (or Folia), the Paper-specific methods gracefully no-op.
+ * cached. Unavailable methods use the documented fallback for each operation.
  * <p>
  * Why reflection? mcMMO compiles against the Spigot API for maximum compatibility. Paper-only
  * methods like {@code Player.lookAt()} are not available at compile time.
@@ -18,6 +21,7 @@ public final class PaperUtil {
 
     private static final boolean IS_FOLIA;
     private static final boolean IS_PAPER;
+    private static final Method GET_HOLDER_WITHOUT_SNAPSHOT;
 
     /**
      * Cached: {@code Player.lookAt(double, double, double, LookAnchor)}
@@ -53,6 +57,14 @@ public final class PaperUtil {
 
         LOOK_AT_METHOD = lookAt;
         LOOK_ANCHOR_EYES = anchorEyes;
+
+        Method getHolder = null;
+        try {
+            getHolder = Inventory.class.getMethod("getHolder", boolean.class);
+        } catch (final NoSuchMethodException ignored) {
+            // Spigot only provides the snapshot-producing overload.
+        }
+        GET_HOLDER_WITHOUT_SNAPSHOT = getHolder;
     }
 
     private PaperUtil() {
@@ -70,6 +82,31 @@ public final class PaperUtil {
      */
     public static boolean isPaper() {
         return IS_PAPER;
+    }
+
+    /**
+     * @return whether the runtime inventory API can avoid creating a block-state snapshot
+     */
+    public static boolean canGetHolderWithoutSnapshot() {
+        return GET_HOLDER_WITHOUT_SNAPSHOT != null;
+    }
+
+    /**
+     * Gets the live holder on Paper, or the ordinary holder on Spigot.
+     * Callers retaining a block state for later mutations must obtain a normal snapshot instead.
+     *
+     * @param inventory inventory whose holder is being inspected
+     * @return the holder, or null for an inventory without one
+     */
+    public static @Nullable InventoryHolder getHolderWithoutSnapshot(final @NotNull Inventory inventory) {
+        if (GET_HOLDER_WITHOUT_SNAPSHOT == null) {
+            return inventory.getHolder();
+        }
+        try {
+            return (InventoryHolder) GET_HOLDER_WITHOUT_SNAPSHOT.invoke(inventory, false);
+        } catch (final IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Failed to get inventory holder without a snapshot", e);
+        }
     }
 
     /**
