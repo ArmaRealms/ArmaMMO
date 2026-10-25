@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.InvocationTargetException;
+import org.bukkit.block.BrewingStand;
+import org.bukkit.inventory.BrewerInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.junit.jupiter.api.Test;
@@ -30,6 +32,18 @@ class PaperUtilInventoryTest {
 
         assertThat(PaperUtil.getHolderWithoutSnapshot(inventory)).isSameAs(holder);
         verify(inventory).getHolder();
+    }
+
+    @Test
+    void spigotInventoryImplementationShouldWorkOnEitherRuntime() {
+        final BrewerInventory delegate = mock(BrewerInventory.class);
+        final BrewingStand holder = mock(BrewingStand.class);
+        when(delegate.getHolder()).thenReturn(holder);
+        final LegacyBrewerInventory inventory = new LegacyBrewerInventory(delegate);
+
+        assertThat(PaperUtil.canGetHolderWithoutSnapshot(inventory)).isFalse();
+        assertThat(PaperUtil.getHolderWithoutSnapshot(inventory)).isSameAs(holder);
+        verify(delegate).getHolder();
     }
 
     @Test

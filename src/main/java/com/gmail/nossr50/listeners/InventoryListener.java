@@ -441,7 +441,7 @@ public class InventoryListener implements Listener {
 
             if (AlchemyPotionBrewer.isValidIngredientByLevel(ingredientLevel, item)) {
                 // Brewing tasks retain and mutate this state, so they still need the original snapshot semantics.
-                final InventoryHolder taskHolder = PaperUtil.canGetHolderWithoutSnapshot()
+                final InventoryHolder taskHolder = PaperUtil.canGetHolderWithoutSnapshot(inventory)
                         ? inventory.getHolder() : holder;
                 if (taskHolder instanceof final BrewingStand snapshot) {
                     AlchemyPotionBrewer.scheduleCheck(snapshot);
