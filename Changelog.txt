@@ -1,6 +1,7 @@
 Version 2.3.003
     Added separate repair and salvage options for items with minecraft:item_model in custom_item_support.yml
     Fixed Giga Drill Breaker awarding only double block XP instead of triple XP
+    Reduced brewing stand snapshot copies for hopper transfers on Paper while preserving Alchemy task snapshots and Spigot inventory support
 
 Version 2.3.002
     Fixed mcMMO failing to start on Spigot 26.3 servers

@@ -2,14 +2,18 @@ package com.gmail.nossr50.util;
 
 import com.gmail.nossr50.mcMMO;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 /**
- * Reflection-based access to Paper-only APIs. All reflection is resolved once at class load and
- * cached. On non-Paper servers (or Folia), the Paper-specific methods gracefully no-op.
+ * Reflection-based access to Paper-only APIs. Runtime methods and per-inventory-class support
+ * are cached. Unavailable methods use the documented fallback for each operation.
  * <p>
  * Why reflection? mcMMO compiles against the Spigot API for maximum compatibility. Paper-only
  * methods like {@code Player.lookAt()} are not available at compile time.
@@ -18,6 +22,17 @@ public final class PaperUtil {
 
     private static final boolean IS_FOLIA;
     private static final boolean IS_PAPER;
+    private static final Method GET_HOLDER_WITHOUT_SNAPSHOT;
+    private static final ClassValue<Boolean> SNAPSHOT_OVERLOAD_IMPLEMENTED = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(final Class<?> type) {
+            try {
+                return !Modifier.isAbstract(type.getMethod("getHolder", boolean.class).getModifiers());
+            } catch (final NoSuchMethodException ignored) {
+                return false;
+            }
+        }
+    };
 
     /**
      * Cached: {@code Player.lookAt(double, double, double, LookAnchor)}
@@ -53,6 +68,14 @@ public final class PaperUtil {
 
         LOOK_AT_METHOD = lookAt;
         LOOK_ANCHOR_EYES = anchorEyes;
+
+        Method getHolder = null;
+        try {
+            getHolder = Inventory.class.getMethod("getHolder", boolean.class);
+        } catch (final NoSuchMethodException ignored) {
+            // Spigot only provides the snapshot-producing overload.
+        }
+        GET_HOLDER_WITHOUT_SNAPSHOT = getHolder;
     }
 
     private PaperUtil() {
@@ -70,6 +93,41 @@ public final class PaperUtil {
      */
     public static boolean isPaper() {
         return IS_PAPER;
+    }
+
+    /**
+     * @return whether the runtime inventory API can avoid creating a block-state snapshot
+     */
+    public static boolean canGetHolderWithoutSnapshot() {
+        return GET_HOLDER_WITHOUT_SNAPSHOT != null;
+    }
+
+    /**
+     * Checks the implementation too: custom Spigot inventories may lack Paper's abstract overload.
+     *
+     * @param inventory inventory whose implementation is being checked
+     * @return whether this inventory implements the runtime's snapshot overload
+     */
+    public static boolean canGetHolderWithoutSnapshot(final @NotNull Inventory inventory) {
+        return canGetHolderWithoutSnapshot() && SNAPSHOT_OVERLOAD_IMPLEMENTED.get(inventory.getClass());
+    }
+
+    /**
+     * Gets the live holder when supported, or the ordinary holder otherwise.
+     * Callers retaining a block state for later mutations must obtain a normal snapshot instead.
+     *
+     * @param inventory inventory whose holder is being inspected
+     * @return the holder, or null for an inventory without one
+     */
+    public static @Nullable InventoryHolder getHolderWithoutSnapshot(final @NotNull Inventory inventory) {
+        if (!canGetHolderWithoutSnapshot(inventory)) {
+            return inventory.getHolder();
+        }
+        try {
+            return (InventoryHolder) GET_HOLDER_WITHOUT_SNAPSHOT.invoke(inventory, false);
+        } catch (final IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalStateException("Failed to get inventory holder without a snapshot", e);
+        }
     }
 
     /**
