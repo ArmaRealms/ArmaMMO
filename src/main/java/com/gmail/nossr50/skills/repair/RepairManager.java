@@ -74,13 +74,24 @@ public class RepairManager extends SkillManager {
         Player player = getPlayer();
         Repairable repairable = mcMMO.getRepairableManager().getRepairable(item.getType());
         final ItemMeta meta = item.getItemMeta();
+        boolean preserveCustomEnchantments = false;
         if (meta != null) {
-            if (meta.hasCustomModelData() && !mcMMO.p.getCustomItemSupportConfig().isCustomRepairAllowed()
-                    || ItemUtils.hasItemModel(meta)
-                    && !mcMMO.p.getCustomItemSupportConfig().isItemModelRepairAllowed()) {
+            final boolean hasModelData = meta.hasCustomModelData();
+            final boolean hasItemModel = ItemUtils.hasItemModel(meta);
+            if (hasModelData && !mcMMO.p.getCustomItemSupportConfig().isCustomRepairAllowed()
+                    || hasItemModel && !mcMMO.p.getCustomItemSupportConfig().isItemModelRepairAllowed()) {
                 NotificationManager.sendPlayerInformation(player,
                         NotificationType.SUBSKILL_MESSAGE_FAILED,
                         "Anvil.Repair.Reject.CustomModelData");
+                return;
+            }
+
+            preserveCustomEnchantments = (hasModelData || hasItemModel)
+                    && mcMMO.p.getCustomItemSupportConfig().isPerfectArcaneForgingRequired();
+            if (preserveCustomEnchantments && !hasPerfectArcaneForging()) {
+                NotificationManager.sendPlayerInformation(player,
+                        NotificationType.SUBSKILL_MESSAGE_FAILED,
+                        "Anvil.Repair.Reject.PerfectArcaneForging");
                 return;
             }
 
@@ -210,7 +221,8 @@ public class RepairManager extends SkillManager {
         }
 
         // Handle the enchants
-        if (mcMMO.p.getAdvancedConfig()
+        // Guaranteed custom repairs must also preserve levels above the Arcane Forging cap.
+        if (!preserveCustomEnchantments && mcMMO.p.getAdvancedConfig()
                 .getArcaneForgingEnchantLossEnabled() && !Permissions.hasRepairEnchantBypassPerk(
                 player)) {
             addEnchants(item);
@@ -345,6 +357,14 @@ public class RepairManager extends SkillManager {
      */
     public double getDowngradeEnchantChance() {
         return mcMMO.p.getAdvancedConfig().getArcaneForgingDowngradeChance(getArcaneForgingRank());
+    }
+
+    private boolean hasPerfectArcaneForging() {
+        return getArcaneForgingRank() > 0
+                && Permissions.isSubSkillEnabled(getPlayer(), SubSkillType.REPAIR_ARCANE_FORGING)
+                && getKeepEnchantChance() >= 100.0
+                && (!mcMMO.p.getAdvancedConfig().getArcaneForgingDowngradeEnabled()
+                || getDowngradeEnchantChance() <= 0.0);
     }
 
     int getArcaneForgingEnchantLevel(int enchantLevel) {

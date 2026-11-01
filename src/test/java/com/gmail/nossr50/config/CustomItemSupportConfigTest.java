@@ -44,6 +44,7 @@ class CustomItemSupportConfigTest extends MMOTestEnvironment {
         assertThat(config.isCustomSalvageAllowed()).isFalse();
         assertThat(config.isItemModelRepairAllowed()).isTrue();
         assertThat(config.isItemModelSalvageAllowed()).isTrue();
+        assertThat(config.isPerfectArcaneForgingRequired()).isFalse();
     }
 
     @Test
@@ -53,6 +54,7 @@ class CustomItemSupportConfigTest extends MMOTestEnvironment {
                 Custom_Item_Support:
                     Repair:
                         Allow_Repair_On_Items_With_Custom_Item_Model: false
+                        Require_Perfect_Arcane_Forging: true
                     Salvage:
                         Allow_Salvage_On_Items_With_Custom_Item_Model: true
                 """);
@@ -63,5 +65,6 @@ class CustomItemSupportConfigTest extends MMOTestEnvironment {
         // Then - each operation respects its own option
         assertThat(config.isItemModelRepairAllowed()).isFalse();
         assertThat(config.isItemModelSalvageAllowed()).isTrue();
+        assertThat(config.isPerfectArcaneForgingRequired()).isTrue();
     }
 }

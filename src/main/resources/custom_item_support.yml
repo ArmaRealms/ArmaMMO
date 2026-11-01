@@ -8,6 +8,14 @@ Custom_Item_Support:
         Allow_Repair_On_Items_With_Custom_Model_Data: true
         # Turn this off to disable repair on items with minecraft:item_model (1.21.2+)
         Allow_Repair_On_Items_With_Custom_Item_Model: true
+        # When enabled, custom items additionally require an unlocked Arcane Forging rank and permission,
+        # with Keep_Enchants_Chance >= 100 and Downgrades_Chance <= 0 (or Downgrades_Enabled: false).
+        # Uses skillranks.yml for Standard/RetroMode levels and advanced.yml for the rank's chances.
+        # Default advanced.yml chances never reach 100%; configure a qualifying rank there first.
+        # Preserves all enchantment levels, including those above MaxEnchantLevel, without rolling RNG.
+        # Applies even to unenchanted custom items; bypass perks do not replace the required rank.
+        # The Allow_Repair options above still apply. False keeps the existing repair behavior.
+        Require_Perfect_Arcane_Forging: false
     Salvage:
         # Turn this off to disable salvage on any items with custom model data
         Allow_Salvage_On_Items_With_Custom_Model_Data: true

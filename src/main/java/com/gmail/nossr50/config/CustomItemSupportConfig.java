@@ -18,6 +18,11 @@ public class CustomItemSupportConfig extends BukkitConfig {
                 "Custom_Item_Support.Repair.Allow_Repair_On_Items_With_Custom_Model_Data", true);
     }
 
+    /** Returns whether custom item repairs require a rank that preserves every enchantment. */
+    public boolean isPerfectArcaneForgingRequired() {
+        return config.getBoolean("Custom_Item_Support.Repair.Require_Perfect_Arcane_Forging", false);
+    }
+
     public boolean isCustomSalvageAllowed() {
         return config.getBoolean(
                 "Custom_Item_Support.Salvage.Allow_Salvage_On_Items_With_Custom_Model_Data", true);

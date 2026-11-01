@@ -8,6 +8,7 @@ import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.datatypes.interactions.NotificationType;
 import com.gmail.nossr50.datatypes.skills.PrimarySkillType;
 import com.gmail.nossr50.datatypes.skills.SubSkillType;
+import com.gmail.nossr50.events.skills.repair.McMMOPlayerRepairCheckEvent;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.skills.repair.repairables.Repairable;
 import com.gmail.nossr50.skills.repair.repairables.RepairableManager;
@@ -456,6 +457,161 @@ class RepairManagerTest extends MMOTestEnvironment {
             notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
                     NotificationType.NO_PERMISSION, "mcMMO.NoPermission"));
             assertThat(helmetDamage.get()).isEqualTo(60);
+        }
+    }
+
+    @Nested
+    class PerfectCustomRepair {
+        private CustomItemSupportConfig config;
+        private Enchantment enchantment;
+
+        @BeforeEach
+        void wireCustomHelmet() {
+            wireRepairableHelmet(60);
+            config = Mockito.mock(CustomItemSupportConfig.class);
+            Mockito.when(mcMMO.p.getCustomItemSupportConfig()).thenReturn(config);
+            Mockito.when(config.isCustomRepairAllowed()).thenReturn(true);
+            Mockito.when(config.isItemModelRepairAllowed()).thenReturn(true);
+            Mockito.when(config.isPerfectArcaneForgingRequired()).thenReturn(true);
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(true);
+            Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING)).thenReturn(8);
+            Mockito.when(advancedConfig.getArcaneForgingKeepEnchantsChance(8)).thenReturn(100.0);
+            Mockito.when(advancedConfig.getArcaneForgingDowngradeEnabled()).thenReturn(true);
+            Mockito.when(advancedConfig.getArcaneForgingDowngradeChance(8)).thenReturn(0.0);
+            Mockito.when(advancedConfig.getArcaneForgingEnchantLossEnabled()).thenReturn(true);
+            enchantment = Mockito.mock(Enchantment.class);
+            Mockito.when(enchantment.getMaxLevel()).thenReturn(4);
+            Mockito.when(helmet.getEnchantments()).thenReturn(Map.of(enchantment, 15));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+                "8, true, 100, true, 0, true",
+                "8, true, 99.9, true, 0, false",
+                "8, true, 100, true, 0.1, false",
+                "8, true, 100, false, 50, true",
+                "8, false, 100, true, 0, false",
+                "0, true, 100, true, 0, false",
+                "4, true, 100, true, 0, true",
+                "8, true, NaN, true, 0, false",
+                "8, true, 100, true, NaN, false"
+        })
+        void repairShouldRequireAGuaranteedRank(int rank, boolean permission, double keepChance,
+                boolean downgradeEnabled, double downgradeChance, boolean allowed) {
+            // Given - the server defines the chances for the player's actual rank
+            Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING)).thenReturn(rank);
+            Mockito.when(Permissions.isSubSkillEnabled(player, SubSkillType.REPAIR_ARCANE_FORGING))
+                    .thenReturn(permission);
+            Mockito.when(advancedConfig.getArcaneForgingKeepEnchantsChance(rank)).thenReturn(keepChance);
+            Mockito.when(advancedConfig.getArcaneForgingDowngradeEnabled()).thenReturn(downgradeEnabled);
+            Mockito.when(advancedConfig.getArcaneForgingDowngradeChance(rank)).thenReturn(downgradeChance);
+
+            // When - repairing a custom item with enchantments above the configured cap
+            repairManager.handleRepair(helmet);
+
+            // Then - only a guaranteed rank permits repair, without rewriting any enchantments
+            assertThat(helmetDamage.get()).isEqualTo(allowed ? 30 : 60);
+            Mockito.verify(playerInventory, times(allowed ? 1 : 0)).removeItem(diamonds);
+            Mockito.verify(helmet, Mockito.never()).removeEnchantment(Mockito.any());
+            Mockito.verify(helmet, Mockito.never()).addUnsafeEnchantment(Mockito.any(), Mockito.anyInt());
+            notificationManager.verify(() -> NotificationManager.sendPlayerInformation(player,
+                    NotificationType.SUBSKILL_MESSAGE_FAILED, "Anvil.Repair.Reject.PerfectArcaneForging"),
+                    times(allowed ? 0 : 1));
+        }
+
+        @ParameterizedTest
+        @CsvSource({"true, false", "false, true", "true, true"})
+        void bothCustomMarkersShouldRequirePerfectForging(boolean modelData, boolean itemModel) {
+            // Given - a custom item identified by either or both supported markers
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(modelData);
+            Mockito.when(advancedConfig.getArcaneForgingKeepEnchantsChance(8)).thenReturn(60.0);
+            try (var itemUtils = Mockito.mockStatic(ItemUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                itemUtils.when(() -> ItemUtils.hasItemModel(helmetMeta)).thenReturn(itemModel);
+
+                // When - the rank still has a chance to lose enchantments
+                repairManager.handleRepair(helmet);
+
+                // Then - neither durability nor materials change
+                assertThat(helmetDamage.get()).isEqualTo(60);
+                Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+
+                // When - the same rank is configured for perfect preservation
+                Mockito.when(advancedConfig.getArcaneForgingKeepEnchantsChance(8)).thenReturn(100.0);
+                repairManager.handleRepair(helmet);
+
+                // Then - every supported marker can be repaired without clamping enchantment levels
+                assertThat(helmetDamage.get()).isEqualTo(30);
+                Mockito.verify(helmet, Mockito.never()).addUnsafeEnchantment(Mockito.any(), Mockito.anyInt());
+            }
+        }
+
+        @Test
+        void disabledRequirementShouldKeepLegacyEnchantLoss() {
+            // Given - the option is disabled and the player has no Arcane Forging rank
+            Mockito.when(config.isPerfectArcaneForgingRequired()).thenReturn(false);
+            Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING)).thenReturn(0);
+
+            repairManager.handleRepair(helmet);
+
+            // Then - the original repair and enchantment loss still apply
+            assertThat(helmetDamage.get()).isEqualTo(30);
+            Mockito.verify(helmet).removeEnchantment(enchantment);
+        }
+
+        @Test
+        void vanillaItemsShouldKeepLegacyEnchantLoss() {
+            // Given - an ordinary item while the custom-item requirement is enabled
+            Mockito.when(helmetMeta.hasCustomModelData()).thenReturn(false);
+            Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING)).thenReturn(0);
+
+            repairManager.handleRepair(helmet);
+
+            // Then - vanilla repair remains unchanged
+            assertThat(helmetDamage.get()).isEqualTo(30);
+            Mockito.verify(helmet).removeEnchantment(enchantment);
+        }
+
+        @Test
+        void perfectRankShouldStillRespectCustomRepairDisabled() {
+            Mockito.when(config.isCustomRepairAllowed()).thenReturn(false);
+
+            repairManager.handleRepair(helmet);
+
+            assertThat(helmetDamage.get()).isEqualTo(60);
+            Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+        }
+
+        @Test
+        void bypassPerksAndDisabledLossShouldNotReplaceTheRequiredRank() {
+            // Given - global enchantment protection and bypass perks, but no qualifying rank
+            Mockito.when(advancedConfig.getArcaneForgingEnchantLossEnabled()).thenReturn(false);
+            Mockito.when(Permissions.arcaneBypass(player)).thenReturn(true);
+            Mockito.when(Permissions.hasRepairEnchantBypassPerk(player)).thenReturn(true);
+            Mockito.when(RankUtils.getRank(player, SubSkillType.REPAIR_ARCANE_FORGING)).thenReturn(0);
+            Mockito.when(helmet.getEnchantments()).thenReturn(Map.of());
+
+            repairManager.handleRepair(helmet);
+
+            // Then - even an unenchanted custom item requires the player's rank
+            assertThat(helmetDamage.get()).isEqualTo(60);
+            Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+        }
+
+        @Test
+        void cancelledRepairShouldNotConsumeMaterialsOrChangeEnchantments() {
+            // Given - another plugin cancels an otherwise permitted custom repair
+            Mockito.doAnswer(invocation -> {
+                invocation.getArgument(0, McMMOPlayerRepairCheckEvent.class).setCancelled(true);
+                return null;
+            }).when(pluginManager).callEvent(Mockito.any(McMMOPlayerRepairCheckEvent.class));
+
+            repairManager.handleRepair(helmet);
+
+            // Then - repair cancellation is still authoritative
+            assertThat(helmetDamage.get()).isEqualTo(60);
+            Mockito.verify(playerInventory, Mockito.never()).removeItem(Mockito.any(ItemStack.class));
+            Mockito.verify(helmet, Mockito.never()).removeEnchantment(Mockito.any());
+            Mockito.verify(helmet, Mockito.never()).addUnsafeEnchantment(Mockito.any(), Mockito.anyInt());
         }
     }
 
