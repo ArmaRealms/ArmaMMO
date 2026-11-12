@@ -446,6 +446,11 @@ public class GeneralConfig extends BukkitConfig {
         return config.getInt("Database_Purging.Old_User_Cutoff", 6);
     }
 
+    /** Returns console commands to run after a player is removed for inactivity. */
+    public @NotNull List<String> getInactiveUserPurgeCommands() {
+        return config.getStringList("Database_Purging.Inactive_User_Commands");
+    }
+
     /* Backups */
     public boolean getBackupsEnabled() {
         return config.getBoolean("Backups.Enabled", true);

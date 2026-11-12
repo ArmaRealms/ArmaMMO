@@ -16,6 +16,7 @@ import com.gmail.nossr50.runnables.database.UUIDUpdateAsyncTask;
 import com.gmail.nossr50.util.LogUtils;
 import com.gmail.nossr50.util.Misc;
 import com.gmail.nossr50.util.skills.SkillTools;
+import com.google.common.collect.Iterables;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.bukkit.OfflinePlayer;
@@ -36,6 +37,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static com.gmail.nossr50.database.UsernamePlaceholder.INVALID_OLD_USERNAME;
 import static com.gmail.nossr50.database.UsernamePlaceholder.LEGACY_FLATFILE_INVALID_OLD_USERNAME;
@@ -318,33 +321,61 @@ public final class SQLDatabaseManager implements DatabaseManager {
     }
 
     public void purgeOldUsers() {
-        massUpdateLock.lock();
-        long months = mcMMO.p.getPurgeTime() / 2_630_000_000L;
+        final long purgeTime = mcMMO.p.getPurgeTime();
+        final long months = purgeTime / 2_630_000_000L;
         logger.info("Purging inactive users older than " + months + " months...");
 
-        int purged = 0;
+        final String joinedUsers = tablePrefix + "users u "
+                + "JOIN " + tablePrefix + "experience e ON (u.id = e.user_id) "
+                + "JOIN " + tablePrefix + "huds h ON (u.id = h.user_id) "
+                + "JOIN " + tablePrefix + "skills s ON (u.id = s.user_id) "
+                + "JOIN " + tablePrefix + "cooldowns c ON (u.id = c.user_id) ";
+        final Map<Integer, PlayerNameAndUUID> removedPlayers = new LinkedHashMap<>();
+        boolean committed = false;
 
-        // lastlogin is stored in unix seconds, but the purge time is tracked in milliseconds
-        final long purgeTimeSeconds = mcMMO.p.getPurgeTime() / 1000L;
-
+        massUpdateLock.lock();
         try (Connection connection = getConnection(PoolIdentifier.MISC);
              Statement statement = connection.createStatement()) {
+            final boolean autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                // Lock the selected rows until deletion, so a concurrent save cannot refresh their last login.
+                try (ResultSet rows = statement.executeQuery("SELECT u.id, u.`user`, u.uuid FROM " + joinedUsers
+                        + "WHERE (UNIX_TIMESTAMP() - u.lastlogin) > " + (purgeTime / 1000L) + " FOR UPDATE")) {
+                    while (rows.next()) {
+                        removedPlayers.put(rows.getInt(1),
+                                new PlayerNameAndUUID(rows.getString(2), parseUuidOrNull(rows.getString(3))));
+                    }
+                }
 
-            purged = statement.executeUpdate(
-                    "DELETE FROM u, e, h, s, c USING " + tablePrefix + "users u " +
-                            "JOIN " + tablePrefix + "experience e ON (u.id = e.user_id) " +
-                            "JOIN " + tablePrefix + "huds h ON (u.id = h.user_id) " +
-                            "JOIN " + tablePrefix + "skills s ON (u.id = s.user_id) " +
-                            "JOIN " + tablePrefix + "cooldowns c ON (u.id = c.user_id) " +
-                            "WHERE ((UNIX_TIMESTAMP() - lastlogin) > " + purgeTimeSeconds + ")"
-            );
+                // Delete only the captured IDs and bound the size of each SQL statement.
+                for (final List<Integer> ids : Iterables.partition(removedPlayers.keySet(), 1000)) {
+                    final String idList = ids.stream().map(String::valueOf).collect(Collectors.joining(","));
+                    statement.executeUpdate("DELETE FROM u, e, h, s, c USING " + joinedUsers
+                            + "WHERE u.id IN (" + idList + ")");
+                }
+                connection.commit();
+                committed = true;
+            } catch (SQLException | RuntimeException ex) {
+                connection.rollback();
+                connection.setAutoCommit(autoCommit);
+                throw ex;
+            }
+            removedPlayers.forEach((id, player) -> {
+                if (player.uuid() != null) {
+                    cachedUserIDs.remove(player.uuid(), id);
+                }
+            });
+            connection.setAutoCommit(autoCommit);
         } catch (SQLException ex) {
             logSQLException(ex);
         } finally {
             massUpdateLock.unlock();
         }
 
-        logger.info("Purged " + purged + " users from the database.");
+        if (committed) {
+            InactiveUserPurge.report(logger, List.copyOf(removedPlayers.values()));
+        }
     }
 
     // ---------------------------------------------------------------------

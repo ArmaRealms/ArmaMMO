@@ -279,7 +279,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
     }
 
     public void purgeOldUsers() {
-        final int[] removedPlayers = {0};
+        final List<PlayerNameAndUUID> removedPlayers = new ArrayList<>();
         final long currentTime = System.currentTimeMillis();
 
         LogUtils.debug(logger, "Purging old users...");
@@ -292,13 +292,13 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             }
 
             final String[] data = row.fields();
-            if (data.length <= UUID_INDEX) {
+            if (data.length <= OVERHAUL_LAST_LOGIN) {
                 // Not enough fields; preserve line
                 return line;
             }
 
             final String uuidString = data[UUID_INDEX];
-            final UUID uuid = parseUuidOrNull(uuidString);
+            final UUID uuid = row.uuid();
 
             long lastPlayed = -1L;
             boolean rewrite = false;
@@ -322,7 +322,7 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             }
 
             if (lastPlayed != -1 && currentTime - lastPlayed > purgeTime) {
-                removedPlayers[0]++;
+                removedPlayers.add(new PlayerNameAndUUID(row.username(), uuid));
                 return null; // drop this user
             }
 
@@ -334,11 +334,9 @@ public final class FlatFileDatabaseManager implements DatabaseManager {
             return line;
         });
 
-        if (!rewritten) {
-            return;
+        if (rewritten) {
+            InactiveUserPurge.report(logger, removedPlayers);
         }
-
-        logger.info("Purged " + removedPlayers[0] + " users from the database.");
     }
 
     // ------------------------------------------------------------------------
