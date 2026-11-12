@@ -1,6 +1,7 @@
 package com.gmail.nossr50.database;
 
 import com.gmail.nossr50.api.exceptions.InvalidSkillException;
+import com.gmail.nossr50.config.GeneralConfig;
 import com.gmail.nossr50.config.experience.ExperienceConfig;
 import com.gmail.nossr50.database.flatfile.LeaderboardStatus;
 import com.gmail.nossr50.datatypes.database.DatabaseType;
@@ -13,8 +14,11 @@ import com.gmail.nossr50.datatypes.skills.SuperAbilityType;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.util.skills.SkillTools;
 import com.google.common.io.Files;
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +33,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -56,6 +61,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.logging.Filter;
 import java.util.logging.Level;
@@ -84,6 +90,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -297,6 +304,7 @@ class FlatFileDatabaseManagerTest {
     void initEachTest() {
         //noinspection UnstableApiUsage
         tempDir = Files.createTempDir();
+        when(mcMMO.p.getGeneralConfig()).thenReturn(mock(GeneralConfig.class));
     }
 
     private @NotNull String getTemporaryUserFilePath() {
@@ -690,8 +698,16 @@ class FlatFileDatabaseManagerTest {
     @Test
     void purgeOldUsersRemovesOnlyEntriesOlderThanPurgeTime() throws IOException {
         // Given
+        final Logger purgeLogger = mock(Logger.class);
+        final FoliaLib foliaLib = mock(FoliaLib.class, Mockito.RETURNS_DEEP_STUBS);
+        final ConsoleCommandSender console = mock(ConsoleCommandSender.class);
+        when(mcMMO.p.getFoliaLib()).thenReturn(foliaLib);
+        when(mcMMO.p.getServer().getConsoleSender()).thenReturn(console);
+        when(mcMMO.p.getGeneralConfig().getInactiveUserPurgeCommands())
+                .thenReturn(List.of("cleanup name {@player}", "cleanup account {@player} {@uuid}"));
+        when(mcMMO.p.getServer().dispatchCommand(any(), anyString())).thenReturn(true);
         var databaseManager = new FlatFileDatabaseManager(
-                new File(getTemporaryUserFilePath()), logger, PURGE_TIME, 0, true);
+                new File(getTemporaryUserFilePath()), purgeLogger, PURGE_TIME, 0, true);
 
         long now = System.currentTimeMillis();
 
@@ -701,12 +717,15 @@ class FlatFileDatabaseManagerTest {
         // Recent user: lastLogin ~ now (definitely NOT older than PURGE_TIME)
         String recentUser = lineWithLastLogin(normalDatabaseData[1], now); // username: mrfloris
 
+        final String legacyUser = lineWithLastLogin(normalDatabaseData[2]
+                .replace("e0d07db8-f7e8-43c7-9ded-864dfc6f3b7c", "NULL"), 0L);
+
         // Short line – not enough fields, should be preserved
         String shortLine = "shortUser:1:2";
 
         String header = "# purgeOldUsers header";
 
-        replaceDataInFile(databaseManager, new String[]{header, veryOldUser, recentUser, shortLine});
+        replaceDataInFile(databaseManager, new String[]{header, veryOldUser, legacyUser, recentUser, shortLine});
 
         // When
         // Gherkin: Given a mix of old users, recent users, comments and short lines
@@ -727,6 +746,38 @@ class FlatFileDatabaseManagerTest {
         assertTrue(remainingNames.contains("mrfloris"), "Recent user must be kept");
         assertTrue(remainingNames.contains("shortUser"), "Short line must be preserved");
         assertFalse(remainingNames.contains("nossr50"), "Very old user must be purged");
+        assertFalse(remainingNames.contains("powerless"), "Very old user without a UUID must be purged");
+        verify(purgeLogger).info("Purged inactive player nossr50 (UUID: " + EXISTING_PLAYER_UUID + ").");
+        verify(purgeLogger).info("Purged inactive player powerless (UUID: unknown).");
+
+        // Commands are dispatched by the console only when the scheduled task runs.
+        verify(mcMMO.p.getServer(), never()).dispatchCommand(any(), anyString());
+        final ArgumentCaptor<Consumer<WrappedTask>> dispatch = ArgumentCaptor.captor();
+        verify(foliaLib.getScheduler()).runNextTick(dispatch.capture());
+        dispatch.getValue().accept(mock(WrappedTask.class));
+        final var order = Mockito.inOrder(mcMMO.p.getServer());
+        order.verify(mcMMO.p.getServer()).dispatchCommand(console, "cleanup name nossr50");
+        order.verify(mcMMO.p.getServer()).dispatchCommand(console, "cleanup account nossr50 " + EXISTING_PLAYER_UUID);
+        order.verify(mcMMO.p.getServer()).dispatchCommand(console, "cleanup name powerless");
+        verify(mcMMO.p.getServer(), times(3)).dispatchCommand(any(), anyString());
+    }
+
+    @Test
+    void purgeOldUsersShouldNotReportADeletionWhenTheWriteFails() throws IOException {
+        // Given - an inactive user in a file that cannot be rewritten
+        final Logger purgeLogger = mock(Logger.class);
+        final var databaseManager = spyOnSeededDatabase(
+                new String[]{lineWithLastLogin(normalDatabaseData[0], 0L)}, purgeLogger);
+        final File usersFile = databaseManager.getUsersFile();
+        final byte[] originalBytes = java.nio.file.Files.readAllBytes(usersFile.toPath());
+        Mockito.doThrow(new IOException("Simulated full disk")).when(databaseManager).newUsersFileWriter();
+
+        // When - the purge attempts to remove the user
+        databaseManager.purgeOldUsers();
+
+        // Then - the user remains and no successful removal is logged
+        assertThat(usersFile).hasBinaryContent(originalBytes);
+        verify(purgeLogger, never()).info(startsWith("Purged inactive player"));
     }
 
     /**

@@ -183,6 +183,11 @@ Database_Purging:
     # Any user who hasn't connected in this many months will be purged from the database
     # To never purge old users, set to -1
     Old_User_Cutoff: 6
+    # Console commands to run for each player removed for inactivity. Use commands without a leading slash.
+    # {@player} is the stored username and {@uuid} is the player's UUID.
+    # A command is skipped if it needs a missing UUID or a username that cannot be used safely.
+    # Example: 'say Purged {@player} ({@uuid}) for inactivity'
+    Inactive_User_Commands: []
 
 #
 #  Settings for Backups

@@ -1,4 +1,5 @@
 Version 2.3.003
+    Added per-player logs and optional console commands with username and UUID placeholders for inactivity purges
     Added an optional custom item repair requirement for perfect Arcane Forging, preserving all enchantments and their levels
     Added separate repair and salvage options for items with minecraft:item_model in custom_item_support.yml
     Fixed Giga Drill Breaker awarding only double block XP instead of triple XP

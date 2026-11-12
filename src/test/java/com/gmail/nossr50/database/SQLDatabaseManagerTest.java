@@ -794,7 +794,8 @@ class SQLDatabaseManagerTest {
     void whenPurgingOldUsersShouldRemoveOnlyUsersInactiveLongerThanCutoff(DbFlavor flavor)
             throws Exception {
         // GIVEN a six month purge cutoff and one long-inactive user plus one active user
-        SQLDatabaseManager databaseManager = createManagerFor(flavor);
+        final Logger purgeLogger = mock(Logger.class);
+        SQLDatabaseManager databaseManager = createManagerFor(flavor, purgeLogger);
         truncateAllCoreTables(flavor);
 
         final long sixMonthsInMillis = 2_630_000_000L * 6L;
@@ -822,6 +823,10 @@ class SQLDatabaseManagerTest {
 
         // WHEN purging old users
         databaseManager.purgeOldUsers();
+
+        verify(purgeLogger).info("Purged inactive player " + inactivePlayer.getName()
+                + " (UUID: " + inactivePlayer.getUniqueId() + ").");
+        verify(purgeLogger).info("Purged 1 users from the database.");
 
         JdbcDatabaseContainer<?> container = containerFor(flavor);
         try (Connection connection = DriverManager.getConnection(
